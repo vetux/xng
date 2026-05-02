@@ -40,17 +40,18 @@ namespace xng {
 
         const uint8_t &b() const { return data[2]; }
 
-        ColorRGB() : data() {}
+        ColorRGB() : data() {
+        }
 
         ColorRGB(uint8_t r, uint8_t g, uint8_t b)
-                : data() {
+            : data() {
             this->r() = r;
             this->g() = g;
             this->b() = b;
         }
 
         explicit ColorRGB(uint8_t v)
-                : data() {
+            : data() {
             this->r() = v;
             this->g() = v;
             this->b() = v;
@@ -78,10 +79,17 @@ namespace xng {
             message["b"] = b();
             return message;
         }
+
+        Vec3f divide(float divisor = 255) const {
+            return {
+                static_cast<float>(r()) / divisor,
+                static_cast<float>(g()) / divisor,
+                static_cast<float>(b()) / divisor
+            };
+        }
     };
 
-    struct ColorRGBF
-    {
+    struct ColorRGBF {
         float data[3];
 
         float &r() { return data[0]; }
@@ -96,17 +104,18 @@ namespace xng {
 
         const float &b() const { return data[2]; }
 
-        ColorRGBF() : data() {}
+        ColorRGBF() : data() {
+        }
 
         ColorRGBF(float r, float g, float b)
-                : data() {
+            : data() {
             this->r() = r;
             this->g() = g;
             this->b() = b;
         }
 
         explicit ColorRGBF(float v)
-                : data() {
+            : data() {
             this->r() = v;
             this->g() = v;
             this->b() = v;
@@ -126,145 +135,145 @@ namespace xng {
 
         static ColorRGBA black(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    static_cast<uint8_t>(0 * intensity),
-                    static_cast<uint8_t>(0 * intensity),
-                    static_cast<uint8_t>(0 * intensity),
-                    alpha
+                static_cast<uint8_t>(0 * intensity),
+                static_cast<uint8_t>(0 * intensity),
+                static_cast<uint8_t>(0 * intensity),
+                alpha
             };
         }
 
         static ColorRGBA silver(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    static_cast<uint8_t>(192 * intensity),
-                    static_cast<uint8_t>(192 * intensity),
-                    static_cast<uint8_t>(192 * intensity),
-                    alpha
+                static_cast<uint8_t>(192 * intensity),
+                static_cast<uint8_t>(192 * intensity),
+                static_cast<uint8_t>(192 * intensity),
+                alpha
             };
         }
 
         static ColorRGBA gray(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    static_cast<uint8_t>(128 * intensity),
-                    static_cast<uint8_t>(128 * intensity),
-                    static_cast<uint8_t>(128 * intensity),
-                    alpha
+                static_cast<uint8_t>(128 * intensity),
+                static_cast<uint8_t>(128 * intensity),
+                static_cast<uint8_t>(128 * intensity),
+                alpha
             };
         }
 
         static ColorRGBA white(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    static_cast<uint8_t>(255 * intensity),
-                    static_cast<uint8_t>(255 * intensity),
-                    static_cast<uint8_t>(255 * intensity),
-                    alpha
+                static_cast<uint8_t>(255 * intensity),
+                static_cast<uint8_t>(255 * intensity),
+                static_cast<uint8_t>(255 * intensity),
+                alpha
             };
         }
 
         static ColorRGBA maroon(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    static_cast<uint8_t>(128 * intensity),
-                    static_cast<uint8_t>(0 * intensity),
-                    static_cast<uint8_t>(0 * intensity),
-                    alpha
+                static_cast<uint8_t>(128 * intensity),
+                static_cast<uint8_t>(0 * intensity),
+                static_cast<uint8_t>(0 * intensity),
+                alpha
             };
         }
 
         static ColorRGBA red(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    static_cast<uint8_t>(255 * intensity),
-                    static_cast<uint8_t>(0 * intensity),
-                    static_cast<uint8_t>(0 * intensity),
-                    alpha
+                static_cast<uint8_t>(255 * intensity),
+                static_cast<uint8_t>(0 * intensity),
+                static_cast<uint8_t>(0 * intensity),
+                alpha
             };
         }
 
         static ColorRGBA purple(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    static_cast<uint8_t>(128 * intensity),
-                    static_cast<uint8_t>(0 * intensity),
-                    static_cast<uint8_t>(128 * intensity),
-                    alpha
+                static_cast<uint8_t>(128 * intensity),
+                static_cast<uint8_t>(0 * intensity),
+                static_cast<uint8_t>(128 * intensity),
+                alpha
             };
         }
 
         static ColorRGBA fuchsia(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    static_cast<uint8_t>(255 * intensity),
-                    static_cast<uint8_t>(0 * intensity),
-                    static_cast<uint8_t>(255 * intensity),
-                    alpha
+                static_cast<uint8_t>(255 * intensity),
+                static_cast<uint8_t>(0 * intensity),
+                static_cast<uint8_t>(255 * intensity),
+                alpha
             };
         }
 
         static ColorRGBA green(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    static_cast<uint8_t>(0 * intensity),
-                    static_cast<uint8_t>(128 * intensity),
-                    static_cast<uint8_t>(0 * intensity),
-                    alpha
+                static_cast<uint8_t>(0 * intensity),
+                static_cast<uint8_t>(128 * intensity),
+                static_cast<uint8_t>(0 * intensity),
+                alpha
             };
         }
 
         static ColorRGBA lime(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    static_cast<uint8_t>(0 * intensity),
-                    static_cast<uint8_t>(255 * intensity),
-                    static_cast<uint8_t>(0 * intensity),
-                    alpha
+                static_cast<uint8_t>(0 * intensity),
+                static_cast<uint8_t>(255 * intensity),
+                static_cast<uint8_t>(0 * intensity),
+                alpha
             };
         }
 
         static ColorRGBA olive(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    static_cast<uint8_t>(128 * intensity),
-                    static_cast<uint8_t>(128 * intensity),
-                    static_cast<uint8_t>(0 * intensity),
-                    alpha
+                static_cast<uint8_t>(128 * intensity),
+                static_cast<uint8_t>(128 * intensity),
+                static_cast<uint8_t>(0 * intensity),
+                alpha
             };
         }
 
         static ColorRGBA yellow(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    static_cast<uint8_t>(255 * intensity),
-                    static_cast<uint8_t>(255 * intensity),
-                    static_cast<uint8_t>(0 * intensity),
-                    alpha
+                static_cast<uint8_t>(255 * intensity),
+                static_cast<uint8_t>(255 * intensity),
+                static_cast<uint8_t>(0 * intensity),
+                alpha
             };
         }
 
         static ColorRGBA navy(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    static_cast<uint8_t>(0 * intensity),
-                    static_cast<uint8_t>(0 * intensity),
-                    static_cast<uint8_t>(128 * intensity),
-                    alpha
+                static_cast<uint8_t>(0 * intensity),
+                static_cast<uint8_t>(0 * intensity),
+                static_cast<uint8_t>(128 * intensity),
+                alpha
             };
         }
 
         static ColorRGBA blue(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    static_cast<uint8_t>(0 * intensity),
-                    static_cast<uint8_t>(0 * intensity),
-                    static_cast<uint8_t>(255 * intensity),
-                    alpha
+                static_cast<uint8_t>(0 * intensity),
+                static_cast<uint8_t>(0 * intensity),
+                static_cast<uint8_t>(255 * intensity),
+                alpha
             };
         }
 
         static ColorRGBA teal(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    static_cast<uint8_t>(0 * intensity),
-                    static_cast<uint8_t>(128 * intensity),
-                    static_cast<uint8_t>(128 * intensity),
-                    alpha
+                static_cast<uint8_t>(0 * intensity),
+                static_cast<uint8_t>(128 * intensity),
+                static_cast<uint8_t>(128 * intensity),
+                alpha
             };
         }
 
         static ColorRGBA aqua(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    static_cast<uint8_t>(0 * intensity),
-                    static_cast<uint8_t>(255 * intensity),
-                    static_cast<uint8_t>(255 * intensity),
-                    alpha
+                static_cast<uint8_t>(0 * intensity),
+                static_cast<uint8_t>(255 * intensity),
+                static_cast<uint8_t>(255 * intensity),
+                alpha
             };
         }
 
@@ -287,7 +296,7 @@ namespace xng {
         ColorRGBA() = default;
 
         ColorRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
-                : data() {
+            : data() {
             this->r() = r;
             this->g() = g;
             this->b() = b;
@@ -295,7 +304,7 @@ namespace xng {
         }
 
         explicit ColorRGBA(uint8_t v)
-                : data() {
+            : data() {
             this->r() = v;
             this->g() = v;
             this->b() = v;
@@ -331,10 +340,12 @@ namespace xng {
         }
 
         Vec4f divide(float divisor = 255) const {
-            return {static_cast<float>(r()) / divisor,
-                    static_cast<float>(g()) / divisor,
-                    static_cast<float>(b()) / divisor,
-                    static_cast<float>(a()) / divisor};
+            return {
+                static_cast<float>(r()) / divisor,
+                static_cast<float>(g()) / divisor,
+                static_cast<float>(b()) / divisor,
+                static_cast<float>(a()) / divisor
+            };
         }
     };
 }
