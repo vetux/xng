@@ -1,0 +1,88 @@
+/**
+ *  xEngine - C++ Game Engine Library
+ *  Copyright (C) 2025 Julian Zampiccoli
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 3 of the License, or (at your option) any later version.
+
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software Foundation,
+ *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
+
+#ifndef XENGINE_SHADERTYPES_HPP
+#define XENGINE_SHADERTYPES_HPP
+
+#include "xng/shaderscript/macro/shaderstruct.hpp"
+
+namespace xng {
+    ShaderStruct(ShaderCamera,
+                 Vec4f, viewPosition,
+                 Mat4f, view,
+                 Mat4f, projection)
+
+    ShaderStruct(ShaderTransform,
+                 Mat4f, model)
+
+    using Mat4f_Array_6 = std::array<Mat4f, 6>;
+
+    ShaderStruct(ShaderPointLight,
+                 Vec4f, position,
+                 Vec4f, color,
+                 Vec4f, shadowFarPlane,
+                 Vec4i, shadowLayer, // .x = The index of the shadow map in the shadow map array texture
+                 Mat4f_Array_6, shadowMatrices)
+
+    ShaderStruct(ShaderDirectionalLight,
+                 Vec4f, color,
+                 Vec4f, direction,
+                 Vec4f, shadowFarPlane,
+                 Vec4i, shadowLayer, // .x = The index of the shadow map in the shadow map array texture
+                 Mat4f, shadowProjectionMatrix)
+
+    ShaderStruct(ShaderSpotLight,
+                 Vec4f, position,
+                 Vec4f, color,
+                 Vec4f, direction_quadratic,
+                 Vec4f, cutOff_outerCutOff_constant_linear,
+                 Vec4f, shadowFarPlane,
+                 Vec4i, shadowLayer, // .x = The index of the shadow map in the shadow map array texture
+                 Mat4f, shadowProjectionMatrix)
+
+    ShaderStruct(ShaderTexture,
+                 Vec4i, level_index_filtering_assigned,
+                 Vec4f, scale_texSize)
+
+    ShaderStruct(ShaderMaterial,
+                 Vec4f, albedoColor,
+                 Vec4f, metallic_roughness_ambientOcclusion,
+                 Vec4f, normalIntensity,
+                 ShaderTexture, normal,
+                 ShaderTexture, metallic,
+                 ShaderTexture, roughness,
+                 ShaderTexture, ambientOcclusion,
+                 ShaderTexture, albedo)
+
+    ShaderStruct(ShaderDrawProperties,
+                 Vec4i, materialIndex_receiveShadows)
+
+    ShaderStruct(ShaderCanvasPaint,
+                 Vec4f, color,
+                 float, colorMixFactor,
+                 float, alphaMixFactor,
+                 float, colorFactor,
+                 Vec4f, uvOffset_uvScale,
+                 ShaderTexture, texture)
+
+    ShaderStruct(ShaderConfiguration,
+             Vec4f, gamma)
+}
+
+#endif //XENGINE_SHADERTYPES_HPP

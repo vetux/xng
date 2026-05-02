@@ -36,11 +36,11 @@ namespace xng {
      *
      * This enables asynchronous buffer streaming by not blocking on the slow PCIe copy from the Staging Buffers.
      *
-     * The stream buffer dynamically resizes on upload and can be manually resized via resize().
+     * The stream buffer dynamically resizes on create and can be manually resized via resize().
      */
     class StreamBuffer {
     public:
-        typedef size_t UploadHandle;
+        typedef size_t Handle;
 
         StreamBuffer(rg::Heap &heap,
                      const rg::Buffer::Capability capabilities,
@@ -65,7 +65,8 @@ namespace xng {
          * @param data
          * @return The offset of the data in the stable buffer.
          */
-        UploadHandle upload(const size_t offset, const std::vector<uint8_t> &data) {
+        Handle upload(const size_t offset, const std::vector<uint8_t> &data) {
+            //TODO: Upload batching (Single staging / temp buffer)
             if (offset + data.size() > bufferSize) {
                 bufferSize = offset + data.size();
             }
@@ -100,7 +101,7 @@ namespace xng {
          * @param handle
          * @return True if the passed upload has finished.
          */
-        bool isUploadComplete(const UploadHandle handle) const {
+        bool isUploadComplete(const Handle handle) const {
             const auto it = pendingUploads.find(handle);
             if (it == pendingUploads.end()) {
                 return true;
@@ -110,11 +111,11 @@ namespace xng {
         }
 
         /**
-         * Forces a flush of the passed upload.
+         * Forces a flush of the passed create.
          *
          * @param handle The handle of the upload to flush
          */
-        void flush(const UploadHandle handle) {
+        void flush(const Handle handle) {
             if (pendingUploads.find(handle) != pendingUploads.end()) {
                 flushedUploads.insert(handle);
             }
@@ -167,7 +168,7 @@ namespace xng {
             }
 
             const auto pendingUploadsCopy = pendingUploads;
-            std::unordered_map<UploadHandle, PendingUpload> frameUploads;
+            std::unordered_map<Handle, PendingUpload> frameUploads;
             for (auto &upload: pendingUploadsCopy) {
                 if (!heap.hasPendingTransfers(upload.second.buffer)
                     || flushedUploads.find(upload.first) != flushedUploads.end()) {
@@ -191,7 +192,7 @@ namespace xng {
                         ctx.copyBuffer(buffer, staleBuffer, 0, 0, staleBuffer.getDescription().size);
                     }
 
-                    // Copy flushed upload buffers into stable.
+                    // Copy flushed create buffers into stable.
                     for (auto &upload: frameUploads) {
                         ctx.copyBuffer(buffer,
                                        upload.second.buffer,
@@ -211,7 +212,7 @@ namespace xng {
             rg::HeapResource<rg::Buffer> buffer;
         };
 
-        UploadHandle createUploadHandle() {
+        Handle createUploadHandle() {
             if (pendingUploadHandles.empty()) {
                 return currentUploadHandle++;
             } else {
@@ -221,19 +222,19 @@ namespace xng {
             }
         }
 
-        void freeUploadHandle(const UploadHandle handle) {
+        void freeUploadHandle(const Handle handle) {
             pendingUploadHandles.push_back(handle);
         }
 
-        UploadHandle currentUploadHandle = 0;
-        std::vector<UploadHandle> pendingUploadHandles;
+        Handle currentUploadHandle = 0;
+        std::vector<Handle> pendingUploadHandles;
 
         rg::Heap &heap;
 
         rg::HeapResource<rg::Buffer> buffer;
 
-        std::unordered_map<UploadHandle, PendingUpload> pendingUploads;
-        std::unordered_set<UploadHandle> flushedUploads;
+        std::unordered_map<Handle, PendingUpload> pendingUploads;
+        std::unordered_set<Handle> flushedUploads;
 
         size_t bufferSize = 0;
     };
