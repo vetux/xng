@@ -71,15 +71,15 @@ namespace xng::rg {
         Shader() = default;
 
         Shader(const Stage stage,
-               Primitive geometry_input,
-               Primitive geometry_output,
-               size_t geometry_max_vertices,
+               const Primitive geometry_input,
+               const Primitive geometry_output,
+               const size_t geometry_max_vertices,
                ShaderAttributeLayout input_layout,
                ShaderAttributeLayout output_layout,
-               const std::unordered_map<std::string, ShaderPrimitiveType> &parameters,
-               const std::unordered_map<std::string, ShaderBuffer> &buffers,
-               const std::unordered_map<std::string, ShaderTextureArray> &textureArrays,
-               const std::vector<ShaderStructDef> &typeDefinitions,
+               std::unordered_map<std::string, ShaderPrimitiveType> parameters,
+               std::unordered_map<std::string, ShaderBuffer> buffers,
+               std::unordered_map<std::string, ShaderTextureArray> textureArrays,
+               std::vector<ShaderStructDef> typeDefinitions,
                std::vector<ShaderInstruction> mainFunction,
                std::vector<ShaderFunction> functions)
             : stage(stage),
@@ -88,10 +88,10 @@ namespace xng::rg {
               geometryMaxVertices(geometry_max_vertices),
               inputLayout(std::move(input_layout)),
               outputLayout(std::move(output_layout)),
-              parameters(parameters),
-              buffers(buffers),
-              textureArrays(textureArrays),
-              typeDefinitions(typeDefinitions),
+              parameters(std::move(parameters)),
+              buffers(std::move(buffers)),
+              textureArrays(std::move(textureArrays)),
+              typeDefinitions(std::move(typeDefinitions)),
               mainFunction(std::move(mainFunction)),
               functions(std::move(functions)) {
         }
