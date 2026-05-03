@@ -28,6 +28,9 @@ struct CompiledShader {
 
     std::vector<std::string> shaderBufferBindings;
     std::vector<std::string> textureArrayBindings;
+    std::vector<std::string> parameterBindings;
+
+    std::vector<ShaderPrimitiveType> parameterTypes;
 
     std::unordered_map<std::string, size_t> textureArraySizes;
 
@@ -49,6 +52,15 @@ struct CompiledShader {
             ret += textureArraySizes.at(binding);
         }
         throw std::runtime_error("Texture Array " + name + " not found");
+    }
+
+    size_t getParameterBinding(const std::string &name) const {
+        for (auto i = 0; i < parameterBindings.size(); ++i) {
+            if (parameterBindings.at(i) == name) {
+                return i;
+            }
+        }
+        throw std::runtime_error("Parameter " + name + " not found");
     }
 
     size_t createShaderBufferBinding(const std::string &name) {
@@ -77,6 +89,18 @@ struct CompiledShader {
             textureArraySizes[name] = arraySize;
         }
         return ret;
+    }
+
+    size_t createParameterBinding(const std::string &name, const ShaderPrimitiveType &type) {
+        for (auto i = 0; i < parameterBindings.size(); ++i) {
+            auto &binding = parameterBindings[i];
+            if (name == binding) {
+                return i;
+            }
+        }
+        parameterBindings.emplace_back(name);
+        parameterTypes.emplace_back(type);
+        return parameterBindings.size() - 1;
     }
 };
 

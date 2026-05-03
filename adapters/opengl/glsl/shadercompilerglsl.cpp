@@ -45,7 +45,7 @@ std::string generateElement(const std::string &name, const ShaderDataType &type,
     return ret;
 }
 
-std::string generateHeader(const Shader &source, CompiledShader &pipeline) {
+std::string generateHeader(const Shader &source, CompiledShader &compiledShader) {
     std::string ret;
 
     for (const auto &v: source.typeDefinitions) {
@@ -57,7 +57,7 @@ std::string generateHeader(const Shader &source, CompiledShader &pipeline) {
     }
 
     for (const auto &pair: source.buffers) {
-        auto binding = pipeline.createShaderBufferBinding(pair.first);
+        auto binding = compiledShader.createShaderBufferBinding(pair.first);
         ret += "layout(binding = "
                 + std::to_string(binding)
                 + ", std140) buffer ShaderBuffer"
@@ -77,7 +77,7 @@ std::string generateHeader(const Shader &source, CompiledShader &pipeline) {
     for (auto &pair: source.textureArrays) {
         auto &texArray = pair.second;
 
-        auto textureBinding = pipeline.createTextureArrayBinding(pair.first, texArray.arraySize);
+        auto textureBinding = compiledShader.createTextureArrayBinding(pair.first, texArray.arraySize);
 
         ret += "layout(binding = "
                 + std::to_string(textureBinding)
@@ -169,7 +169,9 @@ std::string generateHeader(const Shader &source, CompiledShader &pipeline) {
     ret += "\n";
 
     for (const auto &param: source.parameters) {
-        ret += "uniform "
+        ret += "layout(location = "
+                + std::to_string(compiledShader.createParameterBinding(param.first, param.second))
+                + ") uniform "
                 + getTypeName(param.second)
                 + " "
                 + parameterPrefix
