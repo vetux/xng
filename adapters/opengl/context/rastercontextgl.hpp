@@ -237,7 +237,176 @@ namespace xng::opengl {
         }
 
         void setShaderParameter(const std::string &name, const ShaderPrimitive &value) override {
-            throw std::runtime_error("Not implemented");
+            const auto location = pipelineCache.getCompiledShader(boundPipeline.value()).getTextureArrayBinding(name);
+            const auto paramType = pipelineCache.getCompiledShader(boundPipeline.value()).parameterTypes.at(location);
+
+            if (paramType != value.getType()) {
+                throw std::runtime_error("Shader parameter type mismatch");
+            }
+
+            switch (paramType.type) {
+                case ShaderPrimitiveType::SCALAR: {
+                    switch (paramType.component) {
+                        case ShaderPrimitiveType::BOOLEAN:
+                            glUniform1i(location, std::get<bool>(value.value));
+                            break;
+                        case ShaderPrimitiveType::UNSIGNED_INT:
+                            glUniform1ui(location, std::get<unsigned int>(value.value));
+                            break;
+                        case ShaderPrimitiveType::SIGNED_INT:
+                            glUniform1i(location, std::get<int>(value.value));
+                            break;
+                        case ShaderPrimitiveType::FLOAT:
+                            glUniform1f(location, std::get<float>(value.value));
+                            break;
+                        case ShaderPrimitiveType::DOUBLE:
+                            glUniform1d(location, std::get<double>(value.value));
+                            break;
+                    }
+                }
+                break;
+                case ShaderPrimitiveType::VECTOR2: {
+                    switch (paramType.component) {
+                        case ShaderPrimitiveType::BOOLEAN: {
+                            const auto &val = std::get<Vec2b>(value.value);
+                            glUniform2i(location, val.x, val.y);
+                            break;
+                        }
+                        case ShaderPrimitiveType::UNSIGNED_INT: {
+                            const auto &val = std::get<Vec2u>(value.value);
+                            glUniform2ui(location, val.x, val.y);
+                            break;
+                        }
+                        case ShaderPrimitiveType::SIGNED_INT: {
+                            const auto &val = std::get<Vec2i>(value.value);
+                            glUniform2i(location, val.x, val.y);
+                            break;
+                        }
+                        case ShaderPrimitiveType::FLOAT: {
+                            const auto &val = std::get<Vec2f>(value.value);
+                            glUniform2f(location, val.x, val.y);
+                            break;
+                        }
+                        case ShaderPrimitiveType::DOUBLE: {
+                            const auto &val = std::get<Vec2d>(value.value);
+                            glUniform2d(location, val.x, val.y);
+                            break;
+                        }
+                    }
+                }
+                break;
+                case ShaderPrimitiveType::VECTOR3: {
+                    switch (paramType.component) {
+                        case ShaderPrimitiveType::BOOLEAN: {
+                            const auto &val = std::get<Vec3b>(value.value);
+                            glUniform3i(location, val.x, val.y, val.z);
+                            break;
+                        }
+                        case ShaderPrimitiveType::UNSIGNED_INT: {
+                            const auto &val = std::get<Vec3u>(value.value);
+                            glUniform3ui(location, val.x, val.y, val.z);
+                            break;
+                        }
+                        case ShaderPrimitiveType::SIGNED_INT: {
+                            const auto &val = std::get<Vec3i>(value.value);
+                            glUniform3i(location, val.x, val.y, val.z);
+                            break;
+                        }
+                        case ShaderPrimitiveType::FLOAT: {
+                            const auto &val = std::get<Vec3f>(value.value);
+                            glUniform3f(location, val.x, val.y, val.z);
+                            break;
+                        }
+                        case ShaderPrimitiveType::DOUBLE: {
+                            const auto &val = std::get<Vec3d>(value.value);
+                            glUniform3d(location, val.x, val.y, val.z);
+                            break;
+                        }
+                    }
+                }
+                break;
+                case ShaderPrimitiveType::VECTOR4: {
+                    switch (paramType.component) {
+                        case ShaderPrimitiveType::BOOLEAN: {
+                            const auto &val = std::get<Vec4b>(value.value);
+                            glUniform4i(location, val.x, val.y, val.z, val.w);
+                            break;
+                        }
+                        case ShaderPrimitiveType::UNSIGNED_INT: {
+                            const auto &val = std::get<Vec4u>(value.value);
+                            glUniform4ui(location, val.x, val.y, val.z, val.w);
+                            break;
+                        }
+                        case ShaderPrimitiveType::SIGNED_INT: {
+                            const auto &val = std::get<Vec4i>(value.value);
+                            glUniform4i(location, val.x, val.y, val.z, val.w);
+                            break;
+                        }
+                        case ShaderPrimitiveType::FLOAT: {
+                            const auto &val = std::get<Vec4f>(value.value);
+                            glUniform4f(location, val.x, val.y, val.z, val.w);
+                            break;
+                        }
+                        case ShaderPrimitiveType::DOUBLE: {
+                            const auto &val = std::get<Vec4d>(value.value);
+                            glUniform4d(location, val.x, val.y, val.z, val.w);
+                            break;
+                        }
+                    }
+                }
+                break;
+                case ShaderPrimitiveType::MAT2: {
+                    switch (paramType.component) {
+                        case ShaderPrimitiveType::FLOAT: {
+                            const auto &val = std::get<Mat2f>(value.value);
+                            glUniformMatrix2fv(location, 1, GL_FALSE, reinterpret_cast<const GLfloat *>(val.data));
+                            break;
+                        }
+                        case ShaderPrimitiveType::DOUBLE: {
+                            const auto &val = std::get<Mat2d>(value.value);
+                            glUniformMatrix2dv(location, 1, GL_FALSE, reinterpret_cast<const GLdouble *>(val.data));
+                            break;
+                        }
+                        default:
+                            throw std::runtime_error("Unsupported matrix component");
+                    }
+                }
+                break;
+                case ShaderPrimitiveType::MAT3: {
+                    switch (paramType.component) {
+                        case ShaderPrimitiveType::FLOAT: {
+                            const auto &val = std::get<Mat3f>(value.value);
+                            glUniformMatrix3fv(location, 1, GL_FALSE, reinterpret_cast<const GLfloat *>(val.data));
+                            break;
+                        }
+                        case ShaderPrimitiveType::DOUBLE: {
+                            const auto &val = std::get<Mat3d>(value.value);
+                            glUniformMatrix3dv(location, 1, GL_FALSE, reinterpret_cast<const GLdouble *>(val.data));
+                            break;
+                        }
+                        default:
+                            throw std::runtime_error("Unsupported matrix component");
+                    }
+                }
+                break;
+                case ShaderPrimitiveType::MAT4: {
+                    switch (paramType.component) {
+                        case ShaderPrimitiveType::FLOAT: {
+                            const auto &val = std::get<Mat4f>(value.value);
+                            glUniformMatrix4fv(location, 1, GL_FALSE, reinterpret_cast<const GLfloat *>(val.data));
+                            break;
+                        }
+                        case ShaderPrimitiveType::DOUBLE: {
+                            const auto &val = std::get<Mat4d>(value.value);
+                            glUniformMatrix4dv(location, 1, GL_FALSE, reinterpret_cast<const GLdouble *>(val.data));
+                            break;
+                        }
+                        default:
+                            throw std::runtime_error("Unsupported matrix component");
+                    }
+                }
+                break;
+            }
         }
 
         void setViewport(const Vec2i viewportOffset, const Vec2i viewportSize) override {
