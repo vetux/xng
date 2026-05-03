@@ -19,7 +19,7 @@
 
 #include "xng/rendergraph/shader/shaderprimitive.hpp"
 
-namespace xng {
+namespace xng::rg {
     ShaderPrimitiveType ShaderPrimitive::getType() const {
          switch (value.index()) {
             case 0:

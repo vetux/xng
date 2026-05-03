@@ -20,6 +20,8 @@
 #include "xng/event/events/contactevent.hpp"
 
 #include "xng/ecs/systems/physicssystem.hpp"
+
+#include "xng/assets/mesh.hpp"
 #include "xng/ecs/components.hpp"
 #include "xng/ecs/components/physics/meshcollidercomponent.hpp"
 #include "xng/util/time.hpp"
@@ -42,7 +44,7 @@ namespace xng {
     }
 
     static ColliderShape getShape(const Mesh &mesh) {
-        if (mesh.vertexLayout != StaticModel::getVertexLayout()) {
+       /* if (mesh.vertexLayout != StaticModel::getVertexLayout()) {
             throw std::runtime_error("Invalid mesh vertex layout");
         }
         ColliderShape shape{};
@@ -59,7 +61,7 @@ namespace xng {
         for (auto &i: mesh.indices) {
             shape.indices.emplace_back(i);
         }
-        return shape;
+        return shape;*/
     }
 
     PhysicsSystem::PhysicsSystem(std::shared_ptr<PhysicsEngine> physicsEngine, float scale, float timeStep)

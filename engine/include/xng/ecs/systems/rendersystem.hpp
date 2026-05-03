@@ -24,16 +24,12 @@
 
 #include "xng/ecs/system.hpp"
 
-#include "../../graphics/renderpassscheduler.hpp"
-#include "../../graphics/sharedresourceregistry.hpp"
-#include "../../graphics/renderconfiguration.hpp"
-
 #include "xng/util/time.hpp"
 
 namespace xng {
     class XENGINE_EXPORT RenderSystem final : public System {
     public:
-        explicit RenderSystem(std::shared_ptr<RenderGraphRuntime> renderGraphRuntime);
+        explicit RenderSystem();
 
         ~RenderSystem() override;
 
@@ -42,13 +38,6 @@ namespace xng {
         std::string getName() override { return "RenderSystem"; }
 
     private:
-        std::shared_ptr<RenderGraphRuntime> runtime;
-        RenderPassScheduler scheduler;
-
-        std::shared_ptr<SharedResourceRegistry> registry;
-        std::shared_ptr<RenderConfiguration> config;
-
-        RenderGraphHandle graph;
     };
 }
 

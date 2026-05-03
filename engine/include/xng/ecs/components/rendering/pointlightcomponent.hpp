@@ -21,21 +21,36 @@
 #define XENGINE_POINTLIGHTCOMPONENT_HPP
 
 #include "xng/ecs/component.hpp"
-#include "xng/graphics/scene/pointlight.hpp"
 
 namespace xng {
     struct PointLightComponent final : Component {
         XNG_COMPONENT_TYPENAME(PointLightComponent)
 
-        PointLight light;
+        Vec3f position{};
+        ColorRGB color = ColorRGB(255, 255, 255);
+        float power = 1;
 
-        Messageable & operator<<(const Message &message) override {
-            message.value("light", light);
+        bool castShadows = false;
+        float shadowNearPlane = 0.1f;
+        float shadowFarPlane = 1000.0f;
+
+        Messageable &operator<<(const Message &message) override {
+            position << message["position"];
+            color << message["color"];
+            power << message["power"];
+            castShadows << message["castShadows"];
+            shadowNearPlane << message["shadowNearPlane"];
+            shadowFarPlane << message["shadowFarPlane"];
             return Component::operator<<(message);
         }
 
-        Message & operator>>(Message &message) const override {
-            light >> message["light"];
+        Message &operator>>(Message &message) const override {
+            position >> message["position"];
+            color >> message["color"];
+            power >> message["power"];
+            castShadows >> message["castShadows"];
+            shadowNearPlane >> message["shadowNearPlane"];
+            shadowFarPlane >> message["shadowFarPlane"];
             return Component::operator>>(message);
         }
     };

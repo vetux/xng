@@ -21,8 +21,9 @@
 #define XENGINE_ANIMATEDSPRITECOMPONENT_HPP
 
 #include "xng/ecs/component.hpp"
-#include "xng/io/messageable.hpp"
+
 #include "xng/assets/spriteanimation.hpp"
+#include "xng/util/time.hpp"
 
 namespace xng {
     /**

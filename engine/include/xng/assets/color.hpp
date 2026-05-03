@@ -22,6 +22,7 @@
 
 #include <cstdint>
 
+#include "xng/math/vector3.hpp"
 #include "xng/math/vector4.hpp"
 
 namespace xng {

@@ -699,7 +699,7 @@ namespace xng::ShaderScript
         xng::ShaderScript::ShaderObject _object;\
         GenerateElementDeclaration(__VA_ARGS__)\
         name() : _object(xng::ShaderScript::ShaderStructObject<_##name##_type, 1>()), GenerateConstructor(__VA_ARGS__) { xng::ShaderScript::ShaderScope::get().addTypeDefinition(getShaderStructDef()); }\
-        explicit name(const xng::ShaderScript::ShaderObject &buffer, bool b = false) : _object(buffer), GenerateConstructor(__VA_ARGS__) { xng::ShaderScript::ShaderScope::get().addTypeDefinition(getShaderStructDef()); }\
+        name(const xng::ShaderScript::ShaderObject &buffer, bool b = false) : _object(buffer), GenerateConstructor(__VA_ARGS__) { xng::ShaderScript::ShaderScope::get().addTypeDefinition(getShaderStructDef()); }\
         name& operator=(const name& other) {\
             _object = other._object;\
             return *this;\

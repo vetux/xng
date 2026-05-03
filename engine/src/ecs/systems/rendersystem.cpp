@@ -22,34 +22,22 @@
 
 #include "xng/ecs/systems/rendersystem.hpp"
 #include "xng/ecs/components.hpp"
-#include "xng/graphics/renderscene.hpp"
-#include "xng/graphics/passes/canvasrenderpass.hpp"
-#include "xng/graphics/passes/compositingpass.hpp"
-#include "xng/graphics/passes/constructionpass.hpp"
+#include "xng/renderer/renderscene.hpp"
 #include "xng/util/time.hpp"
 
 namespace xng {
-    RenderSystem::RenderSystem(std::shared_ptr<RenderGraphRuntime> renderGraphRuntime)
-        : runtime(std::move(renderGraphRuntime)),
-          scheduler(runtime),
-          registry(std::make_shared<SharedResourceRegistry>()),
-          config(std::make_shared<RenderConfiguration>()) {
-        graph = scheduler.addGraph({
-            std::make_shared<ConstructionPass>(config, registry),
-            std::make_shared<CanvasRenderPass>(config, registry),
-            std::make_shared<CompositingPass>(config, registry),
-        });
+    RenderSystem::RenderSystem(){
     }
 
     RenderSystem::~RenderSystem() = default;
 
     void RenderSystem::update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) {
         // Build Canvases
-        std::vector<Canvas> canvases;
+        /*std::vector<Canvas> canvases;
 
         config->setCanvases(canvases);
 
-        RenderScene renderScene = {};
+        RenderScene renderScene = {};*/
 
         // Add canvas textures to the scene
 
@@ -58,7 +46,7 @@ namespace xng {
         // TODO: Change transform walking / scene creation to allow model matrix caching
 
         // Get Meshes
-        for (auto &pair: scene.getPool<StaticModelComponent>()) {
+     /*   for (auto &pair: scene.getPool<StaticModelComponent>()) {
             auto &transform = scene.getComponent<TransformComponent>(pair.entity);
             if (!transform.enabled)
                 continue;
@@ -79,10 +67,10 @@ namespace xng {
             }
 
             renderScene.staticModels.push_back(std::move(object));
-        }
+        }*/
 
         // Get Rigged Meshes
-        for (auto &pair: scene.getPool<SkinnedModelComponent>()) {
+     /*   for (auto &pair: scene.getPool<SkinnedModelComponent>()) {
             auto &transform = scene.getComponent<TransformComponent>(pair.entity);
             if (!transform.enabled)
                 continue;
@@ -107,15 +95,15 @@ namespace xng {
             }
 
             renderScene.skinnedModels.push_back(std::move(object));
-        }
+        }*/
 
         // Get skybox
-        for (auto &pair: scene.getPool<SkyboxComponent>()) {
+        /*for (auto &pair: scene.getPool<SkyboxComponent>()) {
             renderScene.skybox = pair.component.skybox;
-        }
+        }*/
 
         // Get Camera
-        for (auto &pair: scene.getPool<CameraComponent>()) {
+       /* for (auto &pair: scene.getPool<CameraComponent>()) {
             auto &transform = scene.getComponent<TransformComponent>(pair.entity);
 
             if (!transform.enabled)
@@ -125,10 +113,10 @@ namespace xng {
             renderScene.cameraTransform = TransformComponent::getAbsoluteTransform(transform, scene);
 
             break;
-        }
+        }*/
 
         // Get point lights
-        for (auto &pair: scene.getPool<PointLightComponent>()) {
+      /*  for (auto &pair: scene.getPool<PointLightComponent>()) {
             auto &transform = scene.getPool<TransformComponent>().lookup(pair.entity);
 
             if (!pair.component.enabled)
@@ -142,10 +130,10 @@ namespace xng {
             object.light = pair.component.light;
 
             renderScene.pointLights.emplace_back(std::move(object));
-        }
+        }*/
 
         // Get spotlights
-        for (auto &pair: scene.getPool<SpotLightComponent>()) {
+       /* for (auto &pair: scene.getPool<SpotLightComponent>()) {
             auto &transform = scene.getPool<TransformComponent>().lookup(pair.entity);
 
             if (!pair.component.enabled)
@@ -159,10 +147,10 @@ namespace xng {
             object.light = pair.component.light;
 
             renderScene.spotLights.emplace_back(std::move(object));
-        }
+        }*/
 
         // Get directional lights
-        for (auto &pair: scene.getPool<DirectionalLightComponent>()) {
+        /*for (auto &pair: scene.getPool<DirectionalLightComponent>()) {
             auto &transform = scene.getPool<TransformComponent>().lookup(pair.entity);
 
             if (!pair.component.enabled)
@@ -176,10 +164,10 @@ namespace xng {
             object.light = pair.component.light;
 
             renderScene.directionalLights.emplace_back(std::move(object));
-        }
+        }*/
 
         // Get Sprites
-        for (auto &pair: scene.getPool<SpriteComponent>()) {
+        /*for (auto &pair: scene.getPool<SpriteComponent>()) {
             auto &transform = scene.getPool<TransformComponent>().lookup(pair.entity);
 
             if (!pair.component.enabled)
@@ -194,10 +182,10 @@ namespace xng {
             object.textureFiltering = pair.component.filter;
 
             renderScene.sprites.emplace_back(std::move(object));
-        }
+        }*/
 
         // Get Animated Sprites
-        for (auto &pair: scene.getPool<SpriteAnimationComponent>()) {
+        /*for (auto &pair: scene.getPool<SpriteAnimationComponent>()) {
             auto &transform = scene.getPool<TransformComponent>().lookup(pair.entity);
 
             if (!pair.component.enabled)
@@ -212,11 +200,11 @@ namespace xng {
             object.textureFiltering = pair.component.filter;
 
             renderScene.sprites.emplace_back(std::move(object));
-        }
+        }*/
 
-        config->setScene(renderScene);
+        //config->setScene(renderScene);
 
         // Execute the graph
-        scheduler.execute(graph);
+        //scheduler.execute(graph);
     }
 }

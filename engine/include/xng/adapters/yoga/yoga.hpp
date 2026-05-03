@@ -20,7 +20,7 @@
 #ifndef XENGINE_YOGA_HPP
 #define XENGINE_YOGA_HPP
 
-#include "xng/flexbox/flexlayoutengine.hpp"
+#include "xng/layout/flexbox/flexlayoutengine.hpp"
 
 namespace xng::yoga {
     class XENGINE_EXPORT FlexLayoutEngine final : public xng::FlexLayoutEngine {

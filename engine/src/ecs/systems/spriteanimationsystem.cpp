@@ -45,7 +45,7 @@ namespace xng {
             if (c.component.animation.assigned()) {
                 // Advance animation
                 auto &anim = animations.at(c.entity);
-                anim.setAnimationSpeed(c.component.animationSpeed);
+               /* anim.setAnimationSpeed(c.component.animationSpeed);
 
                 auto &f = anim.getFrame(deltaTime);
                 if (anim.getTime() == anim.getDuration() && !anim.isLooping()) {
@@ -58,7 +58,7 @@ namespace xng {
                     auto ren = scene.getComponent<SpriteComponent>(c.entity);
                     ren.sprite = f;
                     scene.updateComponent(c.entity, ren);
-                }
+                }*/
             }
         }
     }

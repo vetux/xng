@@ -22,10 +22,10 @@
 
 #include <string>
 
+#include "xng/ecs/component.hpp"
+
 #include "xng/math/transform.hpp"
 #include "xng/ecs/entityscene.hpp"
-#include "xng/ecs/component.hpp"
-#include "xng/io/messageable.hpp"
 
 namespace xng {
     struct XENGINE_EXPORT TransformComponent final : Component {

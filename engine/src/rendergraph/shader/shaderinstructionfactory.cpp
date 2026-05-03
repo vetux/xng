@@ -19,7 +19,7 @@
 
 #include "xng/rendergraph/shader/shaderinstructionfactory.hpp"
 
-namespace xng::ShaderInstructionFactory {
+namespace xng::rg::ShaderInstructionFactory {
     ShaderInstruction declareVariable(std::string name,
                                       ShaderDataType type,
                                       ShaderOperand value) {

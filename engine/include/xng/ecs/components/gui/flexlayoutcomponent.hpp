@@ -22,7 +22,7 @@
 
 #include "xng/ecs/component.hpp"
 
-#include "xng/flexbox/flexlayout.hpp"
+#include "xng/layout/flexbox/flexlayout.hpp"
 
 namespace xng {
     /**

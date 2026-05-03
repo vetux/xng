@@ -22,28 +22,17 @@
 
 #include <string>
 
-#include "xng/graphics/scene/skybox.hpp"
-#include "xng/io/messageable.hpp"
 #include "xng/ecs/component.hpp"
 
 namespace xng {
     struct XENGINE_EXPORT SkyboxComponent final : Component {
         XNG_COMPONENT_TYPENAME(SkyboxComponent)
 
-        Skybox skybox;
-
-        bool operator==(const SkyboxComponent &other) const {
-            return skybox.texture == other.skybox.texture && skybox.color == other.skybox.color;
-        }
-
         Messageable &operator<<(const Message &message) override {
-            message.value("skybox", skybox);
             return Component::operator<<(message);
         }
 
         Message &operator>>(Message &message) const override {
-            message = Message(Message::DICTIONARY);
-            skybox >> message["skybox"];
             return Component::operator>>(message);
         }
     };

@@ -21,6 +21,8 @@
 
 #include "resource/framebuffer.hpp"
 
+#include "xng/assets/color.hpp"
+
 namespace xng::opengl {
     void SurfaceGL::update() {
             oglDebugStartGroup("Surface::update");

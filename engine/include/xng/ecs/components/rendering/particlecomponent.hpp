@@ -20,7 +20,6 @@
 #ifndef XENGINE_PARTICLECOMPONENT_HPP
 #define XENGINE_PARTICLECOMPONENT_HPP
 
-#include "xng/io/messageable.hpp"
 #include "xng/ecs/component.hpp"
 
 namespace xng {

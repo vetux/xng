@@ -37,8 +37,8 @@ namespace xng {
     }
 
     void GuiEventSystem::update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) {
-        for (auto &pair: scene.getPool<ButtonComponent>()) {
-         /*   auto &rt = scene.getComponent<RectTransformComponent>(pair.entity);
+       /* for (auto &pair: scene.getPool<ButtonComponent>()) {
+            auto &rt = scene.getComponent<RectTransformComponent>(pair.entity);
             auto windowSize = window.getRenderTarget().getDescription().size;
            auto canvas = scene.getEntity(rt.canvas).getComponent<CanvasComponent>();
             ResourceHandle<Sprite> sprite;
@@ -79,7 +79,7 @@ namespace xng {
                 auto comp = scene.getComponent<SpriteComponent>(pair.entity);
                 comp.sprite = sprite;
                 scene.updateComponent(pair.entity, comp);
-            }*/
-        }
+            }
+        }*/
     }
 }

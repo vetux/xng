@@ -21,24 +21,47 @@
 #define XENGINE_SPOTLIGHTCOMPONENT_HPP
 
 #include "xng/ecs/component.hpp"
-#include "xng/graphics/scene/spotlight.hpp"
 
 namespace xng {
     struct SpotLightComponent final : Component {
         XNG_COMPONENT_TYPENAME(SpotLightComponent)
 
-        SpotLight light;
+        Vec3f direction{};
+        ColorRGB color = ColorRGB(255, 255, 255);
+        float power = 1;
+
+        // Cut Off Angles. The light is faded out between cutOff / outerCutOff
+        float cutOff = 12.5f; // The inner cut⁻off angle in degrees
+        float outerCutOff = 17.5f; // The outer cut-off angle in degrees
+
+        float quadratic = 0.032f;
+        float constant = 1;
+        float linear = 0.09f;
+
         bool castShadows = false;
+        float shadowNearPlane = 0.1f;
+        float shadowFarPlane = 1000.0f;
+        float shadowExtent = 10.0f;
 
         Messageable &operator<<(const Message &message) override {
-            message.value("light", light);
-            message.value("castShadows", castShadows);
+            direction << message["direction"];
+            color << message["color"];
+            power << message["power"];
+            castShadows << message["castShadows"];
+            shadowNearPlane << message["shadowNearPlane"];
+            shadowFarPlane << message["shadowFarPlane"];
+            shadowExtent << message["shadowExtent"];
             return Component::operator<<(message);
         }
 
         Message &operator>>(Message &message) const override {
-            light >> message["light"];
+            direction >> message["direction"];
+            color >> message["color"];
+            power >> message["power"];
             castShadows >> message["castShadows"];
+            shadowNearPlane >> message["shadowNearPlane"];
+            shadowFarPlane >> message["shadowFarPlane"];
+            shadowExtent >> message["shadowExtent"];
             return Component::operator>>(message);
         }
     };

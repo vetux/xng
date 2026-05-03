@@ -29,11 +29,11 @@ namespace xng {
     struct Font final : ResourceBase {
         RESOURCE_TYPENAME(Font)
 
-        std::vector<char> data;
+        std::vector<uint8_t> data;
 
         Font() = default;
 
-        explicit Font(std::vector<char> data) : data(std::move(data)) {}
+        explicit Font(std::vector<uint8_t> data) : data(std::move(data)) {}
 
         std::unique_ptr<ResourceBase> clone() override {
             return std::make_unique<Font>(*this);

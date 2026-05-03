@@ -20,24 +20,53 @@
 #ifndef XENGINE_CAMERACOMPONENT_HPP
 #define XENGINE_CAMERACOMPONENT_HPP
 
-#include "xng/graphics/camera.hpp"
-#include "xng/io/messageable.hpp"
 #include "xng/ecs/component.hpp"
 
 namespace xng {
     struct XENGINE_EXPORT CameraComponent final : Component {
         XNG_COMPONENT_TYPENAME(CameraComponent)
 
-        Camera camera;
+        enum CameraType : int {
+            ORTHOGRAPHIC = 0,
+            PERSPECTIVE = 1
+        } type;
+
+        // Orthographic
+        float left = -1.0f;
+        float right = 1.0f;
+        float bottom = -1.0f;
+        float top = 1.0f;
+
+        // Perspective
+        float fov = 90;
+        float aspectRatio = 4.0f / 3.0f;
+
+        float nearClip = 0.1f;
+        float farClip = 1000.0f;
 
         Messageable &operator<<(const Message &message) override {
-            message.value("camera", camera);
+            message.value("type", reinterpret_cast<int &>(type));
+            left << message["left"];
+            right << message["right"];
+            bottom << message["bottom"];
+            top << message["top"];
+            fov << message["fov"];
+            aspectRatio << message["aspectRatio"];
+            nearClip << message["nearClip"];
+            farClip << message["farClip"];
             return Component::operator<<(message);
         }
 
         Message &operator>>(Message &message) const override {
-            message = Message(Message::DICTIONARY);
-            camera >> message["camera"];
+            type >> message["type"];
+            left >> message["left"];
+            right >> message["right"];
+            bottom >> message["bottom"];
+            top >> message["top"];
+            fov >> message["fov"];
+            aspectRatio >> message["aspectRatio"];
+            nearClip >> message["nearClip"];
+            farClip >> message["farClip"];
             return Component::operator>>(message);
         }
     };

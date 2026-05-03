@@ -21,8 +21,8 @@
 #define XENGINE_BUTTONCOMPONENT_HPP
 
 #include "xng/ecs/component.hpp"
-#include "xng/graphics/scene/sprite.hpp"
-#include "xng/io/messageable.hpp"
+#include "xng/resource/resourcehandle.hpp"
+#include "xng/assets/image.hpp"
 
 namespace xng {
     struct XENGINE_EXPORT ButtonComponent final : Component {
@@ -30,9 +30,9 @@ namespace xng {
 
         std::string id;
         int layer; // The layer of this button used for resolving inputs on overlapping buttons
-        ResourceHandle<Sprite> sprite;
-        ResourceHandle<Sprite> spriteHover;
-        ResourceHandle<Sprite> spritePressed;
+        ResourceHandle<ImageRGBA> sprite;
+        ResourceHandle<ImageRGBA> spriteHover;
+        ResourceHandle<ImageRGBA> spritePressed;
 
         Messageable &operator<<(const Message &message) override {
             message.value("id", id);

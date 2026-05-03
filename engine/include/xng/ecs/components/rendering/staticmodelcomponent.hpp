@@ -20,11 +20,9 @@
 #ifndef XENGINE_MESHCOMPONENT_HPP
 #define XENGINE_MESHCOMPONENT_HPP
 
-#include "xng/graphics/scene/material.hpp"
-#include "xng/graphics/scene/staticmodel.hpp"
-#include "xng/resource/resourcehandle.hpp"
-#include "xng/io/messageable.hpp"
 #include "xng/ecs/component.hpp"
+
+#include "xng/resource/resourcehandle.hpp"
 
 namespace xng {
     struct XENGINE_EXPORT StaticModelComponent final : Component {
@@ -33,19 +31,15 @@ namespace xng {
         bool castShadows{};
         bool receiveShadows{};
 
-        ResourceHandle<StaticModel> model;
-
         bool operator==(const StaticModelComponent &other) const {
             return enabled == other.enabled
                    && castShadows == other.castShadows
-                   && receiveShadows == other.receiveShadows
-                   && model == other.model;
+                   && receiveShadows == other.receiveShadows;
         }
 
         Messageable &operator<<(const Message &message) override {
             message.value("castShadows", castShadows);
             message.value("receiveShadows", receiveShadows);
-            message.value("model", model);
             return *this;
         }
 
@@ -53,7 +47,6 @@ namespace xng {
             message = Message(Message::DICTIONARY);
             castShadows >> message["castShadows"];
             receiveShadows >> message["receiveShadows"];
-            model >> message["model"];
             return message;
         }
     };

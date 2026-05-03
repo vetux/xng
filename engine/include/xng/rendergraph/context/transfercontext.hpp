@@ -31,6 +31,7 @@
 #include "xng/rendergraph/shader/shader.hpp"
 
 #include "xng/math/vector2.hpp"
+#include "xng/math/rectangle.hpp"
 
 namespace xng::rg {
     class TransferContext {

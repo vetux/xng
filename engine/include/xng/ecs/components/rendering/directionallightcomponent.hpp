@@ -21,24 +21,39 @@
 #define XENGINE_DIRECTIONALLIGHTCOMPONENT_HPP
 
 #include "xng/ecs/component.hpp"
-#include "xng/graphics/scene/directionallight.hpp"
 
 namespace xng {
     struct DirectionalLightComponent final : Component {
         XNG_COMPONENT_TYPENAME(DirectionalLightComponent)
 
-        DirectionalLight light;
+        Vec3f direction{};
+        ColorRGB color = ColorRGB(255, 255, 255);
+        float power = 1;
+
         bool castShadows = false;
+        float shadowNearPlane = 0.1f;
+        float shadowFarPlane = 1000.0f;
+        float shadowExtent = 10.0f;
 
         Messageable &operator<<(const Message &message) override {
-            message.value("light", light);
-            message.value("castShadows", castShadows);
+            direction << message["direction"];
+            color << message["color"];
+            power << message["power"];
+            castShadows << message["castShadows"];
+            shadowNearPlane << message["shadowNearPlane"];
+            shadowFarPlane << message["shadowFarPlane"];
+            shadowExtent << message["shadowExtent"];
             return Component::operator<<(message);
         }
 
         Message &operator>>(Message &message) const override {
-            light >> message["light"];
+            direction >> message["direction"];
+            color >> message["color"];
+            power >> message["power"];
             castShadows >> message["castShadows"];
+            shadowNearPlane >> message["shadowNearPlane"];
+            shadowFarPlane >> message["shadowFarPlane"];
+            shadowExtent >> message["shadowExtent"];
             return Component::operator>>(message);
         }
     };

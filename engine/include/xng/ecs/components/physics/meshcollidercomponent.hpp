@@ -20,6 +20,7 @@
 #ifndef XENGINE_MESHCOLLIDERCOMPONENT_HPP
 #define XENGINE_MESHCOLLIDERCOMPONENT_HPP
 
+#include "xng/assets/mesh.hpp"
 #include "xng/physics/rigidbody.hpp"
 #include "xng/io/messageable.hpp"
 #include "xng/ecs/component.hpp"

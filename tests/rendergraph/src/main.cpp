@@ -23,12 +23,11 @@
 #include "xng/adapters/opengl/opengl.hpp"
 #include "xng/adapters/freetype/freetype.hpp"
 #include "xng/adapters/assimp/assimp.hpp"
-#include "xng/graphics/passes/iblprepass.hpp"
 
 using namespace xng;
 
 void createCornellScene(RenderScene &scene, Vec3f offset) {
-    Material material;
+   /* Material material;
     SkinnedModelObject mesh;
 
     mesh = {};
@@ -87,11 +86,11 @@ void createCornellScene(RenderScene &scene, Vec3f offset) {
     light.light.power = 2;
     light.light.castShadows = true;
     light.transform.setPosition(Vec3f(0, 0.4, 0) + offset);
-    scene.pointLights.emplace_back(light);
+    scene.pointLights.emplace_back(light);*/
 }
-
+/*
 RenderScene createScene() {
-    RenderScene scene;
+   /* RenderScene scene;
 
     scene.hdri = ResourceHandle<ImageRGBF>(Uri("file://hdri/church_stairway_4k.hdr"));
 
@@ -130,7 +129,7 @@ RenderScene createScene() {
         }
     }
     return scene;
-}
+}*/
 
 void cameraController(Transform &cameraTransform, Window &window, double deltaTime) {
     constexpr float movementSpeed = 1;
@@ -229,25 +228,24 @@ int main(int argc, char *argv[]) {
     auto font = ResourceHandle<Font>(Uri("file://fonts/Sono/static/Sono/Sono-Bold.ttf"));
 
     auto glfw = glfw::DisplayEnvironment();
-    auto runtime = std::make_shared<opengl::RenderGraphRuntime>();
+    auto runtime = std::make_shared<opengl::Runtime>(glfw);
 
     WindowAttributes attributes;
     attributes.visible = false;
 
-    const std::shared_ptr window = std::move(glfw.createWindow(runtime->getGraphicsAPI(),
-                                                               "RenderGraph Test",
+    const std::shared_ptr window = std::move(glfw.createWindow("RenderGraph Test",
                                                                {1000, 900},
                                                                attributes));
     auto &input = window->getInput();
 
-    runtime->setWindow(window);
+    const auto &surface = runtime->createSurface(window);
 
     const auto &tuxImg = tux.get();
     const auto &smileyImg = smiley.get();
 
     auto freeType = std::make_unique<freetype::FontEngine>();
 
-    auto config = std::make_shared<RenderConfiguration>();
+   /* auto config = std::make_shared<RenderConfiguration>();
 
     auto scene = createScene();
     config->setScene(scene);
@@ -265,7 +263,7 @@ int main(int argc, char *argv[]) {
         std::make_shared<ForwardLightingPass>(config, registry),
         std::make_shared<CanvasRenderPass>(config, registry),
         std::make_shared<CompositingPass>(config, registry),
-    });
+    });*/
     printf("Loading Assets...\n");
     ResourceRegistry::getDefaultRegistry().awaitAll();
     printf("Ready\n");
@@ -295,7 +293,7 @@ int main(int argc, char *argv[]) {
     std::chrono::milliseconds fpsUpdateInterval = std::chrono::milliseconds(50);
     auto now = std::chrono::steady_clock::now();
 
-    RenderGraphStatistics stats;
+    rg::Statistics stats;
     while (!window->shouldClose()) {
         frameLimiter.newFrame();
         window->update();
@@ -308,21 +306,15 @@ int main(int argc, char *argv[]) {
             txt += std::to_string(stats.polygons) + " polygons\n\n";
             txt += "VRAM Usage\n";
             txt += "Total " + std::to_string(
-                (stats.vertexVRamUsage + stats.indexVRamUsage + stats.shaderBufferVRamUsage + stats.textureVRamUsage) /
+                (stats.bufferVRamUsage + stats.textureVRamUsage) /
                 MEGABYTE) + " MB\n";
-            txt += "Vertex Buffers " + std::to_string(stats.vertexVRamUsage / KILOBYTE) + " KB\n";
-            txt += "Index Buffers " + std::to_string(stats.indexVRamUsage / KILOBYTE) + " KB\n";
-            txt += "Shader Storage Buffers " + std::to_string(stats.shaderBufferVRamUsage / KILOBYTE) + " KB\n";
-            txt += "Texture Buffers " + std::to_string(stats.textureVRamUsage / KILOBYTE) + " KB\n\n";
+            txt += "Buffers " + std::to_string(stats.bufferVRamUsage / KILOBYTE) + " KB\n";
+            txt += "Textures " + std::to_string(stats.textureVRamUsage / KILOBYTE) + " KB\n\n";
             txt += "VRAM Copy\n";
-            txt += "Vertex Buffers " + std::to_string(stats.vertexVRamCopy / KILOBYTE) + " KB\n";
-            txt += "Index Buffers " + std::to_string(stats.indexVRamCopy / KILOBYTE) + " KB\n";
-            txt += "Shader Storage Buffers " + std::to_string(stats.shaderBufferVRamCopy / KILOBYTE) + " KB\n";
-            txt += "Texture Buffers " + std::to_string(stats.textureVRamCopy / KILOBYTE) + " KB\n\n";
+            txt += "Buffers " + std::to_string(stats.bufferVRamCopy / KILOBYTE) + " KB\n";
+            txt += "Textures " + std::to_string(stats.textureVRamCopy / KILOBYTE) + " KB\n\n";
             txt += "VRAM Upload\n";
-            txt += "Vertex Buffers " + std::to_string(stats.vertexVRamUpload / KILOBYTE) + " KB\n";
-            txt += "Index Buffers " + std::to_string(stats.indexVRamUpload / KILOBYTE) + " KB\n";
-            txt += "Shader Storage Buffers " + std::to_string(stats.shaderBufferVRamUpload / KILOBYTE) + " KB\n";
+            txt += "Buffers " + std::to_string(stats.bufferVRamUpload / KILOBYTE) + " KB\n";
             txt += "Texture Buffers " + std::to_string(stats.textureVRamUpload / KILOBYTE) + " KB\n";
             deltaText = deltaTextLayoutEngine.getLayout(txt,
                                                         {
@@ -332,7 +324,7 @@ int main(int argc, char *argv[]) {
                                                         });
         }
 
-        auto fbSize = passScheduler->updateBackBuffer();
+    /*    auto fbSize = passScheduler->updateBackBuffer();
 
         scene.camera.aspectRatio = static_cast<float>(fbSize.x)
                                    / static_cast<float>(fbSize.y);
@@ -372,7 +364,7 @@ int main(int argc, char *argv[]) {
             config->setRenderScale(config->getRenderScale() + 0.1 * frameLimiter.getDeltaTimeSeconds());
         }
 
-        stats = passScheduler->execute(graph3D);
+        stats = passScheduler->execute(graph3D);*/
     }
 
     return 0;

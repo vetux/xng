@@ -21,7 +21,6 @@
 #define XENGINE_SPRITECOMPONENT_HPP
 
 #include "xng/ecs/component.hpp"
-#include "xng/io/messageable.hpp"
 
 namespace xng {
     /**

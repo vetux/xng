@@ -23,6 +23,8 @@
 #include <memory>
 #include <utility>
 
+#include "xng/math/vector2.hpp"
+
 namespace xng {
     class XENGINE_EXPORT Character {
     public:

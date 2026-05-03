@@ -27,7 +27,7 @@ namespace xng {
     ResourceBundle FontImporter::read(std::istream &stream,
                                       const Uri &path,
                                       Archive *archive) {
-        std::vector<char> buffer;
+        std::vector<uint8_t> buffer;
 
         char c;
         while (!stream.eof()) {

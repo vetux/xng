@@ -42,7 +42,7 @@
 #include "xng/ecs/components/rendering/skinnedmodelcomponent.hpp"
 #include "xng/ecs/components/rendering/staticmodelcomponent.hpp"
 #include "xng/ecs/components/rendering/skyboxcomponent.hpp"
-#include "xng/ecs/components/rendering/riganimationcomponent.hpp"
+#include "xng/ecs/components/rendering/nodeanimationcomponent.hpp"
 #include "xng/ecs/components/rendering/particlecomponent.hpp"
 #include "xng/ecs/components/rendering/spriteanimationcomponent.hpp"
 
