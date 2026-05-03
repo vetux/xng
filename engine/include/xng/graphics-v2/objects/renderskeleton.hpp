@@ -46,8 +46,11 @@ namespace xng {
          * @param bones The absolute transforms (animated) of the bones.
          */
         void setBones(const std::unordered_map<std::string, Mat4f> &bones) {
-            for (const auto &pair: bones) {
-                boneStream.upload(boneHandles[pair.first], {pair.second});
+            for (const auto &pair: boneHandles) {
+                const auto &it = bones.find(pair.first);
+                if (it != bones.end()) {
+                    boneStream.upload(pair.second, {it->second});
+                }
             }
         }
 
