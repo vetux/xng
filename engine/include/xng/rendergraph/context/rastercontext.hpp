@@ -20,7 +20,6 @@
 #ifndef XENGINE_RENDERGRAPH_CONTEXT_HPP
 #define XENGINE_RENDERGRAPH_CONTEXT_HPP
 
-
 #include "xng/rendergraph/drawcall.hpp"
 #include "xng/rendergraph/resourceid.hpp"
 #include "xng/rendergraph/pipelinecache.hpp"
@@ -49,7 +48,7 @@ namespace xng::rg {
         virtual void bindPipeline(const PipelineCache::Handle &pipeline) = 0;
 
         /**
-         * Bind the specified vertex buffer containing packed vertex data in the layout of the bound pipeline.
+         * Bind a vertex buffer to a binding point.
          *
          * Can only be called after a pipeline has been bound.
          *
