@@ -5,14 +5,13 @@
 
 <br>
 
-# xEngine
-xEngine is a Game Engine library for C++. 
+# xEngine - Game Engine library for C++
 
-The engine is designed as a standalone modular toolkit from which different modules can be used independently.
+The engine is currently under heavy construction and should not be used in projects yet because the interface is still unstable and may change any time.
 
-This project is currently under heavy construction and should not be used in projects yet because the interface is still unstable and may change any time.
+xEngine is designed to be a standalone modular toolkit for game development. Games can be created entirely in C++. The [editor](https://github.com/vetux/xng-editor) builds ontop of the library to provide a user friendly interface for authoring ECS scenes and game compilation (Cross Compilation, etc.). Users may also create their own specialized tools that link against the engine library.
 
-Once the project has reached a stable state there will be semantically versioned releases.
+Once the project has reached a stable state there will be semantically versioned releases (v0.1.0) and a stable branch (master) will be maintained.
 
 [xng-editor](https://github.com/vetux/xng-editor) - Editor application to simplify and accelerate the game creation
 workflow
@@ -45,7 +44,7 @@ workflow
 - GUI
   - [ ] Flexbox based GUI Layout
  
-## Screenshots (Old, will be updated when the pbr shading model is fixed up)
+## Screenshots (Old, will be updated when the Renderer rewrite is complete)
 ![](https://raw.githubusercontent.com/vetux/xng-assets/refs/heads/master/screenshots/ScreenshotFramegraph.jpg)
 
 ## Building
@@ -79,6 +78,6 @@ When exporting rigged meshes from blender to be imported with the assimp importe
 - Run "Limit Total" in weight paint mode to ensure that there is no more than 4 bones per vertex.
 
 ### PBR Shading
-Because I do not have or know anyone with a math degree I am dependent on tutorials for the lighting calculations.
+Because I do not have or know anyone with a math degree I am dependent on tutorials and llms for the lighting calculations.
 
 I would welcome any math geniuses to help me out once the engine has reached a more stable state.
