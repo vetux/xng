@@ -24,10 +24,8 @@
 
 #include "xng/rendergraph/context/transfercontext.hpp"
 
-#include "xng/rendergraph/resource/indexbuffer.hpp"
-#include "xng/rendergraph/resource/storagebuffer.hpp"
+#include "xng/rendergraph/resource/buffer.hpp"
 #include "xng/rendergraph/resource/texture.hpp"
-#include "xng/rendergraph/resource/vertexbuffer.hpp"
 
 namespace xng::rg {
     template<typename T>
@@ -143,7 +141,7 @@ namespace xng::rg {
          * @param buffer
          * @return
          */
-        virtual std::vector<uint8_t> downloadStorageBuffer(const HeapResource<StorageBuffer> &buffer) = 0;
+        virtual std::vector<uint8_t> downloadStorageBuffer(const HeapResource<Buffer> &buffer) = 0;
 
         /**
          * Download the data from the gpu side texture.
@@ -162,30 +160,6 @@ namespace xng::rg {
                                                      size_t index,
                                                      size_t mipMapLevel,
                                                      CubeMapFace face) = 0;
-
-        /**
-         * Type safe vertex buffer allocation wrapper.
-         *
-         * @param desc
-         * @return
-         */
-        HeapResource<VertexBuffer> allocateVertexBuffer(const VertexBuffer &desc);
-
-        /**
-         * Type safe index buffer allocation wrapper.
-         *
-         * @param desc
-         * @return
-         */
-        HeapResource<IndexBuffer> allocateIndexBuffer(const IndexBuffer &desc);
-
-        /**
-         * Type safe storage buffer allocation wrapper.
-         *
-         * @param desc
-         * @return
-         */
-        HeapResource<StorageBuffer> allocateStorageBuffer(const StorageBuffer &desc);
     };
 
     template<typename T>

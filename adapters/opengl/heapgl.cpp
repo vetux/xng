@@ -51,7 +51,7 @@ namespace xng::opengl {
         return *transferContext;
     }
 
-    std::vector<uint8_t> HeapGL::downloadStorageBuffer(const HeapResource<StorageBuffer> &buffer) {
+    std::vector<uint8_t> HeapGL::downloadStorageBuffer(const HeapResource<Buffer> &buffer) {
         throw std::runtime_error("downloadTextureBuffer not implemented");
     }
 

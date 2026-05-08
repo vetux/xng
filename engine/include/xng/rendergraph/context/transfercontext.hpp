@@ -23,9 +23,7 @@
 #include "xng/rendergraph/resourceid.hpp"
 
 #include "xng/rendergraph/resource/texture.hpp"
-#include "xng/rendergraph/resource/indexbuffer.hpp"
-#include "xng/rendergraph/resource/storagebuffer.hpp"
-#include "xng/rendergraph/resource/vertexbuffer.hpp"
+#include "xng/rendergraph/resource/buffer.hpp"
 
 #include "xng/rendergraph/shader/shader.hpp"
 
@@ -97,30 +95,6 @@ namespace xng::rg {
                                 size_t targetOffset,
                                 size_t sourceOffset,
                                 size_t count) = 0;
-
-        void copyVertexBuffer(const Resource<VertexBuffer> &target,
-                              const Resource<VertexBuffer> &source,
-                              const size_t targetOffset,
-                              const size_t sourceOffset,
-                              const size_t count) {
-            copyBuffer(target, source, targetOffset, sourceOffset, count);
-        }
-
-        void copyIndexBuffer(const Resource<IndexBuffer> &target,
-                             const Resource<IndexBuffer> &source,
-                             const size_t targetOffset,
-                             const size_t sourceOffset,
-                             const size_t count) {
-            copyBuffer(target, source, targetOffset, sourceOffset, count);
-        }
-
-        void copyStorageBuffer(const Resource<StorageBuffer> &target,
-                               const Resource<StorageBuffer> &source,
-                               const size_t targetOffset,
-                               const size_t sourceOffset,
-                               const size_t count) {
-            copyBuffer(target, source, targetOffset, sourceOffset, count);
-        }
 
         /**
          * Copy a texel region of a mip level to a mip level of another texture.

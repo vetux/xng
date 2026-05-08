@@ -33,6 +33,8 @@
 
 #include "xng/rendergraph/texturebinding.hpp"
 
+//TODO: Implement texture image binding + shader IR support (TextureStorageRead/Write)
+
 namespace xng::rg {
     struct BufferAccess {
         enum Type {

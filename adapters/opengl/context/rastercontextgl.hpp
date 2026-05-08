@@ -145,12 +145,16 @@ namespace xng::opengl {
             oglDebugEndGroup();
         }
 
-        void bindVertexBuffer(const Resource<VertexBuffer> &buffer,
+        void bindVertexBuffer(const Resource<Buffer> &buffer,
                               const unsigned int bindingPoint,
                               const size_t offset,
                               const size_t stride) override {
             if (!boundPipeline.has_value()) {
                 throw std::runtime_error("Must bind pipeline before binding vertex buffer");
+            }
+
+            if (!(buffer.getDescription().capabilityFlags & Buffer::CAPABILITY_VERTEX)) {
+                throw std::runtime_error("Buffer must have CAPABILITY_VERTEX");
             }
 
             oglDebugStartGroup("RasterContextGL::bindVertexBuffer");
@@ -162,9 +166,13 @@ namespace xng::opengl {
             oglDebugEndGroup();
         }
 
-        void bindIndexBuffer(const Resource<IndexBuffer> &buffer) override {
+        void bindIndexBuffer(const Resource<Buffer> &buffer) override {
             if (!boundPipeline.has_value()) {
                 throw std::runtime_error("Must bind pipeline before binding index buffer");
+            }
+
+            if (!(buffer.getDescription().capabilityFlags & Buffer::CAPABILITY_INDEX)) {
+                throw std::runtime_error("Buffer must have CAPABILITY_VERTEX");
             }
 
             oglDebugStartGroup("RasterContextGL::bindIndexBuffer");
@@ -177,11 +185,15 @@ namespace xng::opengl {
         }
 
         void bindStorageBuffer(const std::string &target,
-                               const Resource<StorageBuffer> &buffer,
+                               const Resource<Buffer> &buffer,
                                const size_t offset,
                                const size_t size) override {
             if (!boundPipeline.has_value()) {
                 throw std::runtime_error("Must bind pipeline before binding storage buffer");
+            }
+
+            if (!(buffer.getDescription().capabilityFlags & Buffer::CAPABILITY_STORAGE)) {
+                throw std::runtime_error("Buffer must have CAPABILITY_STORAGE");
             }
 
             oglDebugStartGroup("RasterContextGL::bindStorageBuffer");

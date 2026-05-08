@@ -24,9 +24,7 @@
 #include "xng/rendergraph/pipelinecache.hpp"
 #include "xng/rendergraph/texturebinding.hpp"
 
-#include "xng/rendergraph/resource/indexbuffer.hpp"
-#include "xng/rendergraph/resource/storagebuffer.hpp"
-#include "xng/rendergraph/resource/vertexbuffer.hpp"
+#include "xng/rendergraph/resource/buffer.hpp"
 
 #include "xng/rendergraph/shader/shader.hpp"
 
@@ -56,7 +54,7 @@ namespace xng::rg {
          * @param offset The offset into the buffer of the first element
          * @param stride The stride between elements. For single buffer packed data this is the size of one vertex.
          */
-        virtual void bindVertexBuffer(const Resource<VertexBuffer> &buffer,
+        virtual void bindVertexBuffer(const Resource<Buffer> &buffer,
                                       unsigned int bindingPoint,
                                       size_t offset,
                                       size_t stride) = 0;
@@ -68,7 +66,7 @@ namespace xng::rg {
          *
          * @param buffer
          */
-        virtual void bindIndexBuffer(const Resource<IndexBuffer> &buffer) = 0;
+        virtual void bindIndexBuffer(const Resource<Buffer> &buffer) = 0;
 
         /**
          * Bind a region of a storage buffer.
@@ -81,7 +79,7 @@ namespace xng::rg {
          * @param size If 0, the region from offset to the end of the buffer is bound.
          */
         virtual void bindStorageBuffer(const std::string &target,
-                                       const Resource<StorageBuffer> &buffer,
+                                       const Resource<Buffer> &buffer,
                                        size_t offset,
                                        size_t size) = 0;
 

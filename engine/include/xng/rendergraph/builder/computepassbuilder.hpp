@@ -31,25 +31,25 @@ namespace xng::rg {
             pass.name = std::move(name);
         }
 
-        ComputePassBuilder &read(const Resource<StorageBuffer> &buffer,
-                                 const size_t offset = 0,
-                                 const size_t size = 0) {
+        ComputePassBuilder &storageRead(const Resource<Buffer> &buffer,
+                                        const size_t offset = 0,
+                                        const size_t size = 0) {
             const auto access = BufferAccess(BufferAccess::StorageRead, offset, size);
             pass.bufferUsages[buffer].entries.emplace_back(access);
             return *this;
         }
 
-        ComputePassBuilder &write(const Resource<StorageBuffer> &buffer,
-                                  const size_t offset = 0,
-                                  const size_t size = 0) {
+        ComputePassBuilder &storageWrite(const Resource<Buffer> &buffer,
+                                         const size_t offset = 0,
+                                         const size_t size = 0) {
             const auto access = BufferAccess(BufferAccess::StorageWrite, offset, size);
             pass.bufferUsages[buffer].entries.emplace_back(access);
             return *this;
         }
 
-        ComputePassBuilder &read(const Resource<Texture> &texture,
-                                 const TextureBinding::Range range = {},
-                                 const TextureBinding::Aspect aspect = TextureBinding::Automatic) {
+        ComputePassBuilder &textureStorageRead(const Resource<Texture> &texture,
+                                               const TextureBinding::Range range = {},
+                                               const TextureBinding::Aspect aspect = TextureBinding::Automatic) {
             const auto access = TextureAccess(TextureAccess::TextureStorageRead,
                                               range,
                                               aspect);
@@ -57,9 +57,9 @@ namespace xng::rg {
             return *this;
         }
 
-        ComputePassBuilder &write(const Resource<Texture> &texture,
-                                  const TextureBinding::Range range = {},
-                                  const TextureBinding::Aspect aspect = TextureBinding::Automatic) {
+        ComputePassBuilder &textureStorageWrite(const Resource<Texture> &texture,
+                                                const TextureBinding::Range range = {},
+                                                const TextureBinding::Aspect aspect = TextureBinding::Automatic) {
             const auto access = TextureAccess(TextureAccess::TextureStorageWrite,
                                               range,
                                               aspect);
@@ -67,7 +67,7 @@ namespace xng::rg {
             return *this;
         }
 
-        ComputePassBuilder &sample(const Resource<Texture> &texture,
+        ComputePassBuilder &textureSampledRead(const Resource<Texture> &texture,
                                    const TextureBinding::Range range = {},
                                    const TextureBinding::Aspect aspect = TextureBinding::Automatic) {
             const auto access = TextureAccess(TextureAccess::TextureSampledRead,

@@ -31,48 +31,72 @@ namespace xng::rg {
             pass.name = std::move(name);
         }
 
-        RasterPassBuilder &read(const Resource<VertexBuffer> &buffer,
-                                const size_t offset = 0,
-                                const size_t size = 0) {
+        RasterPassBuilder &vertexRead(const Resource<Buffer> &buffer,
+                                      const size_t offset = 0,
+                                      const size_t size = 0) {
             const auto access = BufferAccess(BufferAccess::VertexRead, offset, size);
             const auto entry = RasterResourceAccess<BufferAccess>::Entry(Shader::VERTEX, access);
             pass.bufferUsages[buffer].entries.emplace_back(entry);
             return *this;
         }
 
-        RasterPassBuilder &read(const Resource<IndexBuffer> &buffer,
-                                const size_t offset = 0,
-                                const size_t size = 0) {
+        RasterPassBuilder &indexRead(const Resource<Buffer> &buffer,
+                                     const size_t offset = 0,
+                                     const size_t size = 0) {
             const auto access = BufferAccess(BufferAccess::IndexRead, offset, size);
             const auto entry = RasterResourceAccess<BufferAccess>::Entry(Shader::VERTEX, access);
             pass.bufferUsages[buffer].entries.emplace_back(entry);
             return *this;
         }
 
-        RasterPassBuilder &read(const Resource<StorageBuffer> &buffer,
-                                std::unordered_set<Shader::Stage> stages,
-                                const size_t offset = 0,
-                                const size_t size = 0) {
+        RasterPassBuilder &storageRead(const Resource<Buffer> &buffer,
+                                       std::unordered_set<Shader::Stage> stages,
+                                       const size_t offset = 0,
+                                       const size_t size = 0) {
             const auto access = BufferAccess(BufferAccess::StorageRead, offset, size);
             const auto entry = RasterResourceAccess<BufferAccess>::Entry(std::move(stages), access);
             pass.bufferUsages[buffer].entries.emplace_back(entry);
             return *this;
         }
 
-        RasterPassBuilder &write(const Resource<StorageBuffer> &buffer,
-                                 std::unordered_set<Shader::Stage> stages,
-                                 const size_t offset = 0,
-                                 const size_t size = 0) {
+        RasterPassBuilder &storageWrite(const Resource<Buffer> &buffer,
+                                        std::unordered_set<Shader::Stage> stages,
+                                        const size_t offset = 0,
+                                        const size_t size = 0) {
             const auto access = BufferAccess(BufferAccess::StorageWrite, offset, size);
             const auto entry = RasterResourceAccess<BufferAccess>::Entry(std::move(stages), access);
             pass.bufferUsages[buffer].entries.emplace_back(entry);
             return *this;
         }
 
-        RasterPassBuilder &sample(const Resource<Texture> &texture,
-                                  std::unordered_set<Shader::Stage> stages,
-                                  const TextureBinding::Range range = {},
-                                  const TextureBinding::Aspect aspect = TextureBinding::Automatic) {
+        RasterPassBuilder &textureStorageRead(const Resource<Texture> &texture,
+                                              std::unordered_set<Shader::Stage> stages,
+                                              const TextureBinding::Range range = {},
+                                              const TextureBinding::Aspect aspect = TextureBinding::Automatic) {
+            const auto access = TextureAccess(TextureAccess::TextureStorageRead,
+                                              range,
+                                              aspect);
+            const auto entry = RasterResourceAccess<TextureAccess>::Entry(std::move(stages), access);
+            pass.textureUsages[texture].entries.emplace_back(entry);
+            return *this;
+        }
+
+        RasterPassBuilder &textureStorageWrite(const Resource<Texture> &texture,
+                                               std::unordered_set<Shader::Stage> stages,
+                                               const TextureBinding::Range range = {},
+                                               const TextureBinding::Aspect aspect = TextureBinding::Automatic) {
+            const auto access = TextureAccess(TextureAccess::TextureStorageWrite,
+                                              range,
+                                              aspect);
+            const auto entry = RasterResourceAccess<TextureAccess>::Entry(std::move(stages), access);
+            pass.textureUsages[texture].entries.emplace_back(entry);
+            return *this;
+        }
+
+        RasterPassBuilder &textureSampledRead(const Resource<Texture> &texture,
+                                              std::unordered_set<Shader::Stage> stages,
+                                              const TextureBinding::Range range = {},
+                                              const TextureBinding::Aspect aspect = TextureBinding::Automatic) {
             const auto access = TextureAccess(TextureAccess::TextureSampledRead,
                                               range,
                                               aspect);

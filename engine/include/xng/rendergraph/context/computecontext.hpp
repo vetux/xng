@@ -23,7 +23,7 @@
 #include "xng/rendergraph/pipelinecache.hpp"
 #include "xng/rendergraph/texturebinding.hpp"
 
-#include "xng/rendergraph/resource/storagebuffer.hpp"
+#include "xng/rendergraph/resource/buffer.hpp"
 
 #include "xng/math/vector3.hpp"
 
@@ -52,7 +52,7 @@ namespace xng::rg {
          * @param size If 0, the region from offset to the end of the buffer is bound.
          */
         virtual void bindStorageBuffer(const std::string &target,
-                                       const Resource<StorageBuffer> &buffer,
+                                       const Resource<Buffer> &buffer,
                                        size_t offset,
                                        size_t size) = 0;
 

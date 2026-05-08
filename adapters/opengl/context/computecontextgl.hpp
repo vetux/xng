@@ -52,11 +52,15 @@ namespace xng::opengl {
         }
 
         void bindStorageBuffer(const std::string &target,
-                               const Resource<StorageBuffer> &buffer,
+                               const Resource<Buffer> &buffer,
                                const size_t offset,
                                const size_t size) override {
             if (!boundPipeline.has_value()) {
                 throw std::runtime_error("Must bind pipeline before binding storage buffer");
+            }
+
+            if (!(buffer.getDescription().capabilityFlags & Buffer::CAPABILITY_STORAGE)) {
+                throw std::runtime_error("Buffer must have CAPABILITY_STORAGE");
             }
 
             oglDebugStartGroup("ComputeContextGL::bindStorageBuffer");

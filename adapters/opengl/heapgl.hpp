@@ -53,7 +53,7 @@ namespace xng::opengl {
 
         TransferContext &getTransferContext() override;
 
-        std::vector<uint8_t> downloadStorageBuffer(const HeapResource<StorageBuffer> &buffer) override;
+        std::vector<uint8_t> downloadStorageBuffer(const HeapResource<Buffer> &buffer) override;
 
         std::vector<uint8_t> downloadTexture(const HeapResource<Texture> &texture,
                                          size_t index,
