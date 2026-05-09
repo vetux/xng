@@ -30,7 +30,12 @@ namespace xng {
         struct GBuffer {
             static std::vector<rg::ColorFormat> getColorFormats() {
                 return {
-                    rg::ColorFormat::RGBA,
+                    rg::ColorFormat::RGBA32F,
+                    rg::ColorFormat::RGBA32F,
+                    rg::ColorFormat::RGBA32F,
+                    rg::ColorFormat::RGB,
+                    rg::ColorFormat::RGB,
+                    rg::ColorFormat::RGBA32UI
                 };
             }
 
