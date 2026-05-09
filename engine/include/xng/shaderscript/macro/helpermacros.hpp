@@ -19,18 +19,23 @@
 #ifndef XENGINE_RENDERGRAPH_HELPERMACROS_HPP
 #define XENGINE_RENDERGRAPH_HELPERMACROS_HPP
 
+#include "xng/shaderscript/branchbuilder.hpp"
+#include "xng/shaderscript/loopbuilder.hpp"
+#include "xng/shaderscript/functionscope.hpp"
+#include "xng/shaderscript/shaderobject.hpp"
+
 /**
  * This header defines various macros to make the resulting DSL syntax more clean. It is completely optional to use/include.
  */
 
-#define If(cond) { BranchBuilder _branch; _branch.RecordIf((cond).operand); {
+#define If(cond) { xng::ShaderScript::BranchBuilder _branch; _branch.RecordIf((cond).operand); {
 #define Else } _branch.RecordElse(); {
-#define Fi } _branch.Finish(); BlockScope::get().addInstruction(_branch.build()); }
+#define Fi } _branch.Finish(); xng::ShaderScript::BlockScope::get().addInstruction(_branch.build()); }
 
-#define For(variableType, variableName, initializer, predicate, iterator) { LoopBuilder _loop;\
+#define For(variableType, variableName, initializer, predicate, iterator) { xng::ShaderScript::LoopBuilder _loop;\
     variableType variableName;\
     _loop.BeginFor((variableName.operand), (initializer).operand, (predicate).operand, (iterator).operand); {
-#define Done } _loop.EndFor(); BlockScope::get().addInstruction(_loop.build()); }
+#define Done } _loop.EndFor(); xng::ShaderScript::BlockScope::get().addInstruction(_loop.build()); }
 
 /**
  * Define the beginning of a shader side function.
@@ -44,45 +49,45 @@
  * }
  */
 #define IRFunction\
-    if (ShaderScope::get().hasFunction(__func__))\
+    if (xng::ShaderScript::ShaderScope::get().hasFunction(__func__))\
     {\
-        auto args = IRBaseParam::getArgumentValues();\
-        IRBaseParam::clear();\
-        return ShaderObject(ShaderInstructionFactory::call(__func__, args));\
+        auto args = xng::ShaderScript::IRBaseParam::getArgumentValues();\
+        xng::ShaderScript::IRBaseParam::clear();\
+        return xng::ShaderScript::ShaderObject(xng::rg::ShaderInstructionFactory::call(__func__, args));\
     }\
-    auto _func = std::make_unique<FunctionScope>(__func__);\
+    auto _func = std::make_unique<xng::ShaderScript::FunctionScope>(__func__);\
 
 #define IRReturn(value)\
     _func->setReturnType(value);\
-    ShaderScript::Return(value);
+    xng::ShaderScript::Return(value);
 
 #define IRFunctionEnd\
-    ShaderScope::get().addFunction(_func->build());\
+    xng::ShaderScript::ShaderScope::get().addFunction(_func->build());\
     { auto _callArgs = _func->getArgumentValues();\
     _func.reset();\
-    return ShaderObject(ShaderInstructionFactory::call(__func__, std::move(_callArgs))); }
+    return xng::ShaderScript::ShaderObject(xng::rg::ShaderInstructionFactory::call(__func__, std::move(_callArgs))); }
 
-#define BeginShader(stage) ShaderScope _s(stage); FunctionScope _main("main");
+#define BeginShader(stage) xng::ShaderScript::ShaderScope _s(stage); xng::ShaderScript::FunctionScope _main("main");
 
-#define Input(type, name) ShaderObject name = ShaderScope::get().addInput<type>(#name);
-#define Output(type, name) ShaderObject name = ShaderScope::get().addOutput<type>(#name);
+#define Input(type, name) xng::ShaderScript::ShaderObject name = xng::ShaderScript::ShaderScope::get().addInput<type>(#name);
+#define Output(type, name) xng::ShaderScript::ShaderObject name = xng::ShaderScript::ShaderScope::get().addOutput<type>(#name);
 
-#define Parameter(type, name) ShaderScope::get().addParameter(#name, ShaderPrimitiveType::type()); ShaderObject name = xng::ShaderScript::parameter(#name);
+#define Parameter(type, name) xng::ShaderScript::ShaderScope::get().addParameter(#name, xng::rg::ShaderPrimitiveType::type()); xng::ShaderScript::ShaderObject name = xng::ShaderScript::parameter(#name);
 
-#define Buffer(bufferType, bufferName) ShaderScope::get().addBuffer(#bufferName, ShaderBuffer(false, false, bufferType::getShaderStructDef().typeName)); bufferType bufferName(ShaderScript::buffer(#bufferName));
-#define DynamicBuffer(bufferType, bufferName) ShaderScope::get().addBuffer(#bufferName, ShaderBuffer(false, true, bufferType::getShaderStructDef().typeName)); DynamicBufferWrapper<bufferType> bufferName(ShaderScript::buffer(#bufferName));
+#define Buffer(bufferType, bufferName) xng::ShaderScript::ShaderScope::get().addBuffer(#bufferName, xng::rg::ShaderBuffer(false, false, bufferType::getShaderStructDef().typeName)); bufferType bufferName(xng::ShaderScript::buffer(#bufferName));
+#define DynamicBuffer(bufferType, bufferName) xng::ShaderScript::ShaderScope::get().addBuffer(#bufferName, xng::rg::ShaderBuffer(false, true, bufferType::getShaderStructDef().typeName)); xng::ShaderScript::DynamicBufferWrapper<bufferType> bufferName(xng::ShaderScript::buffer(#bufferName));
 
-#define BufferRW(bufferType, bufferName) ShaderScope::get().addBuffer(#bufferName, ShaderBuffer(true, false, bufferType::getShaderStructDef().typeName)); bufferType bufferName(ShaderScript::buffer(#bufferName));
-#define DynamicBufferRW(bufferType, bufferName) ShaderScope::get().addBuffer(#bufferName, ShaderBuffer(true, true, bufferType::getShaderStructDef().typeName)); DynamicBufferWrapper<bufferType> bufferName(ShaderScript::buffer(#bufferName));
+#define BufferRW(bufferType, bufferName) xng::ShaderScript::ShaderScope::get().addBuffer(#bufferName, xng::rg::ShaderBuffer(true, false, bufferType::getShaderStructDef().typeName)); bufferType bufferName(xng::ShaderScript::buffer(#bufferName));
+#define DynamicBufferRW(bufferType, bufferName) xng::ShaderScript::ShaderScope::get().addBuffer(#bufferName, xng::rg::ShaderBuffer(true, true, bufferType::getShaderStructDef().typeName)); xng::ShaderScript::DynamicBufferWrapper<bufferType> bufferName(xng::ShaderScript::buffer(#bufferName));
 
-#define Texture(type, format, name) ShaderScope::get().addTextureArray(#name, ShaderTextureArray(ShaderTexture(type, format))); ShaderObject name = xng::ShaderScript::textureSampler(#name)[Int(0)];
-#define TextureArray(type, format, count, name) ShaderScope::get().addTextureArray(#name, ShaderTextureArray(ShaderTexture(type, format), count)); ShaderObject name = xng::ShaderScript::textureSampler(#name);
+#define Texture(type, format, name) xng::ShaderScript::ShaderScope::get().addTextureArray(#name, xng::rg::ShaderTextureArray(xng::rg::ShaderTexture(type, format))); xng::ShaderScript::ShaderObject name = xng::ShaderScript::textureSampler(#name)[Int(0)];
+#define TextureArray(type, format, count, name) xng::ShaderScript::ShaderScope::get().addTextureArray(#name, xng::rg::ShaderTextureArray(xng::rg::ShaderTexture(type, format), count)); xng::ShaderScript::ShaderObject name = xng::ShaderScript::textureSampler(#name);
 
-#define InputPrimitive(type) ShaderScope::get().setGeometryInput(type);
-#define OutputPrimitive(type, maxVertices) ShaderScope::get().setGeometryOutput(type, maxVertices);
+#define InputPrimitive(type) xng::ShaderScript::ShaderScope::get().setGeometryInput(type);
+#define OutputPrimitive(type, maxVertices) xng::ShaderScript::ShaderScope::get().setGeometryOutput(type, maxVertices);
 
-#define EndShader() ShaderScope::get().addFunction(_main.build());
+#define EndShader() xng::ShaderScript::ShaderScope::get().addFunction(_main.build());
 
-#define BuildShader() ShaderScope::get().build();
+#define BuildShader() xng::ShaderScript::ShaderScope::get().build();
 
 #endif //XENGINE_RENDERGRAPH_HELPERMACROS_HPP
