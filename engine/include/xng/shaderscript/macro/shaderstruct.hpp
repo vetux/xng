@@ -534,9 +534,9 @@
         struct CPU {\
             GenerateCpuElementDeclaration(__VA_ARGS__)\
         };\
-        static inline xng::rg::ShaderDataType TYPE{static_cast<xng::ShaderScript::ShaderStructType>(#name), 1};\
-        static xng::ShaderScript::ShaderStructDef getShaderStructDef() {\
-            return xng::ShaderScript::ShaderStructDef(#name, {\
+        static inline xng::rg::ShaderDataType TYPE{static_cast<xng::rg::ShaderStructType>(#name), 1};\
+        static xng::rg::ShaderStructDef getShaderStructDef() {\
+            return xng::rg::ShaderStructDef(#name, {\
                 GenerateStructElements(__VA_ARGS__) \
             });\
         }\
