@@ -24,11 +24,12 @@
 namespace xng::shaderlib::texfilter {
     using namespace xng::ShaderScript;
 
-    XENGINE_EXPORT vec4 textureBicubic(Param<Texture2D<RGBA>> texture, Param<vec2> uv);
+    XENGINE_EXPORT vec4 textureBicubic(Param<Texture2D<rg::RGBA>> texture, Param<vec2> uv);
 
-    XENGINE_EXPORT vec4 textureBicubicMS(Param<Texture2DMS<RGBA>> texture, Param<vec2> uv, Param<Int> samples);
+    XENGINE_EXPORT vec4 textureBicubicMS(Param<Texture2DMS<rg::RGBA>> texture, Param<vec2> uv, Param<Int> samples);
 
-    XENGINE_EXPORT vec4 textureBicubicArray(Param<Texture2DArray<RGBA>> texture, Param<vec3> uv, Param<vec2> size);
+    XENGINE_EXPORT vec4 textureBicubicArray(Param<Texture2DArray<rg::RGBA>> texture, Param<vec3> uv, Param<vec2> size);
 }
+
 
 #endif //XENGINE_TEXFILTER_HPP
