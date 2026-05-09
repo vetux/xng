@@ -24,7 +24,7 @@
 #include "xng/shaderscript/std140.hpp"
 
 /**
- * Template-based type conversion from c++ type to ShaderPrimitive
+ * Template-based type conversion from c++ type to shader compatible type.
  */
 namespace xng::ShaderScript {
     // Maps a C++ scalar type to the corresponding rg::ShaderPrimitiveType::Component enum value.
