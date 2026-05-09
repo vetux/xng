@@ -152,7 +152,7 @@ namespace xng {
          * @param builder
          * @return The handle to the buffer.
          */
-        const rg::Resource<rg::Buffer> &commit(rg::GraphBuilder &builder) {
+        const rg::HeapResource<rg::Buffer> &commit(rg::GraphBuilder &builder) {
             auto passBuilder = builder.addTransferPass("StreamBufferTransfer");
 
             rg::HeapResource<rg::Buffer> staleBuffer;

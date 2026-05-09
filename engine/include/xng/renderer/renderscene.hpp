@@ -19,82 +19,111 @@
 #ifndef XENGINE_RENDERSCENE_HPP
 #define XENGINE_RENDERSCENE_HPP
 
-#include "xng/assets/assetscene.hpp"
+#include "xng/rendergraph/heap.hpp"
 
-#include "xng/renderer/objects/rendercamera.hpp"
-#include "xng/renderer/objects/renderdirectionallight.hpp"
-#include "xng/renderer/objects/rendermaterial.hpp"
-#include "xng/renderer/objects/rendermesh.hpp"
+#include "xng/renderer/vertexattribute.hpp"
 #include "xng/renderer/objects/rendermodel.hpp"
 #include "xng/renderer/objects/renderpointlight.hpp"
-#include "xng/renderer/objects/renderskeleton.hpp"
 #include "xng/renderer/objects/renderspotlight.hpp"
-#include "xng/renderer/objects/rendertexture.hpp"
+#include "xng/renderer/objects/renderdirectionallight.hpp"
 
 namespace xng {
     /**
-     * The render scene represents the scene allocation state of the renderer.
+     * The scene is the product of the render allocator packing / allocation strategy.
      *
-     * The scene objects directly correlate to heap resources. This enables fine-grained gpu state updates.
-     *
-     * The scene object data is streamed to the heap asynchronously.
-     *
-     * All passes now share a common heap resource pool and only handle transient allocations.
-     *
-     * It contains ALL heap allocations for the passes.
+     * It constrains the basic allocation model for the scene data while allowing the allocator to perform packing.
      */
-    class RenderScene {
-    public:
-        explicit RenderScene(rg::Heap &heap);
+    struct RenderScene {
+        struct Mesh {
+            rg::Primitive primitive;
+            rg::DrawCall drawCall;
+            bool indexed;
+            size_t indexOffset; // The offset applied to each index.
 
-        ~RenderScene();
+            unsigned int boneBaseIndex; // The offset applied to each bone index
 
-        RenderObjectHandle<RenderCamera> createCamera();
+            Mesh(const rg::Primitive primitive,
+                 rg::DrawCall _drawCall,
+                 const bool indexed,
+                 const size_t index_offset,
+                 const unsigned int boneBaseIndex)
+                : primitive(primitive),
+                  drawCall(std::move(_drawCall)),
+                  indexed(indexed),
+                  indexOffset(index_offset),
+                  boneBaseIndex(boneBaseIndex) {
+            }
+        };
 
-        RenderObjectHandle<RenderTexture> createTexture(const ImageRGBA &image);
+        struct Model {
+            std::vector<Mesh> meshes;
 
-        RenderObjectHandle<RenderMaterial> createMaterial(const ColorRGBA &albedo,
-                                                          float metallic,
-                                                          float roughness,
-                                                          float ambientOcclusion,
-                                                          Vec4f normalIntensity,
-                                                          RenderObjectHandle<RenderTexture> albedoTexture,
-                                                          RenderObjectHandle<RenderTexture> metallicTexture,
-                                                          RenderObjectHandle<RenderTexture> roughnessTexture,
-                                                          RenderObjectHandle<RenderTexture> ambientOcclusionTexture,
-                                                          RenderObjectHandle<RenderTexture> normalTexture);
+            unsigned int transformIndex; // Index into transformBuffer
+            unsigned int materialIndex; // Index into materialBuffer
 
-        RenderObjectHandle<RenderSkeleton> createSkeleton(const std::vector<std::string> &boneNames);
+            bool receiveShadows;
 
-        RenderObjectHandle<RenderMesh> createMesh(const Mesh &mesh, RenderObjectHandle<RenderSkeleton> skeleton);
+            Model(const size_t transformIndex,
+                  const size_t materialIndex,
+                  const bool receiveShadows,
+                  std::vector<Mesh> meshes)
+                : meshes(std::move(meshes)),
+                  transformIndex(transformIndex),
+                  materialIndex(materialIndex),
+                  receiveShadows(receiveShadows) {
+            }
+        };
 
-        RenderObjectHandle<RenderModel> createModel(const std::vector<RenderObjectHandle<RenderMesh> > &meshes,
-                                                    RenderObjectHandle<RenderMaterial> material,
-                                                    bool receiveShadows);
+        RenderScene(std::vector<Model> models,
+                    rg::HeapResource<rg::Buffer> _cameraBuffer,
+                    rg::HeapResource<rg::Buffer> _transformBuffer,
+                    rg::HeapResource<rg::Buffer> _boneBuffer,
+                    rg::HeapResource<rg::Buffer> _materialBuffer,
+                    rg::HeapResource<rg::Buffer> _pointLightBuffer,
+                    rg::HeapResource<rg::Buffer> _spotLightBuffer,
+                    rg::HeapResource<rg::Buffer> _directionalLightBuffer,
+                    rg::HeapResource<rg::Texture> _pointShadowMaps,
+                    rg::HeapResource<rg::Texture> _spotShadowMaps,
+                    rg::HeapResource<rg::Texture> _directionalShadowMaps,
+                    std::unordered_map<VertexAttribute, rg::HeapResource<rg::Buffer> > _vertexBuffers,
+                    rg::HeapResource<rg::Buffer> _indexBuffer,
+                    std::unordered_map<TextureResolution, rg::HeapResource<rg::Texture> > _textures)
+            : models(models),
+              cameraBuffer(std::move(_cameraBuffer)),
+              transformBuffer(std::move(_transformBuffer)),
+              boneBuffer(std::move(_boneBuffer)),
+              materialBuffer(std::move(_materialBuffer)),
+              pointLightBuffer(std::move(_pointLightBuffer)),
+              spotLightBuffer(std::move(_spotLightBuffer)),
+              directionalLightBuffer(std::move(_directionalLightBuffer)),
+              pointShadowMaps(std::move(_pointShadowMaps)),
+              spotShadowMaps(std::move(_spotShadowMaps)),
+              directionalShadowMaps(std::move(_directionalShadowMaps)),
+              vertexBuffers(std::move(_vertexBuffers)),
+              indexBuffer(std::move(_indexBuffer)),
+              textures(std::move(_textures)) {
+        }
 
-        RenderObjectHandle<RenderPointLight> createPointLight();
+        std::vector<Model> models;
 
-        RenderObjectHandle<RenderSpotLight> createSpotLight();
+        rg::HeapResource<rg::Buffer> cameraBuffer;
 
-        RenderObjectHandle<RenderDirectionalLight> createDirectionalLight();
+        rg::HeapResource<rg::Buffer> transformBuffer;
+        rg::HeapResource<rg::Buffer> boneBuffer;
+        rg::HeapResource<rg::Buffer> materialBuffer;
 
-    private:
-        rg::Heap &heap;
+        rg::HeapResource<rg::Buffer> pointLightBuffer;
+        rg::HeapResource<rg::Buffer> spotLightBuffer;
+        rg::HeapResource<rg::Buffer> directionalLightBuffer;
 
-        BufferStreamer<ShaderCamera::CPU> cameraStream;
-        BufferStreamer<ShaderTransform::CPU> transformStream;
-        BufferStreamer<ShaderTransform::CPU> boneStream;
-        MeshStreamer meshStream;
-        BufferStreamer<ShaderMaterial::CPU> materialStream;
-        TextureStreamer textureStream;
+        rg::HeapResource<rg::Texture> pointShadowMaps;
+        rg::HeapResource<rg::Texture> spotShadowMaps;
+        rg::HeapResource<rg::Texture> directionalShadowMaps;
 
-        BufferStreamer<ShaderPointLight::CPU> pointLightStream;
-        BufferStreamer<ShaderSpotLight::CPU> spotLightStream;
-        BufferStreamer<ShaderDirectionalLight::CPU> directionalLightStream;
+        std::unordered_map<VertexAttribute, rg::HeapResource<rg::Buffer> > vertexBuffers;
+        rg::HeapResource<rg::Buffer> indexBuffer;
 
-        StreamTexture pointShadowMaps;
-        StreamTexture spotShadowMaps;
-        StreamTexture directionalShadowMaps;
+        std::unordered_map<TextureResolution, rg::HeapResource<rg::Texture> > textures;
     };
 }
 

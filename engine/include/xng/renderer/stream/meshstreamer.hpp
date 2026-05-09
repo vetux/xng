@@ -22,9 +22,11 @@
 #include <unordered_map>
 
 #include "xng/assets/mesh.hpp"
-#include "xng/rendergraph/heap.hpp"
-#include "xng/rendergraph/resource/vertexbuffer.hpp"
 
+#include "xng/rendergraph/heap.hpp"
+#include "xng/rendergraph/resource/buffer.hpp"
+
+#include "xng/renderer/vertexattribute.hpp"
 #include "xng/renderer/stream/bufferstreamer.hpp"
 
 namespace xng {
@@ -32,51 +34,28 @@ namespace xng {
     public:
         typedef size_t Handle;
 
-        enum VertexAttribute {
-            POSITION,
-            NORMAL,
-            TANGENT,
-            BITANGENT,
-            UV,
-            BONE_INDEX,
-            BONE_WEIGHT
-        };
-
         struct Allocation {
             rg::Primitive primitive;
-
-            size_t vertexCount;
-            size_t indexCount;
-
-            BufferStreamer<float[3]>::Handle positionsStreamHandle;
-            BufferStreamer<float[3]>::Handle normalsStreamHandle;
-            BufferStreamer<float[3]>::Handle tangentsStreamHandle;
-            BufferStreamer<float[3]>::Handle bitangentsStreamHandle;
-            BufferStreamer<float[2]>::Handle uvsStreamHandle;
-            BufferStreamer<int[4]>::Handle boneIndicesStreamHandle;
-            BufferStreamer<float[4]>::Handle boneWeightsStreamHandle;
-
-            std::unordered_map<VertexAttribute, size_t> vertexBufferStreamOffsets;
-
-            BufferStreamer<int>::Handle indexBufferStreamHandle;
-            size_t indexBufferStreamOffset;
+            rg::DrawCall drawCall;
+            bool indexed;
+            size_t indexOffset; // The offset applied to each index.
         };
-
-        static size_t getVertexAttributeSize(const VertexAttribute attribute) {
-            switch (attribute) {
-                default:
-                    return 4 * 3;
-                case UV:
-                    return 4 * 2;
-                case BONE_INDEX:
-                case BONE_WEIGHT:
-                    return 4 * 4;
-            }
-        }
 
         Handle create();
 
-        void upload(const Handle &handle, const Mesh &mesh, const std::unordered_map<std::string, size_t> &boneIndices);
+        /**
+         * Pads default values for meshes that don't define a given attribute.
+         * Positions must be defined.
+         *
+         * The index
+         *
+         * @param handle
+         * @param mesh
+         * @param boneIndices
+         */
+        void upload(const Handle &handle,
+                    const Mesh &mesh,
+                    const std::unordered_map<std::string, unsigned int> &boneIndices);
 
         void destroy(const Handle &handle);
 
@@ -86,20 +65,14 @@ namespace xng {
 
         const Allocation &getAllocation(const Handle &handle) const;
 
-        std::unordered_map<VertexAttribute, rg::HeapResource<rg::VertexBuffer> > commit(rg::TransferContext &ctx);
+        std::unordered_map<VertexAttribute, rg::HeapResource<rg::Buffer> > commitVertexBuffers(rg::GraphBuilder &ctx);
+
+        rg::HeapResource<rg::Buffer> commitIndexBuffer(rg::GraphBuilder &ctx);
 
     private:
         std::unordered_map<Handle, Allocation> allocations;
-
-        BufferStreamer<float[3]> positionsStream;
-        BufferStreamer<float[3]> normalsStream;
-        BufferStreamer<float[3]> tangentsStream;
-        BufferStreamer<float[3]> bitangentsStream;
-        BufferStreamer<float[2]> uvsStream;
-        BufferStreamer<int[4]> boneIndicesStream;
-        BufferStreamer<float[4]> boneWeightsStream;
-
-        BufferStreamer<int> indexBufferStream;
+        std::unordered_map<VertexAttribute, StreamBuffer> vertexBuffers;
+        StreamBuffer indexBufferStream;
     };
 }
 

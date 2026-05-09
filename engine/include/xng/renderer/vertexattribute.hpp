@@ -16,28 +16,33 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef XENGINE_RENDERER_HPP
-#define XENGINE_RENDERER_HPP
-
-#include "xng/renderer/renderallocator.hpp"
-#include "xng/renderer/renderscene.hpp"
+#ifndef XENGINE_VERTEXATTRIBUTE_HPP
+#define XENGINE_VERTEXATTRIBUTE_HPP
 
 namespace xng {
-    /**
-     * The renderer dispatches draw instructions to a user-supplied list of passes and handles object allocation.
-     */
-    class Renderer {
-    public:
-        Renderer(rg::Heap &heap);
-
-        RenderAllocator &getAllocator();
-
-        void draw(rg::Surface &surface, const RenderScene &scene);
-
-    private:
-        rg::Heap &heap;
-        RenderAllocator allocator;
+    enum VertexAttribute : int {
+        POSITION = 0,
+        NORMAL,
+        TANGENT,
+        BITANGENT,
+        UV,
+        BONE_INDEX,
+        BONE_WEIGHT,
+        ATTRIBUTE_BEGIN = POSITION,
+        ATTRIBUTE_END = BONE_WEIGHT
     };
+
+    inline size_t getVertexAttributeSize(const VertexAttribute attribute) {
+        switch (attribute) {
+            default:
+                return 4 * 3;
+            case UV:
+                return 4 * 2;
+            case BONE_INDEX:
+            case BONE_WEIGHT:
+                return 4 * 4;
+        }
+    }
 }
 
-#endif //XENGINE_RENDERER_HPP
+#endif //XENGINE_VERTEXATTRIBUTE_HPP

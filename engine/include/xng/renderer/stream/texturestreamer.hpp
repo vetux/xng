@@ -24,30 +24,14 @@
 #include "xng/rendergraph/heap.hpp"
 #include "xng/rendergraph/resource/texture.hpp"
 
+#include "xng/renderer/textureresolution.hpp"
 #include "xng/renderer/stream/streambuffer.hpp"
 #include "xng/renderer/stream/streamtexture.hpp"
 
 namespace xng {
     class TextureStreamer {
     public:
-        enum Resolution : int {
-            RESOLUTION_8x8 = 0,
-            RESOLUTION_16x16,
-            RESOLUTION_32x32,
-            RESOLUTION_64x64,
-            RESOLUTION_128x128,
-            RESOLUTION_256x256,
-            RESOLUTION_512x512,
-            RESOLUTION_1024x1024,
-            RESOLUTION_2048x2048,
-            RESOLUTION_4096x4096,
-            RESOLUTION_8192x8192,
-            RESOLUTION_16384x16384,
-            RESOLUTION_END,
-            RESOLUTION_BEGIN = RESOLUTION_8x8
-        };
-
-        static Vec2i getResolutionLevelSize(const Resolution level) {
+        static Vec2i getTextureResolutionLevelSize(const TextureResolution level) {
             switch (level) {
                 case RESOLUTION_8x8: return {8, 8};
                 case RESOLUTION_16x16: return {16, 16};
@@ -61,13 +45,13 @@ namespace xng {
                 case RESOLUTION_4096x4096: return {4096, 4096};
                 case RESOLUTION_8192x8192: return {8192, 8192};
                 default:
-                    throw std::runtime_error("Invalid resolution level");
+                    throw std::runtime_error("Invalid TextureResolution level");
             }
         }
 
         struct Handle {
-            size_t index{};
-            Resolution level{};
+            unsigned int index{};
+            TextureResolution level{};
             Vec2i size; // The original texture size
 
             bool assigned() const {
@@ -79,7 +63,7 @@ namespace xng {
             }
 
             Vec2f getScale() const {
-                return size.convert<float>() / getResolutionLevelSize(level).convert<float>();
+                return size.convert<float>() / getTextureResolutionLevelSize(level).convert<float>();
             }
         };
 
@@ -91,7 +75,7 @@ namespace xng {
 
         void flush(const Handle &handle);
 
-        std::unordered_map<Resolution, rg::HeapResource<rg::Texture> > commit(rg::TransferContext &ctx);
+        std::unordered_map<TextureResolution, rg::HeapResource<rg::Texture> > commit(rg::GraphBuilder &ctx);
 
     private:
         struct PendingUpload {
@@ -101,7 +85,7 @@ namespace xng {
 
         StreamBuffer streamBuffer;
         std::unordered_map<Handle, PendingUpload> pendingUploads;
-        std::unordered_map<Resolution, StreamTexture> textures;
+        std::unordered_map<TextureResolution, StreamTexture> textures;
     };
 }
 

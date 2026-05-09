@@ -32,7 +32,7 @@ namespace xng {
         /**
          * The index of the element in the buffer
          */
-        typedef size_t Handle;
+        typedef unsigned int Handle;
 
         BufferStreamer();
 
@@ -46,7 +46,7 @@ namespace xng {
 
         void flush(Handle handle);
 
-        rg::HeapResource<rg::Buffer> commit(rg::TransferContext &ctx);
+        rg::HeapResource<rg::Buffer> commit(rg::GraphBuilder &ctx);
 
     private:
         StreamBuffer buffer;

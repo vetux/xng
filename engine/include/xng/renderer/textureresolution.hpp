@@ -16,18 +16,26 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef XENGINE_EXAMPLEPASS_HPP
-#define XENGINE_EXAMPLEPASS_HPP
-
-#include "xng/rendergraph/shader/shader.hpp"
+#ifndef XENGINE_TEXTURERESOLUTION_HPP
+#define XENGINE_TEXTURERESOLUTION_HPP
 
 namespace xng {
-    class ExamplePass {
-    public:
-        static rg::Shader compileShader();
-
-        explicit ExamplePass(const rg::Shader &shader);
+    enum TextureResolution : int {
+        RESOLUTION_8x8 = 0,
+        RESOLUTION_16x16,
+        RESOLUTION_32x32,
+        RESOLUTION_64x64,
+        RESOLUTION_128x128,
+        RESOLUTION_256x256,
+        RESOLUTION_512x512,
+        RESOLUTION_1024x1024,
+        RESOLUTION_2048x2048,
+        RESOLUTION_4096x4096,
+        RESOLUTION_8192x8192,
+        RESOLUTION_16384x16384,
+        RESOLUTION_END,
+        RESOLUTION_BEGIN = RESOLUTION_8x8
     };
 }
 
-#endif //XENGINE_EXAMPLEPASS_HPP
+#endif //XENGINE_TEXTURERESOLUTION_HPP

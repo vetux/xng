@@ -46,6 +46,33 @@ namespace xng {
                                               const float farClip = 1000.0f) {
             return MatrixMath::perspective(fov, aspectRatio, nearClip, farClip);
         }
+
+        void setView(const Mat4f &v) {
+            view = v;
+            viewProjection = projection * view;
+        }
+
+        void setProjection(const Mat4f &p) {
+            projection = p;
+            viewProjection = projection * view;
+        }
+
+        Mat4f getView() const {
+            return view;
+        }
+
+        Mat4f getProjection() const {
+            return projection;
+        }
+
+        Mat4f getViewProjection() const {
+            return viewProjection;
+        }
+
+    private:
+        Mat4f view;
+        Mat4f projection;
+        Mat4f viewProjection;
     };
 }
 

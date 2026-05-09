@@ -19,6 +19,7 @@
 #ifndef XENGINE_RENDERMODEL_HPP
 #define XENGINE_RENDERMODEL_HPP
 
+#include "xng/math/transform.hpp"
 #include "xng/renderer/renderobject.hpp"
 #include "xng/renderer/shadertypes.hpp"
 #include "xng/renderer/stream/bufferstreamer.hpp"
@@ -33,25 +34,20 @@ namespace xng {
     public:
         RenderModel(const Id id,
                     BufferStreamer<ShaderTransform::CPU> &transformStream,
-                    BufferStreamer<ShaderDrawProperties::CPU> &drawPropertiesStream,
                     std::vector<RenderObjectHandle<RenderMesh> > _meshes,
                     RenderObjectHandle<RenderMaterial> _material,
-                    const bool receiveShadows)
+                    const bool receiveShadows,
+                    const bool castShadows)
             : RenderObject(id, OBJECT_MODEL),
               transformStream(transformStream),
-              drawPropertiesStream(drawPropertiesStream),
+              transformHandle(transformStream.create()),
               meshes(std::move(_meshes)),
-              material(std::move(_material)) {
-            transformHandle = transformStream.create();
-            drawPropertiesHandle = drawPropertiesStream.create();
-            drawPropertiesStream.upload(drawPropertiesHandle,
-                                        {
-                                            Vec4i(static_cast<int>(material->getMaterialHandle()), receiveShadows, 0, 0)
-                                        });
+              material(std::move(_material)),
+              receiveShadows(receiveShadows),
+              castShadows(castShadows) {
         }
 
         ~RenderModel() override {
-            drawPropertiesStream.destroy(drawPropertiesHandle);
             transformStream.destroy(transformHandle);
         }
 
@@ -60,16 +56,28 @@ namespace xng {
             transformStream.upload(transformHandle, {model});
         }
 
-        [[nodiscard]] BufferStreamer<ShaderDrawProperties::CPU>::Handle getDrawPropertiesHandle() const {
-            return drawPropertiesHandle;
+        [[nodiscard]] BufferStreamer<ShaderTransform::CPU>::Handle getTransformHandle() const {
+            return transformHandle;
         }
 
         [[nodiscard]] const std::vector<RenderObjectHandle<RenderMesh> > &getMeshes() const {
             return meshes;
         }
 
+        [[nodiscard]] const RenderObjectHandle<RenderMaterial> &getMaterial() const {
+            return material;
+        }
+
+        [[nodiscard]] bool isReceiveShadows() const {
+            return receiveShadows;
+        }
+
+        [[nodiscard]] bool isCastShadows() const {
+            return castShadows;
+        }
+
         bool isUploadComplete() override {
-            for (auto &mesh : meshes) {
+            for (auto &mesh: meshes) {
                 if (!mesh->isUploadComplete()) {
                     return false;
                 }
@@ -77,29 +85,28 @@ namespace xng {
             if (material && !material->isUploadComplete()) {
                 return false;
             }
-            return transformStream.isUploadComplete(transformHandle) && drawPropertiesStream.isUploadComplete(drawPropertiesHandle);
+            return transformStream.isUploadComplete(transformHandle);
         }
 
         void flush() override {
-            for (auto &mesh : meshes) {
+            for (auto &mesh: meshes) {
                 mesh->flush();
             }
             if (material) {
                 material->flush();
             }
             transformStream.flush(transformHandle);
-            drawPropertiesStream.flush(drawPropertiesHandle);
         }
 
     private:
         BufferStreamer<ShaderTransform::CPU> &transformStream;
         BufferStreamer<ShaderTransform::CPU>::Handle transformHandle;
 
-        BufferStreamer<ShaderDrawProperties::CPU> &drawPropertiesStream;
-        BufferStreamer<ShaderDrawProperties::CPU>::Handle drawPropertiesHandle;
-
         std::vector<RenderObjectHandle<RenderMesh> > meshes;
         RenderObjectHandle<RenderMaterial> material;
+
+        bool receiveShadows = false;
+        bool castShadows = false;
     };
 }
 

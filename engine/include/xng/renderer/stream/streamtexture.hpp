@@ -38,7 +38,7 @@ namespace xng {
         /**
          * The index into the array texture.
          */
-        typedef size_t Handle;
+        typedef unsigned int Handle;
 
         explicit StreamTexture(const Vec2i &resolution);
 
@@ -54,7 +54,7 @@ namespace xng {
 
         void flush(const Handle &handle);
 
-        const rg::HeapResource<rg::Texture> &commit(rg::TransferContext &ctx);
+        const rg::HeapResource<rg::Texture> &commit(rg::GraphBuilder &ctx);
     };
 }
 

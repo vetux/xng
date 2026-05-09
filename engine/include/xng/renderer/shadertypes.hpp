@@ -28,7 +28,7 @@ namespace xng {
                  Mat4f, projection)
 
     ShaderStruct(ShaderTransform,
-                 Mat4f, model)
+                 Mat4f, transform)
 
     using Mat4f_Array_6 = std::array<Mat4f, 6>;
 
@@ -68,9 +68,6 @@ namespace xng {
                  ShaderTexture, roughness,
                  ShaderTexture, ambientOcclusion,
                  ShaderTexture, albedo)
-
-    ShaderStruct(ShaderDrawProperties,
-                 Vec4i, materialIndex_receiveShadows)
 
     ShaderStruct(ShaderCanvasPaint,
                  Vec4f, color,

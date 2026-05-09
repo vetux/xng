@@ -43,8 +43,8 @@ namespace xng {
             meshStream.destroy(meshHandle);
         }
 
-        [[nodiscard]] MeshStreamer::Handle getMeshHandle() const {
-            return meshHandle;
+        [[nodiscard]] MeshStreamer::Allocation getAllocation() const {
+            return meshStream.getAllocation(meshHandle);
         }
 
         bool isUploadComplete() override {
