@@ -36,7 +36,7 @@ namespace xng::ShaderScript
             return *getCurrent();
         }
 
-        explicit ShaderScope(Shader::Stage stage)
+        explicit ShaderScope(rg::Shader::Stage stage)
             : stage(stage)
         {
             if (getCurrent() != nullptr)
@@ -53,7 +53,7 @@ namespace xng::ShaderScript
         }
 
         //TODO / Maybe: Implement function overload support in DSL
-        void addFunction(ShaderFunction func)
+        void addFunction(rg::ShaderFunction func)
         {
             if (hasFunction(func.name))
             {
@@ -74,7 +74,7 @@ namespace xng::ShaderScript
             return false;
         }
 
-        bool hasFunction(const std::string &name, const ShaderDataType &returnType, const std::vector<ShaderFunction::Argument> &args) const
+        bool hasFunction(const std::string &name, const rg::ShaderDataType &returnType, const std::vector<rg::ShaderFunction::Argument> &args) const
         {
             for (auto& f : functions)
             {
@@ -86,7 +86,7 @@ namespace xng::ShaderScript
             return false;
         }
 
-        void addTypeDefinition(ShaderStructDef type)
+        void addTypeDefinition(rg::ShaderStructDef type)
         {
             for (auto& t : typeDefinitions)
             {
@@ -110,7 +110,7 @@ namespace xng::ShaderScript
                 throw std::runtime_error("Input already exists");
             }
             inputLayout.addElement(name, T::TYPE.getPrimitive());
-            return T(ShaderOperand::inputAttribute(name));
+            return T(rg::ShaderOperand::inputAttribute(name));
         }
 
         template <typename T>
@@ -121,10 +121,10 @@ namespace xng::ShaderScript
                 throw std::runtime_error("Output already exists");
             }
             outputLayout.addElement(name, T::TYPE.getPrimitive());
-            return T(ShaderOperand::outputAttribute(name));
+            return T(rg::ShaderOperand::outputAttribute(name));
         }
 
-        void addParameter(const std::string& name, const ShaderPrimitiveType& type)
+        void addParameter(const std::string& name, const rg::ShaderPrimitiveType& type)
         {
             auto it = parameters.find(name);
             if (it != parameters.end())
@@ -138,7 +138,7 @@ namespace xng::ShaderScript
             parameters.emplace(name, type);
         }
 
-        void addBuffer(const std::string& name, const ShaderBuffer& buffer)
+        void addBuffer(const std::string& name, const rg::ShaderBuffer& buffer)
         {
             auto it = buffers.find(name);
             if (it != buffers.end())
@@ -152,7 +152,7 @@ namespace xng::ShaderScript
             buffers.emplace(name, buffer);
         }
 
-        void addTextureArray(const std::string& name, const ShaderTextureArray& textureArray)
+        void addTextureArray(const std::string& name, const rg::ShaderTextureArray& textureArray)
         {
             auto it = textureArrays.find(name);
             if (it != textureArrays.end())
@@ -166,25 +166,25 @@ namespace xng::ShaderScript
             textureArrays.emplace(name, textureArray);
         }
 
-        void setGeometryInput(Primitive input)
+        void setGeometryInput(rg::Primitive input)
         {
-            if (stage != Shader::GEOMETRY) throw std::runtime_error(
+            if (stage != rg::Shader::GEOMETRY) throw std::runtime_error(
                 "Attempted to set geometry input in non geometry stage");
             geometryInput = input;
         }
 
-        void setGeometryOutput(Primitive output, size_t maxVertices)
+        void setGeometryOutput(rg::Primitive output, size_t maxVertices)
         {
-            if (stage != Shader::GEOMETRY) throw std::runtime_error(
+            if (stage != rg::Shader::GEOMETRY) throw std::runtime_error(
                 "Attempted to set geometry output in non geometry stage");
             geometryOutput = output;
             geometryMaxVertices = maxVertices;
         }
 
-        Shader build()
+        rg::Shader build()
         {
-            ShaderFunction main;
-            std::vector<ShaderFunction> funcs;
+            rg::ShaderFunction main;
+            std::vector<rg::ShaderFunction> funcs;
             for (auto& f : functions)
             {
                 if (f.name == "main")
@@ -213,21 +213,21 @@ namespace xng::ShaderScript
         }
 
     private:
-        Shader::Stage stage;
-        Primitive geometryInput{}; // The input primitive for geometry shaders. Must match the pipeline primitive.
-        Primitive geometryOutput{}; // The output primitive for geometry shaders
+        rg::Shader::Stage stage;
+        rg::Primitive geometryInput{}; // The input rg::Primitive for geometry shaders. Must match the pipeline rg::Primitive.
+        rg::Primitive geometryOutput{}; // The output rg::Primitive for geometry shaders
         size_t geometryMaxVertices{}; // The maximum number of output vertices for geometry shaders.
 
-        ShaderAttributeLayout inputLayout;
-        ShaderAttributeLayout outputLayout;
+        rg::ShaderAttributeLayout inputLayout;
+        rg::ShaderAttributeLayout outputLayout;
 
-        std::unordered_map<std::string, ShaderPrimitiveType> parameters{};
-        std::unordered_map<std::string, ShaderBuffer> buffers{};
-        std::unordered_map<std::string, ShaderTextureArray> textureArrays{};
+        std::unordered_map<std::string, rg::ShaderPrimitiveType> parameters{};
+        std::unordered_map<std::string, rg::ShaderBuffer> buffers{};
+        std::unordered_map<std::string, rg::ShaderTextureArray> textureArrays{};
 
-        std::vector<ShaderStructDef> typeDefinitions{};
+        std::vector<rg::ShaderStructDef> typeDefinitions{};
 
-        std::vector<ShaderFunction> functions{};
+        std::vector<rg::ShaderFunction> functions{};
 
         XENGINE_EXPORT static ShaderScope*& getCurrent();
     };

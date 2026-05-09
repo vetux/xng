@@ -25,8 +25,6 @@
 
 namespace xng::ShaderScript
 {
-    using namespace xng::rg;
-
     /**
      * Block scope represents the scope into which shader operations are recorded.
      * This may be a function body, loop body, or branch path.
@@ -66,24 +64,24 @@ namespace xng::ShaderScript
             return *getCurrent();
         }
 
-        virtual void addInstruction(const ShaderInstruction& inst)
+        virtual void addInstruction(const rg::ShaderInstruction& inst)
         {
             instructions.emplace_back(inst);
         }
 
-        ShaderOperand registerObject(ShaderDataType type, ShaderOperand initializer)
+        rg::ShaderOperand registerObject(rg::ShaderDataType type, rg::ShaderOperand initializer)
         {
             const auto objectID = getObjectCounter()++;
             auto varName = "tmp" + std::to_string(objectID);
             objects.insert({varName, {std::move(type), std::move(initializer)}});
-            return ShaderOperand::variable(varName);
+            return rg::ShaderOperand::variable(varName);
         }
 
-        std::vector<ShaderInstruction> buildInstructionStreamRecursive(
-            const std::vector<ShaderInstruction>& inputInstructions,
+        std::vector<rg::ShaderInstruction> buildInstructionStreamRecursive(
+            const std::vector<rg::ShaderInstruction>& inputInstructions,
             std::set<std::string>& initializedVariables)
         {
-            std::vector<ShaderInstruction> ret;
+            std::vector<rg::ShaderInstruction> ret;
             for (auto inst : inputInstructions)
             {
                 // Patch operands (recursively handles nested Instruction operands)
@@ -95,12 +93,12 @@ namespace xng::ShaderScript
                 // Patch branch / loop blocks
                 switch (inst.code)
                 {
-                case ShaderInstruction::Branch:
+                case rg::ShaderInstruction::Branch:
                     {
                         // Pre-declare any promoted variables referenced inside branches
                         // so they are visible across both branches and after the branch
-                        auto& trueBranch = std::get<std::vector<ShaderInstruction>>(inst.data.at(0));
-                        auto& falseBranch = std::get<std::vector<ShaderInstruction>>(inst.data.at(1));
+                        auto& trueBranch = std::get<std::vector<rg::ShaderInstruction>>(inst.data.at(0));
+                        auto& falseBranch = std::get<std::vector<rg::ShaderInstruction>>(inst.data.at(1));
                         std::set<std::string> referencedVars;
                         collectVariableReferences(trueBranch, referencedVars);
                         collectVariableReferences(falseBranch, referencedVars);
@@ -116,10 +114,10 @@ namespace xng::ShaderScript
 
                         break;
                     }
-                case ShaderInstruction::Loop:
+                case rg::ShaderInstruction::Loop:
                     {
                         // Pre-declare any promoted variables referenced inside the loop
-                        auto& body = std::get<std::vector<ShaderInstruction>>(inst.data.at(0));
+                        auto& body = std::get<std::vector<rg::ShaderInstruction>>(inst.data.at(0));
                         std::set<std::string> referencedVars;
                         collectVariableReferences(body, referencedVars);
                         emitPendingDeclarations(referencedVars, ret, initializedVariables);
@@ -139,7 +137,7 @@ namespace xng::ShaderScript
             return ret;
         }
 
-        std::vector<ShaderInstruction> buildInstructionStream()
+        std::vector<rg::ShaderInstruction> buildInstructionStream()
         {
             promoteMultiReferencedObjects();
             std::set<std::string> initializedVariables;
@@ -149,11 +147,11 @@ namespace xng::ShaderScript
         }
 
     private:
-        void patchOperand(ShaderOperand& op,
-                          std::vector<ShaderInstruction>& ret,
+        void patchOperand(rg::ShaderOperand& op,
+                          std::vector<rg::ShaderInstruction>& ret,
                           std::set<std::string>& initializedVariables)
         {
-            if (op.type == ShaderOperand::Variable)
+            if (op.type == rg::ShaderOperand::Variable)
             {
                 auto varName = std::get<std::string>(op.value);
                 if (objects.find(varName) != objects.end())
@@ -167,17 +165,17 @@ namespace xng::ShaderScript
                         {
                             // Variable uninitialized
                             // Create declaration/initialization instruction
-                            if (it->second.second.type == ShaderOperand::None)
+                            if (it->second.second.type == rg::ShaderOperand::None)
                             {
                                 ret.emplace_back(
-                                    ShaderInstructionFactory::declareVariable(varName, it->second.first)
+                                    rg::ShaderInstructionFactory::declareVariable(varName, it->second.first)
                                 );
                             }
                             else
                             {
                                 auto initializer = it->second.second;
                                 patchOperand(initializer, ret, initializedVariables);
-                                ret.emplace_back(ShaderInstructionFactory::declareVariable(
+                                ret.emplace_back(rg::ShaderInstructionFactory::declareVariable(
                                         varName,
                                         it->second.first,
                                         initializer)
@@ -200,9 +198,9 @@ namespace xng::ShaderScript
                     // in its buildInstructionStream* call
                 }
             }
-            else if (op.type == ShaderOperand::Instruction)
+            else if (op.type == rg::ShaderOperand::Instruction)
             {
-                auto& inst = std::get<ShaderInstruction>(op.value);
+                auto& inst = std::get<rg::ShaderInstruction>(op.value);
                 for (auto& childOp : inst.operands)
                 {
                     patchOperand(childOp, ret, initializedVariables);
@@ -210,10 +208,10 @@ namespace xng::ShaderScript
             }
         }
 
-        void collectVariableReferencesInOperand(const ShaderOperand& op,
+        void collectVariableReferencesInOperand(const rg::ShaderOperand& op,
                                                 std::set<std::string>& refs) const
         {
-            if (op.type == ShaderOperand::Variable)
+            if (op.type == rg::ShaderOperand::Variable)
             {
                 auto varName = std::get<std::string>(op.value);
                 if (variables.find(varName) != variables.end())
@@ -221,9 +219,9 @@ namespace xng::ShaderScript
                     refs.insert(varName);
                 }
             }
-            else if (op.type == ShaderOperand::Instruction)
+            else if (op.type == rg::ShaderOperand::Instruction)
             {
-                auto& inst = std::get<ShaderInstruction>(op.value);
+                auto& inst = std::get<rg::ShaderInstruction>(op.value);
                 for (auto& childOp : inst.operands)
                 {
                     collectVariableReferencesInOperand(childOp, refs);
@@ -231,7 +229,7 @@ namespace xng::ShaderScript
             }
         }
 
-        void collectVariableReferences(const std::vector<ShaderInstruction>& insts,
+        void collectVariableReferences(const std::vector<rg::ShaderInstruction>& insts,
                                        std::set<std::string>& refs) const
         {
             for (auto& inst : insts)
@@ -241,23 +239,23 @@ namespace xng::ShaderScript
                     collectVariableReferencesInOperand(op, refs);
                 }
                 // Recurse into nested branches/loops
-                if (inst.code == ShaderInstruction::Branch)
+                if (inst.code == rg::ShaderInstruction::Branch)
                 {
-                    auto& trueBranch = std::get<std::vector<ShaderInstruction>>(inst.data.at(0));
-                    auto& falseBranch = std::get<std::vector<ShaderInstruction>>(inst.data.at(1));
+                    auto& trueBranch = std::get<std::vector<rg::ShaderInstruction>>(inst.data.at(0));
+                    auto& falseBranch = std::get<std::vector<rg::ShaderInstruction>>(inst.data.at(1));
                     collectVariableReferences(trueBranch, refs);
                     collectVariableReferences(falseBranch, refs);
                 }
-                else if (inst.code == ShaderInstruction::Loop)
+                else if (inst.code == rg::ShaderInstruction::Loop)
                 {
-                    auto& body = std::get<std::vector<ShaderInstruction>>(inst.data.at(0));
+                    auto& body = std::get<std::vector<rg::ShaderInstruction>>(inst.data.at(0));
                     collectVariableReferences(body, refs);
                 }
             }
         }
 
         void emitPendingDeclarations(const std::set<std::string>& referencedVars,
-                                     std::vector<ShaderInstruction>& ret,
+                                     std::vector<rg::ShaderInstruction>& ret,
                                      std::set<std::string>& initializedVariables)
         {
             for (auto& varName : referencedVars)
@@ -267,17 +265,17 @@ namespace xng::ShaderScript
                 auto it = variables.find(varName);
                 if (it == variables.end())
                     continue;
-                if (it->second.second.type == ShaderOperand::None)
+                if (it->second.second.type == rg::ShaderOperand::None)
                 {
                     ret.emplace_back(
-                        ShaderInstructionFactory::declareVariable(varName, it->second.first)
+                        rg::ShaderInstructionFactory::declareVariable(varName, it->second.first)
                     );
                 }
                 else
                 {
                     auto initializer = it->second.second;
                     patchOperand(initializer, ret, initializedVariables);
-                    ret.emplace_back(ShaderInstructionFactory::declareVariable(
+                    ret.emplace_back(rg::ShaderInstructionFactory::declareVariable(
                             varName,
                             it->second.first,
                             initializer)
@@ -288,10 +286,10 @@ namespace xng::ShaderScript
         }
 
     protected:
-        void countReferencesInOperand(const ShaderOperand& op,
+        void countReferencesInOperand(const rg::ShaderOperand& op,
                                       std::map<std::string, int>& refCounts) const
         {
-            if (op.type == ShaderOperand::Variable)
+            if (op.type == rg::ShaderOperand::Variable)
             {
                 auto varName = std::get<std::string>(op.value);
                 if (objects.find(varName) != objects.end())
@@ -299,9 +297,9 @@ namespace xng::ShaderScript
                     refCounts[varName]++;
                 }
             }
-            else if (op.type == ShaderOperand::Instruction)
+            else if (op.type == rg::ShaderOperand::Instruction)
             {
-                auto& inst = std::get<ShaderInstruction>(op.value);
+                auto& inst = std::get<rg::ShaderInstruction>(op.value);
                 for (auto& childOp : inst.operands)
                 {
                     countReferencesInOperand(childOp, refCounts);
@@ -309,7 +307,7 @@ namespace xng::ShaderScript
             }
         }
 
-        void countReferencesInInstructions(const std::vector<ShaderInstruction>& instrs,
+        void countReferencesInInstructions(const std::vector<rg::ShaderInstruction>& instrs,
                                            std::map<std::string, int>& refCounts) const
         {
             for (auto& inst : instrs)
@@ -320,17 +318,17 @@ namespace xng::ShaderScript
                 }
                 switch (inst.code)
                 {
-                case ShaderInstruction::Branch:
+                case rg::ShaderInstruction::Branch:
                     {
-                        auto& trueBranch = std::get<std::vector<ShaderInstruction>>(inst.data.at(0));
+                        auto& trueBranch = std::get<std::vector<rg::ShaderInstruction>>(inst.data.at(0));
                         countReferencesInInstructions(trueBranch, refCounts);
-                        auto& falseBranch = std::get<std::vector<ShaderInstruction>>(inst.data.at(1));
+                        auto& falseBranch = std::get<std::vector<rg::ShaderInstruction>>(inst.data.at(1));
                         countReferencesInInstructions(falseBranch, refCounts);
                         break;
                     }
-                case ShaderInstruction::Loop:
+                case rg::ShaderInstruction::Loop:
                     {
-                        auto& body = std::get<std::vector<ShaderInstruction>>(inst.data.at(0));
+                        auto& body = std::get<std::vector<rg::ShaderInstruction>>(inst.data.at(0));
                         countReferencesInInstructions(body, refCounts);
                         break;
                     }
@@ -397,15 +395,15 @@ namespace xng::ShaderScript
             }
         }
 
-        void promoteVariablesInOperand(const ShaderOperand& op)
+        void promoteVariablesInOperand(const rg::ShaderOperand& op)
         {
-            if (op.type == ShaderOperand::Variable)
+            if (op.type == rg::ShaderOperand::Variable)
             {
                 promoteVariable(std::get<std::string>(op.value));
             }
-            else if (op.type == ShaderOperand::Instruction)
+            else if (op.type == rg::ShaderOperand::Instruction)
             {
-                auto& inst = std::get<ShaderInstruction>(op.value);
+                auto& inst = std::get<rg::ShaderInstruction>(op.value);
                 for (auto& childOp : inst.operands)
                 {
                     promoteVariablesInOperand(childOp);
@@ -413,10 +411,10 @@ namespace xng::ShaderScript
             }
         }
 
-        std::map<std::string, std::pair<ShaderDataType, ShaderOperand>> objects;
-        std::map<std::string, std::pair<ShaderDataType, ShaderOperand>> variables;
+        std::map<std::string, std::pair<rg::ShaderDataType, rg::ShaderOperand>> objects;
+        std::map<std::string, std::pair<rg::ShaderDataType, rg::ShaderOperand>> variables;
     public:
-        std::vector<ShaderInstruction> instructions{};
+        std::vector<rg::ShaderInstruction> instructions{};
     };
 }
 

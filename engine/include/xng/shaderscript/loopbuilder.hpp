@@ -31,15 +31,15 @@ namespace xng::ShaderScript
     class XENGINE_EXPORT LoopBuilder
     {
     public:
-        void BeginFor(ShaderOperand loopVariable, ShaderOperand initializer, ShaderOperand predicate, ShaderOperand iterator)
+        void BeginFor(rg::ShaderOperand loopVariable, rg::ShaderOperand initializer, rg::ShaderOperand predicate, rg::ShaderOperand iterator)
         {
-            if (loopVariable.type != ShaderOperand::Variable) throw std::runtime_error("Invalid loop variable");
-            if (initializer.type == ShaderOperand::Variable) throw std::runtime_error("Invalid loop initializer");
-            if (iterator.type == ShaderOperand::Variable) throw std::runtime_error("Invalid loop iterator");
+            if (loopVariable.type != rg::ShaderOperand::Variable) throw std::runtime_error("Invalid loop variable");
+            if (initializer.type == rg::ShaderOperand::Variable) throw std::runtime_error("Invalid loop initializer");
+            if (iterator.type == rg::ShaderOperand::Variable) throw std::runtime_error("Invalid loop iterator");
 
-            BlockScope::get().addInstruction(ShaderInstructionFactory::assign(loopVariable, initializer));
+            BlockScope::get().addInstruction(rg::ShaderInstructionFactory::assign(loopVariable, initializer));
             _initializer = std::move(initializer);
-            _iterator = ShaderOperand::instruction(ShaderInstructionFactory::assign(loopVariable, iterator));
+            _iterator = rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::assign(loopVariable, iterator));
             _predicate = std::move(predicate);
             blockScope = std::make_unique<BlockScope>();
         }
@@ -51,19 +51,19 @@ namespace xng::ShaderScript
             blockScope = nullptr;
         }
 
-        ShaderInstruction build() const
+        rg::ShaderInstruction build() const
         {
             if (blockScope != nullptr) throw std::runtime_error("Incomplete loop block");
-            return ShaderInstructionFactory::loop(_initializer, _predicate, _iterator, body);
+            return rg::ShaderInstructionFactory::loop(_initializer, _predicate, _iterator, body);
         }
 
     private:
         std::unique_ptr<BlockScope> blockScope;
 
-        ShaderOperand _initializer;
-        ShaderOperand _predicate;
-        ShaderOperand _iterator;
-        std::vector<ShaderInstruction> body;
+        rg::ShaderOperand _initializer;
+        rg::ShaderOperand _predicate;
+        rg::ShaderOperand _iterator;
+        std::vector<rg::ShaderInstruction> body;
     };
 }
 

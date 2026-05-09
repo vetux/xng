@@ -24,22 +24,22 @@
 
 #include "xng/shaderscript/blockscope.hpp"
 
-#define _SWIZZLE2(x, y) [[nodiscard]] ShaderObject x##y() { return swizzle_vec2(ShaderPrimitiveType::COMPONENT_##x, ShaderPrimitiveType::COMPONENT_##y); }
-#define _SWIZZLE3(x, y, z) [[nodiscard]] ShaderObject x##y##z() { return swizzle_vec3(ShaderPrimitiveType::COMPONENT_##x, ShaderPrimitiveType::COMPONENT_##y, ShaderPrimitiveType::COMPONENT_##z); }
-#define _SWIZZLE4(x, y, z, w) [[nodiscard]] ShaderObject x##y##z##w() { return swizzle_vec4(ShaderPrimitiveType::COMPONENT_##x, ShaderPrimitiveType::COMPONENT_##y, ShaderPrimitiveType::COMPONENT_##z, ShaderPrimitiveType::COMPONENT_##w); }
+#define _SWIZZLE2(x, y) [[nodiscard]] ShaderObject x##y() { return swizzle_vec2(rg::ShaderPrimitiveType::COMPONENT_##x, rg::ShaderPrimitiveType::COMPONENT_##y); }
+#define _SWIZZLE3(x, y, z) [[nodiscard]] ShaderObject x##y##z() { return swizzle_vec3(rg::ShaderPrimitiveType::COMPONENT_##x, rg::ShaderPrimitiveType::COMPONENT_##y, rg::ShaderPrimitiveType::COMPONENT_##z); }
+#define _SWIZZLE4(x, y, z, w) [[nodiscard]] ShaderObject x##y##z##w() { return swizzle_vec4(rg::ShaderPrimitiveType::COMPONENT_##x, rg::ShaderPrimitiveType::COMPONENT_##y, rg::ShaderPrimitiveType::COMPONENT_##z, rg::ShaderPrimitiveType::COMPONENT_##w); }
 
 namespace xng::ShaderScript {
     class ShaderObject {
     public:
-        ShaderOperand operand;
+        rg::ShaderOperand operand;
 
         ShaderObject() = default;
 
-        ShaderObject(const ShaderInstruction &instruction)
-            : operand(ShaderOperand::instruction(instruction)) {
+        ShaderObject(const rg::ShaderInstruction &instruction)
+            : operand(rg::ShaderOperand::instruction(instruction)) {
         }
 
-        ShaderObject(ShaderOperand operand)
+        ShaderObject(rg::ShaderOperand operand)
             : operand(std::move(operand)) {
         }
 
@@ -47,46 +47,46 @@ namespace xng::ShaderScript {
 
         // Literal constructors
         ShaderObject(const bool literal)
-            : operand(ShaderOperand::literal(literal)) {
+            : operand(rg::ShaderOperand::literal(literal)) {
         }
 
         ShaderObject(const int literal)
-            : operand(ShaderOperand::literal(literal)) {
+            : operand(rg::ShaderOperand::literal(literal)) {
         }
 
         ShaderObject(const unsigned int literal)
-            : operand(ShaderOperand::literal(literal)) {
+            : operand(rg::ShaderOperand::literal(literal)) {
         }
 
         ShaderObject(const float literal)
-            : operand(ShaderOperand::literal(literal)) {
+            : operand(rg::ShaderOperand::literal(literal)) {
         }
 
         ShaderObject(const double literal)
-            : operand(ShaderOperand::literal(literal)) {
+            : operand(rg::ShaderOperand::literal(literal)) {
         }
 
         [[nodiscard]] ShaderObject x() {
-            return ShaderObject(ShaderInstructionFactory::vectorSwizzle(operand, {
-                ShaderPrimitiveType::COMPONENT_x
+            return ShaderObject(rg::ShaderInstructionFactory::vectorSwizzle(operand, {
+                rg::ShaderPrimitiveType::COMPONENT_x
             }));
         }
 
         [[nodiscard]] ShaderObject y() {
-            return ShaderObject(ShaderInstructionFactory::vectorSwizzle(operand, {
-                ShaderPrimitiveType::COMPONENT_y
+            return ShaderObject(rg::ShaderInstructionFactory::vectorSwizzle(operand, {
+                rg::ShaderPrimitiveType::COMPONENT_y
             }));
         }
 
         [[nodiscard]] ShaderObject z() {
-            return ShaderObject(ShaderInstructionFactory::vectorSwizzle(operand, {
-                ShaderPrimitiveType::COMPONENT_z
+            return ShaderObject(rg::ShaderInstructionFactory::vectorSwizzle(operand, {
+                rg::ShaderPrimitiveType::COMPONENT_z
             }));
         }
 
         [[nodiscard]] ShaderObject w() {
-            return ShaderObject(ShaderInstructionFactory::vectorSwizzle(operand, {
-                ShaderPrimitiveType::COMPONENT_w
+            return ShaderObject(rg::ShaderInstructionFactory::vectorSwizzle(operand, {
+                rg::ShaderPrimitiveType::COMPONENT_w
             }));
         }
 
@@ -434,16 +434,16 @@ namespace xng::ShaderScript {
 
         [[nodiscard]] ShaderObject element(const ShaderObject &column,
                                            const ShaderObject &row) {
-            return ShaderObject(ShaderInstructionFactory::matrixSubscript(operand, column.operand, row.operand));
+            return ShaderObject(rg::ShaderInstructionFactory::matrixSubscript(operand, column.operand, row.operand));
         }
 
         ShaderObject column(const ShaderObject &column) {
-            return ShaderObject(ShaderInstructionFactory::matrixSubscript(operand, column.operand));
+            return ShaderObject(rg::ShaderInstructionFactory::matrixSubscript(operand, column.operand));
         }
 
         ShaderObject length() {
-            if (operand.type == ShaderOperand::Buffer) {
-                return ShaderObject(ShaderInstructionFactory::bufferSize(operand));
+            if (operand.type == rg::ShaderOperand::Buffer) {
+                return ShaderObject(rg::ShaderInstructionFactory::bufferSize(operand));
             }
             throw std::runtime_error("length() called on non buffer");
         }
@@ -454,19 +454,19 @@ namespace xng::ShaderScript {
         }
 
         ShaderObject operator+(const ShaderObject &rhs) {
-            return ShaderObject(ShaderInstructionFactory::add(operand, rhs.operand));
+            return ShaderObject(rg::ShaderInstructionFactory::add(operand, rhs.operand));
         }
 
         ShaderObject operator-(const ShaderObject &rhs) {
-            return ShaderObject(ShaderInstructionFactory::subtract(operand, rhs.operand));
+            return ShaderObject(rg::ShaderInstructionFactory::subtract(operand, rhs.operand));
         }
 
         ShaderObject operator*(const ShaderObject &rhs) {
-            return ShaderObject(ShaderInstructionFactory::multiply(operand, rhs.operand));
+            return ShaderObject(rg::ShaderInstructionFactory::multiply(operand, rhs.operand));
         }
 
         ShaderObject operator/(const ShaderObject &rhs) {
-            return ShaderObject(ShaderInstructionFactory::divide(operand, rhs.operand));
+            return ShaderObject(rg::ShaderInstructionFactory::divide(operand, rhs.operand));
         }
 
         ShaderObject operator+=(const ShaderObject &rhs) {
@@ -490,62 +490,62 @@ namespace xng::ShaderScript {
         }
 
         ShaderObject operator==(const ShaderObject &rhs) {
-            return ShaderObject(ShaderInstructionFactory::compareEqual(operand, rhs.operand));
+            return ShaderObject(rg::ShaderInstructionFactory::compareEqual(operand, rhs.operand));
         }
 
         ShaderObject operator!=(const ShaderObject &rhs) {
-            return ShaderObject(ShaderInstructionFactory::compareNotEqual(operand, rhs.operand));
+            return ShaderObject(rg::ShaderInstructionFactory::compareNotEqual(operand, rhs.operand));
         }
 
         ShaderObject operator<(const ShaderObject &rhs) {
-            return ShaderObject(ShaderInstructionFactory::compareLess(operand, rhs.operand));
+            return ShaderObject(rg::ShaderInstructionFactory::compareLess(operand, rhs.operand));
         }
 
         ShaderObject operator>(const ShaderObject &rhs) {
-            return ShaderObject(ShaderInstructionFactory::compareGreater(operand, rhs.operand));
+            return ShaderObject(rg::ShaderInstructionFactory::compareGreater(operand, rhs.operand));
         }
 
         ShaderObject operator<=(const ShaderObject &rhs) {
-            return ShaderObject(ShaderInstructionFactory::compareLessEqual(operand, rhs.operand));
+            return ShaderObject(rg::ShaderInstructionFactory::compareLessEqual(operand, rhs.operand));
         }
 
         ShaderObject operator>=(const ShaderObject &rhs) {
-            return ShaderObject(ShaderInstructionFactory::compareGreaterEqual(operand, rhs.operand));
+            return ShaderObject(rg::ShaderInstructionFactory::compareGreaterEqual(operand, rhs.operand));
         }
 
         ShaderObject operator||(const ShaderObject &rhs) {
-            return ShaderObject(ShaderInstructionFactory::logicalOr(operand, rhs.operand));
+            return ShaderObject(rg::ShaderInstructionFactory::logicalOr(operand, rhs.operand));
         }
 
         ShaderObject operator&&(const ShaderObject &rhs) {
-            return ShaderObject(ShaderInstructionFactory::logicalAnd(operand, rhs.operand));
+            return ShaderObject(rg::ShaderInstructionFactory::logicalAnd(operand, rhs.operand));
         }
 
         ShaderObject operator[](const char *elementName) {
-            return ShaderObject(ShaderInstructionFactory::objectMember(operand, elementName));
+            return ShaderObject(rg::ShaderInstructionFactory::objectMember(operand, elementName));
         }
 
         ShaderObject operator[](const ShaderObject &index) {
-            return ShaderObject(ShaderInstructionFactory::arraySubscript(operand, index.operand));
+            return ShaderObject(rg::ShaderInstructionFactory::arraySubscript(operand, index.operand));
         }
 
     protected:
-        ShaderObject swizzle_vec2(const ShaderPrimitiveType::VectorComponent &x,
-                                  const ShaderPrimitiveType::VectorComponent &y) {
-            return ShaderObject(ShaderInstructionFactory::vectorSwizzle(operand, {x, y}));
+        ShaderObject swizzle_vec2(const rg::ShaderPrimitiveType::VectorComponent &x,
+                                  const rg::ShaderPrimitiveType::VectorComponent &y) {
+            return ShaderObject(rg::ShaderInstructionFactory::vectorSwizzle(operand, {x, y}));
         }
 
-        ShaderObject swizzle_vec3(const ShaderPrimitiveType::VectorComponent &x,
-                                  const ShaderPrimitiveType::VectorComponent &y,
-                                  const ShaderPrimitiveType::VectorComponent &z) {
-            return ShaderObject(ShaderInstructionFactory::vectorSwizzle(operand, {x, y, z}));
+        ShaderObject swizzle_vec3(const rg::ShaderPrimitiveType::VectorComponent &x,
+                                  const rg::ShaderPrimitiveType::VectorComponent &y,
+                                  const rg::ShaderPrimitiveType::VectorComponent &z) {
+            return ShaderObject(rg::ShaderInstructionFactory::vectorSwizzle(operand, {x, y, z}));
         }
 
-        ShaderObject swizzle_vec4(const ShaderPrimitiveType::VectorComponent &x,
-                                  const ShaderPrimitiveType::VectorComponent &y,
-                                  const ShaderPrimitiveType::VectorComponent &z,
-                                  const ShaderPrimitiveType::VectorComponent &w) {
-            return ShaderObject(ShaderInstructionFactory::vectorSwizzle(operand, {x, y, z, w}));
+        ShaderObject swizzle_vec4(const rg::ShaderPrimitiveType::VectorComponent &x,
+                                  const rg::ShaderPrimitiveType::VectorComponent &y,
+                                  const rg::ShaderPrimitiveType::VectorComponent &z,
+                                  const rg::ShaderPrimitiveType::VectorComponent &w) {
+            return ShaderObject(rg::ShaderInstructionFactory::vectorSwizzle(operand, {x, y, z, w}));
         }
 
     private:
@@ -555,7 +555,7 @@ namespace xng::ShaderScript {
             // When user direct initializes an object like vec2 v = vec2(1, 1);
             // the vec2(1,1) is registered to the current scope as an object with the given initializer.
             // v itself just gets this object reference via direct initialization so no assign value instruction is emitted.
-            BlockScope::get().addInstruction(ShaderInstructionFactory::assign(operand, value.operand));
+            BlockScope::get().addInstruction(rg::ShaderInstructionFactory::assign(operand, value.operand));
         }
     };
 
@@ -568,10 +568,10 @@ namespace xng::ShaderScript {
      * @tparam VALUE_COMPONENT
      * @tparam VALUE_COUNT
      */
-    template<ShaderPrimitiveType::Type VALUE_TYPE, ShaderPrimitiveType::Component VALUE_COMPONENT, size_t VALUE_COUNT>
+    template<rg::ShaderPrimitiveType::Type VALUE_TYPE, rg::ShaderPrimitiveType::Component VALUE_COMPONENT, size_t VALUE_COUNT>
     class ShaderDataObject : public ShaderObject {
     public:
-        static inline ShaderDataType TYPE = ShaderDataType(ShaderPrimitiveType(VALUE_TYPE, VALUE_COMPONENT),
+        static inline rg::ShaderDataType TYPE = rg::ShaderDataType(rg::ShaderPrimitiveType(VALUE_TYPE, VALUE_COMPONENT),
                                                            VALUE_COUNT);
 
         // Default constructor - creates a new registered variable
@@ -592,51 +592,51 @@ namespace xng::ShaderScript {
         // Conversion constructor - creates and registers a variable with automatic type conversion
         ShaderDataObject(const ShaderObject &other)
             : ShaderObject(other) {
-            ShaderOperand initializer = other.operand;
-            if (VALUE_TYPE >= ShaderPrimitiveType::VECTOR2 && VALUE_TYPE <= ShaderPrimitiveType::VECTOR4) {
-                initializer = ShaderOperand::instruction(ShaderInstructionFactory::createVector(TYPE.getPrimitive(), other.operand));
-            } else if (VALUE_TYPE >= ShaderPrimitiveType::MAT2 && VALUE_TYPE <= ShaderPrimitiveType::MAT4) {
-                initializer = ShaderOperand::instruction(ShaderInstructionFactory::createMatrix(TYPE.getPrimitive(), other.operand));
+            rg::ShaderOperand initializer = other.operand;
+            if (VALUE_TYPE >= rg::ShaderPrimitiveType::VECTOR2 && VALUE_TYPE <= rg::ShaderPrimitiveType::VECTOR4) {
+                initializer = rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::createVector(TYPE.getPrimitive(), other.operand));
+            } else if (VALUE_TYPE >= rg::ShaderPrimitiveType::MAT2 && VALUE_TYPE <= rg::ShaderPrimitiveType::MAT4) {
+                initializer = rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::createMatrix(TYPE.getPrimitive(), other.operand));
             }
             operand = BlockScope::get().registerObject(TYPE, initializer);
         }
 
         // Construct from inline instruction (e.g. struct member access)
-        explicit ShaderDataObject(const ShaderInstruction &other)
+        explicit ShaderDataObject(const rg::ShaderInstruction &other)
             : ShaderObject(other) {}
 
         // Construct from inline operand (e.g. for loop variable, function argument)
-        explicit ShaderDataObject(ShaderOperand other)
+        explicit ShaderDataObject(rg::ShaderOperand other)
             : ShaderObject(std::move(other)) {}
 
         // Array constructor
         ShaderDataObject(const std::vector<ShaderDataObject<VALUE_TYPE, VALUE_COMPONENT, 1>> &values)
-            : ShaderObject(ShaderInstructionFactory::createArray(ShaderDataType{
-                  ShaderPrimitiveType{VALUE_TYPE, VALUE_COMPONENT}, VALUE_COUNT
+            : ShaderObject(rg::ShaderInstructionFactory::createArray(rg::ShaderDataType{
+                  rg::ShaderPrimitiveType{VALUE_TYPE, VALUE_COMPONENT}, VALUE_COUNT
               }, getOperands(values))) {}
 
         // Copy constructor - creates and registers a variable with automatic type conversion
         ShaderDataObject(const ShaderDataObject &x) {
-            ShaderOperand initializer = x.operand;
-            if (VALUE_TYPE >= ShaderPrimitiveType::VECTOR2 && VALUE_TYPE <= ShaderPrimitiveType::VECTOR4) {
-                initializer = ShaderOperand::instruction(ShaderInstructionFactory::createVector(TYPE.getPrimitive(), x.operand));
-            } else if (VALUE_TYPE >= ShaderPrimitiveType::MAT2 && VALUE_TYPE <= ShaderPrimitiveType::MAT4) {
-                initializer = ShaderOperand::instruction(ShaderInstructionFactory::createMatrix(TYPE.getPrimitive(), x.operand));
+            rg::ShaderOperand initializer = x.operand;
+            if (VALUE_TYPE >= rg::ShaderPrimitiveType::VECTOR2 && VALUE_TYPE <= rg::ShaderPrimitiveType::VECTOR4) {
+                initializer = rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::createVector(TYPE.getPrimitive(), x.operand));
+            } else if (VALUE_TYPE >= rg::ShaderPrimitiveType::MAT2 && VALUE_TYPE <= rg::ShaderPrimitiveType::MAT4) {
+                initializer = rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::createMatrix(TYPE.getPrimitive(), x.operand));
             }
             operand = BlockScope::get().registerObject(TYPE, initializer);
         }
 
         // Multi-arg constructors for vector/matrix construction
         ShaderDataObject(const ShaderObject &x, const ShaderObject &y) {
-            operand = ShaderOperand::instruction(makeComposite(x.operand, y.operand));
+            operand = rg::ShaderOperand::instruction(makeComposite(x.operand, y.operand));
         }
 
         ShaderDataObject(const ShaderObject &x, const ShaderObject &y, const ShaderObject &z) {
-            operand = ShaderOperand::instruction(makeComposite(x.operand, y.operand, z.operand));
+            operand = rg::ShaderOperand::instruction(makeComposite(x.operand, y.operand, z.operand));
         }
 
         ShaderDataObject(const ShaderObject &x, const ShaderObject &y, const ShaderObject &z, const ShaderObject &w) {
-            operand = ShaderOperand::instruction(makeComposite(x.operand, y.operand, z.operand, w.operand));
+            operand = rg::ShaderOperand::instruction(makeComposite(x.operand, y.operand, z.operand, w.operand));
         }
 
         // Literal constructors
@@ -648,24 +648,24 @@ namespace xng::ShaderScript {
 
     private:
         void wrapLiteralIfVector() {
-            if (VALUE_TYPE >= ShaderPrimitiveType::VECTOR2 && VALUE_TYPE <= ShaderPrimitiveType::VECTOR4) {
-                operand = ShaderOperand::instruction(ShaderInstructionFactory::createVector(TYPE.getPrimitive(), operand));
+            if (VALUE_TYPE >= rg::ShaderPrimitiveType::VECTOR2 && VALUE_TYPE <= rg::ShaderPrimitiveType::VECTOR4) {
+                operand = rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::createVector(TYPE.getPrimitive(), operand));
             }
         }
 
         template<typename... Args>
-        ShaderInstruction makeComposite(Args&&... args) {
-            if (VALUE_TYPE >= ShaderPrimitiveType::VECTOR2 && VALUE_TYPE <= ShaderPrimitiveType::VECTOR4) {
-                return ShaderInstructionFactory::createVector(TYPE.getPrimitive(), std::forward<Args>(args)...);
-            } else if (VALUE_TYPE >= ShaderPrimitiveType::MAT2 && VALUE_TYPE <= ShaderPrimitiveType::MAT4) {
-                return ShaderInstructionFactory::createMatrix(TYPE.getPrimitive(), std::forward<Args>(args)...);
+        rg::ShaderInstruction makeComposite(Args&&... args) {
+            if (VALUE_TYPE >= rg::ShaderPrimitiveType::VECTOR2 && VALUE_TYPE <= rg::ShaderPrimitiveType::VECTOR4) {
+                return rg::ShaderInstructionFactory::createVector(TYPE.getPrimitive(), std::forward<Args>(args)...);
+            } else if (VALUE_TYPE >= rg::ShaderPrimitiveType::MAT2 && VALUE_TYPE <= rg::ShaderPrimitiveType::MAT4) {
+                return rg::ShaderInstructionFactory::createMatrix(TYPE.getPrimitive(), std::forward<Args>(args)...);
             }
             throw std::runtime_error("Invalid scalar constructor invoked");
         }
 
-        static std::vector<ShaderOperand> getOperands(
+        static std::vector<rg::ShaderOperand> getOperands(
             const std::vector<ShaderDataObject<VALUE_TYPE, VALUE_COMPONENT, 1>> &values) {
-            std::vector<ShaderOperand> ops;
+            std::vector<rg::ShaderOperand> ops;
             for (auto &value : values) {
                 ops.push_back(value.operand);
             }
@@ -676,7 +676,7 @@ namespace xng::ShaderScript {
     template<const char * typeName, int C>
     class ShaderStructObject : public ShaderObject {
     public:
-        static inline ShaderDataType TYPE = ShaderDataType(typeName, C);
+        static inline rg::ShaderDataType TYPE = rg::ShaderDataType(typeName, C);
 
         // Default constructor - creates a new registered variable
         ShaderStructObject() {
@@ -702,15 +702,15 @@ namespace xng::ShaderScript {
         }
 
         // Construct from inline operand (e.g. for loop variable)
-        explicit ShaderStructObject(ShaderOperand other)
+        explicit ShaderStructObject(rg::ShaderOperand other)
             : ShaderObject(std::move(other)) {}
     };
 
-    template<TextureType t, ColorFormat format>
+    template<rg::TextureType t, rg::ColorFormat format>
     class ShaderTextureObject : public ShaderObject
     {
     public:
-        static inline ShaderTexture TYPE = ShaderTexture(t, format);
+        static inline rg::ShaderTexture TYPE = rg::ShaderTexture(t, format);
 
         ShaderTextureObject() {}
 
@@ -730,7 +730,7 @@ namespace xng::ShaderScript {
             operand = other.operand;
         }
 
-        explicit ShaderTextureObject(ShaderOperand other)
+        explicit ShaderTextureObject(rg::ShaderOperand other)
             : ShaderObject(std::move(other)) {}
     };
 }

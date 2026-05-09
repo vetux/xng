@@ -44,13 +44,13 @@ namespace xng::ShaderScript {
         return current;
     }
 
-    std::vector<ShaderOperand>& IRBaseParam::getArgumentValuesStorage() {
-        thread_local std::vector<ShaderOperand> argumentValues;
+    std::vector<rg::ShaderOperand>& IRBaseParam::getArgumentValuesStorage() {
+        thread_local std::vector<rg::ShaderOperand> argumentValues;
         return argumentValues;
     }
 
-    std::vector<ShaderFunction::Argument>& IRBaseParam::getArgumentsStorage() {
-        thread_local std::vector<ShaderFunction::Argument> arguments;
+    std::vector<rg::ShaderFunction::Argument>& IRBaseParam::getArgumentsStorage() {
+        thread_local std::vector<rg::ShaderFunction::Argument> arguments;
         return arguments;
     }
 

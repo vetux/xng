@@ -31,7 +31,7 @@ namespace xng::ShaderScript
     class XENGINE_EXPORT BranchBuilder
     {
     public:
-        void RecordIf(ShaderOperand cond)
+        void RecordIf(rg::ShaderOperand cond)
         {
             condition = std::move(cond);
             block = std::make_unique<BlockScope>();
@@ -57,18 +57,18 @@ namespace xng::ShaderScript
             block = nullptr;
         }
 
-        ShaderInstruction build()
+        rg::ShaderInstruction build()
         {
             if (block != nullptr || trueBranch.empty()) throw std::runtime_error("Uninitialized branch");
-            return ShaderInstructionFactory::branch(condition, trueBranch, falseBranch);
+            return rg::ShaderInstructionFactory::branch(condition, trueBranch, falseBranch);
         }
 
     private:
         bool recordingTrueBranch = false;
         std::unique_ptr<BlockScope> block;
-        ShaderOperand condition;
-        std::vector<ShaderInstruction> trueBranch;
-        std::vector<ShaderInstruction> falseBranch;
+        rg::ShaderOperand condition;
+        std::vector<rg::ShaderInstruction> trueBranch;
+        std::vector<rg::ShaderInstruction> falseBranch;
     };
 }
 
