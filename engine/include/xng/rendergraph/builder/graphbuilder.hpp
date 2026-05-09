@@ -23,9 +23,6 @@
 #include "xng/rendergraph/resourceid.hpp"
 
 #include "xng/rendergraph/resource/texture.hpp"
-#include "xng/rendergraph/resource/indexbuffer.hpp"
-#include "xng/rendergraph/resource/vertexbuffer.hpp"
-#include "xng/rendergraph/resource/storagebuffer.hpp"
 
 #include "xng/rendergraph/builder/transferpassbuilder.hpp"
 #include "xng/rendergraph/builder/rasterpassbuilder.hpp"
@@ -49,18 +46,6 @@ namespace xng::rg {
             Resource ret(createResource(), desc);
             bufferAllocations.insert({ret, static_cast<Buffer>(desc)});
             return ret;
-        }
-
-        Resource<VertexBuffer> allocateVertexBuffer(const VertexBuffer &desc) {
-            return static_cast<Resource<VertexBuffer>>(allocateBuffer(desc));
-        }
-
-        Resource<IndexBuffer> allocateIndexBuffer(const IndexBuffer &desc) {
-            return static_cast<Resource<IndexBuffer>>(allocateBuffer(desc));
-        }
-
-        Resource<StorageBuffer> allocateStorageBuffer(const StorageBuffer &desc) {
-            return static_cast<Resource<StorageBuffer>>(allocateBuffer(desc));
         }
 
         Resource<Texture> allocateTexture(const Texture &desc) {
