@@ -229,6 +229,8 @@ namespace xng {
             ret.storageRead(scene.cameraBuffer, {rg::Shader::VERTEX});
 
             for (auto &model: scene.models) {
+                //TODO: Deduplicate access declarations for meshes / materials referenced in multiple models.
+
                 // Declare transform buffer accesses
                 ret.storageRead(scene.transformBuffer,
                                 {rg::Shader::VERTEX},
