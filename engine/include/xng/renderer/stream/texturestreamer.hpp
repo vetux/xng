@@ -67,6 +67,8 @@ namespace xng {
             }
         };
 
+        explicit TextureStreamer(rg::Heap &heap);
+
         Handle upload(const ImageRGBA &image);
 
         void destroy(const Handle &handle);

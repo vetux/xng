@@ -111,42 +111,14 @@ namespace xng {
 
             gBuffer.subscribe(registry);
 
-            graph.addRasterPass("ConstructionPass")
-                    .attachColor(rg::Attachment(gBuffer.position, Vec4f(0)))
-                    .attachColor(rg::Attachment(gBuffer.normal, Vec4f(0)))
-                    .attachColor(rg::Attachment(gBuffer.tangent, Vec4f(0)))
-                    .attachColor(rg::Attachment(gBuffer.roughnessMetallicAO, Vec4f(0)))
-                    .attachColor(rg::Attachment(gBuffer.albedo, Vec4f(0)))
-                    .attachColor(rg::Attachment(gBuffer.objectIdReceiveShadows, Vec4i(0)))
-                    .attachDepth(rg::Attachment(gBuffer.depth, 1.0f))
+            createPass(graph, scene, gBuffer)
                     .execute([this, &scene, &gBuffer](rg::RasterContext &cmd) {
                         cmd.setViewport({}, gBuffer.resolution);
 
-                        cmd.bindStorageBuffer("camera",
-                                              scene.cameraBuffer,
-                                              0,
-                                              scene.cameraBuffer.getDescription().size);
-
-                        // Bind Vertex Buffers
-                        for (auto attr = ATTRIBUTE_BEGIN;
-                             attr <= ATTRIBUTE_END;
-                             attr = static_cast<VertexAttribute>(attr + 1)) {
-                            cmd.bindVertexBuffer(scene.vertexBuffers.at(attr),
-                                                 attr,
-                                                 0,
-                                                 getVertexAttributeSize(attr));
-                        }
-
-                        // Bind Index Buffer
-                        cmd.bindIndexBuffer(scene.indexBuffer);
-
-                        // Bind BufferStreamer buffers indexed via shader parameters
-                        cmd.bindStorageBuffer("transforms",
-                                              scene.transformBuffer,
-                                              0,
-                                              scene.transformBuffer.getDescription().size);
-
+                        // Draw static meshes
                         cmd.bindPipeline(pipeline);
+
+                        bindBuffers(cmd, scene);
 
                         for (auto i = 0; i < scene.models.size(); i++) {
                             const auto &model = scene.models.at(i);
@@ -156,6 +128,34 @@ namespace xng {
                             cmd.setShaderParameter("receiveShadows", rg::ShaderPrimitive(model.receiveShadows));
                             //TODO: Precompute MVP on cpu (Needs infrastructure in render allocator)
                             for (auto &mesh: model.meshes) {
+                                if (mesh.boneCount > 0) {
+                                    continue;
+                                }
+                                cmd.setShaderParameter("boneBaseIndex", rg::ShaderPrimitive(mesh.boneBaseIndex));
+                                if (mesh.indexed) {
+                                    cmd.drawIndexed(mesh.drawCall, mesh.indexOffset);
+                                } else {
+                                    cmd.drawArray(mesh.drawCall);
+                                }
+                            }
+                        }
+
+                        // Draw skinned meshes
+                        cmd.bindPipeline(pipelineSkinned);
+
+                        bindBuffers(cmd, scene);
+
+                        for (auto i = 0; i < scene.models.size(); i++) {
+                            const auto &model = scene.models.at(i);
+                            cmd.setShaderParameter("objectId", rg::ShaderPrimitive(i));
+                            cmd.setShaderParameter("transformIndex", rg::ShaderPrimitive(model.transformIndex));
+                            cmd.setShaderParameter("materialIndex", rg::ShaderPrimitive(model.materialIndex));
+                            cmd.setShaderParameter("receiveShadows", rg::ShaderPrimitive(model.receiveShadows));
+                            //TODO: Precompute MVP on cpu (Needs infrastructure in render allocator)
+                            for (auto &mesh: model.meshes) {
+                                if (mesh.boneCount <= 0) {
+                                    continue;
+                                }
                                 cmd.setShaderParameter("boneBaseIndex", rg::ShaderPrimitive(mesh.boneBaseIndex));
                                 if (mesh.indexed) {
                                     cmd.drawIndexed(mesh.drawCall, mesh.indexOffset);
@@ -168,6 +168,119 @@ namespace xng {
         }
 
     private:
+        static void bindBuffers(rg::RasterContext &cmd, const RenderScene &scene) {
+            // Bind Vertex Buffers
+            for (auto attr = ATTRIBUTE_BEGIN;
+                 attr <= ATTRIBUTE_END;
+                 attr = static_cast<VertexAttribute>(attr + 1)) {
+                cmd.bindVertexBuffer(scene.vertexBuffers.at(attr),
+                                     attr,
+                                     0,
+                                     getVertexAttributeSize(attr));
+            }
+
+            // Bind Index Buffer
+            cmd.bindIndexBuffer(scene.indexBuffer);
+
+            // Bind storage buffers
+            cmd.bindStorageBuffer("camera",
+                                  scene.cameraBuffer,
+                                  0,
+                                  scene.cameraBuffer.getDescription().size);
+
+            cmd.bindStorageBuffer("transforms",
+                                  scene.transformBuffer,
+                                  0,
+                                  scene.transformBuffer.getDescription().size);
+
+            cmd.bindStorageBuffer("materials",
+                                  scene.materialBuffer,
+                                  0,
+                                  scene.materialBuffer.getDescription().size);
+
+            cmd.bindStorageBuffer("bones",
+                                  scene.boneBuffer,
+                                  0,
+                                  scene.boneBuffer.getDescription().size);
+
+            // Bind Textures
+            std::vector<rg::TextureBinding> textureBindings;
+            for (auto res = RESOLUTION_BEGIN;
+                 res <= RESOLUTION_END;
+                 res = static_cast<TextureResolution>(res + 1)) {
+                textureBindings.emplace_back(rg::Resource(scene.textures.at(res)));
+            }
+            cmd.bindTexture("textures", textureBindings);
+        }
+
+        static rg::RasterPassBuilder &createPass(rg::GraphBuilder &builder,
+                                                 const RenderScene &scene,
+                                                 const GBuffer &gBuffer) {
+            auto &ret = builder.addRasterPass("ConstructionPass")
+                    .attachColor(rg::Attachment(gBuffer.position, Vec4f(0)))
+                    .attachColor(rg::Attachment(gBuffer.normal, Vec4f(0)))
+                    .attachColor(rg::Attachment(gBuffer.tangent, Vec4f(0)))
+                    .attachColor(rg::Attachment(gBuffer.roughnessMetallicAO, Vec4f(0)))
+                    .attachColor(rg::Attachment(gBuffer.albedo, Vec4f(0)))
+                    .attachColor(rg::Attachment(gBuffer.objectIdReceiveShadows, Vec4i(0)))
+                    .attachDepth(rg::Attachment(gBuffer.depth, 1.0f));
+
+            // Declare camera buffer access
+            ret.storageRead(scene.cameraBuffer, {rg::Shader::VERTEX});
+
+            for (auto &model: scene.models) {
+                // Declare transform buffer accesses
+                ret.storageRead(scene.transformBuffer,
+                                {rg::Shader::VERTEX},
+                                sizeof(ShaderTransform::CPU) * model.transformIndex,
+                                sizeof(ShaderTransform::CPU));
+
+                // Declare material buffer accesses
+                ret.storageRead(scene.materialBuffer,
+                                {rg::Shader::FRAGMENT},
+                                sizeof(ShaderMaterial::CPU) * model.materialIndex,
+                                sizeof(ShaderMaterial::CPU));
+
+                // Declare texture buffer accesses
+                for (auto &pair: model.materialTextureIndices) {
+                    const auto &texture = scene.textures.at(pair.first);
+                    for (auto &arrayLayer: pair.second) {
+                        ret.textureSampledRead(texture,
+                                               {rg::Shader::FRAGMENT},
+                                               rg::TextureBinding::Range(0,
+                                                                         texture.getDescription().mipLevels,
+                                                                         arrayLayer,
+                                                                         1));
+                    }
+                }
+
+                for (auto &mesh: model.meshes) {
+                    // Declare vertex buffer accesses
+                    for (auto attr = ATTRIBUTE_BEGIN;
+                         attr <= ATTRIBUTE_END;
+                         attr = static_cast<VertexAttribute>(attr + 1)) {
+                        ret.vertexRead(scene.vertexBuffers.at(attr),
+                                       getVertexAttributeSize(attr) * mesh.indexOffset,
+                                       getVertexAttributeSize(attr) * mesh.indexCount);
+                    }
+
+                    if (mesh.indexed) {
+                        // Declare index buffer access
+                        ret.indexRead(scene.indexBuffer, mesh.indexOffset, sizeof(uint32_t) * mesh.indexCount);
+                    }
+
+                    if (mesh.boneCount > 0) {
+                        // Declare bone buffer accesses
+                        ret.storageRead(scene.boneBuffer,
+                                        {rg::Shader::VERTEX},
+                                        sizeof(ShaderTransform::CPU) * mesh.boneBaseIndex,
+                                        sizeof(ShaderTransform::CPU) * mesh.boneCount);
+                    }
+                }
+            }
+            return ret;
+        }
+
         static rg::RasterPipeline getPipeline(const rg::Shader &vertexShader, const rg::Shader &fragmentShader) {
             rg::RasterPipeline ret;
             ret.shaders = {vertexShader, fragmentShader};

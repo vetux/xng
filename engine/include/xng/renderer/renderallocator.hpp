@@ -106,21 +106,19 @@ namespace xng {
             MeshStreamer meshStream;
             TextureStreamer textureStream;
 
-            RenderScene commit(rg::GraphBuilder &builder, std::vector<RenderScene::Model> models) {
-                return RenderScene(std::move(models),
-                                   cameraStream.commit(builder),
-                                   transformStream.commit(builder),
-                                   boneStream.commit(builder),
-                                   materialStream.commit(builder),
-                                   pointLightStream.commit(builder),
-                                   spotLightStream.commit(builder),
-                                   directionalLightStream.commit(builder),
-                                   pointShadowMaps.commit(builder),
-                                   spotShadowMaps.commit(builder),
-                                   directionalShadowMaps.commit(builder),
-                                   meshStream.commitVertexBuffers(builder),
-                                   meshStream.commitIndexBuffer(builder),
-                                   textureStream.commit(builder));
+            explicit Streams(rg::Heap &heap, const Vec2i &shadowMapResolution)
+                : cameraStream(heap, rg::Buffer::CAPABILITY_STORAGE),
+                  transformStream(heap),
+                  boneStream(heap),
+                  materialStream(heap),
+                  pointLightStream(heap),
+                  spotLightStream(heap),
+                  directionalLightStream(heap),
+                  pointShadowMaps(heap, shadowMapResolution),
+                  spotShadowMaps(heap, shadowMapResolution),
+                  directionalShadowMaps(heap, shadowMapResolution),
+                  meshStream(heap),
+                  textureStream(heap) {
             }
         };
 

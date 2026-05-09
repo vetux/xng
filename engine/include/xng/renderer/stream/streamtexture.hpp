@@ -40,7 +40,7 @@ namespace xng {
          */
         typedef unsigned int Handle;
 
-        explicit StreamTexture(const Vec2i &resolution);
+        explicit StreamTexture(const rg::Heap &heap, const Vec2i &resolution);
 
         ~StreamTexture() = default;
 

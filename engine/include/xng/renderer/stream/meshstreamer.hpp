@@ -41,6 +41,8 @@ namespace xng {
             size_t indexOffset; // The offset applied to each index.
         };
 
+        explicit MeshStreamer(rg::Heap &heap);
+
         Handle create();
 
         /**

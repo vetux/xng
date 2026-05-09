@@ -34,7 +34,7 @@ namespace xng {
          */
         typedef unsigned int Handle;
 
-        BufferStreamer();
+        BufferStreamer(const rg::Heap &heap);
 
         Handle create();
 

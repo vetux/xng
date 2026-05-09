@@ -39,19 +39,25 @@ namespace xng {
             rg::DrawCall drawCall;
             bool indexed;
             size_t indexOffset; // The offset applied to each index.
+            size_t indexCount; // The number of indices for this mesh
 
             unsigned int boneBaseIndex; // The offset applied to each bone index
+            size_t boneCount; // The number of bones for this mesh
 
             Mesh(const rg::Primitive primitive,
-                 rg::DrawCall _drawCall,
+                 const rg::DrawCall &drawCall,
                  const bool indexed,
                  const size_t index_offset,
-                 const unsigned int boneBaseIndex)
+                 const size_t indexCount,
+                 const unsigned int boneBaseIndex,
+                 const size_t boneCount)
                 : primitive(primitive),
-                  drawCall(std::move(_drawCall)),
+                  drawCall(drawCall),
                   indexed(indexed),
                   indexOffset(index_offset),
-                  boneBaseIndex(boneBaseIndex) {
+                  indexCount(indexCount),
+                  boneBaseIndex(boneBaseIndex),
+                  boneCount(boneCount) {
             }
         };
 
@@ -63,18 +69,22 @@ namespace xng {
 
             bool receiveShadows;
 
-            Model(const size_t transformIndex,
+            std::unordered_map<TextureResolution, std::vector<size_t> > materialTextureIndices;
+
+            Model(std::vector<Mesh> meshes,
+                  const size_t transformIndex,
                   const size_t materialIndex,
                   const bool receiveShadows,
-                  std::vector<Mesh> meshes)
+                  std::unordered_map<TextureResolution, std::vector<size_t> > _materialTextureIndices)
                 : meshes(std::move(meshes)),
                   transformIndex(transformIndex),
                   materialIndex(materialIndex),
-                  receiveShadows(receiveShadows) {
+                  receiveShadows(receiveShadows),
+                  materialTextureIndices(std::move(_materialTextureIndices)) {
             }
         };
 
-        RenderScene(std::vector<Model> models,
+        RenderScene(std::vector<Model> _models,
                     rg::HeapResource<rg::Buffer> _cameraBuffer,
                     rg::HeapResource<rg::Buffer> _transformBuffer,
                     rg::HeapResource<rg::Buffer> _boneBuffer,
@@ -88,7 +98,7 @@ namespace xng {
                     std::unordered_map<VertexAttribute, rg::HeapResource<rg::Buffer> > _vertexBuffers,
                     rg::HeapResource<rg::Buffer> _indexBuffer,
                     std::unordered_map<TextureResolution, rg::HeapResource<rg::Texture> > _textures)
-            : models(models),
+            : models(std::move(_models)),
               cameraBuffer(std::move(_cameraBuffer)),
               transformBuffer(std::move(_transformBuffer)),
               boneBuffer(std::move(_boneBuffer)),
@@ -107,7 +117,6 @@ namespace xng {
         std::vector<Model> models;
 
         rg::HeapResource<rg::Buffer> cameraBuffer;
-
         rg::HeapResource<rg::Buffer> transformBuffer;
         rg::HeapResource<rg::Buffer> boneBuffer;
         rg::HeapResource<rg::Buffer> materialBuffer;
