@@ -103,8 +103,15 @@ namespace xng::rg {
             std::vector<size_t> bindingPoints; // The bindings points of each attribute
             std::vector<size_t> offsets; // The relative offsets of the attributes
 
+            VertexFormat() = default;
+
             /**
+             * The layout specifies the attributes the shader expects.
+             * The binding points specify where each attribute in the layout is read from.
+             * The offsets specify offsets into each of the buffers bound to a given binding point.
+             *
              * @param layout The layout of the vertex
+             * @param bindingPoints The binding points of each attribute
              * @param offsets The relative offsets of each attribute
              */
             VertexFormat(ShaderAttributeLayout layout, std::vector<size_t> bindingPoints, std::vector<size_t> offsets)
