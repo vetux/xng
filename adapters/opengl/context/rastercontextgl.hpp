@@ -120,7 +120,13 @@ namespace xng::opengl {
             const auto &elements = pipeline.vertexFormat.layout.getElements();
             const auto &bindingPoints = pipeline.vertexFormat.bindingPoints;
             const auto &offsets = pipeline.vertexFormat.offsets;
-            for (auto i = 0; i < offsets.size(); i++) {
+
+            if (elements.size() != bindingPoints.size() || elements.size() != offsets.size()) {
+                throw std::runtime_error(
+                    "Vertex format elements, binding points and offsets must be defined for each element");
+            }
+
+            for (auto i = 0; i < elements.size(); i++) {
                 glEnableVertexAttribArray(i);
                 glVertexAttribBinding(i, bindingPoints.at(i));
 
