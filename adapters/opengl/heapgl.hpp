@@ -47,18 +47,9 @@ namespace xng::opengl {
 
         HeapResource<Texture> allocateTexture(const Texture &desc) override;
 
-        HeapMapping mapBuffer(const HeapResource<Buffer> &target) override;
+        std::unique_ptr<HeapMapping> map(const HeapResource<Buffer> &target) override;
 
-        bool hasPendingTransfers(const ResourceId &handle) override;
-
-        TransferContext &getTransferContext() override;
-
-        std::vector<uint8_t> downloadStorageBuffer(const HeapResource<Buffer> &buffer) override;
-
-        std::vector<uint8_t> downloadTexture(const HeapResource<Texture> &texture,
-                                         size_t index,
-                                         size_t mipMapLevel,
-                                         CubeMapFace face) override;
+        std::unique_ptr<HeapTransfer> transfer(std::function<void(TransferContext &)> callback) override;
 
         void incrementReference(const ResourceId &handle) override {
             refCounter.inc(handle.getHandle());

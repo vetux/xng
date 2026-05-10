@@ -20,142 +20,77 @@
 #define XENGINE_HEAPMAPPING_HPP
 
 #include <algorithm>
-#include <cstddef>
-#include <cstdint>
-#include <algorithm>
-#include <cassert>
-#include <functional>
+#include <memory>
 #include <stdexcept>
 
 namespace xng {
     class HeapMapping {
     public:
-        HeapMapping() = default;
+        virtual ~HeapMapping() = default;
 
-        HeapMapping(uint8_t *blockPtr, const size_t blockSize, std::function<void()> deleter)
-            : blockPtr(blockPtr), blockSize(blockSize), deleter(std::move(deleter)) {
-            assert(blockPtr != nullptr);
-        }
+        virtual uint8_t *data() = 0;
 
-        ~HeapMapping() {
-            if (deleter) {
-                deleter();
-            }
-        }
-
-        HeapMapping(const HeapMapping &) = delete;
-
-        HeapMapping &operator=(const HeapMapping &) = delete;
-
-        HeapMapping(HeapMapping &&other) noexcept
-            : blockPtr(other.blockPtr), blockSize(other.blockSize), deleter(std::move(other.deleter)) {
-            other.blockPtr = nullptr;
-            other.blockSize = 0;
-            other.deleter = {};
-        }
-
-        HeapMapping &operator=(HeapMapping &&other) noexcept {
-            if (this == &other) return *this;
-            blockPtr = other.blockPtr;
-            blockSize = other.blockSize;
-            deleter = std::move(other.deleter);
-            other.blockPtr = nullptr;
-            other.blockSize = 0;
-            other.deleter = {};
-            return *this;
-        }
+        virtual size_t size() = 0;
 
         uint8_t *begin() {
-            return blockPtr;
+            return data();
         }
 
         uint8_t *end() {
-            return blockPtr + blockSize;
-        }
-
-        [[nodiscard]] const uint8_t *begin() const {
-            return blockPtr;
-        }
-
-        [[nodiscard]] const uint8_t *end() const {
-            return blockPtr + blockSize;
+            return data() + size();
         }
 
         uint8_t &operator[](const size_t i) {
-            if (i >= blockSize) {
+            if (i >= size()) {
                 throw std::runtime_error("Attempted to perform an out of bounds heap mapping read");
             }
-            return blockPtr[i];
+            return data()[i];
         }
 
-        const uint8_t &operator[](const size_t i) const {
-            if (i >= blockSize) {
-                throw std::runtime_error("Attempted to perform an out of bounds heap mapping read");
-            }
-            return blockPtr[i];
-        }
-
-        uint8_t *data() {
-            return blockPtr;
-        }
-
-        [[nodiscard]] const uint8_t *data() const {
-            return blockPtr;
-        }
-
-        [[nodiscard]] size_t size() const {
-            return blockSize;
-        }
-
-        [[nodiscard]] bool empty() const {
-            return blockSize == 0;
+        [[nodiscard]] bool empty() {
+            return size() == 0;
         }
 
         void copyFrom(const std::vector<uint8_t> &src,
                       const size_t srcOffset,
                       const size_t dstOffset,
-                      const size_t count) const {
+                      const size_t count) {
             if (srcOffset + count > src.size()) {
                 throw std::runtime_error("Attempted to perform an out of bounds heap mapping copy");
             }
-            if (dstOffset + count > blockSize) {
+            if (dstOffset + count > size()) {
                 throw std::runtime_error("Attempted to perform an out of bounds heap mapping copy");
             }
             std::copy_n(src.begin() + static_cast<ptrdiff_t>(srcOffset),
                         count,
-                        blockPtr + static_cast<ptrdiff_t>(dstOffset));
+                        data() + static_cast<ptrdiff_t>(dstOffset));
         }
 
         void copyTo(std::vector<uint8_t> &dst,
                     const size_t srcOffset,
                     const size_t dstOffset,
-                    const size_t count) const {
-            if (srcOffset + count > blockSize) {
+                    const size_t count) {
+            if (srcOffset + count > size()) {
                 throw std::runtime_error("Attempted to perform an out of bounds heap mapping copy");
             }
             if (dstOffset + count > dst.size()) {
                 throw std::runtime_error("Attempted to perform an out of bounds heap mapping copy");
             }
-            std::copy_n(blockPtr + static_cast<ptrdiff_t>(srcOffset),
+            std::copy_n(data() + static_cast<ptrdiff_t>(srcOffset),
                         count,
                         dst.begin() + static_cast<ptrdiff_t>(dstOffset));
         }
 
-        [[nodiscard]] std::vector<uint8_t> copyTo(const size_t srcOffset, const size_t count) const {
-            if (srcOffset + count > blockSize) {
+        std::vector<uint8_t> copyTo(const size_t srcOffset, const size_t count) {
+            if (srcOffset + count > size()) {
                 throw std::runtime_error("Attempted to perform an out of bounds heap mapping copy");
             }
             std::vector<uint8_t> dst(count);
-            std::copy_n(blockPtr + static_cast<ptrdiff_t>(srcOffset),
+            std::copy_n(data() + static_cast<ptrdiff_t>(srcOffset),
                         count,
                         dst.begin());
             return dst;
         }
-
-    private:
-        uint8_t *blockPtr = nullptr;
-        size_t blockSize = 0;
-        std::function<void()> deleter = {};
     };
 }
 

@@ -27,59 +27,13 @@
 
 #include "xng/rendergraph/shader/shader.hpp"
 
-#include "xng/math/vector2.hpp"
+#include "xng/math/vector3.hpp"
 #include "xng/math/rectangle.hpp"
 
 namespace xng::rg {
     class TransferContext {
     public:
         virtual ~TransferContext() = default;
-
-        /**
-         * Upload data to a buffer.
-         *
-         * This is a convenience method.
-         *
-         * On Vulkan this is implemented with internal staging buffers.
-         *
-         * @param target
-         * @param buffer The buffer holding the data
-         * @param bufferSize The size of the buffer
-         * @param targetOffset The offset into target to start writing to
-         */
-        virtual void uploadBuffer(const Resource<Buffer> &target,
-                                  const uint8_t *buffer,
-                                  size_t bufferSize,
-                                  size_t targetOffset) = 0;
-
-        /**
-         * Upload data to a texture.
-         *
-         * This is a convenience method.
-         *
-         * The buffer is uploaded top to bottom, meaning the first row in the buffer corresponds to the top row.
-         *
-         * On Vulkan this is implemented with internal staging buffers.
-         *
-         * On OpenGL internally textures are still stored bottom to top,
-         * but all visible readback is performed with the origin at top left.
-         * (Shader compiler inverts uv.v accesses automatically, Upload and Copy from/to buffer inverts rows and coordinates internally)
-         *
-         * @param texture The texture to upload into
-         * @param target The target subresource to upload into
-         * @param buffer The buffer holding the pixel data
-         * @param bufferSize The size of the buffer
-         * @param bufferFormat The format of the pixel data in the buffer. Must be R/RG/RGB or RGBA
-         * @param offset The offset (Origin top-left) into the texture to upload into
-         * @param size The width / height of the pixel data in the buffer. Must be smaller or equal to the texture size.
-         */
-        virtual void uploadTexture(const Resource<Texture> &texture,
-                                   Texture::SubResource target,
-                                   const uint8_t *buffer,
-                                   size_t bufferSize,
-                                   ColorFormat bufferFormat,
-                                   const Vec2i &offset,
-                                   const Vec2i &size) = 0;
 
         /**
          * Copy data from one buffer to another.

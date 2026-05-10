@@ -19,11 +19,12 @@
 #ifndef XENGINE_HEAPTRANSFERCONTEXTGL_HPP
 #define XENGINE_HEAPTRANSFERCONTEXTGL_HPP
 
+#include <chrono>
 #include <condition_variable>
+#include <memory>
 #include <mutex>
 #include <thread>
 #include <unordered_map>
-#include <unordered_set>
 #include <variant>
 #include <vector>
 
@@ -33,30 +34,17 @@
 #include "context/transfercontextgl.hpp"
 
 #include "heapgl.hpp"
+#include "heaptransfergl.hpp"
 #include "passresources.hpp"
 #include "display/windowgl.hpp"
 #include "xng/display/window.hpp"
+#include "xng/rendergraph/pass.hpp"
 #include "xng/rendergraph/statistics.hpp"
 #include "xng/util/downcast.hpp"
 
 namespace xng::opengl {
     class HeapTransferContextGL final : public rg::TransferContext {
     public:
-        struct UploadBufferCmd {
-            HeapResource<Buffer> target{};
-            std::vector<uint8_t> data{};
-            size_t targetOffset{};
-        };
-
-        struct UploadTextureCmd {
-            HeapResource<Texture> target{};
-            Texture::SubResource subResource{};
-            std::vector<uint8_t> data{};
-            ColorFormat bufferFormat{};
-            Vec2i offset{};
-            Vec2i size{};
-        };
-
         struct CopyBufferCmd {
             HeapResource<Buffer> target{};
             HeapResource<Buffer> source{};
@@ -101,15 +89,42 @@ namespace xng::opengl {
             HeapResource<Texture> target{};
         };
 
-        using Command = std::variant<UploadBufferCmd,
-            UploadTextureCmd,
-            CopyBufferCmd,
+        struct SyncCmd {
+            std::shared_ptr<HeapTransferSync> sync;
+        };
+
+        using Command = std::variant<CopyBufferCmd,
             CopyTextureCmd,
             CopyBufferToTextureCmd,
             CopyTextureToBufferCmd,
             ClearTextureCmd,
-            GenerateMipMapsCmd>;
+            GenerateMipMapsCmd,
+            SyncCmd>;
 
+    private:
+        struct BufferRegion {
+            size_t offset;
+            size_t size; // 0 = unknown/rest of buffer
+            bool write;
+        };
+
+        struct TextureRegion {
+            Texture::SubResource sub;
+            bool write;
+            bool allMips = false; // true for GenerateMipMaps — covers all mip levels
+        };
+
+        struct BufferSyncEntry {
+            BufferRegion region;
+            std::shared_ptr<HeapTransferSync> sync;
+        };
+
+        struct TextureSyncEntry {
+            TextureRegion region;
+            std::shared_ptr<HeapTransferSync> sync;
+        };
+
+    public:
         explicit HeapTransferContextGL(std::unique_ptr<Window> heapWindow, Heap &heap)
             : heapWindow(std::move(heapWindow)), heap(heap) {
             thread = std::thread(&HeapTransferContextGL::loop, this);
@@ -122,41 +137,27 @@ namespace xng::opengl {
             }
             cv.notify_one();
             thread.join();
-            for (auto &fence: fences) {
-                glDeleteSync(fence.second);
+            std::lock_guard lock(syncMutex);
+            for (auto &[handle, entries]: bufferSyncs) {
+                for (auto &e: entries) {
+                    std::lock_guard syncLock(e.sync->mutex);
+                    if (e.sync->fence && !e.sync->done) {
+                        glDeleteSync(e.sync->fence);
+                        e.sync->fence = nullptr;
+                        e.sync->done = true;
+                    }
+                }
             }
-        }
-
-        void uploadBuffer(const Resource<Buffer> &target,
-                          const uint8_t *buffer,
-                          const size_t bufferSize,
-                          const size_t targetOffset) override {
-            std::lock_guard lock(mutex);
-            commandQueue.emplace_back(UploadBufferCmd{
-                HeapResource(target.getHandle(), target.getDescription(), heap),
-                std::vector<uint8_t>(buffer, buffer + bufferSize),
-                targetOffset
-            });
-            cv.notify_one();
-        }
-
-        void uploadTexture(const Resource<Texture> &texture,
-                           const Texture::SubResource target,
-                           const uint8_t *buffer,
-                           const size_t bufferSize,
-                           const ColorFormat bufferFormat,
-                           const Vec2i &offset,
-                           const Vec2i &size) override {
-            std::lock_guard lock(mutex);
-            commandQueue.emplace_back(UploadTextureCmd{
-                HeapResource(texture.getHandle(), texture.getDescription(), heap),
-                target,
-                std::vector<uint8_t>(buffer, buffer + bufferSize),
-                bufferFormat,
-                offset,
-                size
-            });
-            cv.notify_one();
+            for (auto &[handle, entries]: textureSyncs) {
+                for (auto &e: entries) {
+                    std::lock_guard syncLock(e.sync->mutex);
+                    if (e.sync->fence && !e.sync->done) {
+                        glDeleteSync(e.sync->fence);
+                        e.sync->fence = nullptr;
+                        e.sync->done = true;
+                    }
+                }
+            }
         }
 
         void copyBuffer(const Resource<Buffer> &target,
@@ -247,40 +248,74 @@ namespace xng::opengl {
             cv.notify_one();
         }
 
-        bool hasPendingTransfers(const ResourceId::Handle handle) {
+        std::unique_ptr<HeapTransferGL> finishTransfer() {
+            auto sync = std::make_shared<HeapTransferSync>();
             {
                 std::lock_guard lock(mutex);
-                if (inFlightHandles.count(handle)) return true;
-                for (const auto &cmd: commandQueue) {
-                    if (commandTouchesHandle(cmd, handle)) return true;
-                }
+                commandQueue.emplace_back(SyncCmd{sync});
+                cv.notify_one();
             }
-            std::lock_guard lock(fencesMutex);
-            const auto it = fences.find(handle);
-            if (it == fences.end()) return false;
-            const auto signaled = glClientWaitSync(it->second, GL_SYNC_FLUSH_COMMANDS_BIT, 0) == GL_ALREADY_SIGNALED;
-            if (signaled) fences.erase(it);
-            return !signaled;
+            return std::make_unique<HeapTransferGL>(sync);
         }
 
-        void wait(const ResourceId::Handle handle) {
+        // Wait up to timeoutMs for overlapping buffer transfers to complete.
+        // Returns true if overlapping transfers are still pending after the timeout.
+        // timeoutMs == 0 is a non-blocking check.
+        bool waitForTransfers(const ResourceId::Handle handle,
+                              const std::vector<BufferAccess> &accesses,
+                              const size_t timeoutMs) {
+            const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeoutMs);
             {
                 std::unique_lock lock(mutex);
-                batchCv.wait(lock, [&] {
-                    if (inFlightHandles.count(handle)) return false;
+                const auto pred = [&] {
+                    const auto it = inFlightBuffers.find(handle);
+                    if (it != inFlightBuffers.end()) {
+                        for (const auto &r: it->second) {
+                            if (bufferConflicts(r.write, r.offset, r.size, accesses)) return false;
+                        }
+                    }
                     for (const auto &cmd: commandQueue) {
-                        if (commandTouchesHandle(cmd, handle)) return false;
+                        if (commandOverlapsBuffer(cmd, handle, accesses)) return false;
                     }
                     return true;
-                });
+                };
+                if (timeoutMs == 0) {
+                    if (!pred()) return true;
+                } else {
+                    if (!batchCv.wait_until(lock, deadline, pred)) return true;
+                }
             }
-            std::lock_guard lock(fencesMutex);
-            const auto it = fences.find(handle);
-            if (it != fences.end()) {
-                glClientWaitSync(it->second, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
-                glDeleteSync(it->second);
-                fences.erase(it);
+            return checkPendingBufferSync(handle, accesses, deadline);
+        }
+
+        // Wait up to timeoutMs for overlapping texture transfers to complete.
+        // Returns true if overlapping transfers are still pending after the timeout.
+        // timeoutMs == 0 is a non-blocking check.
+        bool waitForTransfers(const ResourceId::Handle handle,
+                              const std::vector<TextureAccess> &accesses,
+                              const size_t timeoutMs) {
+            const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeoutMs);
+            {
+                std::unique_lock lock(mutex);
+                const auto pred = [&] {
+                    const auto it = inFlightTextures.find(handle);
+                    if (it != inFlightTextures.end()) {
+                        for (const auto &r: it->second) {
+                            if (textureRegionConflicts(r, accesses)) return false;
+                        }
+                    }
+                    for (const auto &cmd: commandQueue) {
+                        if (commandOverlapsTexture(cmd, handle, accesses)) return false;
+                    }
+                    return true;
+                };
+                if (timeoutMs == 0) {
+                    if (!pred()) return true;
+                } else {
+                    if (!batchCv.wait_until(lock, deadline, pred)) return true;
+                }
             }
+            return checkPendingTextureSync(handle, accesses, deadline);
         }
 
         ResourceId::Handle allocateBuffer(const Buffer &desc) {
@@ -300,20 +335,12 @@ namespace xng::opengl {
         }
 
         void free(const ResourceId::Handle handle) {
-            wait(handle);
+            blockUntilIdle(handle);
             {
                 std::lock_guard lock(mutex);
                 resources.buffers.erase(handle);
                 resources.textures.erase(handle);
                 freeHandles.push_back(handle);
-            }
-            {
-                std::lock_guard lock(fencesMutex);
-                const auto it = fences.find(handle);
-                if (it != fences.end()) {
-                    glDeleteSync(it->second);
-                    fences.erase(it);
-                }
             }
         }
 
@@ -328,16 +355,93 @@ namespace xng::opengl {
         }
 
     private:
+        // ---- region extraction per command type ----
+
+        static void cmdBufferRegions(const CopyBufferCmd &c,
+                                     std::unordered_map<ResourceId::Handle, std::vector<BufferRegion> > &out) {
+            out[c.target.getHandle()].push_back({c.targetOffset, c.count, true});
+            out[c.source.getHandle()].push_back({c.sourceOffset, c.count, false});
+        }
+
+        static void cmdBufferRegions(const CopyBufferToTextureCmd &c,
+                                     std::unordered_map<ResourceId::Handle, std::vector<BufferRegion> > &out) {
+            out[c.buffer.getHandle()].push_back({c.bufferOffset, 0, false});
+        }
+
+        static void cmdBufferRegions(const CopyTextureToBufferCmd &c,
+                                     std::unordered_map<ResourceId::Handle, std::vector<BufferRegion> > &out) {
+            out[c.buffer.getHandle()].push_back({c.bufferOffset, 0, true});
+        }
+
+        static void cmdBufferRegions(const CopyTextureCmd &,
+                                     std::unordered_map<ResourceId::Handle, std::vector<BufferRegion> > &) {
+        }
+
+        static void cmdBufferRegions(const ClearTextureCmd &,
+                                     std::unordered_map<ResourceId::Handle, std::vector<BufferRegion> > &) {
+        }
+
+        static void cmdBufferRegions(const GenerateMipMapsCmd &,
+                                     std::unordered_map<ResourceId::Handle, std::vector<BufferRegion> > &) {
+        }
+
+        static void cmdBufferRegions(const SyncCmd &,
+                                     std::unordered_map<ResourceId::Handle, std::vector<BufferRegion> > &) {
+        }
+
+        static void cmdTextureRegions(const CopyTextureCmd &c,
+                                      std::unordered_map<ResourceId::Handle, std::vector<TextureRegion> > &out) {
+            Texture::SubResource dst;
+            dst.mipLevel = c.dstMipMapLevel;
+            out[c.target.getHandle()].push_back({dst, true, false});
+            Texture::SubResource src;
+            src.mipLevel = c.srcMipMapLevel;
+            out[c.source.getHandle()].push_back({src, false, false});
+        }
+
+        static void cmdTextureRegions(const CopyBufferToTextureCmd &c,
+                                      std::unordered_map<ResourceId::Handle, std::vector<TextureRegion> > &out) {
+            out[c.texture.getHandle()].push_back({c.textureSubResource, true, false});
+        }
+
+        static void cmdTextureRegions(const CopyTextureToBufferCmd &c,
+                                      std::unordered_map<ResourceId::Handle, std::vector<TextureRegion> > &out) {
+            out[c.texture.getHandle()].push_back({c.textureSubResource, false, false});
+        }
+
+        static void cmdTextureRegions(const ClearTextureCmd &c,
+                                      std::unordered_map<ResourceId::Handle, std::vector<TextureRegion> > &out) {
+            out[c.target.getHandle()].push_back({c.subResource, true, false});
+        }
+
+        static void cmdTextureRegions(const GenerateMipMapsCmd &c,
+                                      std::unordered_map<ResourceId::Handle, std::vector<TextureRegion> > &out) {
+            out[c.target.getHandle()].push_back({Texture::SubResource{}, true, true}); // allMips
+        }
+
+        static void cmdTextureRegions(const CopyBufferCmd &,
+                                      std::unordered_map<ResourceId::Handle, std::vector<TextureRegion> > &) {
+        }
+
+        static void cmdTextureRegions(const SyncCmd &,
+                                      std::unordered_map<ResourceId::Handle, std::vector<TextureRegion> > &) {
+        }
+
+        static void collectRegions(const Command &cmd,
+                                   std::unordered_map<ResourceId::Handle, std::vector<BufferRegion> > &buffers,
+                                   std::unordered_map<ResourceId::Handle, std::vector<TextureRegion> > &textures) {
+            std::visit([&](const auto &c) {
+                cmdBufferRegions(c, buffers);
+                cmdTextureRegions(c, textures);
+            }, cmd);
+        }
+
+        // ---- visitHandles (for commandTouchesHandle used by blockUntilIdle) ----
+
         template<typename F>
         static void visitHandles(const Command &cmd, F &&f) {
             std::visit([&](const auto &c) { visitHandlesImpl(c, std::forward<F>(f)); }, cmd);
         }
-
-        template<typename F>
-        static void visitHandlesImpl(const UploadBufferCmd &c, F &&f) { f(c.target.getHandle()); }
-
-        template<typename F>
-        static void visitHandlesImpl(const UploadTextureCmd &c, F &&f) { f(c.target.getHandle()); }
 
         template<typename F>
         static void visitHandlesImpl(const CopyBufferCmd &c, F &&f) {
@@ -369,22 +473,316 @@ namespace xng::opengl {
         template<typename F>
         static void visitHandlesImpl(const GenerateMipMapsCmd &c, F &&f) { f(c.target.getHandle()); }
 
+        template<typename F>
+        static void visitHandlesImpl(const SyncCmd &, F &&) {
+        }
+
         static bool commandTouchesHandle(const Command &cmd, const ResourceId::Handle handle) {
             bool found = false;
             visitHandles(cmd, [&](ResourceId::Handle h) { if (h == handle) found = true; });
             return found;
         }
 
-        void createFence(const ResourceId::Handle handle) {
-            GLsync fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+        // ---- buffer overlap ----
 
-            auto it = fences.find(handle);
-            if (it != fences.end()) {
-                glDeleteSync(it->second);
-            }
-
-            fences[handle] = fence;
+        static bool bufferRangesOverlap(const size_t off1,
+                                        const size_t size1,
+                                        const size_t off2,
+                                        const size_t size2) {
+            if (size1 == 0 || size2 == 0) return true;
+            return off1 < off2 + size2 && off2 < off1 + size1;
         }
+
+        static bool bufferConflicts(const bool transferWrite,
+                                    const size_t offset,
+                                    const size_t size,
+                                    const std::vector<BufferAccess> &accesses) {
+            for (const auto &acc: accesses) {
+                const bool accWrite = acc.type == BufferAccess::TransferDst ||
+                                      acc.type == BufferAccess::StorageWrite;
+                if (!transferWrite && !accWrite) continue;
+                if (bufferRangesOverlap(offset, size, acc.offset, acc.size)) return true;
+            }
+            return false;
+        }
+
+        static bool cmdOverlapsBuffer(const CopyBufferCmd &c,
+                                      const ResourceId::Handle h,
+                                      const std::vector<BufferAccess> &a) {
+            bool r = false;
+            if (c.target.getHandle() == h) r |= bufferConflicts(true, c.targetOffset, c.count, a);
+            if (c.source.getHandle() == h) r |= bufferConflicts(false, c.sourceOffset, c.count, a);
+            return r;
+        }
+
+        static bool cmdOverlapsBuffer(const CopyTextureCmd &,
+                                      const ResourceId::Handle,
+                                      const std::vector<BufferAccess> &) { return false; }
+
+        static bool cmdOverlapsBuffer(const CopyBufferToTextureCmd &c,
+                                      const ResourceId::Handle h,
+                                      const std::vector<BufferAccess> &a) {
+            if (c.buffer.getHandle() != h) return false;
+            return bufferConflicts(false, c.bufferOffset, 0, a);
+        }
+
+        static bool cmdOverlapsBuffer(const CopyTextureToBufferCmd &c,
+                                      const ResourceId::Handle h,
+                                      const std::vector<BufferAccess> &a) {
+            if (c.buffer.getHandle() != h) return false;
+            return bufferConflicts(true, c.bufferOffset, 0, a);
+        }
+
+        static bool cmdOverlapsBuffer(const ClearTextureCmd &,
+                                      const ResourceId::Handle,
+                                      const std::vector<BufferAccess> &) { return false; }
+
+        static bool cmdOverlapsBuffer(const GenerateMipMapsCmd &,
+                                      const ResourceId::Handle,
+                                      const std::vector<BufferAccess> &) { return false; }
+
+        static bool cmdOverlapsBuffer(const SyncCmd &,
+                                      const ResourceId::Handle,
+                                      const std::vector<BufferAccess> &) { return false; }
+
+        static bool commandOverlapsBuffer(const Command &cmd,
+                                          const ResourceId::Handle h,
+                                          const std::vector<BufferAccess> &a) {
+            return std::visit([&](const auto &c) { return cmdOverlapsBuffer(c, h, a); }, cmd);
+        }
+
+        // ---- texture overlap ----
+
+        static bool subResourceOverlapsRange(const Texture::SubResource &sub,
+                                             const TextureBinding::Range &range) {
+            if (range.numMipLevels > 0) {
+                if (sub.mipLevel < range.baseMipLevel ||
+                    sub.mipLevel >= range.baseMipLevel + range.numMipLevels)
+                    return false;
+            }
+            const auto layer = sub.arrayLayer;
+            if (layer != static_cast<size_t>(-1) && range.numArrayLayers > 0) {
+                if (layer < range.baseArrayLayer ||
+                    layer >= range.baseArrayLayer + range.numArrayLayers)
+                    return false;
+            }
+            return true;
+        }
+
+        static bool textureConflicts(const bool transferWrite,
+                                     const Texture::SubResource &sub,
+                                     const std::vector<TextureAccess> &accesses) {
+            for (const auto &acc: accesses) {
+                const bool accWrite = acc.type == TextureAccess::TextureStorageWrite ||
+                                      acc.type == TextureAccess::TextureTransferDst;
+                if (!transferWrite && !accWrite) continue;
+                if (subResourceOverlapsRange(sub, acc.range)) return true;
+            }
+            return false;
+        }
+
+        static bool textureRegionConflicts(const TextureRegion &r,
+                                           const std::vector<TextureAccess> &accesses) {
+            for (const auto &acc: accesses) {
+                const bool accWrite = acc.type == TextureAccess::TextureStorageWrite ||
+                                      acc.type == TextureAccess::TextureTransferDst;
+                if (!r.write && !accWrite) continue;
+                if (r.allMips) return true; // GenerateMipMaps covers all mips
+                if (subResourceOverlapsRange(r.sub, acc.range)) return true;
+            }
+            return false;
+        }
+
+        static bool cmdOverlapsTexture(const CopyBufferCmd &,
+                                       const ResourceId::Handle,
+                                       const std::vector<TextureAccess> &) { return false; }
+
+        static bool cmdOverlapsTexture(const CopyTextureCmd &c,
+                                       const ResourceId::Handle h,
+                                       const std::vector<TextureAccess> &a) {
+            bool r = false;
+            if (c.target.getHandle() == h) {
+                Texture::SubResource sub;
+                sub.mipLevel = c.dstMipMapLevel;
+                r |= textureConflicts(true, sub, a);
+            }
+            if (c.source.getHandle() == h) {
+                Texture::SubResource sub;
+                sub.mipLevel = c.srcMipMapLevel;
+                r |= textureConflicts(false, sub, a);
+            }
+            return r;
+        }
+
+        static bool cmdOverlapsTexture(const CopyBufferToTextureCmd &c,
+                                       const ResourceId::Handle h,
+                                       const std::vector<TextureAccess> &a) {
+            if (c.texture.getHandle() != h) return false;
+            return textureConflicts(true, c.textureSubResource, a);
+        }
+
+        static bool cmdOverlapsTexture(const CopyTextureToBufferCmd &c,
+                                       const ResourceId::Handle h,
+                                       const std::vector<TextureAccess> &a) {
+            if (c.texture.getHandle() != h) return false;
+            return textureConflicts(false, c.textureSubResource, a);
+        }
+
+        static bool cmdOverlapsTexture(const ClearTextureCmd &c,
+                                       const ResourceId::Handle h,
+                                       const std::vector<TextureAccess> &a) {
+            if (c.target.getHandle() != h) return false;
+            return textureConflicts(true, c.subResource, a);
+        }
+
+        static bool cmdOverlapsTexture(const GenerateMipMapsCmd &c,
+                                       const ResourceId::Handle h,
+                                       const std::vector<TextureAccess> &) {
+            return c.target.getHandle() == h;
+        }
+
+        static bool cmdOverlapsTexture(const SyncCmd &,
+                                       const ResourceId::Handle,
+                                       const std::vector<TextureAccess> &) { return false; }
+
+        static bool commandOverlapsTexture(const Command &cmd,
+                                           const ResourceId::Handle h,
+                                           const std::vector<TextureAccess> &a) {
+            return std::visit([&](const auto &c) { return cmdOverlapsTexture(c, h, a); }, cmd);
+        }
+
+        // ---- GPU sync checking, region-filtered ----
+
+        bool checkPendingBufferSync(const ResourceId::Handle handle,
+                                    const std::vector<BufferAccess> &accesses,
+                                    const std::chrono::steady_clock::time_point deadline) {
+            std::vector<std::shared_ptr<HeapTransferSync> > toWait;
+            {
+                std::lock_guard lock(syncMutex);
+                const auto it = bufferSyncs.find(handle);
+                if (it == bufferSyncs.end()) return false;
+                for (const auto &e: it->second) {
+                    if (bufferConflicts(e.region.write, e.region.offset, e.region.size, accesses))
+                        toWait.push_back(e.sync);
+                }
+            }
+            bool pending = false;
+            for (const auto &sync: toWait) {
+                std::lock_guard lock(sync->mutex);
+                if (sync->done) continue;
+                if (!sync->fence) {
+                    pending = true;
+                    continue;
+                }
+                const auto remainingNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                    deadline - std::chrono::steady_clock::now()).count();
+                const GLuint64 timeoutNs = remainingNs > 0 ? static_cast<GLuint64>(remainingNs) : 0;
+                const auto result = glClientWaitSync(sync->fence, GL_SYNC_FLUSH_COMMANDS_BIT, timeoutNs);
+                if (result == GL_ALREADY_SIGNALED || result == GL_CONDITION_SATISFIED) {
+                    glDeleteSync(sync->fence);
+                    sync->fence = nullptr;
+                    sync->done = true;
+                } else {
+                    pending = true;
+                }
+            }
+            pruneBufferSyncs(handle);
+            return pending;
+        }
+
+        bool checkPendingTextureSync(const ResourceId::Handle handle,
+                                     const std::vector<TextureAccess> &accesses,
+                                     const std::chrono::steady_clock::time_point deadline) {
+            std::vector<std::shared_ptr<HeapTransferSync> > toWait;
+            {
+                std::lock_guard lock(syncMutex);
+                const auto it = textureSyncs.find(handle);
+                if (it == textureSyncs.end()) return false;
+                for (const auto &e: it->second) {
+                    if (textureRegionConflicts(e.region, accesses))
+                        toWait.push_back(e.sync);
+                }
+            }
+            bool pending = false;
+            for (const auto &sync: toWait) {
+                std::lock_guard lock(sync->mutex);
+                if (sync->done) continue;
+                if (!sync->fence) {
+                    pending = true;
+                    continue;
+                }
+                const auto remainingNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                    deadline - std::chrono::steady_clock::now()).count();
+                const GLuint64 timeoutNs = remainingNs > 0 ? static_cast<GLuint64>(remainingNs) : 0;
+                const auto result = glClientWaitSync(sync->fence, GL_SYNC_FLUSH_COMMANDS_BIT, timeoutNs);
+                if (result == GL_ALREADY_SIGNALED || result == GL_CONDITION_SATISFIED) {
+                    glDeleteSync(sync->fence);
+                    sync->fence = nullptr;
+                    sync->done = true;
+                } else {
+                    pending = true;
+                }
+            }
+            pruneTextureSyncs(handle);
+            return pending;
+        }
+
+        void pruneBufferSyncs(const ResourceId::Handle handle) {
+            std::lock_guard lock(syncMutex);
+            const auto it = bufferSyncs.find(handle);
+            if (it == bufferSyncs.end()) return;
+            auto &v = it->second;
+            v.erase(std::remove_if(v.begin(), v.end(),
+                                   [](const BufferSyncEntry &e) { return e.sync->done; }),
+                    v.end());
+            if (v.empty()) bufferSyncs.erase(it);
+        }
+
+        void pruneTextureSyncs(const ResourceId::Handle handle) {
+            std::lock_guard lock(syncMutex);
+            const auto it = textureSyncs.find(handle);
+            if (it == textureSyncs.end()) return;
+            auto &v = it->second;
+            v.erase(std::remove_if(v.begin(), v.end(),
+                                   [](const TextureSyncEntry &e) { return e.sync->done; }),
+                    v.end());
+            if (v.empty()) textureSyncs.erase(it);
+        }
+
+        // Blocking wait for all transfers on a handle — used by free().
+        void blockUntilIdle(const ResourceId::Handle handle) {
+            {
+                std::unique_lock lock(mutex);
+                batchCv.wait(lock, [&] {
+                    if (inFlightBuffers.count(handle) || inFlightTextures.count(handle)) return false;
+                    for (const auto &cmd: commandQueue) {
+                        if (commandTouchesHandle(cmd, handle)) return false;
+                    }
+                    return true;
+                });
+            }
+            std::vector<std::shared_ptr<HeapTransferSync> > allSyncs;
+            {
+                std::lock_guard lock(syncMutex);
+                for (auto &e: bufferSyncs[handle]) allSyncs.push_back(e.sync);
+                for (auto &e: textureSyncs[handle]) allSyncs.push_back(e.sync);
+                bufferSyncs.erase(handle);
+                textureSyncs.erase(handle);
+            }
+            for (const auto &sync: allSyncs) {
+                std::lock_guard lock(sync->mutex);
+                if (!sync->done) {
+                    if (sync->fence) {
+                        glClientWaitSync(sync->fence, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+                        glDeleteSync(sync->fence);
+                        sync->fence = nullptr;
+                    }
+                    sync->done = true;
+                }
+            }
+        }
+
+        // ---- background loop ----
 
         void loop() {
             auto &windowGl = down_cast<WindowGl &>(*heapWindow);
@@ -399,20 +797,71 @@ namespace xng::opengl {
                     if (!running && commandQueue.empty()) break;
                     std::swap(batch, commandQueue);
                     ctxResources = resources;
+                    // Populate in-flight regions for the entire batch so waitForTransfers predicates see them.
                     for (const auto &cmd: batch) {
-                        visitHandles(cmd, [&](ResourceId::Handle h) { inFlightHandles.insert(h); });
+                        collectRegions(cmd, inFlightBuffers, inFlightTextures);
                     }
                 }
 
                 TransferContextGL context(PassResources({}, ctxResources), stats);
 
+                // Regions accumulated since the last SyncCmd (or batch start).
+                std::unordered_map<ResourceId::Handle, std::vector<BufferRegion> > pendingBuffers;
+                std::unordered_map<ResourceId::Handle, std::vector<TextureRegion> > pendingTextures;
+
                 for (auto &cmd: batch) {
-                    std::visit([&](auto &c) { execute(context, c); }, cmd);
+                    if (const auto *syncCmd = std::get_if<SyncCmd>(&cmd)) {
+                        GLsync fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+                        glFlush();
+                        {
+                            std::lock_guard lock(syncCmd->sync->mutex);
+                            syncCmd->sync->fence = fence;
+                        }
+                        {
+                            std::lock_guard lock(syncMutex);
+                            for (auto &[h, regions]: pendingBuffers) {
+                                for (auto &r: regions)
+                                    bufferSyncs[h].push_back({r, syncCmd->sync});
+                            }
+                            for (auto &[h, regions]: pendingTextures) {
+                                for (auto &r: regions)
+                                    textureSyncs[h].push_back({r, syncCmd->sync});
+                            }
+                        }
+                        pendingBuffers.clear();
+                        pendingTextures.clear();
+                    } else {
+                        std::visit([&](auto &c) {
+                            using T = std::decay_t<decltype(c)>;
+                            if constexpr (!std::is_same_v<T, SyncCmd>) {
+                                execute(context, c);
+                                cmdBufferRegions(c, pendingBuffers);
+                                cmdTextureRegions(c, pendingTextures);
+                            }
+                        }, cmd);
+                    }
+                }
+
+                // Any regions after the last SyncCmd (or no SyncCmd) still need a GPU fence for blockUntilIdle.
+                if (!pendingBuffers.empty() || !pendingTextures.empty()) {
+                    auto fallback = std::make_shared<HeapTransferSync>();
+                    fallback->fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+                    glFlush();
+                    std::lock_guard lock(syncMutex);
+                    for (auto &[h, regions]: pendingBuffers) {
+                        for (auto &r: regions)
+                            bufferSyncs[h].push_back({r, fallback});
+                    }
+                    for (auto &[h, regions]: pendingTextures) {
+                        for (auto &r: regions)
+                            textureSyncs[h].push_back({r, fallback});
+                    }
                 }
 
                 {
                     std::lock_guard lock(mutex);
-                    inFlightHandles.clear();
+                    inFlightBuffers.clear();
+                    inFlightTextures.clear();
                 }
                 batchCv.notify_all();
             }
@@ -420,76 +869,46 @@ namespace xng::opengl {
             windowGl.unbindContext();
         }
 
-        void execute(TransferContextGL &ctx, const UploadBufferCmd &cmd) {
-            ctx.uploadBuffer(cmd.target,
-                             cmd.data.data(),
-                             cmd.data.size(),
-                             cmd.targetOffset);
-            std::lock_guard lock(fencesMutex);
-            createFence(cmd.target.getHandle());
-        }
-
-        void execute(TransferContextGL &ctx, const UploadTextureCmd &cmd) {
-            ctx.uploadTexture(cmd.target,
-                              cmd.subResource, cmd.data.data(), cmd.data.size(),
-                              cmd.bufferFormat, cmd.offset, cmd.size);
-            std::lock_guard lock(fencesMutex);
-            createFence(cmd.target.getHandle());
-        }
-
         void execute(TransferContextGL &ctx, const CopyBufferCmd &cmd) {
-            ctx.copyBuffer(cmd.target,
-                           cmd.source,
-                           cmd.targetOffset, cmd.sourceOffset, cmd.count);
-            std::lock_guard lock(fencesMutex);
-            createFence(cmd.target.getHandle());
-            createFence(cmd.source.getHandle());
+            ctx.copyBuffer(cmd.target, cmd.source, cmd.targetOffset, cmd.sourceOffset, cmd.count);
         }
 
         void execute(TransferContextGL &ctx, const CopyTextureCmd &cmd) {
             ctx.copyTexture(cmd.target,
                             cmd.source,
-                            cmd.srcOffset, cmd.dstOffset, cmd.size,
-                            cmd.srcMipMapLevel, cmd.dstMipMapLevel);
-            std::lock_guard lock(fencesMutex);
-            createFence(cmd.target.getHandle());
-            createFence(cmd.source.getHandle());
+                            cmd.srcOffset,
+                            cmd.dstOffset,
+                            cmd.size,
+                            cmd.srcMipMapLevel,
+                            cmd.dstMipMapLevel);
         }
 
         void execute(TransferContextGL &ctx, const CopyBufferToTextureCmd &cmd) {
             ctx.copyBufferToTexture(cmd.texture,
                                     cmd.buffer,
-                                    cmd.textureSubResource, cmd.bufferOffset, cmd.textureOffset);
-            std::lock_guard lock(fencesMutex);
-            createFence(cmd.texture.getHandle());
-            createFence(cmd.buffer.getHandle());
+                                    cmd.textureSubResource,
+                                    cmd.bufferOffset,
+                                    cmd.textureOffset);
         }
 
         void execute(TransferContextGL &ctx, const CopyTextureToBufferCmd &cmd) {
             ctx.copyTextureToBuffer(cmd.buffer,
                                     cmd.texture,
-                                    cmd.textureSubResource, cmd.bufferOffset, cmd.textureOffset);
-            std::lock_guard lock(fencesMutex);
-            createFence(cmd.buffer.getHandle());
-            createFence(cmd.texture.getHandle());
+                                    cmd.textureSubResource,
+                                    cmd.bufferOffset,
+                                    cmd.textureOffset);
         }
 
         void execute(TransferContextGL &ctx, const ClearTextureCmd &cmd) {
             ctx.clearTexture(cmd.target, cmd.subResource, cmd.clearValue);
-            std::lock_guard lock(fencesMutex);
-            createFence(cmd.target.getHandle());
         }
 
         void execute(TransferContextGL &ctx, const GenerateMipMapsCmd &cmd) {
             ctx.generateMipMaps(cmd.target);
-            std::lock_guard lock(fencesMutex);
-            createFence(cmd.target.getHandle());
         }
 
         ResourceId::Handle allocateHandle() {
-            if (freeHandles.empty()) {
-                return nextHandle++;
-            }
+            if (freeHandles.empty()) return nextHandle++;
             const auto ret = freeHandles.back();
             freeHandles.pop_back();
             return ret;
@@ -509,10 +928,15 @@ namespace xng::opengl {
         std::condition_variable cv;
         std::condition_variable batchCv;
         std::vector<Command> commandQueue;
-        std::unordered_set<ResourceId::Handle> inFlightHandles;
 
-        std::mutex fencesMutex;
-        std::unordered_map<ResourceId::Handle, GLsync> fences;
+        // Guarded by mutex — per-region in-flight tracking for the current batch.
+        std::unordered_map<ResourceId::Handle, std::vector<BufferRegion> > inFlightBuffers;
+        std::unordered_map<ResourceId::Handle, std::vector<TextureRegion> > inFlightTextures;
+
+        // Guarded by syncMutex — per-region GPU sync entries.
+        std::mutex syncMutex;
+        std::unordered_map<ResourceId::Handle, std::vector<BufferSyncEntry> > bufferSyncs;
+        std::unordered_map<ResourceId::Handle, std::vector<TextureSyncEntry> > textureSyncs;
 
         ResourceScope resources;
 

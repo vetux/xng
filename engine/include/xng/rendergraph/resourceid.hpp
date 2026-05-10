@@ -93,30 +93,8 @@ namespace xng::rg {
             : ResourceId(handle, scope), data(std::move(data)) {
         }
 
-        /**
-         * Explicit construction of resource handles with compatible types.
-         *
-         * Used for e.g. Buffer -> VertexBuffer
-         *
-         * @tparam U
-         * @param other
-         */
-        template<typename U>
-        explicit Resource(const Resource<U> &other)
-            : ResourceId(other.getHandle(), other.getNameSpace()), data(other.getDescription()) {
-        }
-
         const T &getDescription() const {
             return data;
-        }
-
-        /**
-         * Implicit conversion from a compatible type to Buffer.
-         *
-         * Used for e.g. VertexBuffer -> Buffer
-         */
-        operator Resource<Buffer> () const {
-            return Resource<Buffer>(getHandle(), static_cast<Buffer>(data), getNameSpace());
         }
 
     protected:

@@ -18,6 +18,7 @@
 
 #include "heapgl.hpp"
 
+#include "heapmappinggl.hpp"
 #include "passresources.hpp"
 #include "context/heaptransfercontextgl.hpp"
 
@@ -36,30 +37,13 @@ namespace xng::opengl {
         return HeapResource(transferContext->allocateTexture(desc), desc, *this);
     }
 
-    HeapMapping HeapGL::mapBuffer(const HeapResource<Buffer> &target) {
-        auto &b = transferContext->getBuffer(target.getHandle());
-        return HeapMapping(b.map(), b.desc.size, [b]() {
-            b.unmap();
-        });
+    std::unique_ptr<HeapMapping> HeapGL::map(const HeapResource<Buffer> &target) {
+        return std::make_unique<HeapMappingGL>(target, transferContext->getBuffer(target.getHandle()));
     }
 
-    bool HeapGL::hasPendingTransfers(const ResourceId &handle) {
-        return transferContext->hasPendingTransfers(handle.getHandle());
-    }
-
-    TransferContext &HeapGL::getTransferContext() {
-        return *transferContext;
-    }
-
-    std::vector<uint8_t> HeapGL::downloadStorageBuffer(const HeapResource<Buffer> &buffer) {
-        throw std::runtime_error("downloadTextureBuffer not implemented");
-    }
-
-    std::vector<uint8_t> HeapGL::downloadTexture(const HeapResource<Texture> &texture,
-                                                   size_t index,
-                                                   size_t mipMapLevel,
-                                                   CubeMapFace face) {
-        throw std::runtime_error("downloadTextureBuffer not implemented");
+    std::unique_ptr<HeapTransfer> HeapGL::transfer(std::function<void(TransferContext &)> callback) {
+        callback(*transferContext);
+        return transferContext->finishTransfer();
     }
 
     void HeapGL::decrementReference(const ResourceId &handle) {
