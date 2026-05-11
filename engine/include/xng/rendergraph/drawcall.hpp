@@ -30,7 +30,7 @@ namespace xng::rg {
             : offset(offset), count(count) {
         }
 
-        // The offset into the index or vertex buffer at which to begin reading indices or vertices in BYTES
+        // The index of the first vertex or the byte offset of the first index to read from the bound vertex / index buffer
         size_t offset = 0;
 
         // The number of indices or vertices to draw.

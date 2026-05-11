@@ -480,7 +480,7 @@ namespace xng::opengl {
             glDrawElementsBaseVertex(convert(primitive),
                                      static_cast<GLsizei>(drawCall.count),
                                      convert(indexFormat),
-                                     reinterpret_cast<void *>(drawCall.offset),
+                                     reinterpret_cast<void *>(static_cast<uintptr_t>(drawCall.offset)),
                                      static_cast<GLint>(indexOffset));
             oglCheckError();
 
@@ -502,7 +502,7 @@ namespace xng::opengl {
             glDrawArraysInstanced(convert(primitive),
                                   static_cast<GLint>(drawCall.offset),
                                   static_cast<GLsizei>(drawCall.count),
-                                  instanceCount);
+                                  static_cast<GLsizei>(instanceCount));
             oglCheckError();
 
             oglDebugEndGroup();
@@ -529,9 +529,9 @@ namespace xng::opengl {
             glDrawElementsInstancedBaseVertex(convert(primitive),
                                               static_cast<GLsizei>(drawCall.count),
                                               convert(indexFormat),
-                                              reinterpret_cast<void *>(drawCall.offset),
+                                              reinterpret_cast<void *>(static_cast<uintptr_t>(drawCall.offset)),
                                               static_cast<GLint>(indexOffset),
-                                              instanceCount);
+                                              static_cast<GLsizei>(instanceCount));
             oglCheckError();
 
             stats.drawCalls++;
@@ -563,9 +563,9 @@ namespace xng::opengl {
             }
 
             glMultiDrawArrays(convert(primitive),
-                              offsets.data(),
-                              counts.data(),
-                              offsets.size());
+                              static_cast<GLint *>(offsets.data()),
+                              static_cast<GLsizei *>(counts.data()),
+                              static_cast<GLsizei>(offsets.size()));
 
             oglCheckError();
 
@@ -594,7 +594,6 @@ namespace xng::opengl {
             std::vector<void *> offsets;
             std::vector<GLsizei> counts;
             std::vector<GLint> indexOffsets;
-            const GLenum type = convert(indexFormat);
 
             for (auto &pair: drawCalls) {
                 offsets.emplace_back(reinterpret_cast<void *>(static_cast<uintptr_t>(pair.first.offset)));
@@ -604,17 +603,195 @@ namespace xng::opengl {
             }
 
             glMultiDrawElementsBaseVertex(convert(primitive),
-                                          counts.data(),
-                                          type,
-                                          offsets.data(),
-                                          drawCalls.size(),
-                                          indexOffsets.data());
+                                          static_cast<GLsizei *>(counts.data()),
+                                          convert(indexFormat),
+                                          static_cast<void **>(offsets.data()),
+                                          static_cast<GLsizei>(drawCalls.size()),
+                                          static_cast<GLint *>(indexOffsets.data()));
 
             oglCheckError();
 
             stats.drawCalls++;
 
             oglDebugEndGroup();
+        }
+
+        void drawArrayIndirect(const Resource<Buffer> &indirectBuffer, const size_t offset) override {
+            if (!boundPipeline.has_value()) {
+                throw std::runtime_error("Must bind pipeline before drawing.");
+            }
+
+            const auto primitive = pipelineCache.getRasterPipeline(boundPipeline.value()).primitive;
+            const auto &buffer = resources.getBuffer(indirectBuffer);
+
+            oglDebugStartGroup("RasterContextGL::drawArrayIndirect");
+
+            glBindBuffer(GL_DRAW_INDIRECT_BUFFER, buffer.handle);
+
+            glDrawArraysIndirect(convert(primitive), reinterpret_cast<void *>(static_cast<uintptr_t>(offset)));
+
+            oglCheckError();
+
+            oglDebugEndGroup();
+
+            stats.drawCalls++;
+        }
+
+        void drawIndexedIndirect(const Resource<Buffer> &indirectBuffer, const size_t offset) override {
+            if (!boundPipeline.has_value()) {
+                throw std::runtime_error("Must bind pipeline before drawing.");
+            }
+
+            if (indexFormat == INDEX_UNDEFINED) {
+                throw std::runtime_error("Must bind index buffer before drawing.");
+            }
+
+            const auto primitive = pipelineCache.getRasterPipeline(boundPipeline.value()).primitive;
+            const auto &buffer = resources.getBuffer(indirectBuffer);
+
+            oglDebugStartGroup("RasterContextGL::drawIndexedIndirect");
+
+            glBindBuffer(GL_DRAW_INDIRECT_BUFFER, buffer.handle);
+
+            glDrawElementsIndirect(convert(primitive),
+                                   convert(indexFormat),
+                                   reinterpret_cast<void *>(static_cast<uintptr_t>(offset)));
+
+            oglCheckError();
+
+            oglDebugEndGroup();
+
+            stats.drawCalls++;
+        }
+
+        void drawArrayMultiIndirect(const Resource<Buffer> &indirectBuffer,
+                                    const size_t offset,
+                                    const size_t drawCount,
+                                    const size_t stride) override {
+            if (!boundPipeline.has_value()) {
+                throw std::runtime_error("Must bind pipeline before drawing.");
+            }
+
+            const auto primitive = pipelineCache.getRasterPipeline(boundPipeline.value()).primitive;
+            const auto &buffer = resources.getBuffer(indirectBuffer);
+
+            oglDebugStartGroup("RasterContextGL::drawArrayMultiIndirect");
+
+            glBindBuffer(GL_DRAW_INDIRECT_BUFFER, buffer.handle);
+
+            glMultiDrawArraysIndirect(convert(primitive),
+                                      reinterpret_cast<void *>(static_cast<uintptr_t>(offset)),
+                                      static_cast<GLsizei>(drawCount),
+                                      static_cast<GLsizei>(stride));
+
+            oglCheckError();
+
+            oglDebugEndGroup();
+
+            stats.drawCalls++;
+        }
+
+        void drawIndexedMultiIndirect(const Resource<Buffer> &indirectBuffer,
+                                      const size_t offset,
+                                      const size_t drawCount,
+                                      const size_t stride) override {
+            if (!boundPipeline.has_value()) {
+                throw std::runtime_error("Must bind pipeline before drawing.");
+            }
+
+            if (indexFormat == INDEX_UNDEFINED) {
+                throw std::runtime_error("Must bind index buffer before drawing.");
+            }
+
+            const auto primitive = pipelineCache.getRasterPipeline(boundPipeline.value()).primitive;
+            const auto &buffer = resources.getBuffer(indirectBuffer);
+
+            oglDebugStartGroup("RasterContextGL::drawIndexedMultiIndirect");
+
+            glBindBuffer(GL_DRAW_INDIRECT_BUFFER, buffer.handle);
+
+            glMultiDrawElementsIndirect(convert(primitive),
+                                        convert(indexFormat),
+                                        reinterpret_cast<void *>(static_cast<uintptr_t>(offset)),
+                                        static_cast<GLsizei>(drawCount),
+                                        static_cast<GLsizei>(stride));
+
+            oglCheckError();
+
+            oglDebugEndGroup();
+
+            stats.drawCalls++;
+        }
+
+        void drawArrayMultiIndirectCount(const Resource<Buffer> &indirectBuffer,
+                                         const Resource<Buffer> &drawCountBuffer,
+                                         const size_t indirectOffset,
+                                         const size_t drawCountOffset,
+                                         const size_t maxDrawCount,
+                                         const size_t stride) override {
+            if (!boundPipeline.has_value()) {
+                throw std::runtime_error("Must bind pipeline before drawing.");
+            }
+
+            const auto primitive = pipelineCache.getRasterPipeline(boundPipeline.value()).primitive;
+
+            const auto &indirectBuff = resources.getBuffer(indirectBuffer);
+            const auto &drawCountBuff = resources.getBuffer(drawCountBuffer);
+
+            oglDebugStartGroup("RasterContextGL::drawArrayMultiIndirectCount");
+
+            glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirectBuff.handle);
+            glBindBuffer(GL_PARAMETER_BUFFER, drawCountBuff.handle);
+
+            glMultiDrawArraysIndirectCount(convert(primitive),
+                                           reinterpret_cast<void *>(static_cast<uintptr_t>(indirectOffset)),
+                                           static_cast<GLintptr>(drawCountOffset),
+                                           static_cast<GLsizei>(maxDrawCount),
+                                           static_cast<GLsizei>(stride));
+
+            oglCheckError();
+
+            oglDebugEndGroup();
+
+            stats.drawCalls++;
+        }
+
+        void drawIndexedMultiIndirectCount(const Resource<Buffer> &indirectBuffer,
+                                           const Resource<Buffer> &drawCountBuffer,
+                                           const size_t indirectOffset,
+                                           const size_t drawCountOffset,
+                                           const size_t maxDrawCount,
+                                           const size_t stride) override {
+            if (!boundPipeline.has_value()) {
+                throw std::runtime_error("Must bind pipeline before drawing.");
+            }
+
+            if (indexFormat == INDEX_UNDEFINED) {
+                throw std::runtime_error("Must bind index buffer before drawing.");
+            }
+
+            const auto primitive = pipelineCache.getRasterPipeline(boundPipeline.value()).primitive;
+
+            const auto &indirectBuff = resources.getBuffer(indirectBuffer);
+            const auto &drawCountBuff = resources.getBuffer(drawCountBuffer);
+
+            oglDebugStartGroup("RasterContextGL::drawIndexedMultiIndirectCount");
+
+            glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirectBuff.handle);
+            glBindBuffer(GL_PARAMETER_BUFFER, drawCountBuff.handle);
+
+            glMultiDrawElementsIndirectCount(convert(primitive),
+                                             convert(indexFormat),
+                                             reinterpret_cast<void *>(static_cast<uintptr_t>(indirectOffset)),
+                                             static_cast<GLintptr>(drawCountOffset),
+                                             static_cast<GLsizei>(maxDrawCount),
+                                             static_cast<GLsizei>(stride));
+
+            oglCheckError();
+
+            oglDebugEndGroup();
+
+            stats.drawCalls++;
         }
 
         void setFrameBufferHeight(const int height) {

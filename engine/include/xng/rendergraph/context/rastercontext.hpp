@@ -129,14 +129,14 @@ namespace xng::rg {
          *
          * drawCall.offset specifies byte offset into the bound index buffer.
          *
-         * indexOffset specifies a base index value which is added to each index read from the bound index buffer.
+         * baseIndex specifies a base index value which is added to each index read from the bound index buffer.
          *
-         * The indexOffset enables indexed drawing from a single index / vertex buffer as long as the all vertex data has the same layout.
+         * The baseIndex enables indexed drawing from a single index / vertex buffer as long as the all vertex data has the same layout.
          *
          * @param drawCall The draw call
-         * @param indexOffset The index offset added to each index read from the bound index buffer.
+         * @param baseVertex The index offset added to each index read from the bound index buffer.
          */
-        virtual void drawIndexed(const DrawCall &drawCall, int indexOffset) = 0;
+        virtual void drawIndexed(const DrawCall &drawCall, int baseVertex) = 0;
 
         /**
          * Same as drawArray but multiple instances.
@@ -152,10 +152,10 @@ namespace xng::rg {
          * Shaders can access the instance index via ShaderInstruction::OpCode::GetInstanceID.
          *
          * @param drawCall
-         * @param indexOffset
+         * @param baseVertex
          * @param instanceCount
          */
-        virtual void drawIndexedInstanced(const DrawCall &drawCall, int indexOffset, unsigned int instanceCount) = 0;
+        virtual void drawIndexedInstanced(const DrawCall &drawCall, int baseVertex, unsigned int instanceCount) = 0;
 
         /**
          * Same as drawArray but multiple draw calls.
@@ -172,6 +172,115 @@ namespace xng::rg {
          * @param drawCalls
          */
         virtual void drawIndexedMulti(const std::vector<std::pair<DrawCall, int> > &drawCalls) = 0;
+
+        /**
+         * Draw array via draw command in a buffer.
+         *
+         * Format of the draw command must be:
+         * {
+         *      ShaderPrimitive::UInt vertexCount;
+         *      ShaderPrimitive::UInt instanceCount;
+         *      ShaderPrimitive::UInt firstVertex;
+         *      ShaderPrimitive::UInt firstInstance;
+         * }
+         *
+         * @param indirectBuffer The buffer containing the draw command.
+         * @param offset The byte offset into the buffer at which the draw command is present.
+         */
+        virtual void drawArrayIndirect(const Resource<Buffer> &indirectBuffer, size_t offset) = 0;
+
+        /**
+         * Draw indexed via draw command in a buffer.
+         *
+         * Format of the draw command must be:
+         * {
+         *      ShaderPrimitive::UInt indexCount;
+         *      ShaderPrimitive::UInt instanceCount;
+         *      ShaderPrimitive::UInt firstIndex;
+         *      ShaderPrimitive::Int baseVertex;
+         *      ShaderPrimitive::UInt firstInstance;
+         * }
+         *
+         * @param indirectBuffer The buffer containing the draw command.
+         * @param offset The byte offset into the buffer at which the draw command is present.
+         */
+        virtual void drawIndexedIndirect(const Resource<Buffer> &indirectBuffer, size_t offset) = 0;
+
+        /**
+         * Multi-draw arrays via draw commands in a buffer.
+         *
+         * The Format of the draw commands is identical to drawArrayIndirect().
+         *
+         * @param indirectBuffer The buffer containing the draw commands
+         * @param offset The byte offset into the buffer at which the draw commands are present.
+         * @param drawCount The number of draw commands in the buffer.
+         * @param stride The distance in bytes between draw commands in the buffer.
+         */
+        virtual void drawArrayMultiIndirect(const Resource<Buffer> &indirectBuffer,
+                                            size_t offset,
+                                            size_t drawCount,
+                                            size_t stride) = 0;
+
+        /**
+         * Multi-draw indexed via draw commands in a buffer.
+         *
+         * The Format of the draw commands is identical to drawIndexedIndirect().
+         *
+         * @param indirectBuffer The buffer containing the draw commands
+         * @param offset The byte offset into the buffer at which the draw commands are present.
+         * @param drawCount The number of draw commands in the buffer.
+         * @param stride The distance in bytes between draw commands in the buffer.
+         */
+        virtual void drawIndexedMultiIndirect(const Resource<Buffer> &indirectBuffer,
+                                              size_t offset,
+                                              size_t drawCount,
+                                              size_t stride) = 0;
+
+        /**
+         * Multi-draw arrays via draw commands and draw count fetched from buffers.
+         *
+         * The Format of the draw commands is identical to drawArrayIndirect().
+         *
+         * The draw count buffer must store a 4-byte signed integer value specifying the draw count.
+         *
+         * Draw count offset must be a multiple of 4.
+         *
+         * @param indirectBuffer The buffer containing the draw commands.
+         * @param drawCountBuffer The buffer containing the draw count value.
+         * @param indirectOffset The byte offset into the buffer at which the draw commands are present.
+         * @param drawCountOffset The offset into the draw count buffer at which the draw count value is present.
+         * @param maxDrawCount The maximum number expected to be stored in the draw count buffer.
+         * @param stride The distance in bytes between draw commands in the buffer.
+         */
+        virtual void drawArrayMultiIndirectCount(const Resource<Buffer> &indirectBuffer,
+                                                 const Resource<Buffer> &drawCountBuffer,
+                                                 size_t indirectOffset,
+                                                 size_t drawCountOffset,
+                                                 size_t maxDrawCount,
+                                                 size_t stride) = 0;
+
+        /**
+         * Multi-draw indexed via draw commands and draw count fetched from buffers.
+         *
+         * The Format of the draw commands is identical to drawIndexedIndirect().
+         *
+         * The draw count buffer must store a 4-byte signed integer value specifying the draw count.
+         *
+         * Draw count offset must be a multiple of 4.
+         *
+         * @param indirectBuffer The buffer containing the draw commands.
+         * @param drawCountBuffer The buffer containing the draw count value.
+         * @param indirectOffset The byte offset into the buffer at which the draw commands are present.
+         * @param drawCountOffset The offset into the draw count buffer at which the draw count value is present.
+         * @param maxDrawCount The maximum number expected to be stored in the draw count buffer.
+         * @param stride The distance in bytes between draw commands in the buffer.
+         */
+        virtual void drawIndexedMultiIndirectCount(const Resource<Buffer> &indirectBuffer,
+                                                   const Resource<Buffer> &drawCountBuffer,
+                                                   size_t indirectOffset,
+                                                   size_t drawCountOffset,
+                                                   size_t maxDrawCount,
+                                                   size_t stride) = 0;
     };
 }
 
