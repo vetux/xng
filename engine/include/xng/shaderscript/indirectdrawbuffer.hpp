@@ -26,14 +26,14 @@ namespace xng::ShaderScript {
                  unsigned int, vertexCount, // The number of vertices to draw
                  unsigned int, instanceCount, // The number of instances to draw
                  unsigned int, firstVertex, // The index of the first vertex
-                 unsigned int, firstInstance) // The index of the first instance to draw (GetInstanceID starts at this value)
+                 unsigned int, baseInstance) // The index of the first instance to draw (Can be accessed via GetBaseInstance)
 
     ShaderStruct(ShaderDrawIndirectIndexed,
                  unsigned int, indexCount, // The number of indices to draw
                  unsigned int, instanceCount, // The number of instances to draw
                  unsigned int, firstIndex, // The index of the first index
                  int, baseVertex, // The value added to each index in the buffer
-                 unsigned int, firstInstance) // The index of the first instance to draw (GetInstanceID starts at this value)
+                 unsigned int, baseInstance) // The index of the first instance to draw (Can be accessed via GetBaseInstance)
 }
 
 #endif //XENGINE_INDIRECTDRAWBUFFER_HPP

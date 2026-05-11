@@ -181,7 +181,7 @@ namespace xng::rg {
          *      ShaderPrimitive::UInt vertexCount; -> The number of vertices to draw
          *      ShaderPrimitive::UInt instanceCount; -> The number of instances to draw
          *      ShaderPrimitive::UInt firstVertex; -> The index of the first vertex
-         *      ShaderPrimitive::UInt firstInstance; -> The index of the first instance to draw (GetInstanceID starts at this value)
+         *      ShaderPrimitive::UInt baseInstance; -> The index of the first instance to draw (GetBaseInstance returns this value)
          * }
          *
          * @param indirectBuffer The buffer containing the draw command.
@@ -198,7 +198,7 @@ namespace xng::rg {
          *      ShaderPrimitive::UInt instanceCount; -> The number of instances to draw
          *      ShaderPrimitive::UInt firstIndex; -> The index of the first index (indexBuffer[firstIndex * sizeof(indexFormat)])
          *      ShaderPrimitive::Int baseVertex; -> The value added to each index in the buffer
-         *      ShaderPrimitive::UInt firstInstance; -> The index of the first instance to draw (GetInstanceID starts at this value)
+         *      ShaderPrimitive::UInt baseInstance; -> The index of the first instance to draw (GetBaseInstance returns this value)
          * }
          *
          * @param indirectBuffer The buffer containing the draw command.

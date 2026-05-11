@@ -266,14 +266,29 @@ namespace xng::ShaderScript {
         return ShaderObject(rg::ShaderOperand(rg::ShaderOperand::Argument, name));
     }
 
-    inline ShaderObject getDrawID() {
+    inline ShaderObject getVertexID() {
         return ShaderObject(rg::ShaderOperand(rg::ShaderOperand::Instruction,
-                                              rg::ShaderInstructionFactory::getDrawID()));
+                                              rg::ShaderInstructionFactory::getVertexID()));
     }
 
     inline ShaderObject getInstanceID() {
         return ShaderObject(rg::ShaderOperand(rg::ShaderOperand::Instruction,
                                               rg::ShaderInstructionFactory::getInstanceID()));
+    }
+
+    inline ShaderObject getDrawID() {
+        return ShaderObject(rg::ShaderOperand(rg::ShaderOperand::Instruction,
+                                              rg::ShaderInstructionFactory::getDrawID()));
+    }
+
+    inline ShaderObject getBaseVertex() {
+        return ShaderObject(rg::ShaderOperand(rg::ShaderOperand::Instruction,
+                                              rg::ShaderInstructionFactory::getBaseVertex()));
+    }
+
+    inline ShaderObject getBaseInstance() {
+        return ShaderObject(rg::ShaderOperand(rg::ShaderOperand::Instruction,
+                                              rg::ShaderInstructionFactory::getBaseInstance()));
     }
 
     inline void setVertexPosition(const ShaderObject &value) {

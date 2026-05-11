@@ -89,15 +89,33 @@ namespace xng::rg::ShaderInstructionFactory {
         return ret;
     }
 
-    ShaderInstruction getDrawID() {
+    ShaderInstruction getVertexID() {
         ShaderInstruction ret;
-        ret.code = ShaderInstruction::GetDrawID;
+        ret.code = ShaderInstruction::GetVertexID;
         return ret;
     }
 
     ShaderInstruction getInstanceID() {
         ShaderInstruction ret;
         ret.code = ShaderInstruction::GetInstanceID;
+        return ret;
+    }
+
+    ShaderInstruction getDrawID() {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::GetDrawID;
+        return ret;
+    }
+
+    ShaderInstruction getBaseVertex() {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::GetBaseVertex;
+        return ret;
+    }
+
+    ShaderInstruction getBaseInstance() {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::GetBaseInstance;
         return ret;
     }
 
@@ -436,8 +454,7 @@ namespace xng::rg::ShaderInstructionFactory {
         return ret;
     }
 
-    ShaderInstruction atan2(ShaderOperand y, ShaderOperand x)
-    {
+    ShaderInstruction atan2(ShaderOperand y, ShaderOperand x) {
         ShaderInstruction ret;
         ret.code = ShaderInstruction::Atan2;
         ret.operands.push_back(std::move(y));

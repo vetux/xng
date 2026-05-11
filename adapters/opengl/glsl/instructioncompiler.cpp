@@ -47,10 +47,16 @@ namespace InstructionCompiler {
                 return compileEmitVertex(instruction, source, functionName, indent);
             case ShaderInstruction::EndPrimitive:
                 return compileEndPrimitive(instruction, source, functionName, indent);
-            case ShaderInstruction::GetDrawID:
-                return indent + "gl_DrawID";
+            case ShaderInstruction::GetVertexID:
+                return indent + "gl_VertexID";
             case ShaderInstruction::GetInstanceID:
                 return indent + "gl_InstanceID";
+            case ShaderInstruction::GetDrawID:
+                return indent + "gl_DrawID";
+            case ShaderInstruction::GetBaseVertex:
+                return indent + "gl_BaseVertex";
+            case ShaderInstruction::GetBaseInstance:
+                return indent + "gl_BaseInstance";
             case ShaderInstruction::SetFragmentDepth:
                 return compileSetFragmentDepth(instruction, source, functionName, indent);
             case ShaderInstruction::SetLayer:
@@ -537,7 +543,8 @@ namespace InstructionCompiler {
             case ShaderInstruction::Atan:
                 return "atan(" + compileOperand(instruction.operands.at(0), source, functionName) + ")";
             case ShaderInstruction::Atan2:
-                return "atan(" + compileOperand(instruction.operands.at(0), source, functionName) + ", " + compileOperand(instruction.operands.at(1), source, functionName) + ")";
+                return "atan(" + compileOperand(instruction.operands.at(0), source, functionName) + ", " +
+                       compileOperand(instruction.operands.at(1), source, functionName) + ")";
             case ShaderInstruction::Pow:
                 return "pow(" + compileOperand(instruction.operands.at(0), source, functionName) + ", "
                        + compileOperand(instruction.operands.at(1), source, functionName) + ")";
