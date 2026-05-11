@@ -209,9 +209,7 @@ namespace xng::opengl {
         return data->pipelineCache;
     }
 
-    rg::Statistics Runtime::execute(const rg::Graph &graph) {
-        Statistics stats;
-
+    void Runtime::execute(const rg::Graph &graph) {
         std::unordered_set<SurfaceGL *> surfaces;
 
         // TODO: Transient Aliasing
@@ -317,12 +315,9 @@ namespace xng::opengl {
 
         auto passResources = PassResources(transientResources, heapResources);
 
-        TransferContextGL transferContext(passResources, stats);
-        RasterContextGL rasterContext(passResources,
-                                      data->pipelineCache,
-                                      stats);
-        ComputeContextGL computeContext(passResources,
-                                        data->pipelineCache);
+        TransferContextGL transferContext(passResources);
+        RasterContextGL rasterContext(passResources, data->pipelineCache);
+        ComputeContextGL computeContext(passResources, data->pipelineCache);
 
         //TODO: Pass Ordering
         for (auto &pass: graph.passes) {
@@ -366,18 +361,11 @@ namespace xng::opengl {
         for (auto &tex: transientResources.textures) {
             data->cachedTextures[tex.second->desc].emplace_back(std::move(tex.second));
         }
-
-        return stats;
     }
 
-    rg::Statistics Runtime::execute(const std::vector<rg::Graph> &graphs) {
-        Statistics stats;
-        stats.vendor = data->vendor;
-        stats.renderer = data->renderer;
-        stats.version = data->version;
+    void Runtime::execute(const std::vector<rg::Graph> &graphs) {
         for (auto &graph: graphs) {
-            stats += execute(graph);
+            execute(graph);
         }
-        return stats;
     }
 }

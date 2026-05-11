@@ -28,10 +28,9 @@
 namespace xng::opengl {
     class RasterContextGL final : public rg::RasterContext {
     public:
-        RasterContextGL(const PassResources &resources, PipelineCacheGL &pipelineCache, Statistics &stats)
+        RasterContextGL(const PassResources &resources, PipelineCacheGL &pipelineCache)
             : resources(resources),
               pipelineCache(pipelineCache),
-              stats(stats),
               emptySSBO(Buffer(1, Buffer::CAPABILITY_STORAGE, Buffer::MEMORY_GPU_ONLY)) {
         }
 
@@ -459,9 +458,6 @@ namespace xng::opengl {
             oglCheckError();
 
             oglDebugEndGroup();
-
-            stats.drawCalls++;
-            stats.polygons += drawCall.count / primitive;
         }
 
         void drawIndexed(const DrawCall &drawCall, const int indexOffset) override {
@@ -484,9 +480,6 @@ namespace xng::opengl {
                                      static_cast<GLint>(indexOffset));
             oglCheckError();
 
-            stats.drawCalls++;
-            stats.polygons += drawCall.count / primitive;
-
             oglDebugEndGroup();
         }
 
@@ -506,9 +499,6 @@ namespace xng::opengl {
             oglCheckError();
 
             oglDebugEndGroup();
-
-            stats.drawCalls++;
-            stats.polygons += drawCall.count / primitive * instanceCount;
         }
 
         void drawIndexedInstanced(const DrawCall &drawCall,
@@ -534,9 +524,6 @@ namespace xng::opengl {
                                               static_cast<GLsizei>(instanceCount));
             oglCheckError();
 
-            stats.drawCalls++;
-            stats.polygons += drawCall.count / primitive * instanceCount;
-
             oglDebugEndGroup();
         }
 
@@ -559,7 +546,6 @@ namespace xng::opengl {
             for (auto &drawCall: drawCalls) {
                 offsets.emplace_back(static_cast<GLint>(drawCall.offset));
                 counts.emplace_back(static_cast<GLsizei>(drawCall.count));
-                stats.polygons += drawCall.count / primitive;
             }
 
             glMultiDrawArrays(convert(primitive),
@@ -570,8 +556,6 @@ namespace xng::opengl {
             oglCheckError();
 
             oglDebugEndGroup();
-
-            stats.drawCalls++;
         }
 
         void drawIndexedMulti(const std::vector<std::pair<DrawCall, int> > &drawCalls) override {
@@ -599,7 +583,6 @@ namespace xng::opengl {
                 offsets.emplace_back(reinterpret_cast<void *>(static_cast<uintptr_t>(pair.first.offset)));
                 counts.emplace_back(static_cast<GLsizei>(pair.first.count));
                 indexOffsets.emplace_back(static_cast<GLint>(pair.second));
-                stats.polygons += pair.first.count / primitive;
             }
 
             glMultiDrawElementsBaseVertex(convert(primitive),
@@ -610,8 +593,6 @@ namespace xng::opengl {
                                           static_cast<GLint *>(indexOffsets.data()));
 
             oglCheckError();
-
-            stats.drawCalls++;
 
             oglDebugEndGroup();
         }
@@ -633,8 +614,6 @@ namespace xng::opengl {
             oglCheckError();
 
             oglDebugEndGroup();
-
-            stats.drawCalls++;
         }
 
         void drawIndexedIndirect(const Resource<Buffer> &indirectBuffer, const size_t offset) override {
@@ -660,8 +639,6 @@ namespace xng::opengl {
             oglCheckError();
 
             oglDebugEndGroup();
-
-            stats.drawCalls++;
         }
 
         void drawArrayMultiIndirect(const Resource<Buffer> &indirectBuffer,
@@ -687,8 +664,6 @@ namespace xng::opengl {
             oglCheckError();
 
             oglDebugEndGroup();
-
-            stats.drawCalls++;
         }
 
         void drawIndexedMultiIndirect(const Resource<Buffer> &indirectBuffer,
@@ -719,8 +694,6 @@ namespace xng::opengl {
             oglCheckError();
 
             oglDebugEndGroup();
-
-            stats.drawCalls++;
         }
 
         void drawArrayMultiIndirectCount(const Resource<Buffer> &indirectBuffer,
@@ -752,8 +725,6 @@ namespace xng::opengl {
             oglCheckError();
 
             oglDebugEndGroup();
-
-            stats.drawCalls++;
         }
 
         void drawIndexedMultiIndirectCount(const Resource<Buffer> &indirectBuffer,
@@ -790,8 +761,6 @@ namespace xng::opengl {
             oglCheckError();
 
             oglDebugEndGroup();
-
-            stats.drawCalls++;
         }
 
         void setFrameBufferHeight(const int height) {
@@ -801,7 +770,6 @@ namespace xng::opengl {
     private:
         const PassResources &resources;
         PipelineCacheGL &pipelineCache;
-        Statistics &stats;
 
         std::optional<PipelineCache::Handle> boundPipeline;
 

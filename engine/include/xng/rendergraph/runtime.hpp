@@ -24,7 +24,6 @@
 #include "xng/rendergraph/heap.hpp"
 #include "xng/rendergraph/pipelinecache.hpp"
 #include "xng/rendergraph/graph.hpp"
-#include "xng/rendergraph/statistics.hpp"
 
 /**
  * The Render Graph namespace.
@@ -104,7 +103,7 @@ namespace xng::rg {
          *        pass[2] will receive the changes from pass[1]
          * @param graph
          */
-        virtual Statistics execute(const Graph &graph) = 0;
+        virtual void execute(const Graph &graph) = 0;
 
         /**
          * Execute multiple graphs.
@@ -130,7 +129,7 @@ namespace xng::rg {
          *      graphs[3] will receive the changes to the heap from graph[1], and the read operation might run in parallel with graphs[2]
          * @param graphs
          */
-        virtual Statistics execute(const std::vector<Graph> &graphs) = 0;
+        virtual void execute(const std::vector<Graph> &graphs) = 0;
     };
 }
 

@@ -16,17 +16,17 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef XENGINE_RENDERGRAPH_STATISTICS_HPP
-#define XENGINE_RENDERGRAPH_STATISTICS_HPP
+#ifndef XENGINE_RENDERER_STATISTICS_HPP
+#define XENGINE_RENDERER_STATISTICS_HPP
 
 #include <string>
 
-namespace xng::rg {
+namespace xng {
     /**
      * Optional statistics data for debugging only.
      * May not be assigned or contain inaccurate data.
      */
-    struct Statistics {
+    struct RendererStatistics {
         std::string vendor{};
         std::string renderer{};
         std::string version{};
@@ -44,7 +44,7 @@ namespace xng::rg {
         size_t textureVRamDownload = 0;
         size_t textureVRamCopy = 0;
 
-        Statistics &operator+=(const Statistics &other) {
+        RendererStatistics &operator+=(const RendererStatistics &other) {
             drawCalls += other.drawCalls;
             polygons += other.polygons;
 
@@ -63,4 +63,4 @@ namespace xng::rg {
     };
 }
 
-#endif //XENGINE_RENDERGRAPH_STATISTICS_HPP
+#endif //XENGINE_RENDERER_STATISTICS_HPP

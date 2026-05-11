@@ -36,9 +36,9 @@ namespace xng::vulkan {
 
         rg::PipelineCache &getPipelineCache() override;
 
-        rg::Statistics execute(const rg::Graph &graph) override;
+        void execute(const rg::Graph &graph) override;
 
-        rg::Statistics execute(const std::vector<rg::Graph> &graphs) override;
+        void execute(const std::vector<rg::Graph> &graphs) override;
     };
 }
 

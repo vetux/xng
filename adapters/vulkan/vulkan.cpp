@@ -193,11 +193,11 @@ namespace xng::vulkan {
         throw std::runtime_error("Not Implemented");
     }
 
-    rg::Statistics Runtime::execute(const rg::Graph &graph) {
+    void Runtime::execute(const rg::Graph &graph) {
         throw std::runtime_error("Not Implemented");
     }
 
-    rg::Statistics Runtime::execute(const std::vector<rg::Graph> &graphs) {
+    void Runtime::execute(const std::vector<rg::Graph> &graphs) {
         throw std::runtime_error("Not Implemented");
     }
 }

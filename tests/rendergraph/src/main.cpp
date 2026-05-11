@@ -292,7 +292,7 @@ int main(int argc, char *argv[]) {
     std::chrono::milliseconds fpsUpdateInterval = std::chrono::milliseconds(50);
     auto now = std::chrono::steady_clock::now();
 
-    rg::Statistics stats;
+    RendererStatistics stats;
     while (!window->shouldClose()) {
         frameLimiter.newFrame();
         window->update();

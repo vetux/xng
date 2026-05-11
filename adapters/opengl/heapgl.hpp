@@ -24,15 +24,16 @@
 
 #include "xng/rendergraph/heap.hpp"
 
+#include "xng/display/window.hpp"
+#include "xng/util/refcounter.hpp"
+
 #include "colorbytesize.hpp"
 #include "resourcescope.hpp"
-#include "context/heaptransfercontextgl.hpp"
-#include "glsl/shadercompilerglsl.hpp"
 #include "resource/buffergl.hpp"
 #include "resource/framebuffer.hpp"
-#include "xng/display/window.hpp"
-#include "xng/rendergraph/statistics.hpp"
-#include "xng/util/refcounter.hpp"
+
+#include "glsl/shadercompilerglsl.hpp"
+#include "context/heaptransfercontextgl.hpp"
 
 namespace xng::opengl {
     class HeapTransferContextGL;
@@ -57,10 +58,6 @@ namespace xng::opengl {
 
         void decrementReference(const ResourceId &handle) override;
 
-        Statistics &getStatistics() {
-            return stats;
-        }
-
         ResourceScope getResources() const {
             return transferContext->getResources();
         }
@@ -70,8 +67,6 @@ namespace xng::opengl {
         }
 
     private:
-        Statistics stats;
-
         RefCounter<ResourceId::Handle, size_t> refCounter{};
 
         std::unique_ptr<HeapTransferContextGL> transferContext;

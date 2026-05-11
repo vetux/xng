@@ -20,7 +20,6 @@
 #define XENGINE_TRANSFERCONTEXTGL_HPP
 
 #include "xng/rendergraph/context/transfercontext.hpp"
-#include "xng/rendergraph/statistics.hpp"
 
 #include "heapgl.hpp"
 #include "passresources.hpp"
@@ -153,8 +152,8 @@ namespace xng::opengl {
             }
         }
 
-        TransferContextGL(const PassResources &resources, Statistics &stats)
-            : resources(resources), stats(stats) {
+        TransferContextGL(const PassResources &resources)
+            : resources(resources) {
         }
 
         ~TransferContextGL() override = default;
@@ -180,8 +179,6 @@ namespace xng::opengl {
             glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
 
             oglCheckError();
-
-            stats.bufferVRamCopy += count;
 
             oglDebugEndGroup();
         }
@@ -213,8 +210,6 @@ namespace xng::opengl {
                                srcTexture.desc.size.y,
                                1);
             oglCheckError();
-
-            stats.textureVRamCopy += size.x * size.y * getColorByteSize(srcTexture.desc.format);
 
             oglDebugEndGroup();
         }
@@ -614,7 +609,6 @@ namespace xng::opengl {
 
     private:
         const PassResources &resources;
-        Statistics &stats;
 
         Framebuffer blitSrcFb;
         Framebuffer blitDstFb;

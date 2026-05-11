@@ -28,19 +28,19 @@
 #include <variant>
 #include <vector>
 
+#include "xng/display/window.hpp"
+#include "xng/rendergraph/pass.hpp"
+#include "xng/util/downcast.hpp"
+
 #include "glad/glad.h"
 #include "ogldebug.hpp"
-
-#include "context/transfercontextgl.hpp"
 
 #include "heapgl.hpp"
 #include "heaptransfergl.hpp"
 #include "passresources.hpp"
+
 #include "display/windowgl.hpp"
-#include "xng/display/window.hpp"
-#include "xng/rendergraph/pass.hpp"
-#include "xng/rendergraph/statistics.hpp"
-#include "xng/util/downcast.hpp"
+#include "context/transfercontextgl.hpp"
 
 namespace xng::opengl {
     class HeapTransferContextGL final : public rg::TransferContext {
@@ -873,7 +873,7 @@ namespace xng::opengl {
                     }
                 }
 
-                TransferContextGL context(PassResources({}, ctxResources), stats);
+                TransferContextGL context(PassResources({}, ctxResources));
 
                 // Regions accumulated since the last SyncCmd (or batch start).
                 std::unordered_map<ResourceId::Handle, std::vector<BufferRegion> > pendingBuffers;
@@ -997,8 +997,6 @@ namespace xng::opengl {
         std::unique_ptr<Window> heapWindow;
 
         Heap &heap;
-
-        Statistics stats;
 
         std::mutex mutex;
         std::condition_variable cv;
