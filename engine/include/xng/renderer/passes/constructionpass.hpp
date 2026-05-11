@@ -33,8 +33,8 @@ namespace xng {
                     rg::ColorFormat::RGBA32F,
                     rg::ColorFormat::RGBA32F,
                     rg::ColorFormat::RGBA32F,
-                    rg::ColorFormat::RGB,
-                    rg::ColorFormat::RGB,
+                    rg::ColorFormat::RGBA8,
+                    rg::ColorFormat::RGBA8,
                     rg::ColorFormat::RGBA32UI
                 };
             }
@@ -44,19 +44,19 @@ namespace xng {
                 auto desc = rg::Texture();
                 desc.size = resolution;
 
-                desc.format = rg::ColorFormat::RGB32F;
+                desc.format = rg::ColorFormat::RGBA32F;
                 position = graph.allocateTexture(desc);
                 normal = graph.allocateTexture(desc);
                 tangent = graph.allocateTexture(desc);
 
-                desc.format = rg::ColorFormat::RGB;
+                desc.format = rg::ColorFormat::RGBA8;
                 roughnessMetallicAO = graph.allocateTexture(desc);
                 albedo = graph.allocateTexture(desc);
 
-                desc.format = rg::ColorFormat::RGB32UI;
+                desc.format = rg::ColorFormat::RGBA32UI;
                 objectIdReceiveShadows = graph.allocateTexture(desc);
 
-                desc.format = rg::ColorFormat::DEPTH;
+                desc.format = rg::ColorFormat::DEPTH_32F;
                 depth = graph.allocateTexture(desc);
             }
 
@@ -136,9 +136,9 @@ namespace xng {
                                 if (mesh.boneCount > 0) {
                                     continue;
                                 }
-                                cmd.setShaderParameter("boneBaseIndex", rg::ShaderPrimitive(mesh.boneBaseIndex));
+                                cmd.setShaderParameter("boneBaseIndex", rg::ShaderPrimitive(mesh.baseBone));
                                 if (mesh.indexed) {
-                                    cmd.drawIndexed(mesh.drawCall, mesh.indexOffset);
+                                    cmd.drawIndexed(mesh.drawCall, mesh.baseIndex);
                                 } else {
                                     cmd.drawArray(mesh.drawCall);
                                 }
@@ -161,9 +161,9 @@ namespace xng {
                                 if (mesh.boneCount <= 0) {
                                     continue;
                                 }
-                                cmd.setShaderParameter("boneBaseIndex", rg::ShaderPrimitive(mesh.boneBaseIndex));
+                                cmd.setShaderParameter("boneBaseIndex", rg::ShaderPrimitive(mesh.baseBone));
                                 if (mesh.indexed) {
-                                    cmd.drawIndexed(mesh.drawCall, mesh.indexOffset);
+                                    cmd.drawIndexed(mesh.drawCall, mesh.baseIndex);
                                 } else {
                                     cmd.drawArray(mesh.drawCall);
                                 }
@@ -185,7 +185,7 @@ namespace xng {
             }
 
             // Bind Index Buffer
-            cmd.bindIndexBuffer(scene.indexBuffer);
+            cmd.bindIndexBuffer(scene.indexBuffer, rg::INDEX_UNSIGNED_INT);
 
             // Bind storage buffers
             cmd.bindStorageBuffer("camera",
@@ -267,20 +267,22 @@ namespace xng {
                          attr <= ATTRIBUTE_END;
                          attr = static_cast<VertexAttribute>(attr + 1)) {
                         ret.vertexRead(scene.vertexBuffers.at(attr),
-                                       getVertexAttributeSize(attr) * mesh.indexOffset,
+                                       getVertexAttributeSize(attr) * mesh.baseIndex,
                                        getVertexAttributeSize(attr) * mesh.indexCount);
                     }
 
                     if (mesh.indexed) {
                         // Declare index buffer access
-                        ret.indexRead(scene.indexBuffer, mesh.indexOffset, sizeof(uint32_t) * mesh.indexCount);
+                        ret.indexRead(scene.indexBuffer,
+                                      sizeof(uint32_t) * mesh.baseIndex,
+                                      sizeof(uint32_t) * mesh.indexCount);
                     }
 
                     if (mesh.boneCount > 0) {
                         // Declare bone buffer accesses
                         ret.storageRead(scene.boneBuffer,
                                         {rg::Shader::VERTEX},
-                                        sizeof(ShaderTransform::CPU) * mesh.boneBaseIndex,
+                                        sizeof(ShaderTransform::CPU) * mesh.baseBone,
                                         sizeof(ShaderTransform::CPU) * mesh.boneCount);
                     }
                 }
@@ -296,7 +298,7 @@ namespace xng {
             ret.depthTestWrite = true;
 
             ret.colorAttachments = GBuffer::getColorFormats();
-            ret.depthAttachment = rg::ColorFormat::DEPTH;
+            ret.depthAttachment = rg::ColorFormat::DEPTH_32F;
 
             ret.vertexFormat = rg::RasterPipeline::VertexFormat(vertexShader.inputLayout,
                                                                 {
@@ -320,7 +322,7 @@ namespace xng {
             ret.depthTestWrite = true;
 
             ret.colorAttachments = GBuffer::getColorFormats();
-            ret.depthAttachment = rg::ColorFormat::DEPTH;
+            ret.depthAttachment = rg::ColorFormat::DEPTH_32F;
 
             ret.vertexFormat = rg::RasterPipeline::VertexFormat(vertexShader.inputLayout,
                                                                 {

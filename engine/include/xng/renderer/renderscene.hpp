@@ -37,26 +37,27 @@ namespace xng {
         struct Mesh {
             rg::Primitive primitive;
             rg::DrawCall drawCall;
+
             bool indexed;
-            size_t indexOffset; // The offset applied to each index.
+            int baseIndex; // The offset applied to each index.
             size_t indexCount; // The number of indices for this mesh
 
-            unsigned int boneBaseIndex; // The offset applied to each bone index
+            int baseBone; // The offset applied to each bone index
             size_t boneCount; // The number of bones for this mesh
 
             Mesh(const rg::Primitive primitive,
                  const rg::DrawCall &drawCall,
                  const bool indexed,
-                 const size_t index_offset,
+                 const int baseIndex,
                  const size_t indexCount,
-                 const unsigned int boneBaseIndex,
+                 const int baseBone,
                  const size_t boneCount)
                 : primitive(primitive),
                   drawCall(drawCall),
                   indexed(indexed),
-                  indexOffset(index_offset),
+                  baseIndex(baseIndex),
                   indexCount(indexCount),
-                  boneBaseIndex(boneBaseIndex),
+                  baseBone(baseBone),
                   boneCount(boneCount) {
             }
         };
