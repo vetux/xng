@@ -54,6 +54,10 @@ namespace xng::rg {
             EmitVertex,
             EndPrimitive,
 
+            // Built-In Data Retrieval
+            GetDrawID, // The index of the draw for multi draw
+            GetInstanceID, // The index of the instance for instanced draw
+
             // Built-In Data Assignment
             SetFragmentDepth,
             SetLayer,

@@ -89,6 +89,18 @@ namespace xng::rg::ShaderInstructionFactory {
         return ret;
     }
 
+    ShaderInstruction getDrawID() {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::GetDrawID;
+        return ret;
+    }
+
+    ShaderInstruction getInstanceID() {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::GetInstanceID;
+        return ret;
+    }
+
     ShaderInstruction setFragmentDepth(ShaderOperand depth) {
         ShaderInstruction ret;
         ret.code = ShaderInstruction::SetFragmentDepth;

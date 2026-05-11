@@ -25,182 +25,169 @@
 #include "xng/shaderscript/branchbuilder.hpp"
 #include "xng/shaderscript/loopbuilder.hpp"
 
-namespace xng::ShaderScript
-{
+namespace xng::ShaderScript {
     // Operators for lhs literals
-    template <typename T>
-    ShaderObject operator +(const T& lhs, const ShaderObject& rhs)
-    {
+    template<typename T>
+    ShaderObject operator +(const T &lhs, const ShaderObject &rhs) {
         return ShaderObject(lhs) + rhs;
     }
 
-    template <typename T>
-    ShaderObject operator -(const T& lhs, const ShaderObject& rhs)
-    {
+    template<typename T>
+    ShaderObject operator -(const T &lhs, const ShaderObject &rhs) {
         return ShaderObject(lhs) - rhs;
     }
 
-    template <typename T>
-    ShaderObject operator *(const T& lhs, const ShaderObject& rhs)
-    {
+    template<typename T>
+    ShaderObject operator *(const T &lhs, const ShaderObject &rhs) {
         return ShaderObject(lhs) * rhs;
     }
 
-    template <typename T>
-    ShaderObject operator /(const T& lhs, const ShaderObject& rhs)
-    {
+    template<typename T>
+    ShaderObject operator /(const T &lhs, const ShaderObject &rhs) {
         return ShaderObject(lhs) / rhs;
     }
 
-    template <typename T>
-    ShaderObject operator ==(const T& lhs, const ShaderObject& rhs)
-    {
+    template<typename T>
+    ShaderObject operator ==(const T &lhs, const ShaderObject &rhs) {
         return ShaderObject(lhs) == rhs;
     }
 
-    template <typename T>
-    ShaderObject operator !=(const T& lhs, const ShaderObject& rhs)
-    {
+    template<typename T>
+    ShaderObject operator !=(const T &lhs, const ShaderObject &rhs) {
         return ShaderObject(lhs) != rhs;
     }
 
-    template <typename T>
-    ShaderObject operator <(const T& lhs, const ShaderObject& rhs)
-    {
+    template<typename T>
+    ShaderObject operator <(const T &lhs, const ShaderObject &rhs) {
         return ShaderObject(lhs) < rhs;
     }
 
-    template <typename T>
-    ShaderObject operator >(const T& lhs, const ShaderObject& rhs)
-    {
+    template<typename T>
+    ShaderObject operator >(const T &lhs, const ShaderObject &rhs) {
         return ShaderObject(lhs) > rhs;
     }
 
-    template <typename T>
-    ShaderObject operator <=(const T& lhs, const ShaderObject& rhs)
-    {
+    template<typename T>
+    ShaderObject operator <=(const T &lhs, const ShaderObject &rhs) {
         return ShaderObject(lhs) <= rhs;
     }
 
-    template <typename T>
-    ShaderObject operator >=(const T& lhs, const ShaderObject& rhs)
-    {
+    template<typename T>
+    ShaderObject operator >=(const T &lhs, const ShaderObject &rhs) {
         return ShaderObject(lhs) >= rhs;
     }
 
-    template <typename T>
-    ShaderObject operator ||(const T& lhs, const ShaderObject& rhs)
-    {
+    template<typename T>
+    ShaderObject operator ||(const T &lhs, const ShaderObject &rhs) {
         return ShaderObject(lhs) || rhs;
     }
 
-    template <typename T>
-    ShaderObject operator &&(const T& lhs, const ShaderObject& rhs)
-    {
+    template<typename T>
+    ShaderObject operator &&(const T &lhs, const ShaderObject &rhs) {
         return ShaderObject(lhs) && rhs;
     }
 
-    template <rg::ShaderPrimitiveType::Type TYPE, rg::ShaderPrimitiveType::Component COMPONENT, int C>
+    template<rg::ShaderPrimitiveType::Type TYPE, rg::ShaderPrimitiveType::Component COMPONENT, int C>
     using Array = ShaderDataObject<TYPE, COMPONENT, C>;
 
-    template <int C>
+    template<int C>
     using ArrayBool = Array<rg::ShaderPrimitiveType::SCALAR, rg::ShaderPrimitiveType::BOOLEAN, C>;
 
-    template <int C>
+    template<int C>
     using ArrayInt = Array<rg::ShaderPrimitiveType::SCALAR, rg::ShaderPrimitiveType::SIGNED_INT, C>;
 
-    template <int C>
+    template<int C>
     using ArrayUInt = Array<rg::ShaderPrimitiveType::SCALAR, rg::ShaderPrimitiveType::UNSIGNED_INT, C>;
 
-    template <int C>
+    template<int C>
     using ArrayFloat = Array<rg::ShaderPrimitiveType::SCALAR, rg::ShaderPrimitiveType::FLOAT, C>;
 
-    template <int C>
+    template<int C>
     using ArrayDouble = Array<rg::ShaderPrimitiveType::SCALAR, rg::ShaderPrimitiveType::DOUBLE, C>;
 
-    template <int C>
+    template<int C>
     using ArrayBVec2 = Array<rg::ShaderPrimitiveType::VECTOR2, rg::ShaderPrimitiveType::BOOLEAN, C>;
 
-    template <int C>
+    template<int C>
     using ArrayBVec3 = Array<rg::ShaderPrimitiveType::VECTOR3, rg::ShaderPrimitiveType::BOOLEAN, C>;
 
-    template <int C>
+    template<int C>
     using ArrayBVec4 = Array<rg::ShaderPrimitiveType::VECTOR4, rg::ShaderPrimitiveType::BOOLEAN, C>;
 
-    template <int C>
+    template<int C>
     using ArrayIVec2 = Array<rg::ShaderPrimitiveType::VECTOR2, rg::ShaderPrimitiveType::SIGNED_INT, C>;
 
-    template <int C>
+    template<int C>
     using ArrayIVec3 = Array<rg::ShaderPrimitiveType::VECTOR3, rg::ShaderPrimitiveType::SIGNED_INT, C>;
 
-    template <int C>
+    template<int C>
     using ArrayIVec4 = Array<rg::ShaderPrimitiveType::VECTOR4, rg::ShaderPrimitiveType::SIGNED_INT, C>;
 
-    template <int C>
+    template<int C>
     using ArrayUVec2 = Array<rg::ShaderPrimitiveType::VECTOR2, rg::ShaderPrimitiveType::UNSIGNED_INT, C>;
 
-    template <int C>
+    template<int C>
     using ArrayUVec3 = Array<rg::ShaderPrimitiveType::VECTOR3, rg::ShaderPrimitiveType::UNSIGNED_INT, C>;
 
-    template <int C>
+    template<int C>
     using ArrayUVec4 = Array<rg::ShaderPrimitiveType::VECTOR4, rg::ShaderPrimitiveType::UNSIGNED_INT, C>;
 
-    template <int C>
+    template<int C>
     using ArrayVec2 = Array<rg::ShaderPrimitiveType::VECTOR2, rg::ShaderPrimitiveType::FLOAT, C>;
 
-    template <int C>
+    template<int C>
     using ArrayVec3 = Array<rg::ShaderPrimitiveType::VECTOR3, rg::ShaderPrimitiveType::FLOAT, C>;
 
-    template <int C>
+    template<int C>
     using ArrayVec4 = Array<rg::ShaderPrimitiveType::VECTOR4, rg::ShaderPrimitiveType::FLOAT, C>;
 
-    template <int C>
+    template<int C>
     using ArrayMat2 = Array<rg::ShaderPrimitiveType::MAT2, rg::ShaderPrimitiveType::FLOAT, C>;
 
-    template <int C>
+    template<int C>
     using ArrayMat3 = Array<rg::ShaderPrimitiveType::MAT3, rg::ShaderPrimitiveType::FLOAT, C>;
 
-    template <int C>
+    template<int C>
     using ArrayMat4 = Array<rg::ShaderPrimitiveType::MAT4, rg::ShaderPrimitiveType::FLOAT, C>;
 
-    template <int C>
+    template<int C>
     using ArrayDVec2 = Array<rg::ShaderPrimitiveType::VECTOR2, rg::ShaderPrimitiveType::DOUBLE, C>;
 
-    template <int C>
+    template<int C>
     using ArrayDVec3 = Array<rg::ShaderPrimitiveType::VECTOR3, rg::ShaderPrimitiveType::DOUBLE, C>;
 
-    template <int C>
+    template<int C>
     using ArrayDVec4 = Array<rg::ShaderPrimitiveType::VECTOR4, rg::ShaderPrimitiveType::DOUBLE, C>;
 
-    template <int C>
+    template<int C>
     using ArrayDMat2 = Array<rg::ShaderPrimitiveType::MAT2, rg::ShaderPrimitiveType::DOUBLE, C>;
 
-    template <int C>
+    template<int C>
     using ArrayDMat3 = Array<rg::ShaderPrimitiveType::MAT3, rg::ShaderPrimitiveType::DOUBLE, C>;
 
-    template <int C>
+    template<int C>
     using ArrayDMat4 = Array<rg::ShaderPrimitiveType::MAT4, rg::ShaderPrimitiveType::DOUBLE, C>;
 
-    template <const char* typeName>
+    template<const char * typeName>
     using Object = ShaderStructObject<typeName, 1>;
 
     // Texture definitions only needed for function arguments.
-    template <rg::ColorFormat C>
+    template<rg::ColorFormat C>
     using Texture2D = ShaderTextureObject<rg::TEXTURE_2D, C>;
 
-    template <rg::ColorFormat C>
+    template<rg::ColorFormat C>
     using Texture2DMS = ShaderTextureObject<rg::TEXTURE_2D_MULTISAMPLE, C>;
 
-    template <rg::ColorFormat C>
+    template<rg::ColorFormat C>
     using TextureCube = ShaderTextureObject<rg::TEXTURE_CUBE_MAP, C>;
 
-    template <rg::ColorFormat C>
+    template<rg::ColorFormat C>
     using Texture2DArray = ShaderTextureObject<rg::TEXTURE_2D_ARRAY, C>;
 
-    template <rg::ColorFormat C>
+    template<rg::ColorFormat C>
     using Texture2DMSArray = ShaderTextureObject<rg::TEXTURE_2D_MULTISAMPLE_ARRAY, C>;
 
-    template <rg::ColorFormat C>
+    template<rg::ColorFormat C>
     using TextureCubeArray = ShaderTextureObject<rg::TEXTURE_CUBE_MAP_ARRAY, C>;
 
     typedef ShaderDataObject<rg::ShaderPrimitiveType::SCALAR, rg::ShaderPrimitiveType::BOOLEAN, 1> Bool;
@@ -255,423 +242,360 @@ namespace xng::ShaderScript
 
     typedef ShaderDataObject<rg::ShaderPrimitiveType::VECTOR4, rg::ShaderPrimitiveType::UNSIGNED_INT, 1> uvec4;
 
-    inline ShaderObject inputAttribute(const std::string& attributeName)
-    {
+    inline ShaderObject inputAttribute(const std::string &attributeName) {
         return ShaderObject(rg::ShaderOperand(rg::ShaderOperand::InputAttribute, attributeName));
     }
 
-    inline ShaderObject outputAttribute(const std::string& attributeName)
-    {
+    inline ShaderObject outputAttribute(const std::string &attributeName) {
         return ShaderObject(rg::ShaderOperand(rg::ShaderOperand::OutputAttribute, attributeName));
     }
 
-    inline ShaderObject parameter(const std::string& name)
-    {
+    inline ShaderObject parameter(const std::string &name) {
         return ShaderObject(rg::ShaderOperand(rg::ShaderOperand::Parameter, name));
     }
 
-    inline ShaderObject buffer(const std::string& name)
-    {
+    inline ShaderObject buffer(const std::string &name) {
         return ShaderObject(rg::ShaderOperand(rg::ShaderOperand::Buffer, name));
     }
 
-    inline ShaderObject textureSampler(const std::string& name)
-    {
+    inline ShaderObject textureSampler(const std::string &name) {
         return ShaderObject(rg::ShaderOperand(rg::ShaderOperand::Texture, name));
     }
 
-    inline ShaderObject argument(const std::string& name)
-    {
+    inline ShaderObject argument(const std::string &name) {
         return ShaderObject(rg::ShaderOperand(rg::ShaderOperand::Argument, name));
     }
 
-    inline void setVertexPosition(const ShaderObject& value)
-    {
+    inline ShaderObject getDrawID() {
+        return ShaderObject(rg::ShaderOperand(rg::ShaderOperand::Instruction,
+                                              rg::ShaderInstructionFactory::getDrawID()));
+    }
+
+    inline ShaderObject getInstanceID() {
+        return ShaderObject(rg::ShaderOperand(rg::ShaderOperand::Instruction,
+                                              rg::ShaderInstructionFactory::getInstanceID()));
+    }
+
+    inline void setVertexPosition(const ShaderObject &value) {
         BlockScope::get().addInstruction(rg::ShaderInstructionFactory::setVertexPosition(value.operand));
     }
 
-    inline void setFragmentDepth(const ShaderObject& value)
-    {
+    inline void setFragmentDepth(const ShaderObject &value) {
         BlockScope::get().addInstruction((rg::ShaderInstructionFactory::setFragmentDepth(value.operand)));
     }
 
-    inline void setLayer(const ShaderObject& value)
-    {
+    inline void setLayer(const ShaderObject &value) {
         BlockScope::get().addInstruction((rg::ShaderInstructionFactory::setLayer(value.operand)));
     }
 
-    inline void EmitVertex()
-    {
+    inline void EmitVertex() {
         BlockScope::get().addInstruction(rg::ShaderInstructionFactory::emitVertex());
     }
 
-    inline void EndPrimitive()
-    {
+    inline void EndPrimitive() {
         BlockScope::get().addInstruction(rg::ShaderInstructionFactory::endPrimitive());
     }
 
-    inline ShaderObject Call(const std::string& functionName,
-                             const std::vector<ShaderObject>& wArgs = {})
-    {
+    inline ShaderObject Call(const std::string &functionName,
+                             const std::vector<ShaderObject> &wArgs = {}) {
         std::vector<rg::ShaderOperand> args;
-        for (auto& arg : wArgs)
-        {
+        for (auto &arg: wArgs) {
             args.push_back(arg.operand);
         }
         return ShaderObject(rg::ShaderInstructionFactory::call(functionName, args));
     }
 
-    inline ShaderObject Call(const std::string& functionName,
-                             const ShaderObject& arg0)
-    {
+    inline ShaderObject Call(const std::string &functionName,
+                             const ShaderObject &arg0) {
         return Call(functionName, std::vector{arg0});
     }
 
-    inline ShaderObject Call(const std::string& functionName,
-                             const ShaderObject& arg0,
-                             const ShaderObject& arg1)
-    {
+    inline ShaderObject Call(const std::string &functionName,
+                             const ShaderObject &arg0,
+                             const ShaderObject &arg1) {
         return Call(functionName, std::vector{arg0, arg1});
     }
 
-    inline ShaderObject Call(const std::string& functionName,
-                             const ShaderObject& arg0,
-                             const ShaderObject& arg1,
-                             const ShaderObject& arg2)
-    {
+    inline ShaderObject Call(const std::string &functionName,
+                             const ShaderObject &arg0,
+                             const ShaderObject &arg1,
+                             const ShaderObject &arg2) {
         return Call(functionName, std::vector{arg0, arg1, arg2});
     }
 
-    inline ShaderObject Call(const std::string& functionName,
-                             const ShaderObject& arg0,
-                             const ShaderObject& arg1,
-                             const ShaderObject& arg2,
-                             const ShaderObject& arg3)
-    {
+    inline ShaderObject Call(const std::string &functionName,
+                             const ShaderObject &arg0,
+                             const ShaderObject &arg1,
+                             const ShaderObject &arg2,
+                             const ShaderObject &arg3) {
         return Call(functionName, std::vector{arg0, arg1, arg2, arg3});
     }
 
-    inline void Return(const ShaderObject& value)
-    {
+    inline void Return(const ShaderObject &value) {
         BlockScope::get().addInstruction(rg::ShaderInstructionFactory::ret(value.operand));
     }
 
-    inline void Return()
-    {
+    inline void Return() {
         BlockScope::get().addInstruction(rg::ShaderInstructionFactory::ret());
     }
 
-    inline ShaderObject textureSize(const ShaderObject& texture)
-    {
+    inline ShaderObject textureSize(const ShaderObject &texture) {
         return ShaderObject(rg::ShaderInstructionFactory::textureSize(texture.operand));
     }
 
-    inline ShaderObject textureSize(const ShaderObject& texture, const ShaderObject& lod)
-    {
+    inline ShaderObject textureSize(const ShaderObject &texture, const ShaderObject &lod) {
         return ShaderObject(rg::ShaderInstructionFactory::textureSize(texture.operand, lod.operand));
     }
 
-    inline ShaderObject textureSample(const ShaderObject& texture, const ShaderObject& coords)
-    {
+    inline ShaderObject textureSample(const ShaderObject &texture, const ShaderObject &coords) {
         return ShaderObject(rg::ShaderInstructionFactory::textureSample(texture.operand, coords.operand));
     }
 
-    inline ShaderObject textureSample(const ShaderObject& texture,
-                                      const ShaderObject& coords,
-                                      const ShaderObject& bias)
-    {
+    inline ShaderObject textureSample(const ShaderObject &texture,
+                                      const ShaderObject &coords,
+                                      const ShaderObject &bias) {
         return ShaderObject(rg::ShaderInstructionFactory::textureSample(texture.operand,
-                                                                    coords.operand,
-                                                                    bias.operand));
+                                                                        coords.operand,
+                                                                        bias.operand));
     }
 
-    inline ShaderObject textureSampleArray(const ShaderObject& texture, const ShaderObject& coords)
-    {
+    inline ShaderObject textureSampleArray(const ShaderObject &texture, const ShaderObject &coords) {
         return ShaderObject(rg::ShaderInstructionFactory::textureSampleArray(texture.operand, coords.operand));
     }
 
-    inline ShaderObject textureSampleArray(const ShaderObject& texture,
-                                           const ShaderObject& coords,
-                                           const ShaderObject& bias)
-    {
+    inline ShaderObject textureSampleArray(const ShaderObject &texture,
+                                           const ShaderObject &coords,
+                                           const ShaderObject &bias) {
         return ShaderObject(rg::ShaderInstructionFactory::textureSampleArray(texture.operand,
-                                                                         coords.operand,
-                                                                         bias.operand));
+                                                                             coords.operand,
+                                                                             bias.operand));
     }
 
-    inline ShaderObject texelFetch(const ShaderObject& texture,
-                                   const ShaderObject& coords,
-                                   const ShaderObject& index)
-    {
+    inline ShaderObject texelFetch(const ShaderObject &texture,
+                                   const ShaderObject &coords,
+                                   const ShaderObject &index) {
         return ShaderObject(rg::ShaderInstructionFactory::textureFetch(texture.operand,
-                                                                   coords.operand,
-                                                                   index.operand));
+                                                                       coords.operand,
+                                                                       index.operand));
     }
 
-    inline ShaderObject texelFetchArray(const ShaderObject& texture,
-                                        const ShaderObject& coords,
-                                        const ShaderObject& index)
-    {
+    inline ShaderObject texelFetchArray(const ShaderObject &texture,
+                                        const ShaderObject &coords,
+                                        const ShaderObject &index) {
         return ShaderObject(rg::ShaderInstructionFactory::textureFetchArray(texture.operand,
-                                                                        coords.operand,
-                                                                        index.operand));
+                                                                            coords.operand,
+                                                                            index.operand));
     }
 
-    inline ShaderObject texelFetchMS(const ShaderObject& texture,
-                                     const ShaderObject& coords,
-                                     const ShaderObject& index)
-    {
+    inline ShaderObject texelFetchMS(const ShaderObject &texture,
+                                     const ShaderObject &coords,
+                                     const ShaderObject &index) {
         return ShaderObject(rg::ShaderInstructionFactory::textureFetchMS(texture.operand,
-                                                                     coords.operand,
-                                                                     index.operand));
+                                                                         coords.operand,
+                                                                         index.operand));
     }
 
-    inline ShaderObject texelFetchMSArray(const ShaderObject& texture,
-                                          const ShaderObject& coords,
-                                          const ShaderObject& index)
-    {
+    inline ShaderObject texelFetchMSArray(const ShaderObject &texture,
+                                          const ShaderObject &coords,
+                                          const ShaderObject &index) {
         return ShaderObject(rg::ShaderInstructionFactory::textureFetchMSArray(texture.operand,
-                                                                          coords.operand,
-                                                                          index.operand));
+                                                                              coords.operand,
+                                                                              index.operand));
     }
 
-    inline ShaderObject textureSampleCube(const ShaderObject& texture,
-                                          const ShaderObject& coords)
-    {
+    inline ShaderObject textureSampleCube(const ShaderObject &texture,
+                                          const ShaderObject &coords) {
         return ShaderObject(rg::ShaderInstructionFactory::textureSampleCubeMap(texture.operand, coords.operand));
     }
 
-    inline ShaderObject textureSampleCube(const ShaderObject& texture,
-                                          const ShaderObject& coords,
-                                          const ShaderObject& bias)
-    {
+    inline ShaderObject textureSampleCube(const ShaderObject &texture,
+                                          const ShaderObject &coords,
+                                          const ShaderObject &bias) {
         return ShaderObject(rg::ShaderInstructionFactory::textureSampleCubeMap(texture.operand,
-                                                                           coords.operand,
-                                                                           bias.operand));
+                                                                               coords.operand,
+                                                                               bias.operand));
     }
 
-    inline ShaderObject textureSampleCubeArray(const ShaderObject& texture,
-                                               const ShaderObject& coords)
-    {
+    inline ShaderObject textureSampleCubeArray(const ShaderObject &texture,
+                                               const ShaderObject &coords) {
         return ShaderObject(rg::ShaderInstructionFactory::textureSampleCubeMapArray(texture.operand, coords.operand));
     }
 
-    inline ShaderObject textureSampleCubeArray(const ShaderObject& texture,
-                                               const ShaderObject& coords,
-                                               const ShaderObject& bias)
-    {
+    inline ShaderObject textureSampleCubeArray(const ShaderObject &texture,
+                                               const ShaderObject &coords,
+                                               const ShaderObject &bias) {
         return ShaderObject(rg::ShaderInstructionFactory::textureSampleCubeMapArray(texture.operand,
             coords.operand,
             bias.operand));
     }
 
-    inline ShaderObject abs(const ShaderObject& value)
-    {
+    inline ShaderObject abs(const ShaderObject &value) {
         return ShaderObject(rg::ShaderInstructionFactory::abs(value.operand));
     }
 
-    inline ShaderObject sin(const ShaderObject& value)
-    {
+    inline ShaderObject sin(const ShaderObject &value) {
         return ShaderObject(rg::ShaderInstructionFactory::sin(value.operand));
     }
 
-    inline ShaderObject cos(const ShaderObject& value)
-    {
+    inline ShaderObject cos(const ShaderObject &value) {
         return ShaderObject(rg::ShaderInstructionFactory::cos(value.operand));
     }
 
-    inline ShaderObject tan(const ShaderObject& value)
-    {
+    inline ShaderObject tan(const ShaderObject &value) {
         return ShaderObject(rg::ShaderInstructionFactory::tan(value.operand));
     }
 
-    inline ShaderObject asin(const ShaderObject& value)
-    {
+    inline ShaderObject asin(const ShaderObject &value) {
         return ShaderObject(rg::ShaderInstructionFactory::asin(value.operand));
     }
 
-    inline ShaderObject acos(const ShaderObject& value)
-    {
+    inline ShaderObject acos(const ShaderObject &value) {
         return ShaderObject(rg::ShaderInstructionFactory::acos(value.operand));
     }
 
-    inline ShaderObject atan(const ShaderObject& value)
-    {
+    inline ShaderObject atan(const ShaderObject &value) {
         return ShaderObject(rg::ShaderInstructionFactory::atan(value.operand));
     }
 
-    inline ShaderObject atan2(const ShaderObject& y, const ShaderObject& x)
-    {
+    inline ShaderObject atan2(const ShaderObject &y, const ShaderObject &x) {
         return ShaderObject(rg::ShaderInstructionFactory::atan2(y.operand, x.operand));
     }
 
-    inline ShaderObject pow(const ShaderObject& value, const ShaderObject& exponent)
-    {
+    inline ShaderObject pow(const ShaderObject &value, const ShaderObject &exponent) {
         return ShaderObject(rg::ShaderInstructionFactory::pow(value.operand, exponent.operand));
     }
 
-    inline ShaderObject exp(const ShaderObject& value)
-    {
+    inline ShaderObject exp(const ShaderObject &value) {
         return ShaderObject(rg::ShaderInstructionFactory::exp(value.operand));
     }
 
-    inline ShaderObject log(const ShaderObject& value)
-    {
+    inline ShaderObject log(const ShaderObject &value) {
         return ShaderObject(rg::ShaderInstructionFactory::log(value.operand));
     }
 
-    inline ShaderObject log2(const ShaderObject& value)
-    {
+    inline ShaderObject log2(const ShaderObject &value) {
         return ShaderObject(rg::ShaderInstructionFactory::log2(value.operand));
     }
 
-    inline ShaderObject sqrt(const ShaderObject& value)
-    {
+    inline ShaderObject sqrt(const ShaderObject &value) {
         return ShaderObject(rg::ShaderInstructionFactory::sqrt(value.operand));
     }
 
-    inline ShaderObject inverseSqrt(const ShaderObject& value)
-    {
+    inline ShaderObject inverseSqrt(const ShaderObject &value) {
         return ShaderObject(rg::ShaderInstructionFactory::inverseSqrt(value.operand));
     }
 
-    inline ShaderObject floor(const ShaderObject& value)
-    {
+    inline ShaderObject floor(const ShaderObject &value) {
         return ShaderObject(rg::ShaderInstructionFactory::floor(value.operand));
     }
 
-    inline ShaderObject ceil(const ShaderObject& value)
-    {
+    inline ShaderObject ceil(const ShaderObject &value) {
         return ShaderObject(rg::ShaderInstructionFactory::ceil(value.operand));
     }
 
-    inline ShaderObject round(const ShaderObject& value)
-    {
+    inline ShaderObject round(const ShaderObject &value) {
         return ShaderObject(rg::ShaderInstructionFactory::round(value.operand));
     }
 
-    inline ShaderObject fract(const ShaderObject& value)
-    {
+    inline ShaderObject fract(const ShaderObject &value) {
         return ShaderObject(rg::ShaderInstructionFactory::fract(value.operand));
     }
 
-    inline ShaderObject mod(const ShaderObject& value, const ShaderObject& modulus)
-    {
+    inline ShaderObject mod(const ShaderObject &value, const ShaderObject &modulus) {
         return ShaderObject(rg::ShaderInstructionFactory::mod(value.operand, modulus.operand));
     }
 
-    inline ShaderObject min(const ShaderObject& x, const ShaderObject& y)
-    {
+    inline ShaderObject min(const ShaderObject &x, const ShaderObject &y) {
         return ShaderObject(rg::ShaderInstructionFactory::min(x.operand, y.operand));
     }
 
-    inline ShaderObject max(const ShaderObject& x, const ShaderObject& y)
-    {
+    inline ShaderObject max(const ShaderObject &x, const ShaderObject &y) {
         return ShaderObject(rg::ShaderInstructionFactory::max(x.operand, y.operand));
     }
 
-    inline ShaderObject clamp(const ShaderObject& value,
-                              const ShaderObject& min,
-                              const ShaderObject& max)
-    {
+    inline ShaderObject clamp(const ShaderObject &value,
+                              const ShaderObject &min,
+                              const ShaderObject &max) {
         return ShaderObject(rg::ShaderInstructionFactory::clamp(value.operand, min.operand, max.operand));
     }
 
-    inline ShaderObject mix(const ShaderObject& x,
-                            const ShaderObject& y,
-                            const ShaderObject& a)
-    {
+    inline ShaderObject mix(const ShaderObject &x,
+                            const ShaderObject &y,
+                            const ShaderObject &a) {
         return ShaderObject(rg::ShaderInstructionFactory::mix(x.operand, y.operand, a.operand));
     }
 
-    inline ShaderObject step(const ShaderObject& edge, const ShaderObject& x)
-    {
+    inline ShaderObject step(const ShaderObject &edge, const ShaderObject &x) {
         return ShaderObject(rg::ShaderInstructionFactory::step(edge.operand, x.operand));
     }
 
-    inline ShaderObject smoothstep(const ShaderObject& edge0,
-                                   const ShaderObject& edge1,
-                                   const ShaderObject& x)
-    {
+    inline ShaderObject smoothstep(const ShaderObject &edge0,
+                                   const ShaderObject &edge1,
+                                   const ShaderObject &x) {
         return ShaderObject(rg::ShaderInstructionFactory::smoothstep(edge0.operand, edge1.operand, x.operand));
     }
 
-    inline ShaderObject dot(const ShaderObject& x, const ShaderObject& y)
-    {
+    inline ShaderObject dot(const ShaderObject &x, const ShaderObject &y) {
         return ShaderObject(rg::ShaderInstructionFactory::dot(x.operand, y.operand));
     }
 
-    inline ShaderObject cross(const ShaderObject& x, const ShaderObject& y)
-    {
+    inline ShaderObject cross(const ShaderObject &x, const ShaderObject &y) {
         return ShaderObject(rg::ShaderInstructionFactory::cross(x.operand, y.operand));
     }
 
-    inline ShaderObject normalize(const ShaderObject& x)
-    {
+    inline ShaderObject normalize(const ShaderObject &x) {
         return ShaderObject(rg::ShaderInstructionFactory::normalize(x.operand));
     }
 
-    inline ShaderObject length(const ShaderObject& x)
-    {
+    inline ShaderObject length(const ShaderObject &x) {
         return ShaderObject(rg::ShaderInstructionFactory::length(x.operand));
     }
 
-    inline ShaderObject distance(const ShaderObject& x, const ShaderObject& y)
-    {
+    inline ShaderObject distance(const ShaderObject &x, const ShaderObject &y) {
         return ShaderObject(rg::ShaderInstructionFactory::distance(x.operand, y.operand));
     }
 
-    inline ShaderObject reflect(const ShaderObject& I, const ShaderObject& N)
-    {
+    inline ShaderObject reflect(const ShaderObject &I, const ShaderObject &N) {
         return ShaderObject(rg::ShaderInstructionFactory::reflect(I.operand, N.operand));
     }
 
-    inline ShaderObject refract(const ShaderObject& I,
-                                const ShaderObject& N,
-                                const ShaderObject& eta)
-    {
+    inline ShaderObject refract(const ShaderObject &I,
+                                const ShaderObject &N,
+                                const ShaderObject &eta) {
         return ShaderObject(rg::ShaderInstructionFactory::refract(I.operand, N.operand, eta.operand));
     }
 
-    inline ShaderObject faceforward(const ShaderObject& N,
-                                    const ShaderObject& I,
-                                    const ShaderObject& Nref)
-    {
+    inline ShaderObject faceforward(const ShaderObject &N,
+                                    const ShaderObject &I,
+                                    const ShaderObject &Nref) {
         return ShaderObject(rg::ShaderInstructionFactory::faceForward(N.operand, I.operand, Nref.operand));
     }
 
-    inline ShaderObject transpose(const ShaderObject& v)
-    {
+    inline ShaderObject transpose(const ShaderObject &v) {
         return ShaderObject(rg::ShaderInstructionFactory::transpose(v.operand));
     }
 
-    inline ShaderObject inverse(const ShaderObject& v)
-    {
+    inline ShaderObject inverse(const ShaderObject &v) {
         return ShaderObject(rg::ShaderInstructionFactory::inverse(v.operand));
     }
 
-    template <typename T>
-    struct DynamicBufferWrapper
-    {
+    template<typename T>
+    struct DynamicBufferWrapper {
         ShaderObject object;
 
-        explicit DynamicBufferWrapper(ShaderObject&& buffer) : object(buffer)
-        {
+        explicit DynamicBufferWrapper(ShaderObject &&buffer) : object(buffer) {
             ShaderScope::get().addTypeDefinition(T::getShaderStructDef());
         }
 
-        T operator[](const Int& index)
-        {
+        T operator[](const Int &index) {
             return object[index];
         }
 
-        T operator[](const int index)
-        {
+        T operator[](const int index) {
             return object[Int(index)];
         }
 
-        ShaderObject length()
-        {
+        ShaderObject length() {
             return object.length();
         }
     };

@@ -50,6 +50,10 @@ namespace xng::rg {
 
         XENGINE_EXPORT ShaderInstruction endPrimitive();
 
+        XENGINE_EXPORT ShaderInstruction getDrawID();
+
+        XENGINE_EXPORT ShaderInstruction getInstanceID();
+
         XENGINE_EXPORT ShaderInstruction setFragmentDepth(ShaderOperand depth);
 
         XENGINE_EXPORT ShaderInstruction setLayer(ShaderOperand layer);

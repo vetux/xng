@@ -47,6 +47,10 @@ namespace InstructionCompiler {
                 return compileEmitVertex(instruction, source, functionName, indent);
             case ShaderInstruction::EndPrimitive:
                 return compileEndPrimitive(instruction, source, functionName, indent);
+            case ShaderInstruction::GetDrawID:
+                return indent + "gl_DrawID";
+            case ShaderInstruction::GetInstanceID:
+                return indent + "gl_InstanceID";
             case ShaderInstruction::SetFragmentDepth:
                 return compileSetFragmentDepth(instruction, source, functionName, indent);
             case ShaderInstruction::SetLayer:
