@@ -16,8 +16,8 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef XENGINE_RENDERGRAPH_CONTEXT_HPP
-#define XENGINE_RENDERGRAPH_CONTEXT_HPP
+#ifndef XENGINE_RASTERCONTEXT_HPP
+#define XENGINE_RASTERCONTEXT_HPP
 
 #include "xng/rendergraph/drawcall.hpp"
 #include "xng/rendergraph/resourceid.hpp"
@@ -284,4 +284,4 @@ namespace xng::rg {
     };
 }
 
-#endif //XENGINE_RENDERGRAPH_CONTEXT_HPP
+#endif //XENGINE_RASTERCONTEXT_HPP
