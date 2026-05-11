@@ -22,7 +22,7 @@
 #include "glad/glad.h"
 
 #include "xng/rendergraph/textureproperties.hpp"
-#include "xng/rendergraph/drawcall.hpp"
+#include "xng/rendergraph/indexformat.hpp"
 #include "xng/rendergraph/pipeline/rasterpipeline.hpp"
 
 using namespace xng::rg;
@@ -64,12 +64,15 @@ static GLenum convert(RasterPipeline::FaceCullingMode mode) {
     throw std::runtime_error("Unsupported culling mode");
 }
 
-static GLenum convert(IndexFormat type) {
+static GLenum convert(const IndexFormat type) {
     switch (type) {
-        case UNSIGNED_INT:
+        case INDEX_UNSIGNED_SHORT:
+            return GL_UNSIGNED_SHORT;
+        case INDEX_UNSIGNED_INT:
             return GL_UNSIGNED_INT;
+        default:
+            throw std::runtime_error("Unsupported index type");
     }
-    throw std::runtime_error("Unsupported index type");
 }
 
 static GLenum convert(Primitive prim) {

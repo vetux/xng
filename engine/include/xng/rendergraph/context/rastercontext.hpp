@@ -23,6 +23,7 @@
 #include "xng/rendergraph/resourceid.hpp"
 #include "xng/rendergraph/pipelinecache.hpp"
 #include "xng/rendergraph/texturebinding.hpp"
+#include "xng/rendergraph/indexformat.hpp"
 
 #include "xng/rendergraph/resource/buffer.hpp"
 
@@ -64,9 +65,10 @@ namespace xng::rg {
          *
          * Can only be called after a pipeline has been bound.
          *
-         * @param buffer
+         * @param buffer The buffer containing the index data.
+         * @param format The format of the index data.
          */
-        virtual void bindIndexBuffer(const Resource<Buffer> &buffer) = 0;
+        virtual void bindIndexBuffer(const Resource<Buffer> &buffer, IndexFormat format) = 0;
 
         /**
          * Bind a region of a storage buffer.
@@ -134,10 +136,42 @@ namespace xng::rg {
          * @param drawCall The draw call
          * @param indexOffset The index offset added to each index read from the bound index buffer.
          */
-        virtual void drawIndexed(const DrawCall &drawCall, size_t indexOffset) = 0;
+        virtual void drawIndexed(const DrawCall &drawCall, int indexOffset) = 0;
 
-        //TODO: Add drawInstanced
-        //TODO: Add drawMulti
+        /**
+         * Same as drawArray but multiple instances.
+         * Shaders can access the instance index via ShaderInstruction::OpCode::GetInstanceID.
+         *
+         * @param drawCall
+         * @param instanceCount
+         */
+        virtual void drawArrayInstanced(const DrawCall &drawCall, unsigned int instanceCount) = 0;
+
+        /**
+         * Same as drawIndexed but multiple instances.
+         * Shaders can access the instance index via ShaderInstruction::OpCode::GetInstanceID.
+         *
+         * @param drawCall
+         * @param indexOffset
+         * @param instanceCount
+         */
+        virtual void drawIndexedInstanced(const DrawCall &drawCall, int indexOffset, unsigned int instanceCount) = 0;
+
+        /**
+         * Same as drawArray but multiple draw calls.
+         * Shaders can access the draw index via ShaderInstruction::OpCode::GetDrawID.
+         *
+         * @param drawCalls
+         */
+        virtual void drawArrayMulti(const std::vector<DrawCall> &drawCalls) = 0;
+
+        /**
+         * Same as drawIndexed but multiple draw calls.
+         * Shaders can access the draw index via ShaderInstruction::OpCode::GetDrawID.
+         *
+         * @param drawCalls
+         */
+        virtual void drawIndexedMulti(const std::vector<std::pair<DrawCall, int> > &drawCalls) = 0;
     };
 }
 

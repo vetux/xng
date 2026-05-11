@@ -16,26 +16,15 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef XENGINE_DRAWCALL_HPP
-#define XENGINE_DRAWCALL_HPP
-
-#include <cstddef>
+#ifndef XENGINE_INDEXFORMAT_HPP
+#define XENGINE_INDEXFORMAT_HPP
 
 namespace xng::rg {
-    /**
-     * A DrawCall specifies which portion of the bound index or vertex buffer to draw.
-     */
-    struct DrawCall {
-        explicit DrawCall(const size_t offset = 0, const size_t count = 0)
-            : offset(offset), count(count) {
-        }
-
-        // The offset into the index or vertex buffer at which to begin reading indices or vertices in BYTES
-        size_t offset = 0;
-
-        // The number of indices or vertices to draw.
-        size_t count = 0;
+    enum IndexFormat {
+        INDEX_UNDEFINED,
+        INDEX_UNSIGNED_SHORT,
+        INDEX_UNSIGNED_INT,
     };
 }
 
-#endif //XENGINE_DRAWCALL_HPP
+#endif //XENGINE_INDEXFORMAT_HPP

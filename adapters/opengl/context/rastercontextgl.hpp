@@ -148,6 +148,8 @@ namespace xng::opengl {
 
             boundPipeline = handle;
 
+            indexFormat = INDEX_UNDEFINED;
+
             oglDebugEndGroup();
         }
 
@@ -172,7 +174,7 @@ namespace xng::opengl {
             oglDebugEndGroup();
         }
 
-        void bindIndexBuffer(const Resource<Buffer> &buffer) override {
+        void bindIndexBuffer(const Resource<Buffer> &buffer, const IndexFormat format) override {
             if (!boundPipeline.has_value()) {
                 throw std::runtime_error("Must bind pipeline before binding index buffer");
             }
@@ -188,6 +190,8 @@ namespace xng::opengl {
             oglCheckError();
 
             oglDebugEndGroup();
+
+            indexFormat = format;
         }
 
         void bindStorageBuffer(const std::string &target,
@@ -460,9 +464,13 @@ namespace xng::opengl {
             stats.polygons += drawCall.count / primitive;
         }
 
-        void drawIndexed(const DrawCall &drawCall, const size_t indexOffset) override {
+        void drawIndexed(const DrawCall &drawCall, const int indexOffset) override {
             if (!boundPipeline.has_value()) {
                 throw std::runtime_error("Must bind pipeline before drawing.");
+            }
+
+            if (indexFormat == INDEX_UNDEFINED) {
+                throw std::runtime_error("Must bind index buffer before drawing.");
             }
 
             const auto primitive = pipelineCache.getRasterPipeline(boundPipeline.value()).primitive;
@@ -471,13 +479,140 @@ namespace xng::opengl {
 
             glDrawElementsBaseVertex(convert(primitive),
                                      static_cast<GLsizei>(drawCall.count),
-                                     convert(drawCall.indexFormat),
+                                     convert(indexFormat),
                                      reinterpret_cast<void *>(drawCall.offset),
                                      static_cast<GLint>(indexOffset));
             oglCheckError();
 
             stats.drawCalls++;
             stats.polygons += drawCall.count / primitive;
+
+            oglDebugEndGroup();
+        }
+
+        void drawArrayInstanced(const DrawCall &drawCall, const unsigned int instanceCount) override {
+            if (!boundPipeline.has_value()) {
+                throw std::runtime_error("Must bind pipeline before drawing.");
+            }
+
+            const auto primitive = pipelineCache.getRasterPipeline(boundPipeline.value()).primitive;
+
+            oglDebugStartGroup("RasterContextGL::drawArrayInstanced");
+
+            glDrawArraysInstanced(convert(primitive),
+                                  static_cast<GLint>(drawCall.offset),
+                                  static_cast<GLsizei>(drawCall.count),
+                                  instanceCount);
+            oglCheckError();
+
+            oglDebugEndGroup();
+
+            stats.drawCalls++;
+            stats.polygons += drawCall.count / primitive * instanceCount;
+        }
+
+        void drawIndexedInstanced(const DrawCall &drawCall,
+                                  const int indexOffset,
+                                  const unsigned int instanceCount) override {
+            if (!boundPipeline.has_value()) {
+                throw std::runtime_error("Must bind pipeline before drawing.");
+            }
+
+            if (indexFormat == INDEX_UNDEFINED) {
+                throw std::runtime_error("Must bind index buffer before drawing.");
+            }
+
+            const auto primitive = pipelineCache.getRasterPipeline(boundPipeline.value()).primitive;
+
+            oglDebugStartGroup("RasterContextGL::drawIndexedInstanced");
+
+            glDrawElementsInstancedBaseVertex(convert(primitive),
+                                              static_cast<GLsizei>(drawCall.count),
+                                              convert(indexFormat),
+                                              reinterpret_cast<void *>(drawCall.offset),
+                                              static_cast<GLint>(indexOffset),
+                                              instanceCount);
+            oglCheckError();
+
+            stats.drawCalls++;
+            stats.polygons += drawCall.count / primitive * instanceCount;
+
+            oglDebugEndGroup();
+        }
+
+        void drawArrayMulti(const std::vector<DrawCall> &drawCalls) override {
+            if (!boundPipeline.has_value()) {
+                throw std::runtime_error("Must bind pipeline before drawing.");
+            }
+
+            const auto primitive = pipelineCache.getRasterPipeline(boundPipeline.value()).primitive;
+
+            if (drawCalls.empty()) {
+                return;
+            }
+
+            oglDebugStartGroup("RasterContextGL::drawArrayMulti");
+
+            std::vector<GLint> offsets;
+            std::vector<GLsizei> counts;
+
+            for (auto &drawCall: drawCalls) {
+                offsets.emplace_back(static_cast<GLint>(drawCall.offset));
+                counts.emplace_back(static_cast<GLsizei>(drawCall.count));
+                stats.polygons += drawCall.count / primitive;
+            }
+
+            glMultiDrawArrays(convert(primitive),
+                              offsets.data(),
+                              counts.data(),
+                              offsets.size());
+
+            oglCheckError();
+
+            oglDebugEndGroup();
+
+            stats.drawCalls++;
+        }
+
+        void drawIndexedMulti(const std::vector<std::pair<DrawCall, int> > &drawCalls) override {
+            if (!boundPipeline.has_value()) {
+                throw std::runtime_error("Must bind pipeline before drawing.");
+            }
+
+            if (indexFormat == INDEX_UNDEFINED) {
+                throw std::runtime_error("Must bind index buffer before drawing.");
+            }
+
+            const auto primitive = pipelineCache.getRasterPipeline(boundPipeline.value()).primitive;
+
+            if (drawCalls.empty()) {
+                return;
+            }
+
+            oglDebugStartGroup("RasterContextGL::drawIndexedMulti");
+
+            std::vector<void *> offsets;
+            std::vector<GLsizei> counts;
+            std::vector<GLint> indexOffsets;
+            const GLenum type = convert(indexFormat);
+
+            for (auto &pair: drawCalls) {
+                offsets.emplace_back(reinterpret_cast<void *>(static_cast<uintptr_t>(pair.first.offset)));
+                counts.emplace_back(static_cast<GLsizei>(pair.first.count));
+                indexOffsets.emplace_back(static_cast<GLint>(pair.second));
+                stats.polygons += pair.first.count / primitive;
+            }
+
+            glMultiDrawElementsBaseVertex(convert(primitive),
+                                          counts.data(),
+                                          type,
+                                          offsets.data(),
+                                          drawCalls.size(),
+                                          indexOffsets.data());
+
+            oglCheckError();
+
+            stats.drawCalls++;
 
             oglDebugEndGroup();
         }
@@ -497,6 +632,8 @@ namespace xng::opengl {
         BufferGL emptySSBO;
 
         int frameBufferHeight = 0;
+
+        IndexFormat indexFormat = INDEX_UNDEFINED;
 
         static bool isIntegerFormat(const ShaderPrimitiveType::Component component) {
             return component <= ShaderPrimitiveType::SIGNED_INT;
