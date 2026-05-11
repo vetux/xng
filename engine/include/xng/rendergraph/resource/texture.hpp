@@ -83,13 +83,17 @@ namespace xng::rg {
                         const CubeMapFace face)
                 : mipLevel(mipLevel), arrayLayer(arrayLayer), face(face) {
             }
+
+            bool operator==(const SubResource &other) const {
+                return mipLevel == other.mipLevel && arrayLayer == other.arrayLayer && face == other.face;
+            }
         };
 
         Capability capabilities = CAPABILITY_NONE;
 
         Vec2i size = {1, 1};
         TextureType textureType = TEXTURE_2D;
-        ColorFormat format = RGBA;
+        ColorFormat format = RGBA8;
 
         TextureWrapping wrapping = CLAMP_TO_BORDER;
         TextureFiltering filterMin = NEAREST;

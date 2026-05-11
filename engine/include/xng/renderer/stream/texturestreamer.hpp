@@ -85,8 +85,20 @@ namespace xng {
             size_t offset; // offset into stream buffer
         };
 
+        class HandleHash {
+            public:
+                std::size_t operator()(const Handle &handle) const {
+                    size_t ret{};
+                    hash_combine(ret, handle.index);
+                    hash_combine(ret, handle.level);
+                    hash_combine(ret, handle.size.x);
+                    hash_combine(ret, handle.size.y);
+                    return ret;
+                }
+        };
+
         StreamBuffer streamBuffer;
-        std::unordered_map<Handle, PendingUpload> pendingUploads;
+        std::unordered_map<Handle, PendingUpload, HandleHash> pendingUploads;
         std::unordered_map<TextureResolution, StreamTexture> textures;
     };
 }

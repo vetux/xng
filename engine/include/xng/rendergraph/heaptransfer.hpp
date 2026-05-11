@@ -19,7 +19,7 @@
 #ifndef XENGINE_HEAPTRANSFER_HPP
 #define XENGINE_HEAPTRANSFER_HPP
 
-namespace xng {
+namespace xng::rg {
     class HeapTransfer {
     public:
         virtual ~HeapTransfer() = default;

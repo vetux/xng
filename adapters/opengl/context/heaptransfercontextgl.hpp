@@ -69,6 +69,7 @@ namespace xng::opengl {
             Texture::SubResource textureSubResource{};
             size_t bufferOffset{};
             Recti textureOffset{};
+            ColorFormat bufferFormat{};
         };
 
         struct CopyTextureToBufferCmd {
@@ -77,12 +78,23 @@ namespace xng::opengl {
             Texture::SubResource textureSubResource{};
             size_t bufferOffset{};
             Recti textureOffset{};
+            ColorFormat bufferFormat{};
         };
 
         struct ClearTextureCmd {
             HeapResource<Texture> target{};
             Texture::SubResource subResource{};
             Texture::ClearValue clearValue{};
+        };
+
+        struct BlitTextureCmd {
+            HeapResource<Texture> src;
+            HeapResource<Texture> dst;
+            Texture::SubResource srcTarget;
+            Texture::SubResource dstTarget;
+            Recti srcRect;
+            Recti dstRect;
+            TextureFiltering filtering;
         };
 
         struct GenerateMipMapsCmd {
@@ -99,6 +111,7 @@ namespace xng::opengl {
             CopyTextureToBufferCmd,
             ClearTextureCmd,
             GenerateMipMapsCmd,
+            BlitTextureCmd,
             SyncCmd>;
 
     private:
@@ -200,14 +213,16 @@ namespace xng::opengl {
                                  const Resource<Buffer> &buffer,
                                  const Texture::SubResource textureSubResource,
                                  const size_t bufferOffset,
-                                 const Recti &textureOffset) override {
+                                 const Recti &textureOffset,
+                                 const ColorFormat bufferFormat) override {
             std::lock_guard lock(mutex);
             commandQueue.emplace_back(CopyBufferToTextureCmd{
                 HeapResource(texture.getHandle(), texture.getDescription(), heap),
                 HeapResource(buffer.getHandle(), buffer.getDescription(), heap),
                 textureSubResource,
                 bufferOffset,
-                textureOffset
+                textureOffset,
+                bufferFormat
             });
             cv.notify_one();
         }
@@ -216,14 +231,16 @@ namespace xng::opengl {
                                  const Resource<Texture> &texture,
                                  const Texture::SubResource textureSubResource,
                                  const size_t bufferOffset,
-                                 const Recti &textureOffset) override {
+                                 const Recti &textureOffset,
+                                 const ColorFormat bufferFormat) override {
             std::lock_guard lock(mutex);
             commandQueue.emplace_back(CopyTextureToBufferCmd{
                 HeapResource(buffer.getHandle(), buffer.getDescription(), heap),
                 HeapResource(texture.getHandle(), texture.getDescription(), heap),
                 textureSubResource,
                 bufferOffset,
-                textureOffset
+                textureOffset,
+                bufferFormat
             });
             cv.notify_one();
         }
@@ -236,6 +253,26 @@ namespace xng::opengl {
                 HeapResource(texture.getHandle(), texture.getDescription(), heap),
                 target,
                 clearValue
+            });
+            cv.notify_one();
+        }
+
+        void blitTexture(const Resource<Texture> &src,
+                         const Resource<Texture> &dst,
+                         const Texture::SubResource &srcTarget,
+                         const Texture::SubResource &dstTarget,
+                         const Recti &srcRect,
+                         const Recti &dstRect,
+                         const TextureFiltering &filtering) override {
+            std::lock_guard lock(mutex);
+            commandQueue.emplace_back(BlitTextureCmd{
+                HeapResource(src.getHandle(), src.getDescription(), heap),
+                HeapResource(dst.getHandle(), dst.getDescription(), heap),
+                srcTarget,
+                dstTarget,
+                srcRect,
+                dstRect,
+                filtering
             });
             cv.notify_one();
         }
@@ -381,6 +418,10 @@ namespace xng::opengl {
                                      std::unordered_map<ResourceId::Handle, std::vector<BufferRegion> > &) {
         }
 
+        static void cmdBufferRegions(const BlitTextureCmd &,
+                                     std::unordered_map<ResourceId::Handle, std::vector<BufferRegion> > &) {
+        }
+
         static void cmdBufferRegions(const GenerateMipMapsCmd &,
                                      std::unordered_map<ResourceId::Handle, std::vector<BufferRegion> > &) {
         }
@@ -397,6 +438,12 @@ namespace xng::opengl {
             Texture::SubResource src;
             src.mipLevel = c.srcMipMapLevel;
             out[c.source.getHandle()].push_back({src, false, false});
+        }
+
+        static void cmdTextureRegions(const BlitTextureCmd &c,
+                                      std::unordered_map<ResourceId::Handle, std::vector<TextureRegion> > &out) {
+            out[c.dst.getHandle()].push_back({c.dstTarget, true, false});
+            out[c.src.getHandle()].push_back({c.srcTarget, false, false});
         }
 
         static void cmdTextureRegions(const CopyBufferToTextureCmd &c,
@@ -471,6 +518,12 @@ namespace xng::opengl {
         static void visitHandlesImpl(const ClearTextureCmd &c, F &&f) { f(c.target.getHandle()); }
 
         template<typename F>
+        static void visitHandlesImpl(const BlitTextureCmd &c, F &&f) {
+            f(c.src.getHandle());
+            f(c.dst.getHandle());
+        }
+
+        template<typename F>
         static void visitHandlesImpl(const GenerateMipMapsCmd &c, F &&f) { f(c.target.getHandle()); }
 
         template<typename F>
@@ -534,6 +587,10 @@ namespace xng::opengl {
         }
 
         static bool cmdOverlapsBuffer(const ClearTextureCmd &,
+                                      const ResourceId::Handle,
+                                      const std::vector<BufferAccess> &) { return false; }
+
+        static bool cmdOverlapsBuffer(const BlitTextureCmd &,
                                       const ResourceId::Handle,
                                       const std::vector<BufferAccess> &) { return false; }
 
@@ -633,6 +690,19 @@ namespace xng::opengl {
                                        const std::vector<TextureAccess> &a) {
             if (c.target.getHandle() != h) return false;
             return textureConflicts(true, c.subResource, a);
+        }
+
+        static bool cmdOverlapsTexture(const BlitTextureCmd &c,
+                                       const ResourceId::Handle h,
+                                       const std::vector<TextureAccess> &a) {
+            bool r = false;
+            if (c.dst.getHandle() == h) {
+                r |= textureConflicts(true, c.dstTarget, a);
+            }
+            if (c.src.getHandle() == h) {
+                r |= textureConflicts(false, c.srcTarget, a);
+            }
+            return r;
         }
 
         static bool cmdOverlapsTexture(const GenerateMipMapsCmd &c,
@@ -888,7 +958,8 @@ namespace xng::opengl {
                                     cmd.buffer,
                                     cmd.textureSubResource,
                                     cmd.bufferOffset,
-                                    cmd.textureOffset);
+                                    cmd.textureOffset,
+                                    cmd.bufferFormat);
         }
 
         void execute(TransferContextGL &ctx, const CopyTextureToBufferCmd &cmd) {
@@ -896,11 +967,16 @@ namespace xng::opengl {
                                     cmd.texture,
                                     cmd.textureSubResource,
                                     cmd.bufferOffset,
-                                    cmd.textureOffset);
+                                    cmd.textureOffset,
+                                    cmd.bufferFormat);
         }
 
         void execute(TransferContextGL &ctx, const ClearTextureCmd &cmd) {
             ctx.clearTexture(cmd.target, cmd.subResource, cmd.clearValue);
+        }
+
+        void execute(TransferContextGL &ctx, const BlitTextureCmd &cmd) {
+            ctx.blitTexture(cmd.src, cmd.dst, cmd.srcTarget, cmd.dstTarget, cmd.srcRect, cmd.dstRect, cmd.filtering);
         }
 
         void execute(TransferContextGL &ctx, const GenerateMipMapsCmd &cmd) {

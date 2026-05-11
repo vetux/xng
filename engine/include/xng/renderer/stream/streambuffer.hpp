@@ -78,8 +78,8 @@ namespace xng {
 
             // Perform copy to staging buffer
             {
-                const auto mapping = heap.mapBuffer(stagingBuffer);
-                mapping.copyFrom(data, 0, 0, data.size());
+                const auto mapping = heap.map(stagingBuffer);
+                mapping->copyFrom(data, 0, 0, data.size());
             }
 
             const auto tempBuffer = heap.allocateBuffer(rg::Buffer(data.size(),
@@ -88,9 +88,11 @@ namespace xng {
                                                                    rg::Buffer::MEMORY_GPU_ONLY));
 
             // Queue copy of staging -> temp buffer
-            heap.getTransferContext().copyBuffer(stagingBuffer, tempBuffer, 0, 0, data.size());
+            auto transfer = heap.transfer([&stagingBuffer, &tempBuffer, &data](rg::TransferContext &ctx) {
+                ctx.copyBuffer(stagingBuffer, tempBuffer, 0, 0, data.size());
+            });
 
-            pendingUploads.emplace(ret, PendingUpload{offset, tempBuffer});
+            pendingUploads.emplace(ret, PendingUpload(offset, tempBuffer, std::move(transfer)));
 
             return ret;
         }
@@ -105,7 +107,7 @@ namespace xng {
             if (it == pendingUploads.end()) {
                 return true;
             } else {
-                return !heap.hasPendingTransfers(it->second.buffer);
+                return it->second.transferHandle->isFinished();
             }
         }
 
@@ -169,7 +171,7 @@ namespace xng {
             const auto pendingUploadsCopy = pendingUploads;
             std::unordered_map<Handle, PendingUpload> frameUploads;
             for (auto &upload: pendingUploadsCopy) {
-                if (!heap.hasPendingTransfers(upload.second.buffer)
+                if (upload.second.transferHandle->isFinished()
                     || flushedUploads.find(upload.first) != flushedUploads.end()) {
                     passBuilder.read(upload.second.buffer);
 
@@ -209,6 +211,13 @@ namespace xng {
         struct PendingUpload {
             size_t offset;
             rg::HeapResource<rg::Buffer> buffer;
+            std::shared_ptr<rg::HeapTransfer> transferHandle;
+
+            PendingUpload(const size_t offset,
+                          rg::HeapResource<rg::Buffer> _buffer,
+                          std::unique_ptr<rg::HeapTransfer> _transferHandle)
+                : offset(offset), buffer(std::move(_buffer)), transferHandle(std::move(_transferHandle)) {
+            }
         };
 
         Handle createUploadHandle() {

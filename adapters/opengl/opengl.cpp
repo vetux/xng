@@ -48,12 +48,12 @@ namespace xng::opengl {
         Framebuffer framebuffer;
     };
 
-    Vec2i bindAttachments(const Framebuffer &framebuffer,
+    Vec2i bindAttachments(Framebuffer &framebuffer,
                           const rg::RasterPass &pass,
                           const PassResources &passResources) {
         oglDebugStartGroup("Runtime::bindAttachments");
 
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer.FBO);
+        framebuffer.bind(GL_DRAW_FRAMEBUFFER);
 
         Vec2i ret(0);
         for (auto i = 0; i < pass.colorAttachments.size(); ++i) {

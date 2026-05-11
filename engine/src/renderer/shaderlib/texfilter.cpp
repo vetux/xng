@@ -25,7 +25,7 @@ using namespace xng::ShaderScript;
 
 namespace xng::shaderlib
 {
-    vec4 textureMS(Param<Texture2DMS<rg::RGBA>> color, Param<vec2> uv, Param<Int> samples)
+    vec4 textureMS(Param<Texture2DMS<rg::RGBA8>> color, Param<vec2> uv, Param<Int> samples)
     {
         IRFunction
 
@@ -58,7 +58,7 @@ namespace xng::shaderlib
         IRFunctionEnd
     }
 
-    vec4 texfilter::textureBicubic(Param<Texture2D<rg::RGBA>> texture, Param<vec2> uv)
+    vec4 texfilter::textureBicubic(Param<Texture2D<rg::RGBA8>> texture, Param<vec2> uv)
     {
         IRFunction
         vec2 texSize;
@@ -93,7 +93,7 @@ namespace xng::shaderlib
         IRFunctionEnd
     }
 
-    vec4 texfilter::textureBicubicMS(Param<Texture2DMS<rg::RGBA>> texture, Param<vec2> uv, Param<Int> samples)
+    vec4 texfilter::textureBicubicMS(Param<Texture2DMS<rg::RGBA8>> texture, Param<vec2> uv, Param<Int> samples)
     {
         IRFunction
         vec2 texSize;
@@ -129,7 +129,7 @@ namespace xng::shaderlib
     }
 
     // TODO: Sample texture arrays with integer coordinates / texelFetch
-    vec4 texfilter::textureBicubicArray(Param<Texture2DArray<rg::RGBA>> texture, Param<vec3> uv, Param<vec2> size)
+    vec4 texfilter::textureBicubicArray(Param<Texture2DArray<rg::RGBA8>> texture, Param<vec3> uv, Param<vec2> size)
     {
         IRFunction
         vec2 texCoords = uv.value().xy();

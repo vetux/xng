@@ -35,61 +35,121 @@ namespace xng::opengl {
             pixelFormat = GL_RGBA;
 
             switch (bufferFormat) {
-                case ColorFormat::R:
-                case ColorFormat::R8:
-                case ColorFormat::R16:
-                case ColorFormat::R16F:
-                case ColorFormat::R32F:
-                case ColorFormat::R8I:
-                case ColorFormat::R16I:
-                case ColorFormat::R32I:
-                case ColorFormat::R8UI:
-                case ColorFormat::R16UI:
-                case ColorFormat::R32UI:
+                case R8:
+                case R8I:
+                case R8UI:
+                case R16:
+                case R16I:
+                case R16UI:
+                case R32F:
+                case R32I:
+                case R32UI:
                     pixelFormat = GL_RED;
-                    dataType = (bufferFormat == ColorFormat::R16F || bufferFormat == ColorFormat::R32F)
-                                   ? GL_FLOAT
-                                   : GL_UNSIGNED_BYTE;
                     break;
-                case ColorFormat::RG:
-                case ColorFormat::RG8:
-                case ColorFormat::RG16:
-                case ColorFormat::RG16F:
-                case ColorFormat::RG32F:
-                case ColorFormat::RG8I:
-                case ColorFormat::RG16I:
-                case ColorFormat::RG32I:
-                case ColorFormat::RG8UI:
-                case ColorFormat::RG16UI:
-                case ColorFormat::RG32UI:
+                case RG8:
+                case RG8I:
+                case RG8UI:
+                case RG16:
+                case RG16I:
+                case RG16UI:
+                case RG32F:
+                case RG32I:
+                case RG32UI:
                     pixelFormat = GL_RG;
-                    dataType = (bufferFormat == ColorFormat::RG16F || bufferFormat == ColorFormat::RG32F)
-                                   ? GL_FLOAT
-                                   : GL_UNSIGNED_BYTE;
                     break;
-                case ColorFormat::RGB:
-                case ColorFormat::RGB8:
-                case ColorFormat::RGB16:
-                case ColorFormat::RGB16F:
-                case ColorFormat::RGB32F:
-                case ColorFormat::RGB8I:
-                case ColorFormat::RGB16I:
-                case ColorFormat::RGB32I:
-                case ColorFormat::RGB8UI:
-                case ColorFormat::RGB16UI:
-                case ColorFormat::RGB32UI:
+                case RGB8:
+                case SRGB8:
+                case RGB8I:
+                case RGB8UI:
+                case RGB16:
+                case RGB16I:
+                case RGB16UI:
+                case RGB32F:
+                case RGB32I:
+                case RGB32UI:
                     pixelFormat = GL_RGB;
-                    dataType = (bufferFormat == ColorFormat::RGB16F || bufferFormat == ColorFormat::RGB32F)
-                                   ? GL_FLOAT
-                                   : GL_UNSIGNED_BYTE;
+                    break;
+                case RGBA8:
+                case SRGB8_ALPHA8:
+                case RGBA8I:
+                case RGBA8UI:
+                case RGBA16:
+                case RGBA16I:
+                case RGBA16UI:
+                case RGBA32F:
+                case RGBA32I:
+                case RGBA32UI:
+                    pixelFormat = GL_RGBA;
+                    break;
+                case DEPTH_16:
+                case DEPTH_32F:
+                    pixelFormat = GL_DEPTH_COMPONENT;
+                    break;
+                case STENCIL_8:
+                    pixelFormat = GL_STENCIL_INDEX;
                     break;
                 default:
-                    // Assume RGBA-like default
-                    pixelFormat = GL_RGBA;
-                    dataType = (bufferFormat == ColorFormat::RGBA16F || bufferFormat == ColorFormat::RGBA32F)
-                                   ? GL_FLOAT
-                                   : GL_UNSIGNED_BYTE;
+                    throw std::runtime_error("Unsupported buffer format");
+            }
+
+            switch (bufferFormat) {
+                case R8I:
+                case RG8I:
+                case RGB8I:
+                case RGBA8I:
+                    dataType = GL_BYTE;
                     break;
+                case R8:
+                case R8UI:
+                case RG8:
+                case RG8UI:
+                case RGB8:
+                case SRGB8:
+                case SRGB8_ALPHA8:
+                case RGB8UI:
+                case RGBA8:
+                case RGBA8UI:
+                case STENCIL_8:
+                    dataType = GL_UNSIGNED_BYTE;
+                    break;
+                case R16:
+                case R16UI:
+                case RG16:
+                case RG16UI:
+                case RGB16:
+                case RGB16UI:
+                case RGBA16:
+                case RGBA16UI:
+                case DEPTH_16:
+                    dataType = GL_UNSIGNED_SHORT;
+                    break;
+                case R16I:
+                case RG16I:
+                case RGB16I:
+                case RGBA16I:
+                    dataType = GL_SHORT;
+                    break;
+                case R32F:
+                case RG32F:
+                case RGB32F:
+                case RGBA32F:
+                case DEPTH_32F:
+                    dataType = GL_FLOAT;
+                    break;
+                case R32I:
+                case RG32I:
+                case RGB32I:
+                case RGBA32I:
+                    dataType = GL_INT;
+                    break;
+                case R32UI:
+                case RG32UI:
+                case RGB32UI:
+                case RGBA32UI:
+                    dataType = GL_UNSIGNED_INT;
+                    break;
+                default:
+                    throw std::runtime_error("Unsupported buffer format");
             }
         }
 
@@ -163,13 +223,14 @@ namespace xng::opengl {
                                  const Resource<Buffer> &buffer,
                                  const Texture::SubResource textureSubResource,
                                  const size_t bufferOffset,
-                                 const Recti &textureOffset) override {
+                                 const Recti &textureOffset,
+                                 const ColorFormat bufferFormat) override {
             oglDebugStartGroup("TransferContextGL::copyBufferToTexture");
 
             const auto &tex = resources.getTexture(texture);
             const auto &buf = resources.getBuffer(buffer);
 
-            const auto pixelSize = getColorByteSize(texture.getDescription().format);
+            const auto pixelSize = getColorByteSize(bufferFormat);
 
             const BufferGL unpackCopy(Buffer(textureOffset.dimensions.x * textureOffset.dimensions.y * pixelSize,
                                              Buffer::CAPABILITY_TRANSFER_SRC,
@@ -192,7 +253,7 @@ namespace xng::opengl {
 
             GLenum pixelFormat;
             GLenum dataType;
-            getFormatAndDataType(texture.getDescription().format, dataType, pixelFormat);
+            getFormatAndDataType(bufferFormat, dataType, pixelFormat);
 
             const auto textureSize = tex.desc.size;
             const auto offset = textureOffset.position;
@@ -263,13 +324,14 @@ namespace xng::opengl {
                                  const Resource<Texture> &texture,
                                  const Texture::SubResource textureSubResource,
                                  const size_t bufferOffset,
-                                 const Recti &textureOffset) override {
+                                 const Recti &textureOffset,
+                                 const ColorFormat bufferFormat) override {
             oglDebugStartGroup("TransferContextGL::copyTextureToBuffer");
 
             const auto &tex = resources.getTexture(texture);
             const auto &buf = resources.getBuffer(buffer);
 
-            const auto pixelSize = getColorByteSize(texture.getDescription().format);
+            const auto pixelSize = getColorByteSize(bufferFormat);
             const auto rowSize = textureOffset.dimensions.x * pixelSize;
             const auto dataSize = textureOffset.dimensions.x * textureOffset.dimensions.y * pixelSize;
 
@@ -279,7 +341,7 @@ namespace xng::opengl {
 
             GLenum pixelFormat;
             GLenum dataType;
-            getFormatAndDataType(texture.getDescription().format, dataType, pixelFormat);
+            getFormatAndDataType(bufferFormat, dataType, pixelFormat);
 
             // Temporary pack PBO
             const BufferGL packCopy(Buffer(dataSize,
@@ -346,6 +408,71 @@ namespace xng::opengl {
             clearTexture(tex, target, clearVal);
         }
 
+        void blitTexture(const Resource<Texture> &src,
+                         const Resource<Texture> &dst,
+                         const Texture::SubResource &srcTarget,
+                         const Texture::SubResource &dstTarget,
+                         const Recti &srcRect,
+                         const Recti &dstRect,
+                         const TextureFiltering &filtering) override {
+            if (src == dst && srcTarget == dstTarget) {
+                return;
+            }
+
+            if (src.getDescription().format != dst.getDescription().format) {
+                throw std::runtime_error("Source and target textures must have the same format");
+            }
+
+            GLbitfield mask = 0;
+            GLenum bindingPoint;
+            GLenum filter = convert(filtering);
+            if (src.getDescription().format == DEPTH_16 || src.getDescription().format == DEPTH_32F) {
+                bindingPoint = GL_DEPTH_ATTACHMENT;
+                mask = GL_DEPTH_BUFFER_BIT;
+                filter = GL_NEAREST;
+            } else if (src.getDescription().format == DEPTH24_STENCIL8 || src.getDescription().format ==
+                       DEPTH32F_STENCIL8) {
+                bindingPoint = GL_DEPTH_STENCIL_ATTACHMENT;
+                mask = GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
+                filter = GL_NEAREST;
+            } else if (src.getDescription().format == STENCIL_8) {
+                bindingPoint = GL_STENCIL_ATTACHMENT;
+                mask = GL_STENCIL_BUFFER_BIT;
+                filter = GL_NEAREST;
+            } else {
+                bindingPoint = GL_COLOR_ATTACHMENT0;
+                mask = GL_COLOR_BUFFER_BIT;
+            }
+
+            const auto &srcTex = resources.getTexture(src);
+            const auto &dstTex = resources.getTexture(dst);
+
+            blitSrcFb.bind(GL_READ_FRAMEBUFFER);
+            blitDstFb.bind(GL_DRAW_FRAMEBUFFER);
+
+            blitSrcFb.attach(bindingPoint, srcTex, srcTarget);
+            blitDstFb.attach(bindingPoint, dstTex, dstTarget);
+
+            auto correctedSourceRect = srcRect;
+            correctedSourceRect.position.y = srcTex.desc.size.y - srcRect.position.y - srcRect.dimensions.y;
+            correctedSourceRect.dimensions.y = srcRect.dimensions.y;
+
+            auto correctedTargetRect = dstRect;
+            correctedTargetRect.position.y = dstTex.desc.size.y - dstRect.position.y - dstRect.dimensions.y;
+            correctedTargetRect.dimensions.y = dstRect.dimensions.y;
+
+            glBlitFramebuffer(correctedSourceRect.position.x,
+                              correctedSourceRect.position.y,
+                              correctedSourceRect.position.x + correctedSourceRect.dimensions.x,
+                              correctedSourceRect.position.y + correctedSourceRect.dimensions.y,
+                              correctedTargetRect.position.x,
+                              correctedTargetRect.position.y,
+                              correctedTargetRect.position.x + correctedTargetRect.dimensions.x,
+                              correctedTargetRect.position.y + correctedTargetRect.dimensions.y,
+                              mask,
+                              filter);
+        }
+
         void generateMipMaps(const Resource<Texture> &texture) override {
             oglDebugStartGroup("TransferContextGL::generateMipMaps");
 
@@ -365,23 +492,19 @@ namespace xng::opengl {
                                  const Texture::ClearValue &clearVal) {
             oglDebugStartGroup("TransferContextGL::clearTexture");
 
-            if (tex.desc.format == DEPTH_STENCIL
-                || tex.desc.format == DEPTH24_STENCIL8) {
+            if (tex.desc.format == DEPTH24_STENCIL8 || tex.desc.format == DEPTH32F_STENCIL8) {
                 //Workaround using the raster pipeline to clear because there doesn't seem to be a standard 24bit_8bit depth stencil format.
                 const auto clearValue = std::get<Texture::DepthStencilClearValue>(clearVal);
-                const auto clearFb = Framebuffer();
-                glBindFramebuffer(GL_DRAW_FRAMEBUFFER, clearFb.FBO);
-                Framebuffer::attach(GL_DEPTH_STENCIL_ATTACHMENT, tex, target);
+                auto clearFb = Framebuffer();
+                clearFb.bind(GL_DRAW_FRAMEBUFFER);
+                clearFb.attach(GL_DEPTH_STENCIL_ATTACHMENT, tex, target);
                 glClearDepth(clearValue.clearDepth);
                 glClearStencil(static_cast<GLint>(clearValue.clearStencil));
                 glDepthMask(GL_TRUE);
                 glStencilMask(0xff);
                 glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
                 glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-            } else if (tex.desc.format == DEPTH
-                       || tex.desc.format == DEPTH_32F
-                       || tex.desc.format == DEPTH_24
-                       || tex.desc.format == DEPTH_16) {
+            } else if (tex.desc.format == DEPTH_16 || tex.desc.format == DEPTH_32F) {
                 const GLfloat depthData = std::get<float>(clearVal);
                 glClearTexSubImage(tex.handle,
                                    static_cast<GLint>(target.mipLevel),
@@ -396,10 +519,7 @@ namespace xng::opengl {
                                    GL_DEPTH_COMPONENT,
                                    GL_FLOAT,
                                    &depthData);
-            } else if (tex.desc.format == STENCIL
-                       || tex.desc.format == STENCIL_32
-                       || tex.desc.format == STENCIL_16
-                       || tex.desc.format == STENCIL_8) {
+            } else if (tex.desc.format == STENCIL_8) {
                 const GLuint stencilData = std::get<unsigned>(clearVal);
                 glClearTexSubImage(tex.handle,
                                    static_cast<GLint>(target.mipLevel),
@@ -428,7 +548,7 @@ namespace xng::opengl {
                     case 0: {
                         format = GL_RGBA;
                         type = GL_UNSIGNED_BYTE;
-                        const auto& vec = std::get<Vector4<uint8_t>>(clearVal);
+                        const auto &vec = std::get<Vector4<uint8_t> >(clearVal);
                         bClearData[0] = vec.x;
                         bClearData[1] = vec.y;
                         bClearData[2] = vec.z;
@@ -495,6 +615,9 @@ namespace xng::opengl {
     private:
         const PassResources &resources;
         Statistics &stats;
+
+        Framebuffer blitSrcFb;
+        Framebuffer blitDstFb;
     };
 }
 

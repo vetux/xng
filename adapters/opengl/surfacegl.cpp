@@ -39,12 +39,12 @@ namespace xng::opengl {
             if (backBufferColor == nullptr || backBufferColor->desc.size != fbSize) {
                 rg::Texture desc;
                 desc.size = fbSize;
-                desc.format = RGBA;
+                desc.format = RGBA8;
                 backBufferColor = std::make_shared<TextureGL>(desc);
 
-                glBindFramebuffer(GL_FRAMEBUFFER, backBuffer->FBO);
+                backBuffer->bind(GL_FRAMEBUFFER);
                 {
-                    Framebuffer::attach2D(GL_COLOR_ATTACHMENT0, *backBufferColor, backBufferColor->textureType, 0);
+                    backBuffer->attach2D(GL_COLOR_ATTACHMENT0, *backBufferColor, backBufferColor->textureType, 0);
 
                     glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
@@ -54,7 +54,7 @@ namespace xng::opengl {
                     glClearStencil(0);
                     glClear(GL_COLOR_BUFFER_BIT);
                 }
-                glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                backBuffer->unbind();
                 oglCheckError();
             }
 
@@ -69,7 +69,7 @@ namespace xng::opengl {
 
             // Skip presenting frames on resize, prevents the contents of the window from jittering when live resizing.
             if (dstSize == srcSize) {
-                glBindFramebuffer(GL_READ_FRAMEBUFFER, backBuffer->FBO);
+                backBuffer->bind(GL_READ_FRAMEBUFFER);
                 glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
                 glClearColor(0, 0, 0, 0);
@@ -86,7 +86,7 @@ namespace xng::opengl {
                                   GL_COLOR_BUFFER_BIT,
                                   GL_LINEAR);
 
-                glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+                backBuffer->unbind();
                 glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
             }
 

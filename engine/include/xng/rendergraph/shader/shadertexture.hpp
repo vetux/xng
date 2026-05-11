@@ -24,7 +24,7 @@
 namespace xng::rg {
     struct ShaderTexture {
         TextureType type = TEXTURE_2D;
-        ColorFormat format = RGBA;
+        ColorFormat format = RGBA8;
 
         bool operator==(const ShaderTexture& other) const {
             return type == other.type && format == other.format;

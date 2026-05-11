@@ -38,6 +38,19 @@ namespace xng::opengl {
 
         explicit TextureGL(const rg::Texture &texture)
             : desc(texture) {
+            if (desc.format == RGB8
+                || desc.format == RGB16
+                || desc.format == SRGB8
+                || desc.format == RGB16F
+                || desc.format == RGB32F
+                || desc.format == RGB8I
+                || desc.format == RGB16I
+                || desc.format == RGB32I
+                || desc.format == RGB8UI
+                || desc.format == RGB16UI
+                || desc.format == RGB32UI) {
+                throw std::runtime_error("Unsupported texture color format (Texture cannot be 3 component format)");
+            }
             if (texture.textureType >= TEXTURE_2D_ARRAY) {
                 initializeArrayTexture();
             } else {
@@ -61,30 +74,6 @@ namespace xng::opengl {
 
             if (desc.textureType == TEXTURE_2D) {
                 textureInternalFormat = convert(desc.format);
-
-                switch (desc.format) {
-                    case DEPTH:
-                        textureInternalFormat = GL_DEPTH_COMPONENT32F;
-                        break;
-                    case DEPTH_STENCIL:
-                        textureInternalFormat = GL_DEPTH24_STENCIL8;
-                        break;
-                    case R:
-                        textureInternalFormat = GL_R8;
-                        break;
-                    case RG:
-                        textureInternalFormat = GL_RG8;
-                        break;
-                    case RGB:
-                        textureInternalFormat = GL_RGB8;
-                        break;
-                    case RGBA:
-                        textureInternalFormat = GL_RGBA8;
-                        break;
-                    default:
-                        break;
-                }
-
                 glTexStorage2D(textureType,
                                desc.mipLevels,
                                textureInternalFormat,
@@ -107,30 +96,6 @@ namespace xng::opengl {
                 }
             } else if (desc.textureType == TEXTURE_2D_MULTISAMPLE) {
                 textureInternalFormat = convert(desc.format);
-
-                switch (desc.format) {
-                    case DEPTH:
-                        textureInternalFormat = GL_DEPTH_COMPONENT32F;
-                        break;
-                    case DEPTH_STENCIL:
-                        textureInternalFormat = GL_DEPTH24_STENCIL8;
-                        break;
-                    case R:
-                        textureInternalFormat = GL_R8;
-                        break;
-                    case RG:
-                        textureInternalFormat = GL_RG8;
-                        break;
-                    case RGB:
-                        textureInternalFormat = GL_RGB8;
-                        break;
-                    case RGBA:
-                        textureInternalFormat = GL_RGBA8;
-                        break;
-                    default:
-                        break;
-                }
-
                 glTexStorage2DMultisample(textureType,
                                           desc.mipLevels,
                                           textureInternalFormat,
@@ -157,30 +122,6 @@ namespace xng::opengl {
             } else {
                 // Cube map textures: allocate immutable storage for all faces and mip levels
                 textureInternalFormat = convert(desc.format);
-
-                switch (desc.format) {
-                    case DEPTH:
-                        textureInternalFormat = GL_DEPTH_COMPONENT32F;
-                        break;
-                    case DEPTH_STENCIL:
-                        textureInternalFormat = GL_DEPTH24_STENCIL8;
-                        break;
-                    case R:
-                        textureInternalFormat = GL_R8;
-                        break;
-                    case RG:
-                        textureInternalFormat = GL_RG8;
-                        break;
-                    case RGB:
-                        textureInternalFormat = GL_RGB8;
-                        break;
-                    case RGBA:
-                        textureInternalFormat = GL_RGBA8;
-                        break;
-                    default:
-                        break;
-                }
-
                 glTexStorage2D(textureType,
                                desc.mipLevels,
                                textureInternalFormat,
@@ -259,30 +200,6 @@ namespace xng::opengl {
 
             if (desc.arrayLayers > 0) {
                 textureInternalFormat = convert(desc.format);
-
-                switch (desc.format) {
-                    case DEPTH:
-                        textureInternalFormat = GL_DEPTH_COMPONENT32F;
-                        break;
-                    case DEPTH_STENCIL:
-                        textureInternalFormat = GL_DEPTH24_STENCIL8;
-                        break;
-                    case R:
-                        textureInternalFormat = GL_R8;
-                        break;
-                    case RG:
-                        textureInternalFormat = GL_RG8;
-                        break;
-                    case RGB:
-                        textureInternalFormat = GL_RGB8;
-                        break;
-                    case RGBA:
-                        textureInternalFormat = GL_RGBA8;
-                        break;
-                    default:
-                        break;
-                }
-
                 glTexStorage3D(textureType,
                                desc.mipLevels,
                                textureInternalFormat,

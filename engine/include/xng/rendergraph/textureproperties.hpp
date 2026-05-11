@@ -41,32 +41,12 @@ namespace xng::rg {
         NEGATIVE_Z
     };
 
+    /**
+     * 3 Component color formats are only valid formats for buffers
+     * and cannot be used on textures.
+     */
     enum ColorFormat : int {
-        // Base Formats, Let implementation decide sizes
-        R = 0,
-        RG,
-        RGB,
-        RGBA,
-        DEPTH,
-        STENCIL,
-        DEPTH_STENCIL,
-
-        // Sized Depth / Stencil
-        DEPTH_32F,
-        DEPTH_24,
-        DEPTH_16,
-        STENCIL_32,
-        STENCIL_16,
-        STENCIL_8,
-        DEPTH24_STENCIL8,
-
-        // Compressed Formats
-        R_COMPRESSED,
-        RG_COMPRESSED,
-        RGB_COMPRESSED,
-        RGBA_COMPRESSED,
-
-        // Sized normalized float
+        // Normalized Color Format (0-255 unsigned integer stored -> sampled as normalized float 0.0-1.0)
         R8,
         RG8,
         RGB8,
@@ -77,11 +57,11 @@ namespace xng::rg {
         RGB16,
         RGBA16,
 
-        RGB12,
-        RGBA12,
-        RGB10,
+        // Normalized sRGB Color Format (0-255 unsigned integer in sRGB space -> sampled as normalized float 0.0-1.0)
+        SRGB8,
+        SRGB8_ALPHA8, // rgb = 8bit sRGB, alpha = 8bit normalized unsigned integer
 
-        //Sized float
+        // Float Color Formats (Not Normalized)
         R16F,
         RG16F,
         RGB16F,
@@ -92,7 +72,7 @@ namespace xng::rg {
         RGB32F,
         RGBA32F,
 
-        //Sized integer
+        // Signed Integer Color Formats (Not Normalized)
         R8I,
         RG8I,
         RGB8I,
@@ -108,7 +88,7 @@ namespace xng::rg {
         RGB32I,
         RGBA32I,
 
-        //Sized unsigned integer
+        // Unsigned Integer Color Formats (Not Normalized)
         R8UI,
         RG8UI,
         RGB8UI,
@@ -123,6 +103,19 @@ namespace xng::rg {
         RG32UI,
         RGB32UI,
         RGBA32UI,
+
+        // Normalized Depth Format (16bit unsigned integer)
+        DEPTH_16,
+
+        // Depth Format (32bit IEEE Float)
+        DEPTH_32F,
+
+        // Stencil Format (8bit unsigned integer)
+        STENCIL_8,
+
+        // Combined depth / stencil format
+        DEPTH24_STENCIL8, // depth: 24bit unsigned integer (normalized), stencil: 8bit unsigned integer
+        DEPTH32F_STENCIL8, // depth: 32bit IEEE float, stencil: 8bit unsigned integer
     };
 
     enum TextureWrapping : int {

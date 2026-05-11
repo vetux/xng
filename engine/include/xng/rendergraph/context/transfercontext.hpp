@@ -77,7 +77,8 @@ namespace xng::rg {
         /**
          * Copy a buffer to a texture.
          *
-         * The format of the pixel data in the buffer must be compatible with texture.
+         * The format of the pixel data in the buffer must be compatible with the texture format.
+         * The implementation will perform conversion between color formats.
          *
          * The texture data is read from the buffer with the rows progressing vertically top to bottom
          * and each row progressing horizontally left to right.
@@ -92,15 +93,19 @@ namespace xng::rg {
          * @param textureSubResource The target sub resource to copy into.
          * @param bufferOffset The offset into the buffer at which to start reading.
          * @param textureOffset The region to write to.
+         * @param bufferFormat The format of the pixel data in the buffer.
          */
         virtual void copyBufferToTexture(const Resource<Texture> &texture,
                                          const Resource<Buffer> &buffer,
                                          Texture::SubResource textureSubResource,
                                          size_t bufferOffset,
-                                         const Recti &textureOffset) = 0;
+                                         const Recti &textureOffset,
+                                         ColorFormat bufferFormat) = 0;
 
         /**
          * Copy a texture to a buffer.
+         *
+         * The implementation performs conversion between texture format / buffer format.
          *
          * The texture data is stored in the buffer with the rows progressing vertically top to bottom
          * and each row progressing horizontally left to right.
@@ -114,12 +119,14 @@ namespace xng::rg {
          * @param textureSubResource The target sub resource to copy from
          * @param bufferOffset The offset into the buffer at which to start writing
          * @param textureOffset The region to read from.
+         * @param bufferFormat The format that the texture pixel data should be stored as in the buffer.
          */
         virtual void copyTextureToBuffer(const Resource<Buffer> &buffer,
                                          const Resource<Texture> &texture,
                                          Texture::SubResource textureSubResource,
                                          size_t bufferOffset,
-                                         const Recti &textureOffset) = 0;
+                                         const Recti &textureOffset,
+                                         ColorFormat bufferFormat) = 0;
 
         /**
          * Clear a texture.
@@ -131,6 +138,29 @@ namespace xng::rg {
         virtual void clearTexture(const Resource<Texture> &texture,
                                   const Texture::SubResource &target,
                                   const Texture::ClearValue &clearValue) = 0;
+
+        /**
+         * Blit a sub resource rect of one texture into a sub resource rect of another texture.
+         * Can be used for mipmap generation.
+         *
+         * The blit rects are specified with:
+         * 0,0 coordinates representing the top left corner of the texture and x increasing to the right and y increasing downwards.
+         *
+         * @param src The texture to blit from
+         * @param dst The texture to blit into
+         * @param srcTarget The sub resource of the source texture to blit from
+         * @param dstTarget The sub resource of the target texture to blit into
+         * @param srcRect The source rect to blit
+         * @param dstRect The target rect to blit into
+         * @param filtering The filtering to apply if the blit rects are not equal size.
+         */
+        virtual void blitTexture(const Resource<Texture> &src,
+                                 const Resource<Texture> &dst,
+                                 const Texture::SubResource &srcTarget,
+                                 const Texture::SubResource &dstTarget,
+                                 const Recti& srcRect,
+                                 const Recti& dstRect,
+                                 const TextureFiltering &filtering) = 0;
 
         /**
           * Automatically generate mip maps for the given texture.

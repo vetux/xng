@@ -29,8 +29,6 @@
 
 namespace xng::opengl {
     struct Framebuffer {
-        GLuint FBO = 0;
-
         Framebuffer() {
             glGenFramebuffers(1, &FBO);
             oglCheckError();
@@ -43,7 +41,19 @@ namespace xng::opengl {
             }
         }
 
-        static void attach(const GLenum attachmentPoint, const TextureGL &tex, const Texture::SubResource &target) {
+        void bind(const GLenum target) {
+            bindingPoint = target;
+            glBindFramebuffer(bindingPoint, FBO);
+            oglCheckError();
+        }
+
+        void unbind() {
+            glBindFramebuffer(bindingPoint, 0);
+            oglCheckError();
+            bindingPoint = 0;
+        }
+
+        void attach(const GLenum attachmentPoint, const TextureGL &tex, const Texture::SubResource &target) const {
             switch (tex.desc.textureType) {
                 case TEXTURE_2D:
                 case TEXTURE_2D_MULTISAMPLE:
@@ -90,11 +100,14 @@ namespace xng::opengl {
             }
         }
 
-        static void attach2D(const GLenum attachment,
-                             const TextureGL &texture,
-                             const GLenum target,
-                             const GLint mipLevel) {
-            glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER,
+        void attach2D(const GLenum attachment,
+                      const TextureGL &texture,
+                      const GLenum target,
+                      const GLint mipLevel) const {
+            if (bindingPoint == 0) {
+                throw std::runtime_error("Framebuffer must be bound before attaching a texture");
+            }
+            glFramebufferTexture2D(bindingPoint,
                                    attachment,
                                    target,
                                    texture.handle,
@@ -102,28 +115,34 @@ namespace xng::opengl {
             oglCheckError();
         }
 
-        static void attachLayered(const GLenum attachment, const TextureGL &texture, const GLint mipLevel) {
+        void attachLayered(const GLenum attachment, const TextureGL &texture, const GLint mipLevel) const {
             if (texture.textureType != GL_TEXTURE_CUBE_MAP
                 && texture.textureType != GL_TEXTURE_CUBE_MAP_ARRAY
                 && texture.textureType != GL_TEXTURE_2D_ARRAY
                 && texture.textureType != GL_TEXTURE_2D_MULTISAMPLE_ARRAY) {
                 throw std::runtime_error("Invalid texture type for layered attachment");
             }
-            glFramebufferTexture(GL_DRAW_FRAMEBUFFER,
+            if (bindingPoint == 0) {
+                throw std::runtime_error("Framebuffer must be bound before attaching a texture");
+            }
+            glFramebufferTexture(bindingPoint,
                                  attachment,
                                  texture.handle,
                                  mipLevel);
             oglCheckError();
         }
 
-        static void attachArrayLayer(const GLenum attachment,
-                                     const TextureGL &texture,
-                                     const GLint mipLevel,
-                                     const GLint index) {
+        void attachArrayLayer(const GLenum attachment,
+                              const TextureGL &texture,
+                              const GLint mipLevel,
+                              const GLint index) const {
             if (texture.textureType != GL_TEXTURE_2D_ARRAY) {
                 throw std::runtime_error("Invalid texture type for index 2D array attachment");
             }
-            glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER,
+            if (bindingPoint == 0) {
+                throw std::runtime_error("Framebuffer must be bound before attaching a texture");
+            }
+            glFramebufferTextureLayer(bindingPoint,
                                       attachment,
                                       texture.handle,
                                       mipLevel,
@@ -131,15 +150,18 @@ namespace xng::opengl {
             oglCheckError();
         }
 
-        static void attachArrayLayer(const GLenum attachment,
-                                     const TextureGL &texture,
-                                     const GLint mipLevel,
-                                     const GLint index,
-                                     const GLenum face) {
+        void attachArrayLayer(const GLenum attachment,
+                              const TextureGL &texture,
+                              const GLint mipLevel,
+                              const GLint index,
+                              const GLenum face) const {
             if (texture.textureType != GL_TEXTURE_CUBE_MAP_ARRAY) {
                 throw std::runtime_error("Invalid texture type for index cubemap array attachment");
             }
-            glFramebufferTexture3D(GL_DRAW_FRAMEBUFFER,
+            if (bindingPoint == 0) {
+                throw std::runtime_error("Framebuffer must be bound before attaching a texture");
+            }
+            glFramebufferTexture3D(bindingPoint,
                                    attachment,
                                    face,
                                    texture.handle,
@@ -147,6 +169,10 @@ namespace xng::opengl {
                                    index);
             oglCheckError();
         }
+
+    private:
+        GLuint FBO = 0;
+        GLenum bindingPoint = 0;
     };
 }
 

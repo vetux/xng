@@ -25,42 +25,6 @@ using namespace xng::rg;
 
 static size_t getColorByteSize(const ColorFormat colorFormat) {
     switch (colorFormat) {
-        case R:
-            return 1;
-        case RG:
-            return 2;
-        case RGB:
-            return 3;
-        case RGBA:
-            return 4;
-        case DEPTH:
-            return 4;
-        case STENCIL:
-            return 1;
-        case DEPTH_STENCIL:
-            return 4;
-        case DEPTH_32F:
-            return 4;
-        case DEPTH_24:
-            return 4;
-        case DEPTH_16:
-            return 2;
-        case STENCIL_32:
-            return 4;
-        case STENCIL_16:
-            return 2;
-        case STENCIL_8:
-            return 1;
-        case DEPTH24_STENCIL8:
-            return 4;
-        case R_COMPRESSED:
-            return 1;
-        case RG_COMPRESSED:
-            return 2;
-        case RGB_COMPRESSED:
-            return 3;
-        case RGBA_COMPRESSED:
-            return 4;
         case R8:
             return 1;
         case RG8:
@@ -77,12 +41,10 @@ static size_t getColorByteSize(const ColorFormat colorFormat) {
             return 6;
         case RGBA16:
             return 8;
-        case RGB12:
-            return 6;
-        case RGBA12:
-            return 8;
-        case RGB10:
-            return 6;
+        case SRGB8:
+            return 3;
+        case SRGB8_ALPHA8:
+            return 4;
         case R16F:
             return 2;
         case RG16F:
@@ -147,6 +109,16 @@ static size_t getColorByteSize(const ColorFormat colorFormat) {
             return 12;
         case RGBA32UI:
             return 16;
+        case DEPTH_16:
+            return 2;
+        case DEPTH_32F:
+            return 4;
+        case STENCIL_8:
+            return 1;
+        case DEPTH24_STENCIL8:
+            return 4;
+        case DEPTH32F_STENCIL8:
+            return 8;
         default:
             throw std::runtime_error("Invalid color format");
     }

@@ -239,28 +239,8 @@ static GLenum convert(CubeMapFace face) {
     }
 }
 
-static GLint convert(ColorFormat format) {
+static GLint convert(const ColorFormat format) {
     switch (format) {
-        case DEPTH:
-            return GL_DEPTH_COMPONENT;
-        case DEPTH_STENCIL:
-            return GL_DEPTH_STENCIL;
-        case R:
-            return GL_RED;
-        case RG:
-            return GL_RG;
-        case RGB:
-            return GL_RGB;
-        case RGBA:
-            return GL_RGBA;
-        case R_COMPRESSED:
-            return GL_COMPRESSED_RED;
-        case RG_COMPRESSED:
-            return GL_COMPRESSED_RG;
-        case RGB_COMPRESSED:
-            return GL_COMPRESSED_RGB;
-        case RGBA_COMPRESSED:
-            return GL_COMPRESSED_RGBA;
         case R8:
             return GL_R8;
         case RG8:
@@ -277,12 +257,10 @@ static GLint convert(ColorFormat format) {
             return GL_RGB16;
         case RGBA16:
             return GL_RGBA16;
-        case RGB12:
-            return GL_RGB12;
-        case RGBA12:
-            return GL_RGBA12;
-        case RGB10:
-            return GL_RGB10;
+        case SRGB8:
+            return GL_SRGB8;
+        case SRGB8_ALPHA8:
+            return GL_SRGB8_ALPHA8;
         case R16F:
             return GL_R16F;
         case RG16F:
@@ -347,6 +325,16 @@ static GLint convert(ColorFormat format) {
             return GL_RGB32UI;
         case RGBA32UI:
             return GL_RGBA32UI;
+        case DEPTH_16:
+            return GL_DEPTH_COMPONENT16;
+        case DEPTH_32F:
+            return GL_DEPTH_COMPONENT32F;
+        case STENCIL_8:
+            return GL_STENCIL_INDEX8;
+        case DEPTH24_STENCIL8:
+            return GL_DEPTH24_STENCIL8;
+        case DEPTH32F_STENCIL8:
+            return GL_DEPTH32F_STENCIL8;
         default:
             throw std::runtime_error("Unrecognized color format");
     }

@@ -216,16 +216,6 @@ namespace xng::rg {
             return {MAT4, DOUBLE};
         }
 
-        static Component getColorComponent(const ColorFormat format) {
-            if (format >= R && format <= RGBA32F) {
-                return FLOAT;
-            } else if (format >= R8I && format <= RGBA32I) {
-                return SIGNED_INT;
-            } else {
-                return UNSIGNED_INT;
-            }
-        }
-
         static ShaderPrimitiveType fromString(const std::string &typeStr) {
             if (typeStr == "Bool") return Bool();
             if (typeStr == "Int") return Int();
