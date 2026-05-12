@@ -28,16 +28,16 @@
 
 namespace xng {
     /**
-     * A generic buffer into which data can be streamed asynchronously via
-     *
-     * Copy to a mapped staging buffer
-     * Copy staging buffer -> Temp Buffer asynchronously on the heap transfer context
-     * Copy Temp Buffer -> Stable Buffer in a graph transfer pass
+     * A generic buffer into which data can be streamed asynchronously via:
+     * -> Copy to a mapped staging buffer
+     * -> Copy staging buffer -> Temp Buffer asynchronously on the heap transfer context
+     * -> Copy Temp Buffer (Double Buffered) -> Stable Buffer in a graph transfer pass
      *
      * This enables asynchronous buffer streaming by not blocking the graph execution on the slow PCIe copy from staging to temp buffer
      * and performing the copy from temp to stable buffer concurrently with heap transfers by double buffering the temp buffer.
      *
-     * The stream buffer dynamically resizes on create and can be manually resized via resize().
+     * The stream buffer dynamically grows in size on upload.
+     * The stream buffer cannot be downsized without reallocating a new stream buffer.
      */
     class StreamBuffer {
     public:
