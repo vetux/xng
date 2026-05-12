@@ -33,6 +33,19 @@
 namespace xng::rg {
     class TransferContext {
     public:
+        /**
+         * The offsets specify the x/y top left coordinates of the region to copy.
+         *
+         * The size specifies the width/height of the region to copy.
+         */
+        struct TextureCopyRegion {
+            Texture::SubResource src;
+            Texture::SubResource dst;
+            Vec2i srcOffset;
+            Vec2i dstOffset;
+            Vec2i size;
+        };
+
         virtual ~TransferContext() = default;
 
         /**
@@ -53,26 +66,13 @@ namespace xng::rg {
         /**
          * Copy a texel region of a mip level to a mip level of another texture.
          *
-         * The offsets specify the x/y top left coordinates of the region to copy,
-         * and z is the index of the layer for array textures.
-         *
-         * The size specifies the width/height of the region to copy while z the number of layers to copy for array textures.
-         *
          * @param target
          * @param source
-         * @param srcOffset
-         * @param dstOffset
-         * @param size
-         * @param srcMipMapLevel
-         * @param dstMipMapLevel
+         * @param regions
          */
         virtual void copyTexture(const Resource<Texture> &target,
                                  const Resource<Texture> &source,
-                                 const Vec3i &srcOffset,
-                                 const Vec3i &dstOffset,
-                                 const Vec3i &size,
-                                 size_t srcMipMapLevel,
-                                 size_t dstMipMapLevel) = 0;
+                                 const std::vector<TextureCopyRegion> &regions) = 0;
 
         /**
          * Copy a buffer to a texture.

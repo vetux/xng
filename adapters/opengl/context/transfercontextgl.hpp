@@ -152,7 +152,7 @@ namespace xng::opengl {
             }
         }
 
-        TransferContextGL(const PassResources &resources)
+        explicit TransferContextGL(const PassResources &resources)
             : resources(resources) {
         }
 
@@ -185,30 +185,38 @@ namespace xng::opengl {
 
         void copyTexture(const Resource<Texture> &target,
                          const Resource<Texture> &source,
-                         const Vec3i &srcOffset,
-                         const Vec3i &dstOffset,
-                         const Vec3i &size,
-                         const size_t srcMipMapLevel,
-                         const size_t dstMipMapLevel) override {
+                         const std::vector<TextureCopyRegion> &regions) override {
             oglDebugStartGroup("TransferContextGL::copyTexture");
 
             const auto srcTexture = resources.getTexture(source);
             const auto dstTexture = resources.getTexture(target);
-            glCopyImageSubData(srcTexture.handle,
-                               srcTexture.textureType,
-                               static_cast<GLint>(srcMipMapLevel),
-                               srcOffset.x,
-                               srcOffset.y,
-                               srcOffset.z,
-                               dstTexture.handle,
-                               dstTexture.textureType,
-                               static_cast<GLint>(dstMipMapLevel),
-                               dstOffset.x,
-                               dstOffset.y,
-                               dstOffset.z,
-                               srcTexture.desc.size.x,
-                               srcTexture.desc.size.y,
-                               1);
+
+            for (auto &region: regions) {
+                const Vec2i srcMipSize = source.getDescription().getMipLevelSize(region.src.mipLevel);
+                const Vec2i dstMipSize = target.getDescription().getMipLevelSize(region.dst.mipLevel);
+
+                const auto srcRect = getCorrectedTextureRect(Recti(region.srcOffset, region.size),
+                                                             srcMipSize);
+                const auto dstRect = getCorrectedTextureRect(Recti(region.dstOffset, region.size),
+                                                             dstMipSize);
+
+                glCopyImageSubData(srcTexture.handle,
+                                   srcTexture.textureType,
+                                   static_cast<GLint>(region.src.mipLevel),
+                                   static_cast<GLint>(srcRect.position.x),
+                                   static_cast<GLint>(srcRect.position.y),
+                                   static_cast<GLint>(region.src.arrayLayer),
+                                   dstTexture.handle,
+                                   dstTexture.textureType,
+                                   static_cast<GLint>(region.dst.mipLevel),
+                                   static_cast<GLint>(dstRect.position.x),
+                                   static_cast<GLint>(dstRect.position.y),
+                                   static_cast<GLint>(region.dst.arrayLayer),
+                                   region.size.x,
+                                   region.size.y,
+                                   1);
+            }
+
             oglCheckError();
 
             oglDebugEndGroup();
@@ -250,9 +258,8 @@ namespace xng::opengl {
             GLenum dataType;
             getFormatAndDataType(bufferFormat, dataType, pixelFormat);
 
-            const auto textureSize = tex.desc.size;
-            const auto offset = textureOffset.position;
-            const auto size = textureOffset.dimensions;
+            const auto rect = getCorrectedTextureRect(textureOffset,
+                                                      tex.desc.getMipLevelSize(textureSubResource.mipLevel));
 
             glBindBuffer(GL_PIXEL_UNPACK_BUFFER, unpackCopy.handle);
 
@@ -261,31 +268,31 @@ namespace xng::opengl {
             if (tex.textureType == GL_TEXTURE_2D) {
                 glTexSubImage2D(GL_TEXTURE_2D,
                                 static_cast<GLint>(textureSubResource.mipLevel),
-                                offset.x,
-                                textureSize.y - offset.y - 1 - size.y + 1,
-                                size.x,
-                                size.y,
+                                rect.position.x,
+                                rect.position.y,
+                                rect.dimensions.x,
+                                rect.dimensions.y,
                                 pixelFormat,
                                 dataType,
                                 nullptr);
             } else if (tex.textureType == GL_TEXTURE_CUBE_MAP) {
                 glTexSubImage2D(convert(textureSubResource.face),
                                 static_cast<GLint>(textureSubResource.mipLevel),
-                                offset.x,
-                                textureSize.y - offset.y - 1 - size.y + 1,
-                                size.x,
-                                size.y,
+                                rect.position.x,
+                                rect.position.y,
+                                rect.dimensions.x,
+                                rect.dimensions.y,
                                 pixelFormat,
                                 dataType,
                                 nullptr);
             } else if (tex.textureType == GL_TEXTURE_2D_ARRAY) {
                 glTexSubImage3D(tex.textureType,
                                 static_cast<GLint>(textureSubResource.mipLevel),
-                                offset.x,
-                                textureSize.y - offset.y - 1 - size.y + 1,
+                                rect.position.x,
+                                rect.position.y,
                                 static_cast<GLint>(textureSubResource.arrayLayer),
-                                size.x,
-                                size.y,
+                                rect.dimensions.x,
+                                rect.dimensions.y,
                                 1,
                                 pixelFormat,
                                 dataType,
@@ -293,11 +300,11 @@ namespace xng::opengl {
             } else if (tex.textureType == GL_TEXTURE_CUBE_MAP_ARRAY) {
                 glTexSubImage3D(tex.textureType,
                                 static_cast<GLint>(textureSubResource.mipLevel),
-                                offset.x,
-                                textureSize.y - offset.y - 1 - size.y + 1,
+                                rect.position.x,
+                                rect.position.y,
                                 static_cast<GLint>(textureSubResource.arrayLayer) * 6 + textureSubResource.face,
-                                size.x,
-                                size.y,
+                                rect.dimensions.x,
+                                rect.dimensions.y,
                                 1,
                                 pixelFormat,
                                 dataType,
@@ -330,10 +337,6 @@ namespace xng::opengl {
             const auto rowSize = textureOffset.dimensions.x * pixelSize;
             const auto dataSize = textureOffset.dimensions.x * textureOffset.dimensions.y * pixelSize;
 
-            const auto textureSize = tex.desc.size;
-            const auto offset = textureOffset.position;
-            const auto size = textureOffset.dimensions;
-
             GLenum pixelFormat;
             GLenum dataType;
             getFormatAndDataType(bufferFormat, dataType, pixelFormat);
@@ -363,13 +366,16 @@ namespace xng::opengl {
                 throw std::runtime_error("Invalid texture type");
             }
 
+            const auto rect = getCorrectedTextureRect(textureOffset,
+                                                      tex.desc.getMipLevelSize(textureSubResource.mipLevel));
+
             glGetTextureSubImage(tex.handle,
                                  static_cast<GLint>(textureSubResource.mipLevel),
-                                 offset.x,
-                                 textureSize.y - offset.y - 1 - size.y + 1,
+                                 rect.position.x,
+                                 rect.position.y,
                                  zOffset,
-                                 size.x,
-                                 size.y,
+                                 rect.dimensions.x,
+                                 rect.dimensions.y,
                                  depth,
                                  pixelFormat,
                                  dataType,
@@ -382,9 +388,9 @@ namespace xng::opengl {
             const auto *packPtr = packCopy.map();
             auto *bufferPtr = buf.map();
 
-            for (auto row = 0; row < size.y; ++row) {
+            for (auto row = 0; row < rect.dimensions.y; ++row) {
                 const auto srcOffset = row * rowSize;
-                const auto dstOffset = bufferOffset + ((size.y - row - 1) * rowSize);
+                const auto dstOffset = bufferOffset + ((rect.dimensions.y - row - 1) * rowSize);
                 memcpy(bufferPtr + dstOffset, packPtr + srcOffset, rowSize);
             }
 
@@ -448,13 +454,10 @@ namespace xng::opengl {
             blitSrcFb.attach(bindingPoint, srcTex, srcTarget);
             blitDstFb.attach(bindingPoint, dstTex, dstTarget);
 
-            auto correctedSourceRect = srcRect;
-            correctedSourceRect.position.y = srcTex.desc.size.y - srcRect.position.y - srcRect.dimensions.y;
-            correctedSourceRect.dimensions.y = srcRect.dimensions.y;
-
-            auto correctedTargetRect = dstRect;
-            correctedTargetRect.position.y = dstTex.desc.size.y - dstRect.position.y - dstRect.dimensions.y;
-            correctedTargetRect.dimensions.y = dstRect.dimensions.y;
+            const auto correctedSourceRect = getCorrectedTextureRect(srcRect,
+                                                                     srcTex.desc.getMipLevelSize(srcTarget.mipLevel));
+            const auto correctedTargetRect = getCorrectedTextureRect(dstRect,
+                                                                     dstTex.desc.getMipLevelSize(dstTarget.mipLevel));
 
             glBlitFramebuffer(correctedSourceRect.position.x,
                               correctedSourceRect.position.y,
@@ -482,23 +485,26 @@ namespace xng::opengl {
             oglDebugEndGroup();
         }
 
-        static void clearTexture(const TextureGL &tex,
-                                 const Texture::SubResource &target,
-                                 const Texture::ClearValue &clearVal) {
+        void clearTexture(const TextureGL &tex,
+                          const Texture::SubResource &target,
+                          const Texture::ClearValue &clearVal) {
             oglDebugStartGroup("TransferContextGL::clearTexture");
+
+            const auto mipSize = tex.desc.getMipLevelSize(target.mipLevel);
 
             if (tex.desc.format == DEPTH24_STENCIL8 || tex.desc.format == DEPTH32F_STENCIL8) {
                 //Workaround using the raster pipeline to clear because there doesn't seem to be a standard 24bit_8bit depth stencil format.
                 const auto clearValue = std::get<Texture::DepthStencilClearValue>(clearVal);
-                auto clearFb = Framebuffer();
                 clearFb.bind(GL_DRAW_FRAMEBUFFER);
-                clearFb.attach(GL_DEPTH_STENCIL_ATTACHMENT, tex, target);
-                glClearDepth(clearValue.clearDepth);
-                glClearStencil(static_cast<GLint>(clearValue.clearStencil));
-                glDepthMask(GL_TRUE);
-                glStencilMask(0xff);
-                glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-                glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+                {
+                    clearFb.attach(GL_DEPTH_STENCIL_ATTACHMENT, tex, target);
+                    glClearDepth(clearValue.clearDepth);
+                    glClearStencil(static_cast<GLint>(clearValue.clearStencil));
+                    glDepthMask(GL_TRUE);
+                    glStencilMask(0xff);
+                    glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+                }
+                clearFb.unbind();
             } else if (tex.desc.format == DEPTH_16 || tex.desc.format == DEPTH_32F) {
                 const GLfloat depthData = std::get<float>(clearVal);
                 glClearTexSubImage(tex.handle,
@@ -508,8 +514,8 @@ namespace xng::opengl {
                                    tex.textureType == TEXTURE_CUBE_MAP
                                        ? static_cast<GLint>(target.arrayLayer * 6 + target.face)
                                        : static_cast<GLint>(target.arrayLayer),
-                                   tex.desc.size.x,
-                                   tex.desc.size.y,
+                                   mipSize.x,
+                                   mipSize.y,
                                    1,
                                    GL_DEPTH_COMPONENT,
                                    GL_FLOAT,
@@ -523,8 +529,8 @@ namespace xng::opengl {
                                    tex.textureType == TEXTURE_CUBE_MAP
                                        ? static_cast<GLint>(target.arrayLayer * 6 + target.face)
                                        : static_cast<GLint>(target.arrayLayer),
-                                   tex.desc.size.x,
-                                   tex.desc.size.y,
+                                   mipSize.x,
+                                   mipSize.y,
                                    1,
                                    GL_STENCIL_INDEX,
                                    GL_UNSIGNED_INT,
@@ -594,8 +600,8 @@ namespace xng::opengl {
                                    tex.textureType == TEXTURE_CUBE_MAP
                                        ? static_cast<GLint>(target.arrayLayer * 6 + target.face)
                                        : static_cast<GLint>(target.arrayLayer),
-                                   tex.desc.size.x,
-                                   tex.desc.size.y,
+                                   mipSize.x,
+                                   mipSize.y,
                                    1,
                                    format,
                                    type,
@@ -608,10 +614,18 @@ namespace xng::opengl {
         }
 
     private:
+        static Recti getCorrectedTextureRect(const Recti &region, const Vec2i &textureSize) {
+            auto ret = region;
+            ret.position.y = textureSize.y - ret.position.y - ret.dimensions.y;
+            return ret;
+        }
+
         const PassResources &resources;
 
         Framebuffer blitSrcFb;
         Framebuffer blitDstFb;
+
+        Framebuffer clearFb;
     };
 }
 

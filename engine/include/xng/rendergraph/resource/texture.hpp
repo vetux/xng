@@ -64,13 +64,13 @@ namespace xng::rg {
          * A TEXTURE_CUBE_MAP_ARRAY texture has arrayLayers * 6(Each Face) * mipLevels addressable sub resources.
          */
         struct SubResource {
-            size_t mipLevel = 0;
-            size_t arrayLayer = -1;
+            unsigned int mipLevel = 0;
+            long arrayLayer = -1;
             CubeMapFace face = FACE_UNDEFINED;
 
             SubResource() = default;
 
-            explicit SubResource(const size_t arrayLayer)
+            explicit SubResource(const long arrayLayer)
                 : arrayLayer(arrayLayer) {
             }
 
@@ -78,8 +78,8 @@ namespace xng::rg {
                 : face(face) {
             }
 
-            SubResource(const size_t mipLevel,
-                        const size_t arrayLayer,
+            SubResource(const unsigned int mipLevel,
+                        const long arrayLayer,
                         const CubeMapFace face)
                 : mipLevel(mipLevel), arrayLayer(arrayLayer), face(face) {
             }
@@ -102,7 +102,7 @@ namespace xng::rg {
         int samples = 1; //Ignored if texture is not TEXTURE_2D_MULTISAMPLE
         bool fixedSampleLocations = false;
 
-        int mipLevels = 1; // The number of mip levels created for this texture
+        unsigned int mipLevels = 1; // The number of mip levels created for this texture
         MipMapFiltering mipMapFilter = NEAREST_MIPMAP_LINEAR;
 
         size_t arrayLayers = 0; // The number of layers in the texture if textureType == TEXTURE_*_ARRAY
@@ -118,7 +118,7 @@ namespace xng::rg {
                          const TextureFiltering filter_mag = NEAREST,
                          const int samples = 1,
                          const bool fixed_sample_locations = false,
-                         const int mip_levels = 1,
+                         const unsigned int mip_levels = 1,
                          const MipMapFiltering mip_map_filter = NEAREST_MIPMAP_LINEAR,
                          const size_t array_layers = 0,
                          std::variant<Vec4f, Vec4i, Vec4u> border_color = Vec4f(0))
@@ -137,11 +137,6 @@ namespace xng::rg {
               borderColor(std::move(border_color)) {
         }
 
-        static int calculateMipLevels(const Vec2i &size) {
-            const auto maxDimension = std::max(size.x, size.y);
-            return static_cast<int>(std::floor(std::log2(maxDimension))) + 1;
-        }
-
         bool operator==(const Texture &other) const {
             return size == other.size
                    && textureType == other.textureType
@@ -156,6 +151,15 @@ namespace xng::rg {
                    && borderColor == other.borderColor
                    && arrayLayers == other.arrayLayers
                    && capabilities == other.capabilities;
+        }
+
+        [[nodiscard]] Vec2i getMipLevelSize(const unsigned int mipLevel) const {
+            return {std::max(1, size.x >> mipLevel), std::max(1, size.y >> mipLevel)};
+        }
+
+        static unsigned int calculateMipLevels(const Vec2i &size) {
+            const auto maxDimension = std::max(size.x, size.y);
+            return static_cast<int>(std::floor(std::log2(maxDimension))) + 1;
         }
     };
 
