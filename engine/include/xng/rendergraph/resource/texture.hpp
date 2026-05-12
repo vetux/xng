@@ -109,6 +109,34 @@ namespace xng::rg {
 
         std::variant<Vec4f, Vec4i, Vec4u> borderColor = Vec4f(0);
 
+        explicit Texture(const Capability capabilities = CAPABILITY_NONE,
+                         Vec2i size = {1, 1},
+                         const TextureType texture_type = TEXTURE_2D,
+                         const ColorFormat format = RGBA8,
+                         const TextureWrapping wrapping = CLAMP_TO_BORDER,
+                         const TextureFiltering filter_min = NEAREST,
+                         const TextureFiltering filter_mag = NEAREST,
+                         const int samples = 1,
+                         const bool fixed_sample_locations = false,
+                         const int mip_levels = 1,
+                         const MipMapFiltering mip_map_filter = NEAREST_MIPMAP_LINEAR,
+                         const size_t array_layers = 0,
+                         std::variant<Vec4f, Vec4i, Vec4u> border_color = Vec4f(0))
+            : capabilities(capabilities),
+              size(std::move(size)),
+              textureType(texture_type),
+              format(format),
+              wrapping(wrapping),
+              filterMin(filter_min),
+              filterMag(filter_mag),
+              samples(samples),
+              fixedSampleLocations(fixed_sample_locations),
+              mipLevels(mip_levels),
+              mipMapFilter(mip_map_filter),
+              arrayLayers(array_layers),
+              borderColor(std::move(border_color)) {
+        }
+
         static int calculateMipLevels(const Vec2i &size) {
             const auto maxDimension = std::max(size.x, size.y);
             return static_cast<int>(std::floor(std::log2(maxDimension))) + 1;

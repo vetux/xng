@@ -30,12 +30,14 @@ namespace xng::rg {
     /**
      * A graph represents an encapsulated rendering operation.
      *
-     * Only heap resources can be shared between graphs.
-     * The runtime synchronizes heap accesses between graphs.
+     * Only heap-resources can be shared between graphs.
      *
-     * Write-After-Write conflicts for both heap and transient resources are deemed undefined behavior.
-     * The runtime implementations may throw an exception if WAW is encountered or may perform Last-Write-Wins
-     * based on submission order.
+     * The runtime handles synchronization internally.
+     *
+     * Write-After-Write and Write-After-Read hazards to the same resource inside a single pass are deemed undefined behavior.
+     * Write-After-Write and Write-After-Read hazards to the same resource from two separate passes execute in pass declaration order.
+     *
+     * The runtime implementations may throw an exception if a WAW/WAR hazard inside a single pass is encountered.
      */
     struct Graph {
         std::vector<Pass> passes{};
