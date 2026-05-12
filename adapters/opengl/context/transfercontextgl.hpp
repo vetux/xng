@@ -485,7 +485,7 @@ namespace xng::opengl {
             oglDebugEndGroup();
         }
 
-        void clearTexture(const TextureGL &tex,
+        static void clearTexture(const TextureGL &tex,
                           const Texture::SubResource &target,
                           const Texture::ClearValue &clearVal) {
             oglDebugStartGroup("TransferContextGL::clearTexture");
@@ -495,6 +495,7 @@ namespace xng::opengl {
             if (tex.desc.format == DEPTH24_STENCIL8 || tex.desc.format == DEPTH32F_STENCIL8) {
                 //Workaround using the raster pipeline to clear because there doesn't seem to be a standard 24bit_8bit depth stencil format.
                 const auto clearValue = std::get<Texture::DepthStencilClearValue>(clearVal);
+                Framebuffer clearFb;
                 clearFb.bind(GL_DRAW_FRAMEBUFFER);
                 {
                     clearFb.attach(GL_DEPTH_STENCIL_ATTACHMENT, tex, target);
@@ -624,8 +625,6 @@ namespace xng::opengl {
 
         Framebuffer blitSrcFb;
         Framebuffer blitDstFb;
-
-        Framebuffer clearFb;
     };
 }
 

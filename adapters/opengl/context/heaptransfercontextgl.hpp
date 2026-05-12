@@ -56,11 +56,7 @@ namespace xng::opengl {
         struct CopyTextureCmd {
             HeapResource<Texture> target{};
             HeapResource<Texture> source{};
-            Vec3i srcOffset{};
-            Vec3i dstOffset{};
-            Vec3i size{};
-            size_t srcMipMapLevel{};
-            size_t dstMipMapLevel{};
+            std::vector<TextureCopyRegion> regions{};
         };
 
         struct CopyBufferToTextureCmd {
@@ -191,20 +187,12 @@ namespace xng::opengl {
 
         void copyTexture(const Resource<Texture> &target,
                          const Resource<Texture> &source,
-                         const Vec3i &srcOffset,
-                         const Vec3i &dstOffset,
-                         const Vec3i &size,
-                         const size_t srcMipMapLevel,
-                         const size_t dstMipMapLevel) override {
+                         const std::vector<TextureCopyRegion> &regions) override {
             std::lock_guard lock(mutex);
             commandQueue.emplace_back(CopyTextureCmd{
                 HeapResource(target.getHandle(), target.getDescription(), heap),
                 HeapResource(source.getHandle(), source.getDescription(), heap),
-                srcOffset,
-                dstOffset,
-                size,
-                srcMipMapLevel,
-                dstMipMapLevel
+                regions
             });
             cv.notify_one();
         }
@@ -432,12 +420,10 @@ namespace xng::opengl {
 
         static void cmdTextureRegions(const CopyTextureCmd &c,
                                       std::unordered_map<ResourceId::Handle, std::vector<TextureRegion> > &out) {
-            Texture::SubResource dst;
-            dst.mipLevel = c.dstMipMapLevel;
-            out[c.target.getHandle()].push_back({dst, true, false});
-            Texture::SubResource src;
-            src.mipLevel = c.srcMipMapLevel;
-            out[c.source.getHandle()].push_back({src, false, false});
+            for (auto &region: c.regions) {
+                out[c.target.getHandle()].push_back({region.dst, true, false});
+                out[c.source.getHandle()].push_back({region.src, false, false});
+            }
         }
 
         static void cmdTextureRegions(const BlitTextureCmd &c,
@@ -659,14 +645,14 @@ namespace xng::opengl {
                                        const std::vector<TextureAccess> &a) {
             bool r = false;
             if (c.target.getHandle() == h) {
-                Texture::SubResource sub;
-                sub.mipLevel = c.dstMipMapLevel;
-                r |= textureConflicts(true, sub, a);
+                for (auto &region: c.regions) {
+                    r |= textureConflicts(true, region.dst, a);
+                }
             }
             if (c.source.getHandle() == h) {
-                Texture::SubResource sub;
-                sub.mipLevel = c.srcMipMapLevel;
-                r |= textureConflicts(false, sub, a);
+                for (auto &region: c.regions) {
+                    r |= textureConflicts(true, region.src, a);
+                }
             }
             return r;
         }
@@ -944,13 +930,7 @@ namespace xng::opengl {
         }
 
         void execute(TransferContextGL &ctx, const CopyTextureCmd &cmd) {
-            ctx.copyTexture(cmd.target,
-                            cmd.source,
-                            cmd.srcOffset,
-                            cmd.dstOffset,
-                            cmd.size,
-                            cmd.srcMipMapLevel,
-                            cmd.dstMipMapLevel);
+            ctx.copyTexture(cmd.target, cmd.source, cmd.regions);
         }
 
         void execute(TransferContextGL &ctx, const CopyBufferToTextureCmd &cmd) {
