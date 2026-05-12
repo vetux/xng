@@ -89,6 +89,7 @@ namespace xng::rg {
          * Heap transfer operations run asynchronously and can be checked for completion via the returned transfer handle.
          *
          * The passed callback is invoked on the calling thread before returning.
+         * The runtime internally pins resources referenced in the pass until the transfer has finished.
          *
          * On Vulkan all resources are EXCLUSIVE ownership.
          *
