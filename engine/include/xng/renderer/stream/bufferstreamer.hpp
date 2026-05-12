@@ -48,6 +48,10 @@ namespace xng {
         }
 
         void destroy(Slot slot) {
+            auto it = pendingUploads.find(slot);
+            if (it != pendingUploads.end()) {
+                buffer.cancel(it->second.handle);
+            }
             pendingUploads.erase(slot);
             freeSlots.push_back(slot);
         }
