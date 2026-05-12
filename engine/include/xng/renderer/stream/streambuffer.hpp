@@ -20,6 +20,7 @@
 #define XENGINE_STREAMBUFFER_HPP
 
 #include <stack>
+#include <cstring>
 
 #include "xng/rendergraph/heap.hpp"
 #include "xng/rendergraph/pass.hpp"
@@ -33,7 +34,8 @@ namespace xng {
      * Copy staging buffer -> Temp Buffer asynchronously on the heap transfer context
      * Copy Temp Buffer -> Stable Buffer in a graph transfer pass
      *
-     * This enables asynchronous buffer streaming by not blocking on the slow PCIe copy from the Staging Buffers.
+     * This enables asynchronous buffer streaming by not blocking on the slow PCIe copy from the Staging Buffers
+     * and not blocking the graph queues on the copy from staging to temp buffer by double buffering the temp buffer.
      *
      * The stream buffer dynamically resizes on create and can be manually resized via resize().
      */
@@ -54,45 +56,62 @@ namespace xng {
 
         ~StreamBuffer() = default;
 
+        Handle upload(const std::vector<uint8_t> &data, const size_t offset) {
+            return upload(data.data(), data.size(), offset);
+        }
+
         /**
          * Upload data to the stream buffer.
          * The copy to the staging buffer is performed on the calling thread.
          *
          * Uploads are not ordered.
          *
+         * Concurrent overlapping uploads are forbidden.
+         *
+         * @param data The pointer to the start of the data to upload
+         * @param size The size of the data to upload
          * @param offset The offset into the stable buffer to upload to.
-         * @param data
          * @return The offset of the data in the stable buffer.
          */
-        Handle upload(const size_t offset, const std::vector<uint8_t> &data) {
+        Handle upload(const uint8_t *data, const size_t size, const size_t offset) {
             //TODO: Upload batching (Single staging / temp buffer) + Double Buffered temp buffer
-            if (offset + data.size() > bufferSize) {
-                bufferSize = offset + data.size();
+            for (auto &pendingUpload: pendingUploads) {
+                const auto start = pendingUpload.second.offset;
+                const auto end = start + pendingUpload.second.buffer.getDescription().size;
+                if (offset < end && start < offset + size) {
+                    // Overlapping upload
+                    throw std::runtime_error("Overlapping upload");
+                }
+            }
+
+            if (offset + size > bufferSize) {
+                bufferSize = offset + size;
             }
 
             const auto ret = createUploadHandle();
 
-            const auto stagingBuffer = heap.allocateBuffer(rg::Buffer(data.size(),
+            const auto stagingBuffer = heap.allocateBuffer(rg::Buffer(size,
                                                                       rg::Buffer::CAPABILITY_TRANSFER_SRC,
                                                                       rg::Buffer::MEMORY_CPU_TO_GPU));
 
             // Perform copy to staging buffer
             {
                 const auto mapping = heap.map(stagingBuffer);
-                mapping->copyFrom(data, 0, 0, data.size());
+                assert(stagingBuffer.getDescription().size >= size);
+                std::memcpy(mapping->begin(), data, size);
             }
 
-            const auto tempBuffer = heap.allocateBuffer(rg::Buffer(data.size(),
+            const auto tempBuffer = heap.allocateBuffer(rg::Buffer(size,
                                                                    rg::Buffer::CAPABILITY_TRANSFER_SRC
                                                                    | rg::Buffer::CAPABILITY_TRANSFER_DST,
                                                                    rg::Buffer::MEMORY_GPU_ONLY));
 
             // Queue copy of staging -> temp buffer
-            auto pass = rg::TransferPassBuilder("StreamBuffer/Upload")
+            const auto pass = rg::TransferPassBuilder("StreamBuffer/Upload")
                     .read(stagingBuffer, 0, 0)
                     .write(tempBuffer, 0, 0)
-                    .execute([&stagingBuffer, &tempBuffer, &data](rg::TransferContext &ctx) {
-                        ctx.copyBuffer(stagingBuffer, tempBuffer, 0, 0, data.size());
+                    .execute([stagingBuffer, tempBuffer, size](rg::TransferContext &ctx) {
+                        ctx.copyBuffer(tempBuffer, stagingBuffer, 0, 0, size);
                     });
 
             auto transfer = heap.transfer(pass);
@@ -111,9 +130,8 @@ namespace xng {
             const auto it = pendingUploads.find(handle);
             if (it == pendingUploads.end()) {
                 return true;
-            } else {
-                return it->second.transferHandle->isFinished();
             }
+            return it->second.transferHandle->isFinished();
         }
 
         /**
@@ -156,21 +174,23 @@ namespace xng {
          *
          * Must be called every frame where the stable buffer is referenced.
          *
-         * @param builder
+         * @param graph
          * @return The handle to the buffer.
          */
-        const rg::HeapResource<rg::Buffer> &commit(rg::GraphBuilder &builder) {
-            auto passBuilder = rg::TransferPassBuilder("StreamBuffer/Commit");
-
-            rg::HeapResource<rg::Buffer> staleBuffer;
+        const rg::HeapResource<rg::Buffer> &commit(rg::GraphBuilder &graph) {
+            // Reallocate / Copy buffer on resize
             if (buffer.getDescription().size != bufferSize) {
-                staleBuffer = buffer;
+                const auto staleBuffer = buffer;
                 buffer = heap.allocateBuffer(rg::Buffer(bufferSize,
                                                         buffer.getDescription().capabilityFlags,
                                                         rg::Buffer::MEMORY_GPU_ONLY));
-
-                passBuilder.read(staleBuffer);
-                passBuilder.write(buffer);
+                const auto pass = rg::TransferPassBuilder("StreamBuffer/Commit/Resize")
+                        .read(staleBuffer, 0, 0)
+                        .write(buffer, 0, staleBuffer.getDescription().size)
+                        .execute([this, staleBuffer](rg::TransferContext &ctx) {
+                            ctx.copyBuffer(buffer, staleBuffer, 0, 0, staleBuffer.getDescription().size);
+                        });
+                graph.addPass(pass);
             }
 
             const auto pendingUploadsCopy = pendingUploads;
@@ -178,8 +198,6 @@ namespace xng {
             for (auto &upload: pendingUploadsCopy) {
                 if (upload.second.transferHandle->isFinished()
                     || flushedUploads.find(upload.first) != flushedUploads.end()) {
-                    passBuilder.read(upload.second.buffer);
-
                     frameUploads.emplace(upload);
                     pendingUploads.erase(upload.first);
                     flushedUploads.erase(upload.first);
@@ -187,17 +205,13 @@ namespace xng {
                 }
             }
 
-            if (!staleBuffer.isAssigned() && !frameUploads.empty()) {
-                passBuilder.write(buffer);
-            }
-
-            if (staleBuffer.isAssigned() || !frameUploads.empty()) {
-                const auto pass = passBuilder.execute([this, staleBuffer, frameUploads](rg::TransferContext &ctx) {
-                    // Copy stale buffer if reallocated
-                    if (staleBuffer.isAssigned()) {
-                        ctx.copyBuffer(buffer, staleBuffer, 0, 0, staleBuffer.getDescription().size);
-                    }
-
+            if (!frameUploads.empty()) {
+                auto builder = rg::TransferPassBuilder("StreamBuffer/Commit/Upload");
+                for (auto &upload: frameUploads) {
+                    builder.read(upload.second.buffer, 0, 0);
+                    builder.write(buffer, upload.second.offset, upload.second.buffer.getDescription().size);
+                }
+                const auto pass = builder.execute([this, frameUploads](rg::TransferContext &ctx) {
                     // Copy flushed create buffers into stable.
                     for (auto &upload: frameUploads) {
                         ctx.copyBuffer(buffer,
@@ -207,7 +221,7 @@ namespace xng {
                                        upload.second.buffer.getDescription().size);
                     }
                 });
-                builder.addPass(pass);
+                graph.addPass(pass);
             }
 
             return buffer;
@@ -227,21 +241,20 @@ namespace xng {
         };
 
         Handle createUploadHandle() {
-            if (pendingUploadHandles.empty()) {
-                return currentUploadHandle++;
-            } else {
-                const auto ret = pendingUploadHandles.back();
-                pendingUploadHandles.pop_back();
-                return ret;
+            if (freeUploadHandles.empty()) {
+                return nextUploadHandle++;
             }
+            const auto ret = freeUploadHandles.back();
+            freeUploadHandles.pop_back();
+            return ret;
         }
 
         void freeUploadHandle(const Handle handle) {
-            pendingUploadHandles.push_back(handle);
+            freeUploadHandles.push_back(handle);
         }
 
-        Handle currentUploadHandle = 0;
-        std::vector<Handle> pendingUploadHandles;
+        Handle nextUploadHandle = 0;
+        std::vector<Handle> freeUploadHandles;
 
         rg::Heap &heap;
 

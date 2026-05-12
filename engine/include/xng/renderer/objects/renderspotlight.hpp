@@ -109,7 +109,7 @@ namespace xng {
         BufferStreamer<ShaderSpotLight::CPU>::Handle lightHandle;
 
         StreamTexture &shadowMapTexture;
-        StreamTexture::Handle shadowMap{};
+        StreamTexture::Slot shadowMap{};
 
         bool shadowMapAllocated = false;
     };

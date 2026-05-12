@@ -114,9 +114,21 @@ namespace xng {
                   pointLightStream(heap),
                   spotLightStream(heap),
                   directionalLightStream(heap),
-                  pointShadowMaps(heap, shadowMapResolution),
-                  spotShadowMaps(heap, shadowMapResolution),
-                  directionalShadowMaps(heap, shadowMapResolution),
+                  pointShadowMaps(heap, rg::Texture(rg::Texture::CAPABILITY_DEPTH_STENCIL_ATTACHMENT
+                                                    | rg::Texture::CAPABILITY_SAMPLED,
+                                                    shadowMapResolution,
+                                                    rg::TEXTURE_CUBE_MAP,
+                                                    rg::DEPTH_32F)),
+                  spotShadowMaps(heap, rg::Texture(rg::Texture::CAPABILITY_DEPTH_STENCIL_ATTACHMENT
+                                                   | rg::Texture::CAPABILITY_SAMPLED,
+                                                   shadowMapResolution,
+                                                   rg::TEXTURE_2D,
+                                                   rg::DEPTH_32F)),
+                  directionalShadowMaps(heap, rg::Texture(rg::Texture::CAPABILITY_DEPTH_STENCIL_ATTACHMENT
+                                                          | rg::Texture::CAPABILITY_SAMPLED,
+                                                          shadowMapResolution,
+                                                          rg::TEXTURE_2D,
+                                                          rg::DEPTH_32F)),
                   meshStream(heap),
                   textureStream(heap) {
             }
