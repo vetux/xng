@@ -38,15 +38,9 @@ namespace xng::rg {
      *
      * The heap exposes the mapping api for MEMORY_CPU_TO_GPU / MEMORY_GPU_TO_CPU buffers.
      *
-     * Heap resources transfers can either be performed asynchronously through getTransferContext()
-     * or blocking inside a TransferPass.
+     * Heap resources transfers can either be performed asynchronously through transfer() or inside a TransferPass submitted to Runtime::execute.
      *
      * The implementation controls the physical memory layout.
-     *
-     * Heap resource allocation is synchronous. create*()
-     * Heap resource transfers are asynchronous. transfer(...)
-     *
-     * This enables users to asynchronously stream data to the gpu.
      *
      * On OpenGL this is implemented using a separate thread with a subcontext + glFenceSync / glClientWaitSync.
      * On Vulkan this is implemented using transfer queues + semaphores / fences.
