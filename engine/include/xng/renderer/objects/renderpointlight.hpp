@@ -94,7 +94,7 @@ namespace xng {
             lightStream.upload(lightHandle, light);
         }
 
-        [[nodiscard]] BufferStreamer<ShaderPointLight::CPU>::Handle getLightHandle() const {
+        [[nodiscard]] BufferStreamer<ShaderPointLight::CPU>::Slot getLightHandle() const {
             return lightHandle;
         }
 
@@ -115,7 +115,7 @@ namespace xng {
         }
 
         BufferStreamer<ShaderPointLight::CPU> lightStream;
-        BufferStreamer<ShaderPointLight::CPU>::Handle lightHandle;
+        BufferStreamer<ShaderPointLight::CPU>::Slot lightHandle;
 
         StreamTexture &shadowMapTexture;
         StreamTexture::Slot shadowMap{};

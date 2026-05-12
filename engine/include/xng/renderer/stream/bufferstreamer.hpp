@@ -32,26 +32,75 @@ namespace xng {
         /**
          * The index of the element in the buffer
          */
-        typedef unsigned int Handle;
+        typedef unsigned int Slot;
 
-        BufferStreamer(const rg::Heap &heap);
+        explicit BufferStreamer(rg::Heap &heap)
+            : buffer(heap, rg::Buffer::CAPABILITY_STORAGE) {
+        }
 
-        Handle create();
+        Slot create() {
+            if (!freeSlots.empty()) {
+                const auto ret = freeSlots.back();
+                freeSlots.pop_back();
+                return ret;
+            }
+            return nextSlot++;
+        }
 
-        void upload(Handle handle, const T &data) const;
+        void destroy(Slot slot) {
+            pendingUploads.erase(slot);
+            freeSlots.push_back(slot);
+        }
 
-        void destroy(Handle handle);
+        void upload(const Slot slot, const T &data) {
+            const auto handle = buffer.upload(reinterpret_cast<const uint8_t *>(&data),
+                          sizeof(T),
+                          slot * sizeof(T));
+            pendingUploads.emplace(slot, PendingUpload{handle});
+        }
 
-        bool isUploadComplete(Handle handle);
+        bool isUploadComplete(Slot slot) {
+            auto it = pendingUploads.find(slot);
+            if (it == pendingUploads.end()) return true;
+            return buffer.isUploadComplete(it->second.handle);
+        }
 
-        void flush(Handle handle);
+        void flush(Slot slot) {
+            auto it = pendingUploads.find(slot);
+            if (it == pendingUploads.end()) return;
+            auto &pendingUpload = it->second;
+            if (!pendingUpload.flushed) {
+                buffer.flush(pendingUpload.handle);
+                pendingUpload.flushed = true;
+            }
+        }
 
-        rg::HeapResource<rg::Buffer> commit(rg::GraphBuilder &ctx);
+        rg::HeapResource<rg::Buffer> commit(rg::GraphBuilder &ctx) {
+            std::unordered_set<Slot> evictedHandles;
+            for (auto &pair: pendingUploads) {
+                auto &pendingUpload = pair.second;
+                if (pendingUpload.flushed || buffer.isUploadComplete(pendingUpload.handle)) {
+                    evictedHandles.insert(pair.first);
+                }
+            }
+            for (auto &handle: evictedHandles) {
+                pendingUploads.erase(handle);
+            }
+            return buffer.commit(ctx);
+        }
 
     private:
+        struct PendingUpload {
+            StreamBuffer::Handle handle;
+            bool flushed = false;
+        };
+
         StreamBuffer buffer;
 
-        //Allocation Range Tracking
+        Slot nextSlot = 0;
+        std::vector<Slot> freeSlots;
+
+        std::unordered_map<Slot, PendingUpload> pendingUploads;
     };
 }
 

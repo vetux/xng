@@ -139,7 +139,7 @@ namespace xng {
             materialStream.destroy(materialHandle);
         }
 
-        [[nodiscard]] BufferStreamer<ShaderMaterial::CPU>::Handle getMaterialHandle() const {
+        [[nodiscard]] BufferStreamer<ShaderMaterial::CPU>::Slot getMaterialHandle() const {
             return materialHandle;
         }
 
@@ -183,7 +183,7 @@ namespace xng {
 
     private:
         BufferStreamer<ShaderMaterial::CPU> &materialStream;
-        BufferStreamer<ShaderMaterial::CPU>::Handle materialHandle;
+        BufferStreamer<ShaderMaterial::CPU>::Slot materialHandle;
 
         RenderObjectHandle<RenderTexture> albedo;
         RenderObjectHandle<RenderTexture> metallic;

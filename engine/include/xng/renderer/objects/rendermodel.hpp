@@ -56,7 +56,7 @@ namespace xng {
             transformStream.upload(transformHandle, {model});
         }
 
-        [[nodiscard]] BufferStreamer<ShaderTransform::CPU>::Handle getTransformHandle() const {
+        [[nodiscard]] BufferStreamer<ShaderTransform::CPU>::Slot getTransformHandle() const {
             return transformHandle;
         }
 
@@ -100,7 +100,7 @@ namespace xng {
 
     private:
         BufferStreamer<ShaderTransform::CPU> &transformStream;
-        BufferStreamer<ShaderTransform::CPU>::Handle transformHandle;
+        BufferStreamer<ShaderTransform::CPU>::Slot transformHandle;
 
         std::vector<RenderObjectHandle<RenderMesh> > meshes;
         RenderObjectHandle<RenderMaterial> material;

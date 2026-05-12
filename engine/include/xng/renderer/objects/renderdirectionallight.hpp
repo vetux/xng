@@ -84,7 +84,7 @@ namespace xng {
             }
         }
 
-        [[nodiscard]] BufferStreamer<ShaderPointLight::CPU>::Handle getLightHandle() const {
+        [[nodiscard]] BufferStreamer<ShaderPointLight::CPU>::Slot getLightHandle() const {
             return lightHandle;
         }
 
@@ -105,7 +105,7 @@ namespace xng {
         }
 
         BufferStreamer<ShaderDirectionalLight::CPU> lightStream;
-        BufferStreamer<ShaderDirectionalLight::CPU>::Handle lightHandle;
+        BufferStreamer<ShaderDirectionalLight::CPU>::Slot lightHandle;
 
         StreamTexture &shadowMapTexture;
         StreamTexture::Slot shadowMap{};

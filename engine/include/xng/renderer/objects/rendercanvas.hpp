@@ -37,7 +37,7 @@ namespace xng {
 
     private:
         BufferStreamer<ShaderTransform::CPU> &transformStream;
-        BufferStreamer<ShaderTransform::CPU>::Handle transformHandle;
+        BufferStreamer<ShaderTransform::CPU>::Slot transformHandle;
 
         RenderObjectHandle<RenderMesh> mesh;
         std::vector<RenderObjectHandle<RenderPaint> > paint;

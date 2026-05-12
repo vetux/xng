@@ -53,7 +53,7 @@ namespace xng {
             }
         }
 
-        const std::unordered_map<std::string, BufferStreamer<ShaderTransform::CPU>::Handle> &getBoneHandles() const {
+        const std::unordered_map<std::string, BufferStreamer<ShaderTransform::CPU>::Slot> &getBoneHandles() const {
             return boneHandles;
         }
 
@@ -74,7 +74,7 @@ namespace xng {
 
     private:
         BufferStreamer<ShaderTransform::CPU> &boneStream;
-        std::unordered_map<std::string, BufferStreamer<ShaderTransform::CPU>::Handle> boneHandles;
+        std::unordered_map<std::string, BufferStreamer<ShaderTransform::CPU>::Slot> boneHandles;
     };
 }
 
