@@ -75,12 +75,8 @@ namespace xng::rg {
     };
 
     /**
-     * Overlapping sub resource accesses in a single pass are undefined behavior.
-     *
-     * The runtime may catch this in the execute() call and throw an exception.
-     *
-     * Performing non overlapping TextureStorageRead + TextureStorageWrite on a texture forces the runtime
-     * to use a compatible layout and should therefore be avoided.
+     * WAW / WAR hazards are undefined behavior.
+     * Check the Graph Comment for more information.
      *
      * @tparam T
      */

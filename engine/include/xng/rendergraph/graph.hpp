@@ -34,8 +34,10 @@ namespace xng::rg {
      *
      * The runtime handles synchronization internally.
      *
-     * Write-After-Write and Write-After-Read hazards to the same resource inside a single pass are deemed undefined behavior.
-     * Write-After-Write and Write-After-Read hazards to the same resource from two separate passes execute in pass declaration order.
+     * Write-After-Write and Write-After-Read hazards to the same resource region inside a single pass are deemed undefined behavior.
+     * Write-After-Write and Write-After-Read hazards to the same resource region from two separate passes execute in pass declaration order.
+     *
+     * A resource "region" in this context represents either a range of bytes in a buffer or a texture subresource.
      *
      * The runtime implementations may throw an exception if a WAW/WAR hazard inside a single pass is encountered.
      */
