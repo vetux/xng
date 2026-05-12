@@ -26,8 +26,7 @@
 namespace xng::rg {
     class RasterPassBuilder {
     public:
-        RasterPassBuilder(std::string name, std::function<void(RasterPass &&)> buildCallback)
-            : buildCallback(std::move(buildCallback)) {
+        explicit RasterPassBuilder(std::string name) {
             pass.name = std::move(name);
         }
 
@@ -137,13 +136,12 @@ namespace xng::rg {
             return *this;
         }
 
-        void execute(std::function<void(RasterContext &)> callback) {
+        const RasterPass &execute(std::function<void(RasterContext &)> callback) {
             pass.callback = std::move(callback);
-            buildCallback(std::move(pass));
+            return pass;
         }
 
     private:
-        std::function<void(RasterPass &&)> buildCallback;
         RasterPass pass;
     };
 }

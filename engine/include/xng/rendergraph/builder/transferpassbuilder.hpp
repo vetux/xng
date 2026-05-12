@@ -26,8 +26,7 @@
 namespace xng::rg {
     class TransferPassBuilder {
     public:
-        TransferPassBuilder(std::string name, std::function<void(TransferPass &&)> buildCallback)
-            : buildCallback(std::move(buildCallback)) {
+        explicit TransferPassBuilder(std::string name) {
             pass.name = std::move(name);
         }
 
@@ -63,13 +62,12 @@ namespace xng::rg {
             return *this;
         }
 
-        void execute(std::function<void(TransferContext &)> callback) {
+        const TransferPass &execute(std::function<void(TransferContext &)> callback) {
             pass.callback = std::move(callback);
-            buildCallback(std::move(pass));
+            return pass;
         }
 
     private:
-        std::function<void(TransferPass &&)> buildCallback;
         TransferPass pass;
     };
 }

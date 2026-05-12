@@ -65,7 +65,7 @@ namespace xng {
          * @return The offset of the data in the stable buffer.
          */
         Handle upload(const size_t offset, const std::vector<uint8_t> &data) {
-            //TODO: Upload batching (Single staging / temp buffer)
+            //TODO: Upload batching (Single staging / temp buffer) + Double Buffered temp buffer
             if (offset + data.size() > bufferSize) {
                 bufferSize = offset + data.size();
             }
@@ -88,9 +88,14 @@ namespace xng {
                                                                    rg::Buffer::MEMORY_GPU_ONLY));
 
             // Queue copy of staging -> temp buffer
-            auto transfer = heap.transfer([&stagingBuffer, &tempBuffer, &data](rg::TransferContext &ctx) {
-                ctx.copyBuffer(stagingBuffer, tempBuffer, 0, 0, data.size());
-            });
+            auto pass = rg::TransferPassBuilder("StreamBuffer/Upload")
+                    .read(stagingBuffer, 0, 0)
+                    .write(tempBuffer, 0, 0)
+                    .execute([&stagingBuffer, &tempBuffer, &data](rg::TransferContext &ctx) {
+                        ctx.copyBuffer(stagingBuffer, tempBuffer, 0, 0, data.size());
+                    });
+
+            auto transfer = heap.transfer(pass);
 
             pendingUploads.emplace(ret, PendingUpload(offset, tempBuffer, std::move(transfer)));
 
@@ -155,7 +160,7 @@ namespace xng {
          * @return The handle to the buffer.
          */
         const rg::HeapResource<rg::Buffer> &commit(rg::GraphBuilder &builder) {
-            auto passBuilder = builder.addTransferPass("StreamBufferTransfer");
+            auto passBuilder = rg::TransferPassBuilder("StreamBuffer/Commit");
 
             rg::HeapResource<rg::Buffer> staleBuffer;
             if (buffer.getDescription().size != bufferSize) {
@@ -187,7 +192,7 @@ namespace xng {
             }
 
             if (staleBuffer.isAssigned() || !frameUploads.empty()) {
-                passBuilder.execute([this, staleBuffer, frameUploads](rg::TransferContext &ctx) {
+                const auto pass = passBuilder.execute([this, staleBuffer, frameUploads](rg::TransferContext &ctx) {
                     // Copy stale buffer if reallocated
                     if (staleBuffer.isAssigned()) {
                         ctx.copyBuffer(buffer, staleBuffer, 0, 0, staleBuffer.getDescription().size);
@@ -202,6 +207,7 @@ namespace xng {
                                        upload.second.buffer.getDescription().size);
                     }
                 });
+                builder.addPass(pass);
             }
 
             return buffer;

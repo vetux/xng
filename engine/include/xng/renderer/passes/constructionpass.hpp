@@ -113,63 +113,8 @@ namespace xng {
                     const RenderScene &scene,
                     RenderPassRegistry &registry) override {
             const GBuffer gBuffer(graph, surface.getDimensions());
-
             gBuffer.subscribe(registry);
-
-            createPass(graph, scene, gBuffer)
-                    .execute([this, &scene, &gBuffer](rg::RasterContext &cmd) {
-                        cmd.setViewport({}, gBuffer.resolution);
-
-                        // Draw static meshes
-                        cmd.bindPipeline(pipeline);
-
-                        bindBuffers(cmd, scene);
-
-                        for (auto i = 0; i < scene.models.size(); i++) {
-                            const auto &model = scene.models.at(i);
-                            cmd.setShaderParameter("objectId", rg::ShaderPrimitive(i));
-                            cmd.setShaderParameter("transformIndex", rg::ShaderPrimitive(model.transformIndex));
-                            cmd.setShaderParameter("materialIndex", rg::ShaderPrimitive(model.materialIndex));
-                            cmd.setShaderParameter("receiveShadows", rg::ShaderPrimitive(model.receiveShadows));
-                            //TODO: Precompute MVP on cpu (Needs infrastructure in render allocator)
-                            for (auto &mesh: model.meshes) {
-                                if (mesh.boneCount > 0) {
-                                    continue;
-                                }
-                                cmd.setShaderParameter("boneBaseIndex", rg::ShaderPrimitive(mesh.baseBone));
-                                if (mesh.indexed) {
-                                    cmd.drawIndexed(mesh.drawCall, mesh.baseIndex);
-                                } else {
-                                    cmd.drawArray(mesh.drawCall);
-                                }
-                            }
-                        }
-
-                        // Draw skinned meshes
-                        cmd.bindPipeline(pipelineSkinned);
-
-                        bindBuffers(cmd, scene);
-
-                        for (auto i = 0; i < scene.models.size(); i++) {
-                            const auto &model = scene.models.at(i);
-                            cmd.setShaderParameter("objectId", rg::ShaderPrimitive(i));
-                            cmd.setShaderParameter("transformIndex", rg::ShaderPrimitive(model.transformIndex));
-                            cmd.setShaderParameter("materialIndex", rg::ShaderPrimitive(model.materialIndex));
-                            cmd.setShaderParameter("receiveShadows", rg::ShaderPrimitive(model.receiveShadows));
-                            //TODO: Precompute MVP on cpu (Needs infrastructure in render allocator)
-                            for (auto &mesh: model.meshes) {
-                                if (mesh.boneCount <= 0) {
-                                    continue;
-                                }
-                                cmd.setShaderParameter("boneBaseIndex", rg::ShaderPrimitive(mesh.baseBone));
-                                if (mesh.indexed) {
-                                    cmd.drawIndexed(mesh.drawCall, mesh.baseIndex);
-                                } else {
-                                    cmd.drawArray(mesh.drawCall);
-                                }
-                            }
-                        }
-                    });
+            graph.addPass(createPass(scene, gBuffer));
         }
 
     private:
@@ -218,11 +163,9 @@ namespace xng {
             cmd.bindTexture("textures", textureBindings);
         }
 
-        static rg::RasterPassBuilder &createPass(rg::GraphBuilder &builder,
-                                                 const RenderScene &scene,
-                                                 const GBuffer &gBuffer) {
-            auto &ret = builder.addRasterPass("ConstructionPass")
-                    .attachColor(rg::Attachment(gBuffer.position, Vec4f(0)))
+        [[nodiscard]] rg::RasterPass createPass(const RenderScene &scene, const GBuffer &gBuffer) const {
+            rg::RasterPassBuilder builder("ConstructionPass");
+            auto &ret = builder.attachColor(rg::Attachment(gBuffer.position, Vec4f(0)))
                     .attachColor(rg::Attachment(gBuffer.normal, Vec4f(0)))
                     .attachColor(rg::Attachment(gBuffer.tangent, Vec4f(0)))
                     .attachColor(rg::Attachment(gBuffer.roughnessMetallicAO, Vec4f(0)))
@@ -287,7 +230,59 @@ namespace xng {
                     }
                 }
             }
-            return ret;
+            return ret.execute([this, &scene, &gBuffer](rg::RasterContext &cmd) {
+                cmd.setViewport({}, gBuffer.resolution);
+
+                // Draw static meshes
+                cmd.bindPipeline(pipeline);
+
+                bindBuffers(cmd, scene);
+
+                for (auto i = 0; i < scene.models.size(); i++) {
+                    const auto &model = scene.models.at(i);
+                    cmd.setShaderParameter("objectId", rg::ShaderPrimitive(i));
+                    cmd.setShaderParameter("transformIndex", rg::ShaderPrimitive(model.transformIndex));
+                    cmd.setShaderParameter("materialIndex", rg::ShaderPrimitive(model.materialIndex));
+                    cmd.setShaderParameter("receiveShadows", rg::ShaderPrimitive(model.receiveShadows));
+                    //TODO: Precompute MVP on cpu (Needs infrastructure in render allocator)
+                    for (auto &mesh: model.meshes) {
+                        if (mesh.boneCount > 0) {
+                            continue;
+                        }
+                        cmd.setShaderParameter("boneBaseIndex", rg::ShaderPrimitive(mesh.baseBone));
+                        if (mesh.indexed) {
+                            cmd.drawIndexed(mesh.drawCall, mesh.baseIndex);
+                        } else {
+                            cmd.drawArray(mesh.drawCall);
+                        }
+                    }
+                }
+
+                // Draw skinned meshes
+                cmd.bindPipeline(pipelineSkinned);
+
+                bindBuffers(cmd, scene);
+
+                for (auto i = 0; i < scene.models.size(); i++) {
+                    const auto &model = scene.models.at(i);
+                    cmd.setShaderParameter("objectId", rg::ShaderPrimitive(i));
+                    cmd.setShaderParameter("transformIndex", rg::ShaderPrimitive(model.transformIndex));
+                    cmd.setShaderParameter("materialIndex", rg::ShaderPrimitive(model.materialIndex));
+                    cmd.setShaderParameter("receiveShadows", rg::ShaderPrimitive(model.receiveShadows));
+                    //TODO: Precompute MVP on cpu (Needs infrastructure in render allocator)
+                    for (auto &mesh: model.meshes) {
+                        if (mesh.boneCount <= 0) {
+                            continue;
+                        }
+                        cmd.setShaderParameter("boneBaseIndex", rg::ShaderPrimitive(mesh.baseBone));
+                        if (mesh.indexed) {
+                            cmd.drawIndexed(mesh.drawCall, mesh.baseIndex);
+                        } else {
+                            cmd.drawArray(mesh.drawCall);
+                        }
+                    }
+                }
+            });
         }
 
         static rg::RasterPipeline getPipeline(const rg::Shader &vertexShader, const rg::Shader &fragmentShader) {

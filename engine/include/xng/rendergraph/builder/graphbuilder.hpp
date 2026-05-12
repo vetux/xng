@@ -37,7 +37,7 @@ namespace xng::rg {
     class XENGINE_EXPORT GraphBuilder {
     public:
         explicit GraphBuilder()
-            : resourceCounter(0){
+            : resourceCounter(0) {
         }
 
         Resource<Buffer> allocateBuffer(const Buffer &desc) {
@@ -54,31 +54,19 @@ namespace xng::rg {
             return ret;
         }
 
-        TransferPassBuilder addTransferPass(std::string name) {
-            return {
-                std::move(name),
-                [this](TransferPass &&pass) {
-                    this->passes.emplace_back(std::move(pass));
-                }
-            };
+        GraphBuilder &addPass(const TransferPass &pass) {
+            passes.emplace_back(pass);
+            return *this;
         }
 
-        RasterPassBuilder addRasterPass(std::string name) {
-            return {
-                std::move(name),
-                [this](RasterPass &&pass) {
-                    this->passes.emplace_back(std::move(pass));
-                }
-            };
+        GraphBuilder &addPass(const RasterPass &pass) {
+            passes.emplace_back(pass);
+            return *this;
         }
 
-        ComputePassBuilder addComputePass(std::string name) {
-            return {
-                std::move(name),
-                [this](ComputePass &&pass) {
-                    this->passes.emplace_back(std::move(pass));
-                }
-            };
+        GraphBuilder &addPass(const ComputePass &pass) {
+            passes.emplace_back(pass);
+            return *this;
         }
 
         Graph build() {

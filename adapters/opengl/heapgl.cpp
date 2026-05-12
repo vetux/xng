@@ -41,8 +41,8 @@ namespace xng::opengl {
         return std::make_unique<HeapMappingGL>(target, transferContext->getBuffer(target.getHandle()));
     }
 
-    std::unique_ptr<HeapTransfer> HeapGL::transfer(std::function<void(TransferContext &)> callback) {
-        callback(*transferContext);
+    std::unique_ptr<HeapTransfer> HeapGL::transfer(const TransferPass &pass) {
+        pass.callback(*transferContext);
         return transferContext->finishTransfer();
     }
 

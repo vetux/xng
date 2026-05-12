@@ -26,8 +26,7 @@
 namespace xng::rg {
     class ComputePassBuilder {
     public:
-        ComputePassBuilder(std::string name, std::function<void(ComputePass &&)> buildCallback)
-            : buildCallback(std::move(buildCallback)) {
+        explicit ComputePassBuilder(std::string name) {
             pass.name = std::move(name);
         }
 
@@ -68,8 +67,8 @@ namespace xng::rg {
         }
 
         ComputePassBuilder &textureSampledRead(const Resource<Texture> &texture,
-                                   const TextureBinding::Range range = {},
-                                   const TextureBinding::Aspect aspect = TextureBinding::Automatic) {
+                                               const TextureBinding::Range range = {},
+                                               const TextureBinding::Aspect aspect = TextureBinding::Automatic) {
             const auto access = TextureAccess(TextureAccess::TextureSampledRead,
                                               range,
                                               aspect);
@@ -77,13 +76,12 @@ namespace xng::rg {
             return *this;
         }
 
-        void execute(std::function<void(ComputeContext &)> callback) {
+        const ComputePass &execute(std::function<void(ComputeContext &)> callback) {
             pass.callback = std::move(callback);
-            buildCallback(std::move(pass));
+            return pass;
         }
 
     private:
-        std::function<void(ComputePass &&)> buildCallback;
         ComputePass pass;
     };
 }
