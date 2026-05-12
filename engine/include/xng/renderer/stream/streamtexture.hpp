@@ -75,7 +75,7 @@ namespace xng {
         void destroy(const Slot &handle) {
             auto it = pendingUploads.find(handle);
             if (it != pendingUploads.end()) {
-                it->second.buffer.cancel(it->second.bufferHandle);
+                it->second.buffer.release(it->second.bufferHandle);
             }
             pendingUploads.erase(handle);
             freeSlots.push_back(handle);
@@ -175,6 +175,7 @@ namespace xng {
             }
 
             for (auto &handle: evictedHandles) {
+                pendingUploads.at(handle).buffer.release(pendingUploads.at(handle).bufferHandle);
                 pendingUploads.erase(handle);
             }
 

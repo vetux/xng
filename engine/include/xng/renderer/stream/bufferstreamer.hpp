@@ -50,7 +50,7 @@ namespace xng {
         void destroy(Slot slot) {
             auto it = pendingUploads.find(slot);
             if (it != pendingUploads.end()) {
-                buffer.cancel(it->second.handle);
+                buffer.release(it->second.handle);
             }
             pendingUploads.erase(slot);
             freeSlots.push_back(slot);
@@ -88,6 +88,7 @@ namespace xng {
                 }
             }
             for (auto &handle: evictedHandles) {
+                buffer.release(handle);
                 pendingUploads.erase(handle);
             }
             return buffer.commit(ctx);

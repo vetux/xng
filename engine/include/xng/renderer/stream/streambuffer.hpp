@@ -134,7 +134,13 @@ namespace xng {
             return it->second.transferHandle->isFinished();
         }
 
-        void cancel(const Handle handle) {
+        /**
+         * Release the passed handle.
+         * Pending uploads for the given handle are canceled.
+         *
+         * @param handle The handle to release
+         */
+        void release(const Handle handle) {
             const auto it = pendingUploads.find(handle);
             if (it == pendingUploads.end()) {
                 return;
@@ -153,26 +159,6 @@ namespace xng {
             if (pendingUploads.find(handle) != pendingUploads.end()) {
                 flushedUploads.insert(handle);
             }
-        }
-
-        /**
-         * Cancels all pending uploads that are outside the new allocated range.
-         * Data up to newSize in the current buffer is copied into the new buffer.
-         *
-         * @param newSize The new buffer size
-         */
-        void resize(const size_t newSize) {
-            if (newSize <= bufferSize) {
-                const auto pendingUploadsCopy = pendingUploads;
-                for (auto &upload: pendingUploadsCopy) {
-                    if (upload.second.offset + upload.second.buffer.getDescription().size > newSize) {
-                        pendingUploads.erase(upload.first);
-                        flushedUploads.erase(upload.first);
-                        freeUploadHandle(upload.first);
-                    }
-                }
-            }
-            bufferSize = newSize;
         }
 
         /**
@@ -211,7 +197,6 @@ namespace xng {
                     frameUploads.emplace(upload);
                     pendingUploads.erase(upload.first);
                     flushedUploads.erase(upload.first);
-                    freeUploadHandle(upload.first);
                 }
             }
 
