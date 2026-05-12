@@ -44,6 +44,7 @@ namespace xng::rg {
             Vec2i srcOffset;
             Vec2i dstOffset;
             Vec2i size;
+            size_t depth = 1; // For Array textures the number of layers to copy, For cube maps the number of faces
         };
 
         virtual ~TransferContext() = default;

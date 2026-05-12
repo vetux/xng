@@ -212,9 +212,9 @@ namespace xng::opengl {
                                    static_cast<GLint>(dstRect.position.x),
                                    static_cast<GLint>(dstRect.position.y),
                                    static_cast<GLint>(region.dst.arrayLayer),
-                                   region.size.x,
-                                   region.size.y,
-                                   1);
+                                   static_cast<GLint>(region.size.x),
+                                   static_cast<GLint>(region.size.y),
+                                   static_cast<GLsizei>(region.depth));
             }
 
             oglCheckError();
