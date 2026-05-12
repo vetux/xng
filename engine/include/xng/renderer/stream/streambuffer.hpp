@@ -34,8 +34,8 @@ namespace xng {
      * Copy staging buffer -> Temp Buffer asynchronously on the heap transfer context
      * Copy Temp Buffer -> Stable Buffer in a graph transfer pass
      *
-     * This enables asynchronous buffer streaming by not blocking on the slow PCIe copy from the Staging Buffers
-     * and not blocking the graph queues on the copy from temp to stable buffer by double buffering the temp buffer.
+     * This enables asynchronous buffer streaming by not blocking the graph execution on the slow PCIe copy from staging to temp buffer
+     * and performing the copy from temp to stable buffer concurrently with heap transfers by double buffering the temp buffer.
      *
      * The stream buffer dynamically resizes on create and can be manually resized via resize().
      */
