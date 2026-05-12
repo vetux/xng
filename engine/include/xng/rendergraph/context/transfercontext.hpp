@@ -64,7 +64,7 @@ namespace xng::rg {
                                 size_t count) = 0;
 
         /**
-         * Copy a texel region of a mip level to a mip level of another texture.
+         * Copy texel regions from one texture to another.
          *
          * @param target
          * @param source
