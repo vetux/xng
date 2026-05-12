@@ -164,7 +164,7 @@
 #include "xng/shaderscript/std140.hpp"
 #include "xng/shaderscript/shaderscript.hpp"
 #include "xng/shaderscript/shaderobject.hpp"
-#include "xng/shaderscript/indirectdrawbuffer.hpp"
+#include "xng/shaderscript/indirectbuffers.hpp"
 #include "xng/shaderscript/macro/shaderstruct.hpp"
 #include "xng/shaderscript/macro/helpermacros.hpp"
 #include "xng/animation/pose.hpp"

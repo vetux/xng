@@ -16,24 +16,29 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef XENGINE_INDIRECTDRAWBUFFER_HPP
-#define XENGINE_INDIRECTDRAWBUFFER_HPP
+#ifndef XENGINE_INDIRECTBUFFERS_HPP
+#define XENGINE_INDIRECTBUFFERS_HPP
 
 #include "xng/shaderscript/macro/shaderstruct.hpp"
 
 namespace xng::ShaderScript {
     ShaderStruct(ShaderDrawIndirectArray,
-                 unsigned int, vertexCount, // The number of vertices to draw
-                 unsigned int, instanceCount, // The number of instances to draw
-                 unsigned int, firstVertex, // The index of the first vertex
-                 unsigned int, baseInstance) // The index of the first instance to draw (Can be accessed via GetBaseInstance)
+                 unsigned int, vertexCount,
+                 unsigned int, instanceCount,
+                 unsigned int, firstVertex,
+                 unsigned int, baseInstance)
 
     ShaderStruct(ShaderDrawIndirectIndexed,
-                 unsigned int, indexCount, // The number of indices to draw
-                 unsigned int, instanceCount, // The number of instances to draw
-                 unsigned int, firstIndex, // The index of the first index
-                 int, baseVertex, // The value added to each index in the buffer
-                 unsigned int, baseInstance) // The index of the first instance to draw (Can be accessed via GetBaseInstance)
+                 unsigned int, indexCount,
+                 unsigned int, instanceCount,
+                 unsigned int, firstIndex,
+                 int, baseVertex,
+                 unsigned int, baseInstance)
+
+    ShaderStruct(ShaderComputeIndirect,
+                 unsigned int, x,
+                 unsigned int, y,
+                 unsigned int, z)
 }
 
-#endif //XENGINE_INDIRECTDRAWBUFFER_HPP
+#endif //XENGINE_INDIRECTBUFFERS_HPP

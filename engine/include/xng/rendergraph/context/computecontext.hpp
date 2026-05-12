@@ -86,6 +86,21 @@ namespace xng::rg {
          * @param groupCount The number of workgroups to dispatch
          */
         virtual void dispatch(Vec3u groupCount) = 0;
+
+        /**
+         * Dispatch workgroups from an indirect-buffer.
+         *
+         * The format for the workgroup count in the buffer must be the following:
+         * {
+         *      ShaderPrimitive::UInt x;
+         *      ShaderPrimitive::UInt y;
+         *      ShaderPrimitive::UInt z;
+         * }
+         *
+         * @param indirectBuffer
+         * @param offset
+         */
+        virtual void dispatchIndirect(const Resource<Buffer> &indirectBuffer, size_t offset) = 0;
     };
 }
 

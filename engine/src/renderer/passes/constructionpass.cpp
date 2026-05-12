@@ -97,7 +97,7 @@ namespace xng {
     static vec4 texture_atlas(Param<ShaderTexture> textureDef, Param<vec2> inUv) {
         IRFunction
 
-        TextureArray(TEXTURE_2D_ARRAY, RGBA, 12, atlasTextures)
+        TextureArray(TEXTURE_2D_ARRAY, RGBA8, 12, atlasTextures)
 
         ivec4 level_index_filtering_assigned = textureDef.value().level_index_filtering_assigned;
         vec4 atlasScale_texSize = textureDef.value().scale_texSize;
@@ -148,7 +148,7 @@ namespace xng {
         DynamicBuffer(ShaderTransform, transforms)
         DynamicBuffer(ShaderMaterial, materials)
 
-        TextureArray(TEXTURE_2D_ARRAY, RGBA, 12, atlasTextures)
+        TextureArray(TEXTURE_2D_ARRAY, RGBA8, 12, atlasTextures)
 
         mat4 model = transforms[transformIndex].transform;
         mat4 mvp = camera.projection * camera.view * model;
@@ -203,7 +203,7 @@ namespace xng {
         DynamicBuffer(ShaderTransform, transforms)
         DynamicBuffer(ShaderMaterial, materials)
 
-        TextureArray(TEXTURE_2D_ARRAY, RGBA, 12, atlasTextures)
+        TextureArray(TEXTURE_2D_ARRAY, RGBA8, 12, atlasTextures)
 
         vec4 pos = getSkinnedVertexPosition(boneBaseIndex, position, boneIds, boneWeights);
 
@@ -262,7 +262,7 @@ namespace xng {
         DynamicBuffer(ShaderMaterial, materials)
         DynamicBuffer(ShaderTransform, bones)
 
-        TextureArray(TEXTURE_2D_ARRAY, RGBA, 12, atlasTextures)
+        TextureArray(TEXTURE_2D_ARRAY, RGBA8, 12, atlasTextures)
 
         ShaderMaterial material = materials[materialIndex];
 

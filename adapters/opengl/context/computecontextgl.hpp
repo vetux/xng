@@ -123,6 +123,12 @@ namespace xng::opengl {
             glDispatchCompute(groupCount.x, groupCount.y, groupCount.z);
         }
 
+        void dispatchIndirect(const Resource<Buffer> &indirectBuffer, const size_t offset) override {
+            const auto &buf = resources.getBuffer(indirectBuffer);
+            glBindBuffer(GL_DISPATCH_INDIRECT_BUFFER, buf.handle);
+            glDispatchComputeIndirect(static_cast<GLintptr>(offset));
+        }
+
     private:
         const PassResources &resources;
         PipelineCacheGL &pipelineCache;

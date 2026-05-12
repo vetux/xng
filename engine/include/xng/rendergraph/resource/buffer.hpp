@@ -47,6 +47,7 @@ namespace xng::rg {
             CAPABILITY_STORAGE = 4,
             CAPABILITY_TRANSFER_SRC = 8,
             CAPABILITY_TRANSFER_DST = 16,
+            CAPABILITY_INDIRECT = 32,
         };
 
         /**
