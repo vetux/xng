@@ -134,6 +134,16 @@ namespace xng {
             return it->second.transferHandle->isFinished();
         }
 
+        void cancel(const Handle handle) {
+            const auto it = pendingUploads.find(handle);
+            if (it == pendingUploads.end()) {
+                return;
+            }
+            flushedUploads.erase(handle);
+            pendingUploads.erase(it);
+            freeUploadHandle(handle);
+        }
+
         /**
          * Forces a flush of the passed create.
          *
