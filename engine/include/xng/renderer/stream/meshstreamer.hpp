@@ -33,6 +33,21 @@
 #include "xng/renderer/stream/bufferstreamer.hpp"
 
 namespace xng {
+    /**
+     * The MeshStreamer uploads mesh data to separate StreamBuffer's per attribute.
+     * All meshes share the same attribute buffers / index buffer.
+     * Missing attributes in uploaded meshes are padded with default values.
+     *
+     * This wastes memory for the padded default values.
+     *
+     * An alternative approach is sorting draw calls into buckets based on defined attributes
+     * and binding a single default value attribute buffer with stride = 0.
+     *
+     * For the forward rendering path this will incur O(N) binding overhead in the worst case
+     * because the draw calls must execute in submission order for correct transparency.
+     *
+     * For the best performance the forward rendering path would need to write their own default attributes in the buffers.
+     */
     class MeshStreamer {
     public:
         typedef size_t Handle;
@@ -42,7 +57,6 @@ namespace xng {
             rg::DrawCall drawCall{};
             bool indexed{};
             int baseVertex{}; // The offset applied to each index.
-
             size_t vertexCount{}; // The number of vertices for this mesh
         };
 
