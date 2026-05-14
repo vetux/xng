@@ -30,12 +30,10 @@ namespace xng {
                    const Mesh &mesh,
                    RenderObjectHandle<RenderSkeleton> _skeleton)
             : RenderObject(id, OBJECT_MESH), meshStream(meshStream), skeleton(std::move(_skeleton)) {
-            meshHandle = meshStream.create();
-
             if (skeleton) {
-                meshStream.upload(meshHandle, mesh, skeleton->getBoneHandles());
+                meshHandle = meshStream.create(mesh, skeleton->getBoneHandles());
             } else {
-                meshStream.upload(meshHandle, mesh, {});
+                meshHandle = meshStream.create(mesh, {});
             }
         }
 

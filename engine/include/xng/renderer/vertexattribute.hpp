@@ -19,6 +19,8 @@
 #ifndef XENGINE_VERTEXATTRIBUTE_HPP
 #define XENGINE_VERTEXATTRIBUTE_HPP
 
+#include <cstddef>
+
 namespace xng {
     enum VertexAttribute : int {
         POSITION = 0,
