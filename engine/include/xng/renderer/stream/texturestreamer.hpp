@@ -45,8 +45,8 @@ namespace xng {
      * and custom filtering solutions which may not be available in the hardware samplers (Bicubic etc.).
      *
      * Alternatively, textures could be stored in giant TEXTURE_2D atlas textures.
-     * This would allow the streamer to optimize cache locality and the amount of wasted texture memory by controlling the layout
-     * and allows setting separate color formats per texture, which also reduces wasted texture memory.
+     * This would allow the streamer to optimize cache locality and the amount of wasted texture memory by controlling
+     * the layout of the tiles and allows setting separate color formats per texture, which also reduces wasted texture memory.
      * (This appears to be the approach Unreal is using in their Virtual Texturing system)
      */
     class TextureStreamer {
