@@ -58,6 +58,7 @@ namespace xng {
                 default:
                     throw std::runtime_error("Unsupported texture type for stream texture");
             }
+            desc.capabilities = desc.capabilities | rg::Texture::CAPABILITY_TRANSFER_DST;
             texture = heap.allocateTexture(desc);
         }
 

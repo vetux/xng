@@ -58,7 +58,7 @@ namespace xng {
                 auto scale = handle.getScale();
 
                 material.albedo.level_index_filtering_assigned = Vec4i(handle.level,
-                                                                       static_cast<int>(handle.index),
+                                                                       static_cast<int>(handle.slot),
                                                                        0,
                                                                        1);
                 material.albedo.scale_texSize = Vec4f(scale.x,
@@ -74,7 +74,7 @@ namespace xng {
                 auto scale = handle.getScale();
 
                 material.metallic.level_index_filtering_assigned = Vec4i(handle.level,
-                                                                         static_cast<int>(handle.index),
+                                                                         static_cast<int>(handle.slot),
                                                                          0,
                                                                          1);
                 material.metallic.scale_texSize = Vec4f(scale.x,
@@ -90,7 +90,7 @@ namespace xng {
                 auto scale = handle.getScale();
 
                 material.roughness.level_index_filtering_assigned = Vec4i(handle.level,
-                                                                          static_cast<int>(handle.index),
+                                                                          static_cast<int>(handle.slot),
                                                                           0,
                                                                           1);
                 material.roughness.scale_texSize = Vec4f(scale.x,
@@ -106,7 +106,7 @@ namespace xng {
                 auto scale = handle.getScale();
 
                 material.ambientOcclusion.level_index_filtering_assigned = Vec4i(handle.level,
-                    static_cast<int>(handle.index),
+                    static_cast<int>(handle.slot),
                     0,
                     1);
 
@@ -123,7 +123,7 @@ namespace xng {
                 auto scale = handle.getScale();
 
                 material.normal.level_index_filtering_assigned = Vec4i(handle.level,
-                                                                       static_cast<int>(handle.index),
+                                                                       static_cast<int>(handle.slot),
                                                                        0,
                                                                        1);
                 material.normal.scale_texSize = Vec4f(scale.x,

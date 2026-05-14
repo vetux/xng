@@ -21,6 +21,7 @@
 
 #include "xng/assets/image.hpp"
 #include "xng/math/vector2.hpp"
+
 #include "xng/rendergraph/heap.hpp"
 #include "xng/rendergraph/resource/texture.hpp"
 
@@ -29,6 +30,25 @@
 #include "xng/renderer/stream/streamtexture.hpp"
 
 namespace xng {
+    /**
+     * The texture streamer streams images to the gpu via a fixed set of StreamTextures.
+     *
+     * Each resolution level represents an array texture.
+     *
+     * The images are stored in the closest fitting texture resolution slot.
+     * This means texture memory is wasted for images which are not of any given resolution slot size and there is a maximum image size.
+     *
+     * The array textures are RGBA8 format, shaders must manually decode sRGB color data.
+     *
+     * All hardware filtering configuration on the texture is set to NEAREST. Thus, the shaders must perform filtering
+     * which incurs some gpu side overhead in return for reduced binding overhead (One bind per level per frame)
+     * and custom filtering solutions which may not be available in the hardware samplers (Bicubic etc.).
+     *
+     * Alternatively, textures could be stored in giant TEXTURE_2D atlas textures.
+     * This would allow the streamer to optimize cache locality and the amount of wasted texture memory by controlling the layout
+     * and allows setting separate color formats per texture, which also reduces wasted texture memory.
+     * (This appears to be the approach Unreal is using in their Virtual Texturing system)
+     */
     class TextureStreamer {
     public:
         static Vec2i getTextureResolutionLevelSize(const TextureResolution level) {
@@ -50,55 +70,74 @@ namespace xng {
         }
 
         struct Handle {
-            unsigned int index{};
+            StreamTexture::Slot slot{};
             TextureResolution level{};
             Vec2i size; // The original texture size
 
-            bool assigned() const {
-                return index != std::numeric_limits<size_t>::max();
-            }
-
             bool operator==(const Handle &other) const {
-                return index == other.index && level == other.level && size == other.size;
+                return slot == other.slot && level == other.level && size == other.size;
             }
 
-            Vec2f getScale() const {
+            [[nodiscard]] Vec2f getScale() const {
                 return size.convert<float>() / getTextureResolutionLevelSize(level).convert<float>();
             }
         };
 
-        explicit TextureStreamer(rg::Heap &heap);
+        explicit TextureStreamer(rg::Heap &heap) {
+            for (auto res = RESOLUTION_BEGIN; res <= RESOLUTION_END; res = static_cast<TextureResolution>(res + 1)) {
+                rg::Texture desc;
+                desc.textureType = rg::TEXTURE_2D;
+                desc.size = getTextureResolutionLevelSize(res);
+                desc.format = rg::ColorFormat::RGBA8;
+                desc.mipLevels = rg::Texture::calculateMipLevels(desc.size);
+                desc.capabilities = rg::Texture::CAPABILITY_SAMPLED;
+                desc.mipMode = rg::NEAREST;
+                desc.filterMin = rg::NEAREST;
+                desc.filterMag = rg::NEAREST;
+                desc.wrapping = rg::TextureWrapping::CLAMP_TO_BORDER;
+                textures.emplace(res, StreamTexture(heap, desc));
+            }
+        }
 
-        Handle upload(const ImageRGBA &image);
+        Handle upload(const ImageRGBA &image) {
+            const auto level = getClosestMatchingResolutionLevel(image.getResolution());
+            auto &texture = textures.at(level);
+            const auto slot = texture.create();
+            texture.upload(slot, image);
+            return {slot, level, image.getResolution()};
+        }
 
-        void destroy(const Handle &handle);
+        void destroy(const Handle &handle) {
+            textures.at(handle.level).destroy(handle.slot);
+        }
 
-        bool isUploadComplete(const Handle &handle);
+        bool isUploadComplete(const Handle &handle) {
+            return textures.at(handle.level).isUploadComplete(handle.slot);
+        }
 
-        void flush(const Handle &handle);
+        void flush(const Handle &handle) {
+            textures.at(handle.level).flush(handle.slot);
+        }
 
-        std::unordered_map<TextureResolution, rg::HeapResource<rg::Texture> > commit(rg::GraphBuilder &ctx);
+        std::unordered_map<TextureResolution, rg::HeapResource<rg::Texture> > commit(rg::GraphBuilder &ctx) {
+            std::unordered_map<TextureResolution, rg::HeapResource<rg::Texture> > ret;
+            for (auto &pair: textures) {
+                ret.emplace(pair.first, pair.second.commit(ctx));
+            }
+            return ret;
+        }
 
     private:
-        struct PendingUpload {
-            StreamBuffer::Handle handle;
-            size_t offset; // offset into stream buffer
-        };
-
-        class HandleHash {
-            public:
-                std::size_t operator()(const Handle &handle) const {
-                    size_t ret{};
-                    hash_combine(ret, handle.index);
-                    hash_combine(ret, handle.level);
-                    hash_combine(ret, handle.size.x);
-                    hash_combine(ret, handle.size.y);
-                    return ret;
+        static TextureResolution getClosestMatchingResolutionLevel(const Vec2i &size) {
+            for (auto res = RESOLUTION_BEGIN; res <= RESOLUTION_END; res = static_cast<TextureResolution>(res + 1)) {
+                const auto resSize = getTextureResolutionLevelSize(res);
+                if (size.x <= resSize.x && size.y <= resSize.y) {
+                    return res;
                 }
-        };
+            }
+            throw std::runtime_error("No matching resolution level found");
+        }
 
-        StreamBuffer streamBuffer;
-        std::unordered_map<Handle, PendingUpload, HandleHash> pendingUploads;
         std::unordered_map<TextureResolution, StreamTexture> textures;
     };
 }
