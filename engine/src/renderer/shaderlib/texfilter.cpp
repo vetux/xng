@@ -21,6 +21,10 @@
 #include "xng/shaderscript/shaderscript.hpp"
 #include "xng/shaderscript/macro/helpermacros.hpp"
 
+// TODO: Handle Texture Mip filtering in custom texture sampling.
+// TODO: Handle Texture Wrapping in custom texture sampling (Repeat mode for tiling etc)
+// TODO: Handle sRGB decode
+
 using namespace xng::ShaderScript;
 
 namespace xng::shaderlib
