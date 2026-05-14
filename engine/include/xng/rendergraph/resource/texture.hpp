@@ -103,7 +103,7 @@ namespace xng::rg {
         bool fixedSampleLocations = false;
 
         unsigned int mipLevels = 1; // The number of mip levels created for this texture
-        MipMapFiltering mipMapFilter = NEAREST_MIPMAP_LINEAR;
+        TextureFiltering mipMode = NEAREST; // The mip map filtering mode (Filtering between mip levels)
 
         size_t arrayLayers = 0; // The number of layers in the texture if textureType == TEXTURE_*_ARRAY
 
@@ -119,7 +119,7 @@ namespace xng::rg {
                          const int samples = 1,
                          const bool fixed_sample_locations = false,
                          const unsigned int mip_levels = 1,
-                         const MipMapFiltering mip_map_filter = NEAREST_MIPMAP_LINEAR,
+                         const TextureFiltering mip_map_filter = NEAREST,
                          const size_t array_layers = 0,
                          std::variant<Vec4f, Vec4i, Vec4u> border_color = Vec4f(0))
             : capabilities(capabilities),
@@ -132,7 +132,7 @@ namespace xng::rg {
               samples(samples),
               fixedSampleLocations(fixed_sample_locations),
               mipLevels(mip_levels),
-              mipMapFilter(mip_map_filter),
+              mipMode(mip_map_filter),
               arrayLayers(array_layers),
               borderColor(std::move(border_color)) {
         }
@@ -146,7 +146,7 @@ namespace xng::rg {
                    && filterMag == other.filterMag
                    && samples == other.samples
                    && mipLevels == other.mipLevels
-                   && mipMapFilter == other.mipMapFilter
+                   && mipMode == other.mipMode
                    && fixedSampleLocations == other.fixedSampleLocations
                    && borderColor == other.borderColor
                    && arrayLayers == other.arrayLayers
@@ -179,7 +179,7 @@ namespace xng::rg {
             hash_combine(ret, buffer.filterMag);
             hash_combine(ret, buffer.samples);
             hash_combine(ret, buffer.mipLevels);
-            hash_combine(ret, buffer.mipMapFilter);
+            hash_combine(ret, buffer.mipMode);
             hash_combine(ret, buffer.fixedSampleLocations);
 
             hash_combine(ret, buffer.borderColor.index());

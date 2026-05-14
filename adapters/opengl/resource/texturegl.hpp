@@ -64,6 +64,11 @@ namespace xng::opengl {
         }
 
     private:
+        static GLsizei safeMipLevels(const unsigned int requested, const Vec2i &size) {
+            const GLsizei maxLevels = static_cast<GLsizei>(std::floor(std::log2(std::max(size.x, size.y)))) + 1;
+            return std::min(static_cast<GLsizei>(requested), maxLevels);
+        }
+
         void initializeTexture() {
             textureType = convert(desc.textureType);
 
@@ -75,55 +80,25 @@ namespace xng::opengl {
             if (desc.textureType == TEXTURE_2D) {
                 textureInternalFormat = convert(desc.format);
                 glTexStorage2D(textureType,
-                               desc.mipLevels,
+                               safeMipLevels(desc.mipLevels, desc.size),
                                textureInternalFormat,
                                desc.size.x,
                                desc.size.y);
-
-                try {
-                    oglCheckError();
-                } catch (const std::runtime_error &e) {
-                    // Catch GL_INVALID_OPERATION because the mipmap layers count maximum depends on log2 which uses floating point.
-                    if (e.what() == getGLErrorString(GL_INVALID_OPERATION)) {
-                        glTexStorage2D(textureType,
-                                       desc.mipLevels,
-                                       textureInternalFormat,
-                                       desc.size.x,
-                                       desc.size.y);
-                    } else {
-                        throw e;
-                    }
-                }
+                oglCheckError();
             } else if (desc.textureType == TEXTURE_2D_MULTISAMPLE) {
                 textureInternalFormat = convert(desc.format);
                 glTexStorage2DMultisample(textureType,
-                                          desc.mipLevels,
+                                          safeMipLevels(desc.mipLevels, desc.size),
                                           textureInternalFormat,
                                           desc.size.x,
                                           desc.size.y,
                                           desc.fixedSampleLocations ? GL_TRUE : GL_FALSE);
-
-                try {
-                    oglCheckError();
-                } catch (const std::runtime_error &e) {
-                    // Catch GL_INVALID_OPERATION because the mipmap layers count maximum depends on log2 which uses floating point
-                    // and create only one layer when this happens.
-                    if (e.what() == getGLErrorString(GL_INVALID_OPERATION)) {
-                        glTexStorage2DMultisample(textureType,
-                                                  desc.mipLevels,
-                                                  textureInternalFormat,
-                                                  desc.size.x,
-                                                  desc.size.y,
-                                                  desc.fixedSampleLocations ? GL_TRUE : GL_FALSE);
-                    } else {
-                        throw e;
-                    }
-                }
+                oglCheckError();
             } else {
                 // Cube map textures: allocate immutable storage for all faces and mip levels
                 textureInternalFormat = convert(desc.format);
                 glTexStorage2D(textureType,
-                               desc.mipLevels,
+                               safeMipLevels(desc.mipLevels, desc.size),
                                textureInternalFormat,
                                desc.size.x,
                                desc.size.y);
@@ -131,22 +106,23 @@ namespace xng::opengl {
 
             glTexParameteri(textureType, GL_TEXTURE_WRAP_S, convert(desc.wrapping));
             glTexParameteri(textureType, GL_TEXTURE_WRAP_T, convert(desc.wrapping));
+
             // For cube maps also set R wrap to avoid sampling artifacts across faces
             glTexParameteri(textureType, GL_TEXTURE_WRAP_R, convert(desc.wrapping));
 
-            if (desc.mipLevels > 1) {
-                glTexParameteri(textureType,
-                                GL_TEXTURE_MIN_FILTER,
-                                convert(desc.mipMapFilter));
+            GLint minFilter;
+            if (desc.filterMin == NEAREST && desc.mipMode == NEAREST) {
+                minFilter = GL_NEAREST_MIPMAP_NEAREST;
+            } else if (desc.filterMin == LINEAR && desc.mipMode == NEAREST) {
+                minFilter = GL_LINEAR_MIPMAP_NEAREST;
+            } else if (desc.filterMin == NEAREST && desc.mipMode == LINEAR) {
+                minFilter = GL_NEAREST_MIPMAP_LINEAR;
             } else {
-                glTexParameteri(textureType,
-                                GL_TEXTURE_MIN_FILTER,
-                                convert(desc.filterMin));
+                minFilter = GL_LINEAR_MIPMAP_LINEAR;
             }
 
-            glTexParameteri(textureType,
-                            GL_TEXTURE_MAG_FILTER,
-                            convert(desc.filterMag));
+            glTexParameteri(textureType,GL_TEXTURE_MIN_FILTER, minFilter);
+            glTexParameteri(textureType,GL_TEXTURE_MAG_FILTER, convert(desc.filterMag));
 
             switch (desc.borderColor.index()) {
                 case 0: {
@@ -163,6 +139,7 @@ namespace xng::opengl {
                         color.x, color.y, color.z, color.w
                     };
                     glTexParameteriv(textureType, GL_TEXTURE_BORDER_COLOR, borderColor);
+                    break;
                 }
                 case 2: {
                     const auto &color = std::get<Vec4u>(desc.borderColor);
@@ -170,6 +147,7 @@ namespace xng::opengl {
                         color.x, color.y, color.z, color.w
                     };
                     glTexParameterIuiv(textureType, GL_TEXTURE_BORDER_COLOR, borderColor);
+                    break;
                 }
                 default:
                     break;
@@ -201,29 +179,14 @@ namespace xng::opengl {
             if (desc.arrayLayers > 0) {
                 textureInternalFormat = convert(desc.format);
                 glTexStorage3D(textureType,
-                               desc.mipLevels,
+                               safeMipLevels(desc.mipLevels, desc.size),
                                textureInternalFormat,
                                desc.size.x,
                                desc.size.y,
                                layers);
+                oglCheckError();
 
-                try {
-                    oglCheckError();
-                } catch (const std::runtime_error &e) {
-                    // Catch GL_INVALID_OPERATION because the mipmap layers count maximum depends on log2 which uses floating point.
-                    if (e.what() == getGLErrorString(GL_INVALID_OPERATION)) {
-                        glTexStorage3D(textureType,
-                                       1,
-                                       textureInternalFormat,
-                                       desc.size.x,
-                                       desc.size.y,
-                                       layers);
-                    } else {
-                        throw e;
-                    }
-                }
-
-                auto texWrap = convert(desc.wrapping);
+                const auto texWrap = convert(desc.wrapping);
 
                 glTexParameteri(textureType,
                                 GL_TEXTURE_WRAP_S,
@@ -235,19 +198,19 @@ namespace xng::opengl {
                                 GL_TEXTURE_WRAP_R,
                                 texWrap);
 
-                if (desc.mipLevels > 1) {
-                    glTexParameteri(textureType,
-                                    GL_TEXTURE_MIN_FILTER,
-                                    convert(desc.mipMapFilter));
+                GLint minFilter;
+                if (desc.filterMin == NEAREST && desc.mipMode == NEAREST) {
+                    minFilter = GL_NEAREST_MIPMAP_NEAREST;
+                } else if (desc.filterMin == LINEAR && desc.mipMode == NEAREST) {
+                    minFilter = GL_LINEAR_MIPMAP_NEAREST;
+                } else if (desc.filterMin == NEAREST && desc.mipMode == LINEAR) {
+                    minFilter = GL_NEAREST_MIPMAP_LINEAR;
                 } else {
-                    glTexParameteri(textureType,
-                                    GL_TEXTURE_MIN_FILTER,
-                                    convert(desc.filterMin));
+                    minFilter = GL_LINEAR_MIPMAP_LINEAR;
                 }
 
-                glTexParameteri(textureType,
-                                GL_TEXTURE_MAG_FILTER,
-                                convert(desc.filterMag));
+                glTexParameteri(textureType,GL_TEXTURE_MIN_FILTER, minFilter);
+                glTexParameteri(textureType,GL_TEXTURE_MAG_FILTER, convert(desc.filterMag));
 
                 switch (desc.borderColor.index()) {
                     case 0: {
@@ -264,6 +227,7 @@ namespace xng::opengl {
                             color.x, color.y, color.z, color.w
                         };
                         glTexParameteriv(textureType, GL_TEXTURE_BORDER_COLOR, borderColor);
+                        break;
                     }
                     case 2: {
                         const auto &color = std::get<Vec4u>(desc.borderColor);
@@ -271,6 +235,7 @@ namespace xng::opengl {
                             color.x, color.y, color.z, color.w
                         };
                         glTexParameterIuiv(textureType, GL_TEXTURE_BORDER_COLOR, borderColor);
+                        break;
                     }
                     default:
                         break;

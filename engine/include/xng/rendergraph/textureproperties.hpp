@@ -130,13 +130,6 @@ namespace xng::rg {
         LINEAR
     };
 
-    enum MipMapFiltering : int {
-        NEAREST_MIPMAP_NEAREST = 0,
-        LINEAR_MIPMAP_NEAREST,
-        NEAREST_MIPMAP_LINEAR,
-        LINEAR_MIPMAP_LINEAR
-    };
-
     inline TextureType &operator<<(TextureType &value, const Message &message) {
         value = (TextureType) message.asInt();
         return value;
@@ -183,16 +176,6 @@ namespace xng::rg {
     }
 
     inline Message &operator>>(const TextureFiltering &value, Message &message) {
-        message = (int) value;
-        return message;
-    }
-
-    inline MipMapFiltering &operator<<(MipMapFiltering &value, const Message &message) {
-        value = (MipMapFiltering) message.asInt();
-        return value;
-    }
-
-    inline Message &operator>>(const MipMapFiltering &value, Message &message) {
         message = (int) value;
         return message;
     }

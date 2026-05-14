@@ -367,18 +367,4 @@ static GLint convert(TextureFiltering filtering) {
     throw std::runtime_error("Invalid texture filtering");
 }
 
-static GLint convert(MipMapFiltering filtering) {
-    switch (filtering) {
-        case NEAREST_MIPMAP_NEAREST:
-            return GL_NEAREST_MIPMAP_NEAREST;
-        case LINEAR_MIPMAP_NEAREST:
-            return GL_LINEAR_MIPMAP_NEAREST;
-        case NEAREST_MIPMAP_LINEAR:
-            return GL_NEAREST_MIPMAP_LINEAR;
-        case LINEAR_MIPMAP_LINEAR:
-            return GL_LINEAR_MIPMAP_LINEAR;
-    }
-    throw std::runtime_error("Invalid mipmap filtering");
-}
-
 #endif //XENGINE_TYPECONVERSION_HPP
