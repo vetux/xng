@@ -25,6 +25,12 @@
 
 namespace xng::rg {
     struct ShaderAttributeLayout {
+        enum InterpolationMode {
+            INTERPOLATE_SMOOTH,
+            INTERPOLATE_NO_PERSPECTIVE,
+            INTERPOLATE_FLAT
+        };
+
         ShaderAttributeLayout() = default;
 
         explicit ShaderAttributeLayout(const std::vector<std::pair<std::string, ShaderPrimitiveType> > &namedElements) {
@@ -49,24 +55,6 @@ namespace xng::rg {
             return ret;
         }
 
-        ShaderPrimitiveType getElementType(const std::string &attributeName) const {
-            for (auto i = 0; i < elementIdentifiers.size(); ++i) {
-                if (elementIdentifiers.at(i) == attributeName) {
-                    return elements.at(i);
-                }
-            }
-            throw std::runtime_error("No such attribute " + attributeName);
-        }
-
-        size_t getElementIndex(const std::string &attributeName) const {
-            for (size_t i = 0; i < elementIdentifiers.size(); ++i) {
-                if (elementIdentifiers.at(i) == attributeName) {
-                    return i;
-                }
-            }
-            throw std::runtime_error("No such attribute " + attributeName);
-        }
-
         const std::string &getElementName(size_t index) const {
             return elementIdentifiers.at(index);
         }
@@ -84,14 +72,22 @@ namespace xng::rg {
             return elements;
         }
 
-        void addElement(const std::string &name, ShaderPrimitiveType type) {
+        const std::vector<InterpolationMode> &getInterpolationModes() const {
+            return interpolationModes;
+        }
+
+        void addElement(const std::string &name,
+                        const ShaderPrimitiveType type,
+                        const InterpolationMode interpolationMode = INTERPOLATE_SMOOTH) {
             elementIdentifiers.emplace_back(name);
             elements.emplace_back(type);
+            interpolationModes.emplace_back(interpolationMode);
         }
 
     private:
         std::vector<std::string> elementIdentifiers;
         std::vector<ShaderPrimitiveType> elements;
+        std::vector<InterpolationMode> interpolationModes;
     };
 }
 

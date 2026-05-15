@@ -45,6 +45,19 @@ std::string generateElement(const std::string &name, const ShaderDataType &type,
     return ret;
 }
 
+std::string getInterpolationKeyword(const rg::ShaderAttributeLayout::InterpolationMode mode) {
+    switch (mode) {
+        case ShaderAttributeLayout::INTERPOLATE_SMOOTH:
+            return "smooth";
+        case ShaderAttributeLayout::INTERPOLATE_NO_PERSPECTIVE:
+            return "noperspective";
+        case ShaderAttributeLayout::INTERPOLATE_FLAT:
+            return "flat";
+        default:
+            throw std::runtime_error("Invalid interpolation mode");
+    }
+}
+
 std::string generateHeader(const Shader &source, CompiledShader &compiledShader) {
     std::string ret;
 
@@ -128,22 +141,32 @@ std::string generateHeader(const Shader &source, CompiledShader &compiledShader)
         inputAttributes += std::to_string(source.geometryMaxVertices) + ") out;\n";
         inputAttributes += "\n";
 
-        for (auto element: source.inputLayout.getElements()) {
+        for (auto i = 0; i < source.inputLayout.getElements().size(); i++) {
+            auto element = source.inputLayout.getElements().at(i);
             auto location = attributeCount++;
             inputAttributes += "layout(location = "
                     + std::to_string(location)
-                    + ") in "
+                    + ") "
+                    + getInterpolationKeyword(source.inputLayout.getInterpolationModes().at(i))
+                    + " in "
                     + generateElement(inputAttributePrefix + source.inputLayout.getElementName(location),
                                       ShaderDataType(element),
                                       "")
                     + "[];\n";
         }
     } else {
-        for (auto element: source.inputLayout.getElements()) {
+        for (auto i = 0; i < source.inputLayout.getElements().size(); i++) {
+            auto element = source.inputLayout.getElements().at(i);
             auto location = attributeCount++;
             inputAttributes += "layout(location = "
                     + std::to_string(location)
-                    + ") in "
+                    + ")";
+            if (source.stage == Shader::FRAGMENT) {
+                inputAttributes += " "
+                        + getInterpolationKeyword(source.inputLayout.getInterpolationModes().at(i))
+                        + " ";
+            }
+            inputAttributes += "in "
                     + generateElement(inputAttributePrefix + source.inputLayout.getElementName(location),
                                       ShaderDataType(element),
                                       "")
@@ -159,11 +182,17 @@ std::string generateHeader(const Shader &source, CompiledShader &compiledShader)
         auto location = attributeCount++;
         outputAttributes += "layout(location = "
                 + std::to_string(location)
-                + ") out "
+                + ")";
+        if (source.stage == Shader::VERTEX || source.stage == Shader::GEOMETRY) {
+            outputAttributes += " "
+                    + getInterpolationKeyword(source.outputLayout.getInterpolationModes().at(location))
+                    + " ";
+        }
+        outputAttributes += "out "
                 + generateElement(outputAttributePrefix + source.outputLayout.getElementName(location),
                                   ShaderDataType(element),
                                   "")
-                + +";\n";;
+                + ";\n";;
     }
     ret += outputAttributes;
     ret += "\n";

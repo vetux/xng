@@ -72,6 +72,12 @@
 #define Input(type, name) xng::ShaderScript::ShaderObject name = xng::ShaderScript::ShaderScope::get().addInput<type>(#name);
 #define Output(type, name) xng::ShaderScript::ShaderObject name = xng::ShaderScript::ShaderScope::get().addOutput<type>(#name);
 
+#define InputFlat(type, name) xng::ShaderScript::ShaderObject name = xng::ShaderScript::ShaderScope::get().addInput<type>(#name, xng::rg::ShaderAttributeLayout::INTERPOLATE_FLAT);
+#define OutputFlat(type, name) xng::ShaderScript::ShaderObject name = xng::ShaderScript::ShaderScope::get().addOutput<type>(#name, xng::rg::ShaderAttributeLayout::INTERPOLATE_FLAT);
+
+#define InputNoPerspective(type, name) xng::ShaderScript::ShaderObject name = xng::ShaderScript::ShaderScope::get().addInput<type>(#name, xng::rg::ShaderAttributeLayout::INTERPOLATE_NO_PERSPECTIVE);
+#define OutputNoPerspective(type, name) xng::ShaderScript::ShaderObject name = xng::ShaderScript::ShaderScope::get().addOutput<type>(#name, xng::rg::ShaderAttributeLayout::INTERPOLATE_NO_PERSPECTIVE);
+
 #define Parameter(type, name) xng::ShaderScript::ShaderScope::get().addParameter(#name, xng::rg::ShaderPrimitiveType::type()); xng::ShaderScript::ShaderObject name = xng::ShaderScript::parameter(#name);
 
 #define Buffer(bufferType, bufferName) xng::ShaderScript::ShaderScope::get().addBuffer(#bufferName, xng::rg::ShaderBuffer(false, false, bufferType::getShaderStructDef().typeName)); bufferType bufferName(xng::ShaderScript::buffer(#bufferName));
