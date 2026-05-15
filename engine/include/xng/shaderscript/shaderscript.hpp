@@ -291,6 +291,26 @@ namespace xng::ShaderScript {
                                               rg::ShaderInstructionFactory::getBaseInstance()));
     }
 
+    inline ShaderObject getNumberOfWorkGroups() {
+        return ShaderObject(rg::ShaderOperand(rg::ShaderOperand::Instruction,
+                                              rg::ShaderInstructionFactory::getNumberOfWorkGroups()));
+    }
+
+    inline ShaderObject getWorkGroupID() {
+        return ShaderObject(rg::ShaderOperand(rg::ShaderOperand::Instruction,
+                                              rg::ShaderInstructionFactory::getWorkGroupID()));
+    }
+
+    inline ShaderObject getLocalInvocationID() {
+        return ShaderObject(rg::ShaderOperand(rg::ShaderOperand::Instruction,
+                                              rg::ShaderInstructionFactory::getLocalInvocationID()));
+    }
+
+    inline ShaderObject getGlobalInvocationID() {
+        return ShaderObject(rg::ShaderOperand(rg::ShaderOperand::Instruction,
+                                              rg::ShaderInstructionFactory::getGlobalInvocationID()));
+    }
+
     inline void setVertexPosition(const ShaderObject &value) {
         BlockScope::get().addInstruction(rg::ShaderInstructionFactory::setVertexPosition(value.operand));
     }

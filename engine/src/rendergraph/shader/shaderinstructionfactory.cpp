@@ -119,6 +119,30 @@ namespace xng::rg::ShaderInstructionFactory {
         return ret;
     }
 
+    ShaderInstruction getNumberOfWorkGroups() {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::GetNumberOfWorkGroups;
+        return ret;
+    }
+
+    ShaderInstruction getWorkGroupID() {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::GetWorkGroupID;
+        return ret;
+    }
+
+    ShaderInstruction getLocalInvocationID() {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::GetLocalInvocationID;
+        return ret;
+    }
+
+    ShaderInstruction getGlobalInvocationID() {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::GetGlobalInvocationID;
+        return ret;
+    }
+
     ShaderInstruction setFragmentDepth(ShaderOperand depth) {
         ShaderInstruction ret;
         ret.code = ShaderInstruction::SetFragmentDepth;

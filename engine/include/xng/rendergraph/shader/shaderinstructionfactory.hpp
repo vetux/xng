@@ -60,6 +60,14 @@ namespace xng::rg {
 
         XENGINE_EXPORT ShaderInstruction getBaseInstance();
 
+        XENGINE_EXPORT ShaderInstruction getNumberOfWorkGroups();
+
+        XENGINE_EXPORT ShaderInstruction getWorkGroupID();
+
+        XENGINE_EXPORT ShaderInstruction getLocalInvocationID();
+
+        XENGINE_EXPORT ShaderInstruction getGlobalInvocationID();
+
         XENGINE_EXPORT ShaderInstruction setFragmentDepth(ShaderOperand depth);
 
         XENGINE_EXPORT ShaderInstruction setLayer(ShaderOperand layer);

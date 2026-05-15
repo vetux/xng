@@ -57,6 +57,14 @@ namespace InstructionCompiler {
                 return indent + "gl_BaseVertex";
             case ShaderInstruction::GetBaseInstance:
                 return indent + "gl_BaseInstance";
+            case ShaderInstruction::GetNumberOfWorkGroups:
+                return indent + "gl_NumWorkGroups";
+            case ShaderInstruction::GetWorkGroupID:
+                return indent + "gl_WorkGroupID";
+            case ShaderInstruction::GetLocalInvocationID:
+                return indent + "gl_LocalInvocationID";
+            case ShaderInstruction::GetGlobalInvocationID:
+                return indent + "gl_GlobalInvocationID";
             case ShaderInstruction::SetFragmentDepth:
                 return compileSetFragmentDepth(instruction, source, functionName, indent);
             case ShaderInstruction::SetLayer:

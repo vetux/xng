@@ -54,7 +54,7 @@ namespace xng::rg {
             EmitVertex,
             EndPrimitive,
 
-            // Built-In Data Retrieval (Vertex Stage only)
+            // Built-In Data Retrieval (Vertex Stage)
             GetVertexID, // The index of the vertex currently being processed
             GetInstanceID, // The index of the instance for instanced draw
 
@@ -62,6 +62,12 @@ namespace xng::rg {
 
             GetBaseVertex, // The baseVertex value from the draw command
             GetBaseInstance, // The baseInstance value from the draw command
+
+            // Built-In Data Retrieval (Compute Stage)
+            GetNumberOfWorkGroups,
+            GetWorkGroupID,
+            GetLocalInvocationID,
+            GetGlobalInvocationID,
 
             // Built-In Data Assignment
             SetFragmentDepth,
