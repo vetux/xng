@@ -24,8 +24,7 @@
 namespace xng {
     class RenderMaterial final : public RenderObject {
     public:
-        explicit RenderMaterial(const Id id,
-                                BufferStreamer<ShaderMaterial::CPU> &materialStream,
+        explicit RenderMaterial(BufferStreamer<ShaderMaterial::CPU> &materialStream,
                                 ColorRGBA albedoColor,
                                 float metallicColor,
                                 float roughnessColor,
@@ -36,7 +35,7 @@ namespace xng {
                                 RenderObjectHandle<RenderTexture> _ambientOcclusion,
                                 RenderObjectHandle<RenderTexture> _normal,
                                 const Vec4f &normalIntensity)
-            : RenderObject(id, OBJECT_MATERIAL),
+            : RenderObject(OBJECT_MATERIAL),
               materialStream(materialStream),
               albedo(std::move(_albedo)),
               metallic(std::move(_metallic)),
@@ -54,7 +53,7 @@ namespace xng {
             material.normalIntensity = normalIntensity;
 
             if (albedo) {
-                const auto &handle = albedo->getTextureHandle();
+                const auto &handle = albedo->getHandle();
                 auto scale = handle.getScale();
 
                 material.albedo.level_index_filtering_assigned = Vec4i(handle.level,
@@ -70,7 +69,7 @@ namespace xng {
             }
 
             if (metallic) {
-                const auto &handle = metallic->getTextureHandle();
+                const auto &handle = metallic->getHandle();
                 auto scale = handle.getScale();
 
                 material.metallic.level_index_filtering_assigned = Vec4i(handle.level,
@@ -86,7 +85,7 @@ namespace xng {
             }
 
             if (roughness) {
-                const auto &handle = roughness->getTextureHandle();
+                const auto &handle = roughness->getHandle();
                 auto scale = handle.getScale();
 
                 material.roughness.level_index_filtering_assigned = Vec4i(handle.level,
@@ -102,7 +101,7 @@ namespace xng {
             }
 
             if (ambientOcclusion) {
-                const auto &handle = ambientOcclusion->getTextureHandle();
+                const auto &handle = ambientOcclusion->getHandle();
                 auto scale = handle.getScale();
 
                 material.ambientOcclusion.level_index_filtering_assigned = Vec4i(handle.level,
@@ -119,7 +118,7 @@ namespace xng {
             }
 
             if (normal) {
-                const auto &handle = normal->getTextureHandle();
+                const auto &handle = normal->getHandle();
                 auto scale = handle.getScale();
 
                 material.normal.level_index_filtering_assigned = Vec4i(handle.level,
@@ -139,7 +138,7 @@ namespace xng {
             materialStream.destroy(materialHandle);
         }
 
-        [[nodiscard]] BufferStreamer<ShaderMaterial::CPU>::Slot getMaterialHandle() const {
+        [[nodiscard]] BufferStreamer<ShaderMaterial::CPU>::Slot getSlot() const {
             return materialHandle;
         }
 

@@ -26,10 +26,9 @@
 namespace xng {
     class RenderSkeleton final : public RenderObject {
     public:
-        RenderSkeleton(const Id id,
-                       BufferStreamer<ShaderTransform::CPU> &boneStream,
+        RenderSkeleton(BufferStreamer<ShaderTransform::CPU> &boneStream,
                        const std::vector<std::string> &boneNames)
-            : RenderObject(id, OBJECT_SKELETON), boneStream(boneStream) {
+            : RenderObject(OBJECT_SKELETON), boneStream(boneStream) {
             for (const auto &name: boneNames) {
                 boneHandles[name] = boneStream.create();
             }
@@ -53,7 +52,7 @@ namespace xng {
             }
         }
 
-        const std::unordered_map<std::string, BufferStreamer<ShaderTransform::CPU>::Slot> &getBoneHandles() const {
+        const std::unordered_map<std::string, BufferStreamer<ShaderTransform::CPU>::Slot> &getSlots() const {
             return boneHandles;
         }
 

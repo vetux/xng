@@ -25,10 +25,9 @@
 namespace xng {
     class RenderTexture final : public RenderObject {
     public:
-        explicit RenderTexture(const Id id,
-                               TextureStreamer &textureStreamer,
+        explicit RenderTexture(TextureStreamer &textureStreamer,
                                const ImageRGBA &image)
-            : RenderObject(id, OBJECT_TEXTURE), textureStreamer(textureStreamer) {
+            : RenderObject(OBJECT_TEXTURE), textureStreamer(textureStreamer) {
             textureHandle = textureStreamer.upload(image);
         }
 
@@ -36,7 +35,7 @@ namespace xng {
             textureStreamer.destroy(textureHandle);
         }
 
-        [[nodiscard]] TextureStreamer::Handle getTextureHandle() const {
+        [[nodiscard]] TextureStreamer::Handle getHandle() const {
             return textureHandle;
         }
 

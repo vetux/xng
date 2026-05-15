@@ -33,17 +33,15 @@ namespace xng {
          * The passes can assume that the arguments are referenceable until their callback has run and stay stable
          * across callback invocations.
          *
-         * The renderer will for now rerecord and execute the graph inside each draw invocation.
-         *
          * @param builder
          * @param surface
-         * @param scene
          * @param registry
+         * @param scene
          */
         virtual void record(rg::GraphBuilder &builder,
                             rg::Surface &surface,
-                            const RenderScene &scene,
-                            RenderPassRegistry &registry) = 0;
+                            RenderPassRegistry &registry,
+                            const RenderScene &scene) = 0;
     };
 }
 

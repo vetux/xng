@@ -24,8 +24,10 @@
 namespace xng {
     class RenderPaint final : public RenderObject {
     public:
-        RenderPaint(const RenderObject::Id id)
-            : RenderObject(id, OBJECT_PAINT) {}
+        RenderPaint()
+            : RenderObject(OBJECT_PAINT) {
+        }
+
         // TODO: Scene paint data handling
         // Use the existing deferred / forward pipelines for the canvas rendering
         // by adding more fine grained materials.

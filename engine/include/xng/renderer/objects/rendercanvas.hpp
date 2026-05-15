@@ -26,11 +26,11 @@
 namespace xng {
     class RenderCanvas final : public RenderObject {
     public:
-        RenderCanvas(const Id id,
-                     BufferStreamer<ShaderTransform::CPU> &transformStream,
+        RenderCanvas(BufferStreamer<ShaderTransform::CPU> &transformStream,
                      RenderObjectHandle<RenderMesh> _mesh,
                      std::vector<RenderObjectHandle<RenderPaint> > _paint)
-            : RenderObject(id, OBJECT_CANVAS), transformStream(transformStream), mesh(std::move(_mesh)), paint(std::move(_paint)) {
+            : RenderObject(OBJECT_CANVAS), transformStream(transformStream), mesh(std::move(_mesh)),
+              paint(std::move(_paint)) {
         }
 
         ~RenderCanvas() = default;

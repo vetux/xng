@@ -20,7 +20,6 @@
 #define XENGINE_RENDERDIRECTIONALLIGHT_HPP
 
 #include "xng/renderer/renderobject.hpp"
-#include "xng/renderer/stream/streamtexture.hpp"
 #include "xng/renderer/stream/bufferstreamer.hpp"
 
 namespace xng {
@@ -39,18 +38,14 @@ namespace xng {
                    * MatrixMath::inverse(transform.getRotation().matrix());
         }
 
-        RenderDirectionalLight(const Id id,
-                               BufferStreamer<ShaderDirectionalLight::CPU> &lightStream,
-                               StreamTexture &shadowMapTexture)
-            : RenderObject(id, OBJECT_DIRECTIONAL_LIGHT),
-              lightStream(lightStream),
-              shadowMapTexture(shadowMapTexture) {
+        explicit RenderDirectionalLight(BufferStreamer<ShaderDirectionalLight::CPU> &lightStream)
+            : RenderObject(OBJECT_DIRECTIONAL_LIGHT),
+              lightStream(lightStream) {
             lightHandle = lightStream.create();
         }
 
         ~RenderDirectionalLight() override {
             lightStream.destroy(lightHandle);
-            deallocateShadowMap();
         }
 
         void set(const Vec3f &direction,
@@ -69,22 +64,16 @@ namespace xng {
             light.shadowFarPlane = Vec4f(shadowFarPlane, 0, 0, 0);
 
             if (castShadows) {
-                if (!shadowMapAllocated) {
-                    shadowMap = shadowMapTexture.create();
-                    shadowMapAllocated = true;
-                }
-                light.shadowLayer = Vec4i(static_cast<int>(shadowMap), 0, 0, 0);
                 light.shadowProjectionMatrix = getShadowProjection(Transform({}, direction, {}),
                                                                    shadowNearPlane,
                                                                    shadowFarPlane,
                                                                    shadowExtent);
-            } else {
-                deallocateShadowMap();
-                light.shadowLayer = Vec4i(-1, 0, 0, 0);
             }
+
+            lightStream.upload(lightHandle, light);
         }
 
-        [[nodiscard]] BufferStreamer<ShaderPointLight::CPU>::Slot getLightHandle() const {
+        [[nodiscard]] BufferStreamer<ShaderPointLight::CPU>::Slot getSlot() const {
             return lightHandle;
         }
 
@@ -97,20 +86,8 @@ namespace xng {
         }
 
     private:
-        void deallocateShadowMap() {
-            if (shadowMapAllocated) {
-                shadowMapTexture.destroy(shadowMap);
-            }
-            shadowMapAllocated = false;
-        }
-
         BufferStreamer<ShaderDirectionalLight::CPU> lightStream;
         BufferStreamer<ShaderDirectionalLight::CPU>::Slot lightHandle;
-
-        StreamTexture &shadowMapTexture;
-        StreamTexture::Slot shadowMap{};
-
-        bool shadowMapAllocated = false;
     };
 }
 #endif //XENGINE_RENDERDIRECTIONALLIGHT_HPP

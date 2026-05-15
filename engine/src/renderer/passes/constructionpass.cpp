@@ -127,59 +127,6 @@ namespace xng {
         Input(vec2, uv)
         Input(vec3, tangent)
         Input(vec3, bitangent)
-
-        Output(vec3, fPos)
-        Output(vec3, fNorm)
-        Output(vec3, fTan)
-        Output(vec2, fUv)
-        Output(vec4, vPos)
-        Output(vec3, fT)
-        Output(vec3, fB)
-        Output(vec3, fN)
-        Output(mat4, fModel)
-
-        Parameter(UInt, objectId)
-        Parameter(UInt, transformIndex)
-        Parameter(UInt, materialIndex)
-        Parameter(UInt, boneBaseIndex)
-        Parameter(Bool, receiveShadows)
-
-        Buffer(ShaderCamera, camera)
-        DynamicBuffer(ShaderTransform, transforms)
-        DynamicBuffer(ShaderMaterial, materials)
-
-        TextureArray(TEXTURE_2D_ARRAY, RGBA8, 12, atlasTextures)
-
-        mat4 model = transforms[transformIndex].transform;
-        mat4 mvp = camera.projection * camera.view * model;
-
-        vPos = mvp * vec4(position, 1);
-        fPos = (model * vec4(position, 1)).xyz();
-        fUv = uv;
-        fNorm = normalize(normal);
-        fTan = normalize(tangent);
-
-        //https://www.gamedeveloper.com/programming/three-normal-mapping-techniques-explained-for-the-mathematically-uninclined
-        fN = normalize((model * vec4(normal, 0.0)).xyz());
-        fT = normalize((model * vec4(tangent, 0.0)).xyz());
-        fB = normalize((model * vec4(cross(normalize(tangent), normalize(normal).xyz()) * 1, 0.0)).xyz());
-
-        fModel = model;
-
-        setVertexPosition(vPos);
-
-        EndShader();
-        return BuildShader();
-    }
-
-    Shader ConstructionPass::compileSkinnedVertexShader() {
-        BeginShader(Shader::VERTEX)
-
-        Input(vec3, position)
-        Input(vec3, normal)
-        Input(vec2, uv)
-        Input(vec3, tangent)
-        Input(vec3, bitangent)
         Input(ivec4, boneIds)
         Input(vec4, boneWeights)
 
@@ -192,23 +139,28 @@ namespace xng {
         Output(vec3, fB)
         Output(vec3, fN)
         Output(mat4, fModel)
-
-        Parameter(UInt, objectId)
-        Parameter(UInt, transformIndex)
-        Parameter(UInt, materialIndex)
-        Parameter(UInt, boneBaseIndex)
-        Parameter(Bool, receiveShadows)
+        OutputFlat(UInt, fMaterialIndex)
+        OutputFlat(UInt, fObjectID)
+        OutputFlat(Bool, fReceiveShadows)
 
         Buffer(ShaderCamera, camera)
         DynamicBuffer(ShaderTransform, transforms)
         DynamicBuffer(ShaderMaterial, materials)
+        DynamicBuffer(ShaderModel, models)
 
         TextureArray(TEXTURE_2D_ARRAY, RGBA8, 12, atlasTextures)
 
-        vec4 pos = getSkinnedVertexPosition(boneBaseIndex, position, boneIds, boneWeights);
+        UInt modelIndex = getBaseInstance() + getDrawID() + getInstanceID();
 
-        mat4 model = transforms[transformIndex].transform;
-        mat4 mvp = camera.projection * camera.view * model;
+        vec4 pos;
+        If(models[modelIndex].skinned == true)
+            pos = getSkinnedVertexPosition(models[modelIndex].baseBoneIndex, position, boneIds, boneWeights);
+        Else
+            pos = vec4(position, 1.0f);
+        Fi
+
+        mat4 model = transforms[models[modelIndex].transformIndex].transform;
+        mat4 mvp = models[modelIndex].mvp;
 
         vPos = mvp * pos;
         fPos = (model * pos).xyz();
@@ -223,6 +175,10 @@ namespace xng {
         fB = normalize((model * vec4(cross(normalize(tangent), normalize(normal).xyz()) * 1, 0.0)).xyz());
 
         fModel = model;
+
+        fMaterialIndex = models[modelIndex].materialIndex;
+        fObjectID = models[modelIndex].objectID;
+        fReceiveShadows = models[modelIndex].receiveShadows;
 
         setVertexPosition(vPos);
 
@@ -243,6 +199,9 @@ namespace xng {
         Input(vec3, fB)
         Input(vec3, fN)
         Input(mat4, fModel)
+        InputFlat(UInt, fMaterialIndex)
+        InputFlat(UInt, fObjectID)
+        InputFlat(Bool, fReceiveShadows)
 
         Output(vec4, oPosition)
         Output(vec4, oNormal)
@@ -251,20 +210,15 @@ namespace xng {
         Output(vec4, oAlbedo)
         Output(ivec4, oObjectShadows)
 
-        Parameter(UInt, objectId)
-        Parameter(UInt, transformIndex)
-        Parameter(UInt, materialIndex)
-        Parameter(UInt, boneBaseIndex)
-        Parameter(Bool, receiveShadows)
-
         Buffer(ShaderCamera, camera)
         DynamicBuffer(ShaderTransform, transforms)
         DynamicBuffer(ShaderMaterial, materials)
         DynamicBuffer(ShaderTransform, bones)
+        DynamicBuffer(ShaderModel, models)
 
         TextureArray(TEXTURE_2D_ARRAY, RGBA8, 12, atlasTextures)
 
-        ShaderMaterial material = materials[materialIndex];
+        ShaderMaterial material = materials[fMaterialIndex];
 
         oPosition = vec4(fPos, 1);
 
@@ -310,8 +264,8 @@ namespace xng {
             oNormal = vec4(normalize(texNormal), 1);
         Fi
 
-        oObjectShadows.x() = objectId;
-        oObjectShadows.y() = receiveShadows;
+        oObjectShadows.x() = fObjectID;
+        oObjectShadows.y() = fReceiveShadows;
         oObjectShadows.z() = 0;
         oObjectShadows.w() = 1;
 

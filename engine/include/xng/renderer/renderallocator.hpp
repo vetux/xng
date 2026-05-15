@@ -22,7 +22,6 @@
 #include "xng/assets/assetscene.hpp"
 
 #include "xng/renderer/camera.hpp"
-#include "xng/renderer/renderscene.hpp"
 #include "xng/renderer/objects/renderdirectionallight.hpp"
 #include "xng/renderer/objects/rendermaterial.hpp"
 #include "xng/renderer/objects/rendermesh.hpp"
@@ -34,34 +33,31 @@
 
 namespace xng {
     /**
-     * The render allocator handles allocation / streaming of objects.
+     * The render allocator handles allocation / streaming of persistent objects.
      */
     class RenderAllocator {
     public:
-        explicit RenderAllocator(rg::Heap &heap);
+        explicit RenderAllocator(rg::Heap &heap)
+            : heap(heap),
+              transformStream(heap),
+              boneStream(heap),
+              materialStream(heap),
+              pointLightStream(heap),
+              spotLightStream(heap),
+              directionalLightStream(heap),
+              meshStream(heap),
+              textureStream(heap) {
+        }
 
         RenderAllocator(const RenderAllocator &) = delete;
 
         RenderAllocator &operator=(const RenderAllocator &) = delete;
 
-        ~RenderAllocator();
+        ~RenderAllocator() = default;
 
-        /**
-         * Currently, only models can be selectively drawn in a scene.
-         * All existing lights will be present in the returned scene.
-         *
-         * More sophisticated packing strategies can be implemented later on based on referenced objects.
-         * Before this user-controlled heap resource address support should be implemented in the render graph to really get 100% cache locality.
-         *
-         * @param builder The builder to use for committing the streams.
-         * @param models The models to draw
-         * @return The scene
-         */
-        RenderScene createScene(rg::GraphBuilder &builder, const std::vector<RenderObjectHandle<RenderModel> > &models);
-
-        void setCamera(const Camera &camera);
-
-        RenderObjectHandle<RenderTexture> createTexture(const ImageRGBA &image);
+        RenderObjectHandle<RenderTexture> createTexture(const ImageRGBA &image) {
+            return std::make_shared<RenderTexture>(textureStream, image);
+        }
 
         RenderObjectHandle<RenderMaterial> createMaterial(const ColorRGBA &albedo,
                                                           float metallic,
@@ -72,70 +68,92 @@ namespace xng {
                                                           RenderObjectHandle<RenderTexture> metallicTexture,
                                                           RenderObjectHandle<RenderTexture> roughnessTexture,
                                                           RenderObjectHandle<RenderTexture> ambientOcclusionTexture,
-                                                          RenderObjectHandle<RenderTexture> normalTexture);
+                                                          RenderObjectHandle<RenderTexture> normalTexture) {
+            return std::make_shared<RenderMaterial>(materialStream,
+                                                    albedo,
+                                                    metallic,
+                                                    roughness,
+                                                    ambientOcclusion,
+                                                    albedoTexture,
+                                                    metallicTexture,
+                                                    roughnessTexture,
+                                                    ambientOcclusionTexture,
+                                                    normalTexture,
+                                                    normalIntensity);
+        }
 
-        RenderObjectHandle<RenderSkeleton> createSkeleton(const std::vector<std::string> &boneNames);
+        RenderObjectHandle<RenderSkeleton> createSkeleton(const std::vector<std::string> &boneNames) {
+            return std::make_shared<RenderSkeleton>(boneStream, boneNames);
+        }
 
-        RenderObjectHandle<RenderMesh> createMesh(const Mesh &mesh, RenderObjectHandle<RenderSkeleton> skeleton);
+        RenderObjectHandle<RenderMesh> createMesh(const Mesh &mesh, RenderObjectHandle<RenderSkeleton> skeleton) {
+            return std::make_shared<RenderMesh>(meshStream, mesh, skeleton);
+        }
 
         RenderObjectHandle<RenderModel> createModel(const std::vector<RenderObjectHandle<RenderMesh> > &meshes,
                                                     RenderObjectHandle<RenderMaterial> material,
-                                                    bool receiveShadows);
+                                                    bool receiveShadows,
+                                                    bool castShadows) {
+            return std::make_shared<RenderModel>(transformStream,
+                                                 meshes,
+                                                 material,
+                                                 receiveShadows,
+                                                 castShadows);
+        }
 
-        RenderObjectHandle<RenderPointLight> createPointLight();
+        RenderObjectHandle<RenderPointLight> createPointLight() {
+            return std::make_shared<RenderPointLight>(pointLightStream);
+        }
 
-        RenderObjectHandle<RenderSpotLight> createSpotLight();
+        RenderObjectHandle<RenderSpotLight> createSpotLight() {
+            return std::make_shared<RenderSpotLight>(spotLightStream);
+        }
 
-        RenderObjectHandle<RenderDirectionalLight> createDirectionalLight();
+        RenderObjectHandle<RenderDirectionalLight> createDirectionalLight() {
+            return std::make_shared<RenderDirectionalLight>(directionalLightStream);
+        }
+
+        [[nodiscard]] BufferStreamer<ShaderTransform::CPU> &getTransformStream() {
+            return transformStream;
+        }
+
+        [[nodiscard]] BufferStreamer<ShaderMaterial::CPU> &getMaterialStream() {
+            return materialStream;
+        }
+
+        [[nodiscard]] BufferStreamer<ShaderPointLight::CPU> &getPointLightStream() {
+            return pointLightStream;
+        }
+
+        [[nodiscard]] BufferStreamer<ShaderSpotLight::CPU> &getSpotLightStream() {
+            return spotLightStream;
+        }
+
+        [[nodiscard]] BufferStreamer<ShaderDirectionalLight::CPU> &getDirectionalLightStream() {
+            return directionalLightStream;
+        }
+
+        [[nodiscard]] MeshStreamer &getMeshStream() {
+            return meshStream;
+        }
+
+        [[nodiscard]] TextureStreamer &getTextureStream() {
+            return textureStream;
+        }
 
     private:
-        struct Streams {
-            StreamBuffer cameraStream;
-            BufferStreamer<ShaderTransform::CPU> transformStream;
-            BufferStreamer<ShaderTransform::CPU> boneStream;
-            BufferStreamer<ShaderMaterial::CPU> materialStream;
-
-            BufferStreamer<ShaderPointLight::CPU> pointLightStream;
-            BufferStreamer<ShaderSpotLight::CPU> spotLightStream;
-            BufferStreamer<ShaderDirectionalLight::CPU> directionalLightStream;
-
-            StreamTexture pointShadowMaps;
-            StreamTexture spotShadowMaps;
-            StreamTexture directionalShadowMaps;
-
-            MeshStreamer meshStream;
-            TextureStreamer textureStream;
-
-            explicit Streams(rg::Heap &heap, const Vec2i &shadowMapResolution)
-                : cameraStream(heap, rg::Buffer::CAPABILITY_STORAGE),
-                  transformStream(heap),
-                  boneStream(heap),
-                  materialStream(heap),
-                  pointLightStream(heap),
-                  spotLightStream(heap),
-                  directionalLightStream(heap),
-                  pointShadowMaps(heap, rg::Texture(rg::Texture::CAPABILITY_DEPTH_STENCIL_ATTACHMENT
-                                                    | rg::Texture::CAPABILITY_SAMPLED,
-                                                    shadowMapResolution,
-                                                    rg::TEXTURE_CUBE_MAP,
-                                                    rg::DEPTH_32F)),
-                  spotShadowMaps(heap, rg::Texture(rg::Texture::CAPABILITY_DEPTH_STENCIL_ATTACHMENT
-                                                   | rg::Texture::CAPABILITY_SAMPLED,
-                                                   shadowMapResolution,
-                                                   rg::TEXTURE_2D,
-                                                   rg::DEPTH_32F)),
-                  directionalShadowMaps(heap, rg::Texture(rg::Texture::CAPABILITY_DEPTH_STENCIL_ATTACHMENT
-                                                          | rg::Texture::CAPABILITY_SAMPLED,
-                                                          shadowMapResolution,
-                                                          rg::TEXTURE_2D,
-                                                          rg::DEPTH_32F)),
-                  meshStream(heap),
-                  textureStream(heap) {
-            }
-        };
-
         rg::Heap &heap;
-        Streams streams;
+
+        BufferStreamer<ShaderTransform::CPU> transformStream;
+        BufferStreamer<ShaderTransform::CPU> boneStream;
+        BufferStreamer<ShaderMaterial::CPU> materialStream;
+
+        BufferStreamer<ShaderPointLight::CPU> pointLightStream;
+        BufferStreamer<ShaderSpotLight::CPU> spotLightStream;
+        BufferStreamer<ShaderDirectionalLight::CPU> directionalLightStream;
+
+        MeshStreamer meshStream;
+        TextureStreamer textureStream;
     };
 }
 

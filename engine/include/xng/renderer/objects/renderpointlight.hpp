@@ -25,18 +25,14 @@
 namespace xng {
     class RenderPointLight final : public RenderObject {
     public:
-        RenderPointLight(const Id id,
-                         BufferStreamer<ShaderPointLight::CPU> &lightStream,
-                         StreamTexture &shadowMapTexture)
-            : RenderObject(id, OBJECT_POINT_LIGHT),
-              lightStream(lightStream),
-              shadowMapTexture(shadowMapTexture) {
+        explicit RenderPointLight(BufferStreamer<ShaderPointLight::CPU> &lightStream)
+            : RenderObject(OBJECT_POINT_LIGHT),
+              lightStream(lightStream) {
             lightHandle = lightStream.create();
         }
 
         ~RenderPointLight() override {
             lightStream.destroy(lightHandle);
-            deallocateShadowMap();
         }
 
         void set(const Vec3f &position,
@@ -54,12 +50,6 @@ namespace xng {
             light.shadowFarPlane = Vec4f(shadowFarPlane, 0, 0, 0);
 
             if (castShadows) {
-                if (!shadowMapAllocated) {
-                    shadowMap = shadowMapTexture.create();
-                    shadowMapAllocated = true;
-                }
-                light.shadowLayer = Vec4i(static_cast<int>(shadowMap), 0, 0, 0);
-
                 const auto shadowProj = MatrixMath::perspective(90.0f, 1, shadowNearPlane, shadowFarPlane);
 
                 light.shadowMatrices.value[0] = (shadowProj *
@@ -86,15 +76,12 @@ namespace xng {
                                                  MatrixMath::lookAt(position,
                                                                     position + Vec3f(0.0, 0.0, -1.0),
                                                                     Vec3f(0.0, -1.0, 0.0)));
-            } else {
-                deallocateShadowMap();
-                light.shadowLayer = Vec4i(-1, 0, 0, 0);
             }
 
             lightStream.upload(lightHandle, light);
         }
 
-        [[nodiscard]] BufferStreamer<ShaderPointLight::CPU>::Slot getLightHandle() const {
+        [[nodiscard]] BufferStreamer<ShaderPointLight::CPU>::Slot getSlot() const {
             return lightHandle;
         }
 
@@ -107,20 +94,8 @@ namespace xng {
         }
 
     private:
-        void deallocateShadowMap() {
-            if (shadowMapAllocated) {
-                shadowMapTexture.destroy(shadowMap);
-            }
-            shadowMapAllocated = false;
-        }
-
         BufferStreamer<ShaderPointLight::CPU> lightStream;
         BufferStreamer<ShaderPointLight::CPU>::Slot lightHandle;
-
-        StreamTexture &shadowMapTexture;
-        StreamTexture::Slot shadowMap{};
-
-        bool shadowMapAllocated = false;
     };
 }
 #endif //XENGINE_RENDERPOINTLIGHT_HPP

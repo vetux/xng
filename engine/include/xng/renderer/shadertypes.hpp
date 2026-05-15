@@ -36,14 +36,12 @@ namespace xng {
                  Vec4f, position,
                  Vec4f, color,
                  Vec4f, shadowFarPlane,
-                 Vec4i, shadowLayer, // .x = The index of the shadow map in the shadow map array texture
                  Mat4f_Array_6, shadowMatrices)
 
     ShaderStruct(ShaderDirectionalLight,
                  Vec4f, color,
                  Vec4f, direction,
                  Vec4f, shadowFarPlane,
-                 Vec4i, shadowLayer, // .x = The index of the shadow map in the shadow map array texture
                  Mat4f, shadowProjectionMatrix)
 
     ShaderStruct(ShaderSpotLight,
@@ -52,7 +50,6 @@ namespace xng {
                  Vec4f, direction_quadratic,
                  Vec4f, cutOff_outerCutOff_constant_linear,
                  Vec4f, shadowFarPlane,
-                 Vec4i, shadowLayer, // .x = The index of the shadow map in the shadow map array texture
                  Mat4f, shadowProjectionMatrix)
 
     ShaderStruct(ShaderTexture,
@@ -78,7 +75,16 @@ namespace xng {
                  ShaderTexture, texture)
 
     ShaderStruct(ShaderConfiguration,
-             Vec4f, gamma)
+                 Vec4f, gamma)
+
+    ShaderStruct(ShaderModel,
+                 Mat4f, mvp,
+                 unsigned int, transformIndex,
+                 unsigned int, materialIndex,
+                 unsigned int, baseBoneIndex,
+                 unsigned int, objectID, // The index of the model in the draw list
+                 bool, receiveShadows,
+                 bool, skinned)
 }
 
 #endif //XENGINE_SHADERTYPES_HPP

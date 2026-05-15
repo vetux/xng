@@ -20,23 +20,24 @@
 #define XENGINE_RENDERER_HPP
 
 #include "xng/renderer/renderallocator.hpp"
-#include "xng/renderer/renderscene.hpp"
+#include "xng/renderer/renderdrawlist.hpp"
 
 namespace xng {
-    /**
-     * The renderer dispatches draw instructions to a user-supplied list of passes and handles object allocation.
-     */
     class Renderer {
     public:
-        Renderer(rg::Heap &heap);
+        explicit Renderer(rg::Heap &heap);
+
+        void setPasses(std::vector<std::shared_ptr<RenderPass>> passes);
 
         RenderAllocator &getAllocator();
 
-        void draw(rg::Surface &surface, const RenderScene &scene);
+        void draw(rg::Surface &surface, const RenderDrawList &drawList);
 
     private:
         rg::Heap &heap;
         RenderAllocator allocator;
+
+        std::vector<std::shared_ptr<RenderPass>> passes;
     };
 }
 

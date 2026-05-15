@@ -27,113 +27,119 @@
 #include "xng/renderer/objects/renderspotlight.hpp"
 #include "xng/renderer/objects/renderdirectionallight.hpp"
 
+#include "xng/shaderscript/indirectbuffers.hpp"
+
 namespace xng {
     /**
-     * The scene is the product of the render allocator packing / allocation strategy.
+     * The absolute (Packed) data to be drawn via indirect draw.
      *
-     * It constrains the basic allocation model for the scene data while allowing the allocator to perform packing.
+     * Any kind of virtual geometry / culling / packing logic would sit in front of this.
+     *
+     * Passes only have to be rerecorded when any members of this struct are changed but not if the actual contents of the resources on the gpu change.
+     *
+     * Heap / Streaming / Residency concepts are hidden from consumers of the render scene.
      */
     struct RenderScene {
-        struct Mesh {
-            rg::Primitive primitive;
-            rg::DrawCall drawCall;
+        struct BufferAccessRange {
+            size_t offset;
+            size_t size;
+        };
 
-            bool indexed;
-            int baseIndex; // The offset applied to each index.
-            size_t indexCount; // The number of indices for this mesh
+        struct Batch {
+            /**
+             * The maximum number of commands in the indirect buffer.
+             */
+            size_t batchSize;
 
-            int baseBone; // The offset applied to each bone index
-            size_t boneCount; // The number of bones for this mesh
+            /**
+             * The stride between commands in the indirect buffer.
+             */
+            size_t stride;
 
-            Mesh(const rg::Primitive primitive,
-                 const rg::DrawCall &drawCall,
-                 const bool indexed,
-                 const int baseIndex,
-                 const size_t indexCount,
-                 const int baseBone,
-                 const size_t boneCount)
-                : primitive(primitive),
-                  drawCall(drawCall),
-                  indexed(indexed),
-                  baseIndex(baseIndex),
-                  indexCount(indexCount),
-                  baseBone(baseBone),
-                  boneCount(boneCount) {
+            /**
+             * The indirect buffer containing up to batchSize commands.
+             *
+             * The size of the indirect buffer is batchSize * sizeof(ShaderDrawIndirectIndexed)
+             */
+            rg::Resource<rg::Buffer> indirectBuffer;
+            size_t indirectBufferOffset;
+
+            /**
+             * The count buffer containing the number of commands in the indirect buffer
+             */
+            rg::Resource<rg::Buffer> indirectCountBuffer;
+            size_t indirectCountBufferOffset;
+
+            Batch(const size_t batchSize,
+                  const size_t stride,
+                  const rg::Resource<rg::Buffer> &indirectBuffer,
+                  const size_t indirectBufferOffset,
+                  const rg::Resource<rg::Buffer> &indirectCountBuffer,
+                  const size_t indirectCountBufferOffset) : batchSize(batchSize),
+                                                            stride(stride),
+                                                            indirectBuffer(indirectBuffer),
+                                                            indirectBufferOffset(indirectBufferOffset),
+                                                            indirectCountBuffer(indirectCountBuffer),
+                                                            indirectCountBufferOffset(indirectCountBufferOffset) {
             }
         };
 
-        struct Model {
-            std::vector<Mesh> meshes;
+        /**
+         * TODO: Find clean and performant solution for skinned / non skinned and array / indexed interleaved draw calls.
+         */
 
-            unsigned int transformIndex; // Index into transformBuffer
-            unsigned int materialIndex; // Index into materialBuffer
+        /**
+         * The render batches.
+         */
+        std::vector<Batch> batches;
 
-            bool receiveShadows;
+        /**
+         * The model buffer indexed via GetBaseInstance + GetDrawID + GetInstanceID
+         */
+        rg::Resource<rg::Buffer> modelBuffer;
 
-            std::unordered_map<TextureResolution, std::vector<size_t> > materialTextureIndices;
+        /**
+         * The buffers indexed via the indices in the model buffer
+         */
+        rg::Resource<rg::Buffer> transformBuffer;
+        rg::Resource<rg::Buffer> materialBuffer;
+        rg::Resource<rg::Buffer> boneBuffer;
 
-            Model(std::vector<Mesh> meshes,
-                  const size_t transformIndex,
-                  const size_t materialIndex,
-                  const bool receiveShadows,
-                  std::unordered_map<TextureResolution, std::vector<size_t> > _materialTextureIndices)
-                : meshes(std::move(meshes)),
-                  transformIndex(transformIndex),
-                  materialIndex(materialIndex),
-                  receiveShadows(receiveShadows),
-                  materialTextureIndices(std::move(_materialTextureIndices)) {
-            }
-        };
+        /**
+         * The vertex / index buffers containing all geometry.
+         */
+        std::unordered_map<VertexAttribute, rg::Resource<rg::Buffer> > vertexBuffers;
+        rg::Resource<rg::Buffer> indexBuffer;
 
-        RenderScene(std::vector<Model> _models,
-                    rg::HeapResource<rg::Buffer> _cameraBuffer,
-                    rg::HeapResource<rg::Buffer> _transformBuffer,
-                    rg::HeapResource<rg::Buffer> _boneBuffer,
-                    rg::HeapResource<rg::Buffer> _materialBuffer,
-                    rg::HeapResource<rg::Buffer> _pointLightBuffer,
-                    rg::HeapResource<rg::Buffer> _spotLightBuffer,
-                    rg::HeapResource<rg::Buffer> _directionalLightBuffer,
-                    rg::HeapResource<rg::Texture> _pointShadowMaps,
-                    rg::HeapResource<rg::Texture> _spotShadowMaps,
-                    rg::HeapResource<rg::Texture> _directionalShadowMaps,
-                    std::unordered_map<VertexAttribute, rg::HeapResource<rg::Buffer> > _vertexBuffers,
-                    rg::HeapResource<rg::Buffer> _indexBuffer,
-                    std::unordered_map<TextureResolution, rg::HeapResource<rg::Texture> > _textures)
-            : models(std::move(_models)),
-              cameraBuffer(std::move(_cameraBuffer)),
-              transformBuffer(std::move(_transformBuffer)),
-              boneBuffer(std::move(_boneBuffer)),
-              materialBuffer(std::move(_materialBuffer)),
-              pointLightBuffer(std::move(_pointLightBuffer)),
-              spotLightBuffer(std::move(_spotLightBuffer)),
-              directionalLightBuffer(std::move(_directionalLightBuffer)),
-              pointShadowMaps(std::move(_pointShadowMaps)),
-              spotShadowMaps(std::move(_spotShadowMaps)),
-              directionalShadowMaps(std::move(_directionalShadowMaps)),
-              vertexBuffers(std::move(_vertexBuffers)),
-              indexBuffer(std::move(_indexBuffer)),
-              textures(std::move(_textures)) {
-        }
+        /**
+         * The texture arrays containing all textures.
+         */
+        std::unordered_map<TextureResolution, rg::Resource<rg::Texture> > textures;
 
-        std::vector<Model> models;
+        /**
+         * The light buffers.
+         */
+        rg::Resource<rg::Buffer> pointLightBuffer;
+        rg::Resource<rg::Buffer> spotLightBuffer;
+        rg::Resource<rg::Buffer> directionalLightBuffer;
 
-        rg::HeapResource<rg::Buffer> cameraBuffer;
-        rg::HeapResource<rg::Buffer> transformBuffer;
-        rg::HeapResource<rg::Buffer> boneBuffer;
-        rg::HeapResource<rg::Buffer> materialBuffer;
+        /**
+         * The camera buffer.
+         */
+        rg::Resource<rg::Buffer> cameraBuffer;
 
-        rg::HeapResource<rg::Buffer> pointLightBuffer;
-        rg::HeapResource<rg::Buffer> spotLightBuffer;
-        rg::HeapResource<rg::Buffer> directionalLightBuffer;
+        /**
+         * The set of byte ranges / texture layers in the buffers that may be accessed by the batches.
+         */
+        std::vector<BufferAccessRange> modelBufferAccesses;
+        std::vector<BufferAccessRange> transformBufferAccesses;
+        std::vector<BufferAccessRange> materialBufferAccesses;
+        std::vector<BufferAccessRange> boneBufferAccesses;
 
-        rg::HeapResource<rg::Texture> pointShadowMaps;
-        rg::HeapResource<rg::Texture> spotShadowMaps;
-        rg::HeapResource<rg::Texture> directionalShadowMaps;
+        std::unordered_map<VertexAttribute, std::vector<BufferAccessRange>> vertexBufferAccesses;
+        std::vector<BufferAccessRange> indexBufferAccesses;
 
-        std::unordered_map<VertexAttribute, rg::HeapResource<rg::Buffer> > vertexBuffers;
-        rg::HeapResource<rg::Buffer> indexBuffer;
-
-        std::unordered_map<TextureResolution, rg::HeapResource<rg::Texture> > textures;
+        std::unordered_map<TextureResolution, std::vector<size_t>> textureAccesses;
     };
 }
 

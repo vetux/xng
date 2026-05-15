@@ -32,13 +32,12 @@ namespace xng {
      */
     class RenderModel final : public RenderObject {
     public:
-        RenderModel(const Id id,
-                    BufferStreamer<ShaderTransform::CPU> &transformStream,
+        RenderModel(BufferStreamer<ShaderTransform::CPU> &transformStream,
                     std::vector<RenderObjectHandle<RenderMesh> > _meshes,
                     RenderObjectHandle<RenderMaterial> _material,
                     const bool receiveShadows,
                     const bool castShadows)
-            : RenderObject(id, OBJECT_MODEL),
+            : RenderObject(OBJECT_MODEL),
               transformStream(transformStream),
               transformHandle(transformStream.create()),
               meshes(std::move(_meshes)),
@@ -56,7 +55,7 @@ namespace xng {
             transformStream.upload(transformHandle, {model});
         }
 
-        [[nodiscard]] BufferStreamer<ShaderTransform::CPU>::Slot getTransformHandle() const {
+        [[nodiscard]] BufferStreamer<ShaderTransform::CPU>::Slot getTransformSlot() const {
             return transformHandle;
         }
 

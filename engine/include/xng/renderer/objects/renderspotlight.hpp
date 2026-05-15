@@ -34,18 +34,14 @@ namespace xng {
                    * MatrixMath::translate(transform.getPosition() * -1);
         }
 
-        RenderSpotLight(const Id id,
-                        BufferStreamer<ShaderSpotLight::CPU> &lightStream,
-                        StreamTexture &shadowMapTexture)
-            : RenderObject(id, OBJECT_SPOT_LIGHT),
-              lightStream(lightStream),
-              shadowMapTexture(shadowMapTexture) {
+        explicit RenderSpotLight(BufferStreamer<ShaderSpotLight::CPU> &lightStream)
+            : RenderObject(OBJECT_SPOT_LIGHT),
+              lightStream(lightStream) {
             lightHandle = lightStream.create();
         }
 
         ~RenderSpotLight() override {
             lightStream.destroy(lightHandle);
-            deallocateShadowMap();
         }
 
         void set(const Vec3f &position,
@@ -71,21 +67,15 @@ namespace xng {
             light.shadowFarPlane = Vec4f(shadowFarPlane, 0, 0, 0);
 
             if (castShadows) {
-                if (!shadowMapAllocated) {
-                    shadowMap = shadowMapTexture.create();
-                    shadowMapAllocated = true;
-                }
-                light.shadowLayer = Vec4i(static_cast<int>(shadowMap), 0, 0, 0);
                 light.shadowProjectionMatrix = getShadowProjection(Transform(position, direction, {}),
                                                                    shadowNearPlane,
                                                                    shadowFarPlane);
-            } else {
-                deallocateShadowMap();
-                light.shadowLayer = Vec4i(-1, 0, 0, 0);
             }
+
+            lightStream.upload(lightHandle, light);
         }
 
-        [[nodiscard]] BufferStreamer<ShaderPointLight::CPU>::Slot getLightHandle() const {
+        [[nodiscard]] BufferStreamer<ShaderPointLight::CPU>::Slot getSlot() const {
             return lightHandle;
         }
 
@@ -98,20 +88,8 @@ namespace xng {
         }
 
     private:
-        void deallocateShadowMap() {
-            if (shadowMapAllocated) {
-                shadowMapTexture.destroy(shadowMap);
-            }
-            shadowMapAllocated = false;
-        }
-
         BufferStreamer<ShaderSpotLight::CPU> lightStream;
         BufferStreamer<ShaderSpotLight::CPU>::Slot lightHandle;
-
-        StreamTexture &shadowMapTexture;
-        StreamTexture::Slot shadowMap{};
-
-        bool shadowMapAllocated = false;
     };
 }
 

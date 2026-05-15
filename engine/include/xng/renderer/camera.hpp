@@ -47,9 +47,18 @@ namespace xng {
             return MatrixMath::perspective(fov, aspectRatio, nearClip, farClip);
         }
 
-        void setView(const Mat4f &v) {
-            view = v;
+        void setTransform(const Transform &cameraTransform) {
+            view = getView(cameraTransform);
             viewProjection = projection * view;
+        }
+
+        const Transform &getTransform() const {
+            return transform;
+        }
+
+        Vec4f getPosition() const {
+            auto pos4 = transform.getPosition();
+            return Vec4f(pos4.x, pos4.y, pos4.z, 0);
         }
 
         void setProjection(const Mat4f &p) {
@@ -70,6 +79,7 @@ namespace xng {
         }
 
     private:
+        Transform transform;
         Mat4f view;
         Mat4f projection;
         Mat4f viewProjection;
