@@ -35,19 +35,21 @@ namespace xng::rg {
         bool dynamic = false;
 
         // The type name of the structure defining the contents of the buffer. For dynamic buffers an instance of the structure is created for every element.
-        ShaderStructType typeName;
+        // If the type is a shader struct type name, the buffer is read in std140 layout.
+        // If the type is a primitive, the buffer is read in std430 layout.
+        ShaderDataType type;
 
         ShaderBuffer() = default;
 
-        ShaderBuffer(const bool read_only, const bool dynamic, ShaderStructType type_name)
+        ShaderBuffer(const bool read_only, const bool dynamic, ShaderDataType _type)
             : readOnly(read_only),
               dynamic(dynamic),
-              typeName(std::move(type_name)) {
+              type(std::move(_type)) {
         }
 
         bool operator==(const ShaderBuffer& other) const
         {
-            return readOnly == other.readOnly && dynamic == other.dynamic && typeName == other.typeName;
+            return readOnly == other.readOnly && dynamic == other.dynamic && type == other.type;
         }
     };
 }

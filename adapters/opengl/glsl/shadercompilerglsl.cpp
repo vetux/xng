@@ -72,11 +72,21 @@ std::string generateHeader(const Shader &source, CompiledShader &compiledShader)
     for (const auto &pair: source.buffers) {
         auto binding = compiledShader.createShaderBufferBinding(pair.first);
         ret += "layout(binding = "
-                + std::to_string(binding)
-                + ", std140) buffer ShaderBuffer"
+                + std::to_string(binding);
+        if (std::holds_alternative<ShaderStructType>(pair.second.type.value)) {
+            ret += std::string(", std140");
+        } else {
+            ret += std::string(", std430");
+        }
+        ret += std::string(") buffer ShaderBuffer")
                 + std::to_string(binding)
                 + " {\n"
-                + "\t" + pair.second.typeName + " " + bufferArrayName;
+                + "\t";
+        if (std::holds_alternative<ShaderStructType>(pair.second.type.value)) {
+            ret += std::get<ShaderStructType>(pair.second.type.value) + " " + bufferArrayName;
+        } else {
+            ret += getTypeName(std::get<ShaderPrimitiveType>(pair.second.type.value)) + " " + bufferArrayName;
+        }
         if (pair.second.dynamic) {
             ret += "[]";
         }
@@ -154,7 +164,7 @@ std::string generateHeader(const Shader &source, CompiledShader &compiledShader)
                                       "")
                     + "[];\n";
         }
-    } else {
+    } else if (source.stage == Shader::VERTEX || source.stage == Shader::FRAGMENT) {
         for (auto i = 0; i < source.inputLayout.getElements().size(); i++) {
             auto element = source.inputLayout.getElements().at(i);
             auto location = attributeCount++;
@@ -172,30 +182,38 @@ std::string generateHeader(const Shader &source, CompiledShader &compiledShader)
                                       "")
                     + ";\n";
         }
+    } else {
+        inputAttributes += "layout(local_size_x = " + std::to_string(source.computeLocalSize.x)
+                + ", local_size_y = " + std::to_string(source.computeLocalSize.y)
+                + ", local_size_z = " + std::to_string(source.computeLocalSize.z)
+                + ") in;\n";
     }
+
     ret += inputAttributes;
     ret += "\n";
 
-    std::string outputAttributes;
-    attributeCount = 0;
-    for (auto element: source.outputLayout.getElements()) {
-        auto location = attributeCount++;
-        outputAttributes += "layout(location = "
-                + std::to_string(location)
-                + ")";
-        if (source.stage == Shader::VERTEX || source.stage == Shader::GEOMETRY) {
-            outputAttributes += " "
-                    + getInterpolationKeyword(source.outputLayout.getInterpolationModes().at(location))
-                    + " ";
+    if (source.stage != Shader::COMPUTE) {
+        std::string outputAttributes;
+        attributeCount = 0;
+        for (auto element: source.outputLayout.getElements()) {
+            auto location = attributeCount++;
+            outputAttributes += "layout(location = "
+                    + std::to_string(location)
+                    + ")";
+            if (source.stage == Shader::VERTEX || source.stage == Shader::GEOMETRY) {
+                outputAttributes += " "
+                        + getInterpolationKeyword(source.outputLayout.getInterpolationModes().at(location))
+                        + " ";
+            }
+            outputAttributes += "out "
+                    + generateElement(outputAttributePrefix + source.outputLayout.getElementName(location),
+                                      ShaderDataType(element),
+                                      "")
+                    + ";\n";
         }
-        outputAttributes += "out "
-                + generateElement(outputAttributePrefix + source.outputLayout.getElementName(location),
-                                  ShaderDataType(element),
-                                  "")
-                + ";\n";;
+        ret += outputAttributes;
+        ret += "\n";
     }
-    ret += outputAttributes;
-    ret += "\n";
 
     for (const auto &param: source.parameters) {
         ret += "layout(location = "
