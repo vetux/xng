@@ -139,10 +139,6 @@ namespace xng {
                 builder.storageRead(scene.materialBuffer, {rg::Shader::FRAGMENT}, access.offset, access.size);
             }
 
-            for (auto &access: scene.boneBufferAccesses) {
-                builder.storageRead(scene.boneBuffer, {rg::Shader::VERTEX}, access.offset, access.size);
-            }
-
             for (auto &pair: scene.vertexBufferAccesses) {
                 for (auto &access: pair.second) {
                     builder.vertexRead(scene.vertexBuffers.at(pair.first), access.offset, access.size);
@@ -205,11 +201,6 @@ namespace xng {
                                       0,
                                       scene.materialBuffer.getDescription().size);
 
-                cmd.bindStorageBuffer("bones",
-                                      scene.boneBuffer,
-                                      0,
-                                      scene.boneBuffer.getDescription().size);
-
                 // Bind Textures
                 std::vector<rg::TextureBinding> textureBindings;
                 for (auto res = RESOLUTION_BEGIN;
@@ -246,9 +237,7 @@ namespace xng {
                                                                     NORMAL,
                                                                     TANGENT,
                                                                     BITANGENT,
-                                                                    UV,
-                                                                    BONE_INDEX,
-                                                                    BONE_WEIGHT
+                                                                    UV
                                                                 },
                                                                 std::vector<size_t>(7, 0));
             return ret;

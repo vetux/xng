@@ -28,21 +28,16 @@ namespace xng {
         TANGENT,
         BITANGENT,
         UV,
-        BONE_INDEX,
-        BONE_WEIGHT,
         ATTRIBUTE_BEGIN = POSITION,
-        ATTRIBUTE_END = BONE_WEIGHT
+        ATTRIBUTE_END = UV
     };
 
     inline size_t getVertexAttributeSize(const VertexAttribute attribute) {
         switch (attribute) {
             default:
-                return 4 * 3;
+                return sizeof(float) * 3;
             case UV:
-                return 4 * 2;
-            case BONE_INDEX:
-            case BONE_WEIGHT:
-                return 4 * 4;
+                return sizeof(float) * 2;
         }
     }
 }

@@ -19,25 +19,45 @@
 #ifndef XENGINE_RENDERER_HPP
 #define XENGINE_RENDERER_HPP
 
+#include "xng/rendergraph/runtime.hpp"
 #include "xng/renderer/renderallocator.hpp"
 #include "xng/renderer/renderdrawlist.hpp"
+#include "xng/renderer/renderpass.hpp"
 
 namespace xng {
     class Renderer {
     public:
-        explicit Renderer(rg::Heap &heap);
+        static rg::Shader compileSkinningShader();
 
-        void setPasses(std::vector<std::shared_ptr<RenderPass>> passes);
+        static rg::Shader compileScenePrepassShader();
+
+        explicit Renderer(rg::Runtime &runtime)
+            : Renderer(runtime, compileSkinningShader(), compileScenePrepassShader()) {
+        }
+
+        Renderer(rg::Runtime &runtime, const rg::Shader &skinningShader, const rg::Shader &scenePrepassShader);
 
         RenderAllocator &getAllocator();
+
+        void setPasses(std::vector<std::shared_ptr<RenderPass> > passes);
 
         void draw(rg::Surface &surface, const RenderDrawList &drawList);
 
     private:
-        rg::Heap &heap;
-        RenderAllocator allocator;
+        rg::ComputePass recordSkinningPass(const RenderDrawList &drawList, const RenderAllocator::Buffers &buffers);
 
-        std::vector<std::shared_ptr<RenderPass>> passes;
+        rg::ComputePass recordScenePrePass(const RenderDrawList &drawList,
+                                           const RenderAllocator::Buffers &buffers,
+                                           RenderScene &scene);
+
+        rg::Runtime &runtime;
+        RenderAllocator allocator;
+        std::vector<std::shared_ptr<RenderPass> > passes;
+
+        rg::PipelineCache::Handle skinningPipeline;
+        rg::PipelineCache::Handle scenePrepassPipeline;
+
+        rg::HeapResource<rg::Buffer> cameraBuffer;
     };
 }
 

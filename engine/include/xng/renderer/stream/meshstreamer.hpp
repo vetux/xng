@@ -37,6 +37,7 @@ namespace xng {
      * The MeshStreamer uploads mesh data to separate StreamBuffer's per attribute.
      * All meshes share the same attribute buffers / index buffer.
      * Missing attributes in uploaded meshes are padded with default values.
+     * For array meshes the streamer generates index data.
      *
      * This wastes memory for the padded default values.
      *
@@ -55,18 +56,27 @@ namespace xng {
         struct Allocation {
             rg::Primitive primitive{};
             rg::DrawCall drawCall{};
-            bool indexed{};
             int baseVertex{}; // The offset applied to each index.
             size_t vertexCount{}; // The number of vertices for this mesh
+            bool skinned{};
+            int skinBaseVertex{}; // The offset applied to each vertex for indexing into the skinned buffers.
         };
 
         explicit MeshStreamer(rg::Heap &heap)
-            : indexBuffer(StreamBuffer(heap, rg::Buffer::CAPABILITY_INDEX)) {
-            for (auto attr = VertexAttribute::ATTRIBUTE_BEGIN;
-                 attr <= VertexAttribute::ATTRIBUTE_END;
+            : indexBuffer(StreamBuffer(heap, rg::Buffer::CAPABILITY_INDEX)),
+              skinnedBindPosBuffer(StreamBuffer(heap, rg::Buffer::CAPABILITY_STORAGE)),
+              skinnedBoneIndicesBuffer(StreamBuffer(heap, rg::Buffer::CAPABILITY_STORAGE)),
+              skinnedBoneWeightsBuffer(StreamBuffer(heap, rg::Buffer::CAPABILITY_STORAGE)) {
+            for (auto attr = ATTRIBUTE_BEGIN;
+                 attr <= ATTRIBUTE_END;
                  attr = static_cast<VertexAttribute>(attr + 1)) {
-                vertexBuffers.emplace(attr, StreamBuffer(heap, rg::Buffer::CAPABILITY_VERTEX));
+                auto caps = rg::Buffer::CAPABILITY_VERTEX;
+                if (attr == POSITION) {
+                    caps = caps | rg::Buffer::CAPABILITY_STORAGE;
+                }
+                vertexBuffers.emplace(attr, StreamBuffer(heap, caps));
             }
+            skinnedBufferAlloc = RangeAllocator();
         }
 
         /**
@@ -102,86 +112,108 @@ namespace xng {
                     alloc.primitive = rg::Primitive::QUAD;
                     break;
             }
-            alloc.indexed = false;
+
+            alloc.skinned = mesh.boneWeights.size() > 0;
 
             const auto vertexCount = mesh.positions.size();
 
-            std::map<size_t, std::vector<std::pair<float, std::string> > > boneWeightsMap;
-            for (auto &pair: boneIndices) {
-                auto wIt = mesh.boneWeights.find(pair.first);
-                if (wIt != mesh.boneWeights.end()) {
-                    for (auto &weight: wIt->second) {
-                        boneWeightsMap[weight.vertex].emplace_back(std::make_pair(weight.weight, pair.first));
-                    }
-                }
-            }
-
-            std::vector<Vec4i> vertexBoneIndices;
-            std::vector<Vec4f> vertexBoneWeights;
-            for (auto i = 0; i < vertexCount; i++) {
-                const auto it = boneWeightsMap.find(i);
-                if (it != boneWeightsMap.end()) {
-                    Vec4i vertexBoneIndex(-1);
-                    Vec4f vertexBoneWeight(0);
-
-                    auto weights = it->second;
-
-                    std::sort(weights.begin(), weights.end(), [](const auto &a, const auto &b) {
-                        return a.first > b.first;
-                    });
-
-                    int weightIndex = 0;
-                    for (auto weight = weights.begin();
-                         weight != weights.end()
-                         && weightIndex < 4;
-                         ++weight, weightIndex++) {
-                        switch (weightIndex) {
-                            case 0:
-                                vertexBoneIndex.x = static_cast<int>(boneIndices.at(weight->second));
-                                vertexBoneWeight.x = weight->first;
-                                break;
-                            case 1:
-                                vertexBoneIndex.y = static_cast<int>(boneIndices.at(weight->second));
-                                vertexBoneWeight.y = weight->first;
-                                break;
-                            case 2:
-                                vertexBoneIndex.z = static_cast<int>(boneIndices.at(weight->second));
-                                vertexBoneWeight.z = weight->first;
-                                break;
-                            case 3:
-                                vertexBoneIndex.w = static_cast<int>(boneIndices.at(weight->second));
-                                vertexBoneWeight.w = weight->first;
-                                break;
-                            default:
-                                assert(false);
-                                break;
+            if (alloc.skinned) {
+                std::map<size_t, std::vector<std::pair<float, std::string> > > boneWeightsMap;
+                for (auto &pair: boneIndices) {
+                    auto wIt = mesh.boneWeights.find(pair.first);
+                    if (wIt != mesh.boneWeights.end()) {
+                        for (auto &weight: wIt->second) {
+                            boneWeightsMap[weight.vertex].emplace_back(std::make_pair(weight.weight, pair.first));
                         }
                     }
-
-                    //Renormalize weights
-                    float sum = vertexBoneWeight.x + vertexBoneWeight.y + vertexBoneWeight.z + vertexBoneWeight.w;
-                    if (sum > 0) {
-                        vertexBoneWeight.x /= sum;
-                        vertexBoneWeight.y /= sum;
-                        vertexBoneWeight.z /= sum;
-                        vertexBoneWeight.w /= sum;
-                    }
-
-                    vertexBoneIndices.emplace_back(vertexBoneIndex);
-                    vertexBoneWeights.emplace_back(vertexBoneWeight);
-                } else {
-                    vertexBoneIndices.emplace_back(-1);
-                    vertexBoneWeights.emplace_back(0.0f);
                 }
+
+                VertexBuilder vertexBoneIndicesBuilder;
+                VertexBuilder vertexBoneWeightsBuilder;
+                for (auto i = 0; i < vertexCount; i++) {
+                    const auto it = boneWeightsMap.find(i);
+                    if (it != boneWeightsMap.end()) {
+                        Vec4i vertexBoneIndex(-1);
+                        Vec4f vertexBoneWeight(0);
+
+                        auto weights = it->second;
+
+                        std::sort(weights.begin(), weights.end(), [](const auto &a, const auto &b) {
+                            return a.first > b.first;
+                        });
+
+                        int weightIndex = 0;
+                        for (auto weight = weights.begin();
+                             weight != weights.end()
+                             && weightIndex < 4;
+                             ++weight, weightIndex++) {
+                            switch (weightIndex) {
+                                case 0:
+                                    vertexBoneIndex.x = static_cast<int>(boneIndices.at(weight->second));
+                                    vertexBoneWeight.x = weight->first;
+                                    break;
+                                case 1:
+                                    vertexBoneIndex.y = static_cast<int>(boneIndices.at(weight->second));
+                                    vertexBoneWeight.y = weight->first;
+                                    break;
+                                case 2:
+                                    vertexBoneIndex.z = static_cast<int>(boneIndices.at(weight->second));
+                                    vertexBoneWeight.z = weight->first;
+                                    break;
+                                case 3:
+                                    vertexBoneIndex.w = static_cast<int>(boneIndices.at(weight->second));
+                                    vertexBoneWeight.w = weight->first;
+                                    break;
+                                default:
+                                    assert(false);
+                                    break;
+                            }
+                        }
+
+                        //Renormalize weights
+                        float sum = vertexBoneWeight.x + vertexBoneWeight.y + vertexBoneWeight.z + vertexBoneWeight.w;
+                        if (sum > 0) {
+                            vertexBoneWeight.x /= sum;
+                            vertexBoneWeight.y /= sum;
+                            vertexBoneWeight.z /= sum;
+                            vertexBoneWeight.w /= sum;
+                        }
+
+                        vertexBoneIndicesBuilder.addVec4(vertexBoneIndex);
+                        vertexBoneWeightsBuilder.addVec4(vertexBoneWeight);
+                    } else {
+                        vertexBoneIndicesBuilder.addVec4(Vec4i(-1));
+                        vertexBoneWeightsBuilder.addVec4(Vec4f(0.0f));
+                    }
+                }
+
+                auto vertexBoneIndices = vertexBoneIndicesBuilder.build();
+                auto vertexBoneWeights = vertexBoneWeightsBuilder.build();
+
+                auto vertexPositions = getBytes(POSITION, mesh);
+                alloc.skinBaseVertex = static_cast<int>(skinnedBufferAlloc.allocate(vertexCount));
+
+                skinnedBindPosBufferHandles.emplace(ret,
+                                                    skinnedBindPosBuffer.upload(vertexPositions.data(),
+                                                        vertexPositions.size(),
+                                                        alloc.skinBaseVertex * sizeof(float) * 3));
+                skinnedBoneIndicesBufferHandles.emplace(ret,
+                                                        skinnedBoneIndicesBuffer.upload(vertexBoneIndices.data(),
+                                                            vertexBoneIndices.size(),
+                                                            alloc.skinBaseVertex * sizeof(int) * 4));
+                skinnedBoneWeightsBufferHandles.emplace(ret,
+                                                        skinnedBoneWeightsBuffer.upload(vertexBoneWeights.data(),
+                                                            vertexBoneWeights.size(),
+                                                            alloc.skinBaseVertex * sizeof(float) * 4));
             }
 
             auto vertexBufferIndex = vertexBufferAlloc.allocate(vertexCount);
 
             std::unordered_map<VertexAttribute, StreamBuffer::Handle> attributeBufferHandles;
-            for (auto attr = VertexAttribute::ATTRIBUTE_BEGIN;
-                 attr <= VertexAttribute::ATTRIBUTE_END;
+            for (auto attr = ATTRIBUTE_BEGIN;
+                 attr <= ATTRIBUTE_END;
                  attr = static_cast<VertexAttribute>(attr + 1)) {
-                auto data = getBytes(attr, mesh, vertexBoneIndices, vertexBoneWeights);
+                auto data = getBytes(attr, mesh);
                 attributeBufferHandles.emplace(attr, uploadAttribute(attr, data, vertexBufferIndex));
             }
 
@@ -198,14 +230,22 @@ namespace xng {
 
                 alloc.drawCall.offset = indexBufferOffset;
                 alloc.drawCall.count = mesh.indices.size();
-
-                alloc.indexed = true;
-                alloc.baseVertex = static_cast<int>(vertexBufferIndex);
             } else {
-                alloc.drawCall.offset = vertexBufferIndex;
-                alloc.drawCall.count = vertexCount;
-                alloc.indexed = false;
+                std::vector<unsigned int> indices(vertexCount);
+                for (auto i = 0; i < vertexCount; i++) {
+                    indices.at(i) = i;
+                }
+                auto indexBufferOffset = indexBufferAlloc.allocate(indices.size() * sizeof(unsigned int));
+                auto uploadHandle = indexBuffer.upload(reinterpret_cast<const uint8_t *>(indices.data()),
+                                                       indices.size() * sizeof(unsigned int),
+                                                       indexBufferOffset);
+                indexBufferHandles.emplace(ret, uploadHandle);
+
+                alloc.drawCall.offset = indexBufferOffset;
+                alloc.drawCall.count = indices.size();
             }
+
+            alloc.baseVertex = static_cast<int>(vertexBufferIndex);
 
             allocations.emplace(ret, alloc);
 
@@ -226,15 +266,22 @@ namespace xng {
             }
 
             const auto &alloc = allocations.at(handle);
-            if (alloc.indexed) {
-                vertexBufferAlloc.free(alloc.baseVertex, alloc.vertexCount);
-                indexBufferAlloc.free(alloc.drawCall.offset, alloc.drawCall.count * sizeof(unsigned int));
-            } else {
-                vertexBufferAlloc.free(alloc.drawCall.offset, alloc.vertexCount);
+
+            vertexBufferAlloc.free(alloc.baseVertex, alloc.vertexCount);
+            indexBufferAlloc.free(alloc.drawCall.offset, alloc.drawCall.count * sizeof(unsigned int));
+
+            if (alloc.skinned) {
+                skinnedBindPosBuffer.release(skinnedBindPosBufferHandles.at(handle));
+                skinnedBoneIndicesBuffer.release(skinnedBoneIndicesBufferHandles.at(handle));
+                skinnedBoneWeightsBuffer.release(skinnedBoneWeightsBufferHandles.at(handle));
+                skinnedBufferAlloc.free(alloc.skinBaseVertex, alloc.vertexCount);
             }
 
             vertexBufferHandles.erase(handle);
             indexBufferHandles.erase(handle);
+            skinnedBindPosBufferHandles.erase(handle);
+            skinnedBoneIndicesBufferHandles.erase(handle);
+            skinnedBoneWeightsBufferHandles.erase(handle);
             allocations.erase(handle);
             freeHandles.push_back(handle);
         }
@@ -245,20 +292,26 @@ namespace xng {
                     return false;
                 }
             }
-            if (allocations.at(handle).indexed
-                && !indexBuffer.isUploadComplete(indexBufferHandles.at(handle))) {
-                return false;
+            if (allocations.at(handle).skinned) {
+                if (!skinnedBindPosBuffer.isUploadComplete(skinnedBindPosBufferHandles.at(handle))
+                    || !skinnedBoneIndicesBuffer.isUploadComplete(skinnedBoneIndicesBufferHandles.at(handle))
+                    || !skinnedBoneWeightsBuffer.isUploadComplete(skinnedBoneWeightsBufferHandles.at(handle))) {
+                    return false;
+                }
             }
-            return true;
+            return indexBuffer.isUploadComplete(indexBufferHandles.at(handle));
         }
 
         void flush(const Handle &handle) {
             for (auto &pair: vertexBufferHandles.at(handle)) {
                 vertexBuffers.at(pair.first).flush(pair.second);
             }
-            if (allocations.at(handle).indexed) {
-                indexBuffer.flush(indexBufferHandles.at(handle));
+            if (allocations.at(handle).skinned) {
+                skinnedBindPosBuffer.flush(skinnedBindPosBufferHandles.at(handle));
+                skinnedBoneIndicesBuffer.flush(skinnedBoneIndicesBufferHandles.at(handle));
+                skinnedBoneWeightsBuffer.flush(skinnedBoneWeightsBufferHandles.at(handle));
             }
+            indexBuffer.flush(indexBufferHandles.at(handle));
         }
 
         const Allocation &getAllocation(const Handle &handle) const {
@@ -277,11 +330,20 @@ namespace xng {
             return indexBuffer.commit(ctx);
         }
 
+        rg::HeapResource<rg::Buffer> commitSkinnedBindPosBuffer(rg::GraphBuilder &ctx) {
+            return skinnedBindPosBuffer.commit(ctx);
+        }
+
+        rg::HeapResource<rg::Buffer> commitSkinnedBoneIndicesBuffer(rg::GraphBuilder &ctx) {
+            return skinnedBoneIndicesBuffer.commit(ctx);
+        }
+
+        rg::HeapResource<rg::Buffer> commitSkinnedBoneWeightsBuffer(rg::GraphBuilder &ctx) {
+            return skinnedBoneWeightsBuffer.commit(ctx);
+        }
+
     private:
-        static std::vector<uint8_t> getBytes(const VertexAttribute attr,
-                                             const Mesh &mesh,
-                                             const std::vector<Vec4i> &boneIndices,
-                                             const std::vector<Vec4f> &boneWeights) {
+        static std::vector<uint8_t> getBytes(const VertexAttribute attr, const Mesh &mesh) {
             VertexBuilder builder;
             switch (attr) {
                 case POSITION:
@@ -333,28 +395,6 @@ namespace xng {
                         }
                     }
                     break;
-                case BONE_INDEX:
-                    if (boneIndices.empty()) {
-                        for (auto i = 0; i < mesh.positions.size(); i++) {
-                            builder.addVec4(Vec4i(-1));
-                        }
-                    } else {
-                        for (auto &indices: boneIndices) {
-                            builder.addVec4(indices);
-                        }
-                    }
-                    break;
-                case BONE_WEIGHT:
-                    if (boneWeights.empty()) {
-                        for (auto i = 0; i < mesh.positions.size(); i++) {
-                            builder.addVec4(Vec4f(0));
-                        }
-                    } else {
-                        for (auto &weights: boneWeights) {
-                            builder.addVec4(weights);
-                        }
-                    }
-                    break;
             }
             return builder.build();
         }
@@ -373,6 +413,16 @@ namespace xng {
 
         std::unordered_map<Handle, std::unordered_map<VertexAttribute, StreamBuffer::Handle> > vertexBufferHandles;
         std::unordered_map<Handle, StreamBuffer::Handle> indexBufferHandles;
+
+        StreamBuffer skinnedBindPosBuffer;
+        StreamBuffer skinnedBoneIndicesBuffer;
+        StreamBuffer skinnedBoneWeightsBuffer;
+
+        RangeAllocator skinnedBufferAlloc;
+
+        std::unordered_map<Handle, StreamBuffer::Handle> skinnedBindPosBufferHandles;
+        std::unordered_map<Handle, StreamBuffer::Handle> skinnedBoneIndicesBufferHandles;
+        std::unordered_map<Handle, StreamBuffer::Handle> skinnedBoneWeightsBufferHandles;
 
         Handle nextHandle = 0;
         std::vector<Handle> freeHandles;

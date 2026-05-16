@@ -85,10 +85,6 @@ namespace xng {
         };
 
         /**
-         * TODO: Find clean and performant solution for skinned / non skinned and array / indexed interleaved draw calls.
-         */
-
-        /**
          * The render batches.
          */
         std::vector<Batch> batches;
@@ -103,10 +99,10 @@ namespace xng {
          */
         rg::Resource<rg::Buffer> transformBuffer;
         rg::Resource<rg::Buffer> materialBuffer;
-        rg::Resource<rg::Buffer> boneBuffer;
 
         /**
          * The vertex / index buffers containing all geometry.
+         * The vertex buffer positions are skinned positions.
          */
         std::unordered_map<VertexAttribute, rg::Resource<rg::Buffer> > vertexBuffers;
         rg::Resource<rg::Buffer> indexBuffer;
@@ -134,7 +130,6 @@ namespace xng {
         std::vector<BufferAccessRange> modelBufferAccesses;
         std::vector<BufferAccessRange> transformBufferAccesses;
         std::vector<BufferAccessRange> materialBufferAccesses;
-        std::vector<BufferAccessRange> boneBufferAccesses;
 
         std::unordered_map<VertexAttribute, std::vector<BufferAccessRange>> vertexBufferAccesses;
         std::vector<BufferAccessRange> indexBufferAccesses;

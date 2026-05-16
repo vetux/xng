@@ -35,6 +35,14 @@ namespace xng {
 
         ~RenderCanvas() = default;
 
+        bool isUploadComplete() override {
+
+        }
+
+        void flush() override {
+
+        }
+
     private:
         BufferStreamer<ShaderTransform::CPU> &transformStream;
         BufferStreamer<ShaderTransform::CPU>::Slot transformHandle;

@@ -83,8 +83,7 @@ namespace xng {
                  unsigned int, materialIndex,
                  unsigned int, baseBoneIndex,
                  unsigned int, objectID, // The index of the model in the draw list
-                 bool, receiveShadows,
-                 bool, skinned)
+                 bool, receiveShadows)
 }
 
 #endif //XENGINE_SHADERTYPES_HPP

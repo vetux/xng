@@ -37,6 +37,23 @@ namespace xng {
      */
     class RenderAllocator {
     public:
+        struct Buffers {
+            rg::HeapResource<rg::Buffer> transformBuffer;
+            rg::HeapResource<rg::Buffer> boneBuffer;
+            rg::HeapResource<rg::Buffer> materialBuffer;
+
+            rg::HeapResource<rg::Buffer> pointLightBuffer;
+            rg::HeapResource<rg::Buffer> spotLightBuffer;
+            rg::HeapResource<rg::Buffer> directionalLightBuffer;
+
+            std::unordered_map<VertexAttribute, rg::HeapResource<rg::Buffer> > vertexBuffers;
+            rg::HeapResource<rg::Buffer> indexBuffer;
+
+            rg::HeapResource<rg::Buffer> skinnedBindPosBuffer;
+            rg::HeapResource<rg::Buffer> skinnedBoneIndicesBuffer;
+            rg::HeapResource<rg::Buffer> skinnedBoneWeightsBuffer;
+        };
+
         explicit RenderAllocator(rg::Heap &heap)
             : heap(heap),
               transformStream(heap),
@@ -113,8 +130,28 @@ namespace xng {
             return std::make_shared<RenderDirectionalLight>(directionalLightStream);
         }
 
+        [[nodiscard]] Buffers commit(rg::GraphBuilder &graph) {
+            return {
+                transformStream.commit(graph),
+                boneStream.commit(graph),
+                materialStream.commit(graph),
+                pointLightStream.commit(graph),
+                spotLightStream.commit(graph),
+                directionalLightStream.commit(graph),
+                meshStream.commitVertexBuffers(graph),
+                meshStream.commitIndexBuffer(graph),
+                meshStream.commitSkinnedBindPosBuffer(graph),
+                meshStream.commitSkinnedBoneIndicesBuffer(graph),
+                meshStream.commitSkinnedBoneWeightsBuffer(graph)
+            };
+        }
+
         [[nodiscard]] BufferStreamer<ShaderTransform::CPU> &getTransformStream() {
             return transformStream;
+        }
+
+        [[nodiscard]] BufferStreamer<ShaderTransform::CPU> &getBoneStream() {
+            return boneStream;
         }
 
         [[nodiscard]] BufferStreamer<ShaderMaterial::CPU> &getMaterialStream() {

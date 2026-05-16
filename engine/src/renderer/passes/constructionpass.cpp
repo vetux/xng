@@ -29,71 +29,6 @@ using namespace xng::ShaderScript;
 using namespace xng::shaderlib::texfilter;
 
 namespace xng {
-    static vec4 getSkinnedVertexPosition(Param<Int> offset,
-                                         Param<vec3> position,
-                                         Param<ivec4> boneIdsA,
-                                         Param<vec4> boneWeightsA) {
-        IRFunction
-
-        DynamicBuffer(ShaderTransform, bones)
-
-        ivec4 boneIds = boneIdsA;
-        vec4 boneWeights = boneWeightsA;
-
-        If(offset < 0)
-            IRReturn(vec4(position, 1.0f));
-        Fi
-
-        Int boneCount = bones.length();
-
-        vec4 totalPosition;
-        totalPosition = vec4(0, 0, 0, 0);
-
-        If(boneIds.x() > -1)
-            If(boneIds.x() + offset >= boneCount)
-                IRReturn(vec4(position, 1.0f));
-            Else
-                vec4 localPosition;
-                localPosition = bones[boneIds.x() + offset].transform * vec4(position, 1.0f);
-                totalPosition += localPosition * boneWeights.x();
-            Fi
-        Fi
-
-        If(boneIds.y() > -1)
-            If(boneIds.y() + offset >= boneCount)
-                IRReturn(vec4(position, 1.0f));
-            Else
-                vec4 localPosition;
-                localPosition = bones[boneIds.y() + offset].transform * vec4(position, 1.0f);
-                totalPosition += localPosition * boneWeights.y();
-            Fi
-        Fi
-
-        If(boneIds.z() > -1)
-            If(boneIds.z() + offset >= boneCount)
-                IRReturn(vec4(position, 1.0f));
-            Else
-                vec4 localPosition;
-                localPosition = bones[boneIds.z() + offset].transform * vec4(position, 1.0f);
-                totalPosition += localPosition * boneWeights.z();
-            Fi
-        Fi
-
-        If(boneIds.w() > -1)
-            If(boneIds.w() + offset >= boneCount)
-                IRReturn(vec4(position, 1.0f));
-            Else
-                vec4 localPosition;
-                localPosition = bones[boneIds.w() + offset].transform * vec4(position, 1.0f);
-                totalPosition += localPosition * boneWeights.w();
-            Fi
-        Fi
-
-        IRReturn(totalPosition);
-
-        IRFunctionEnd
-    }
-
     static vec4 texture_atlas(Param<ShaderTexture> textureDef, Param<vec2> inUv) {
         IRFunction
 
@@ -127,8 +62,6 @@ namespace xng {
         Input(vec2, uv)
         Input(vec3, tangent)
         Input(vec3, bitangent)
-        Input(ivec4, boneIds)
-        Input(vec4, boneWeights)
 
         Output(vec3, fPos)
         Output(vec3, fNorm)
@@ -152,12 +85,8 @@ namespace xng {
 
         UInt modelIndex = getBaseInstance() + getDrawID() + getInstanceID();
 
-        vec4 pos;
-        If(models[modelIndex].skinned == true)
-            pos = getSkinnedVertexPosition(models[modelIndex].baseBoneIndex, position, boneIds, boneWeights);
-        Else
-            pos = vec4(position, 1.0f);
-        Fi
+        vec4 pos = vec4(position, 1.0f);
+        //pos = getSkinnedVertexPosition(models[modelIndex].baseBoneIndex, position, boneIds, boneWeights);
 
         mat4 model = transforms[models[modelIndex].transformIndex].transform;
         mat4 mvp = models[modelIndex].mvp;
