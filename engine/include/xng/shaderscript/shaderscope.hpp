@@ -154,6 +154,14 @@ namespace xng::ShaderScript {
             geometryMaxVertices = maxVertices;
         }
 
+        void setComputeLocalSize(unsigned int x, unsigned int y, unsigned int z) {
+            if (stage != rg::Shader::COMPUTE) {
+                throw std::runtime_error(
+                       "Attempted to set compute local size in non compute stage");
+            }
+            computeLocalSize = Vec3u(x, y, z);
+        }
+
         rg::Shader build() {
             rg::ShaderFunction main;
             std::vector<rg::ShaderFunction> funcs;
@@ -169,6 +177,7 @@ namespace xng::ShaderScript {
                 geometryInput,
                 geometryOutput,
                 geometryMaxVertices,
+                computeLocalSize,
                 inputLayout,
                 outputLayout,
                 parameters,
@@ -186,6 +195,8 @@ namespace xng::ShaderScript {
         // The input rg::Primitive for geometry shaders. Must match the pipeline rg::Primitive.
         rg::Primitive geometryOutput{}; // The output rg::Primitive for geometry shaders
         size_t geometryMaxVertices{}; // The maximum number of output vertices for geometry shaders.
+
+        Vec3u computeLocalSize{};
 
         rg::ShaderAttributeLayout inputLayout;
         rg::ShaderAttributeLayout outputLayout;

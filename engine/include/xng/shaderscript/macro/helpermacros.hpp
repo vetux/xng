@@ -92,6 +92,8 @@
 #define InputPrimitive(type) xng::ShaderScript::ShaderScope::get().setGeometryInput(type);
 #define OutputPrimitive(type, maxVertices) xng::ShaderScript::ShaderScope::get().setGeometryOutput(type, maxVertices);
 
+#define ComputeLocalSize(x, y, z) xng::ShaderScript::ShaderScope::get().setComputeLocalSize(x, y, z);
+
 #define EndShader() xng::ShaderScript::ShaderScope::get().addFunction(_main.build());
 
 #define BuildShader() xng::ShaderScript::ShaderScope::get().build();
