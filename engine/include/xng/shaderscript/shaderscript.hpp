@@ -615,6 +615,9 @@ namespace xng::ShaderScript {
     }
 
     template<typename T>
+    struct DynamicBufferWrapper;
+
+    template<typename T>
     struct DynamicBufferWrapper {
         ShaderObject object;
 
@@ -627,6 +630,33 @@ namespace xng::ShaderScript {
         }
 
         T operator[](const int index) {
+            return object[Int(index)];
+        }
+
+        ShaderObject length() {
+            return object.length();
+        }
+    };
+
+    /**
+     * Template specialization for ShaderDataObject.
+     *
+     * @tparam VALUE_TYPE
+     * @tparam VALUE_COMPONENT
+     * @tparam VALUE_COUNT
+     */
+    template<auto VALUE_TYPE, auto VALUE_COMPONENT, auto VALUE_COUNT>
+    struct DynamicBufferWrapper<ShaderDataObject<VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT> > {
+        ShaderObject object;
+
+        explicit DynamicBufferWrapper(ShaderObject &&buffer) : object(buffer) {
+        }
+
+        ShaderDataObject<VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT> operator[](const Int &index) {
+            return object[index];
+        }
+
+        ShaderDataObject<VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT> operator[](const int index) {
             return object[Int(index)];
         }
 

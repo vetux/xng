@@ -30,10 +30,6 @@ namespace xng::rg {
 
         ShaderDataType() = default;
 
-        ShaderDataType(const std::variant<ShaderPrimitiveType, ShaderStructType> &type, const size_t count = 1)
-            : value(type), count(count) {
-        }
-
         ShaderDataType(const ShaderStructType &type, const size_t count = 1)
             : value(type), count(count) {
         }
