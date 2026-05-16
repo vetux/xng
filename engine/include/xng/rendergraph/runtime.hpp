@@ -50,6 +50,8 @@ namespace xng::rg {
         virtual std::shared_ptr<Surface> createSurface(std::shared_ptr<Window> window) = 0;
 
         /**
+         * TODO: Design support for user implementation of frames in flight.
+         *
          * For each frame in flight the runtime will manage:
          *  - Copies of heap MEMORY_CPU_TO_GPU / MEMORY_GPU_TO_CPU buffers
          *  - Transient resources
