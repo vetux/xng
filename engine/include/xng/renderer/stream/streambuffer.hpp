@@ -19,39 +19,36 @@
 #ifndef XENGINE_STREAMBUFFER_HPP
 #define XENGINE_STREAMBUFFER_HPP
 
-#include <stack>
-#include <cstring>
-
-#include "xng/rendergraph/heap.hpp"
-#include "xng/rendergraph/pass.hpp"
-#include "xng/rendergraph/builder/graphbuilder.hpp"
+#include "xng/renderer/stream/chunkstreamer.hpp"
 
 namespace xng {
     /**
-     * A generic buffer into which data can be streamed asynchronously via:
-     * -> Copy to a mapped staging buffer
-     * -> Copy staging buffer -> Temp Buffer asynchronously on the heap transfer context
-     * -> Copy Temp Buffer (Double Buffered) -> Stable Buffer in a graph transfer pass
-     *
-     * This enables asynchronous buffer streaming by not blocking the graph execution on the slow PCIe copy from staging to temp buffer
-     * and performing the copy from temp to stable buffer concurrently with heap transfers by double buffering the temp buffer.
-     *
+     * The stream buffer is double-buffered.
      * The stream buffer dynamically grows in size on upload.
      * The stream buffer cannot be downsized without reallocating a new stream buffer.
+     *
+     * TODO: Implement dynamic double buffer size (Instead of full size double buffer)
      */
     class StreamBuffer {
     public:
-        typedef size_t Handle;
+        typedef ChunkStreamer::Handle Handle;
 
         StreamBuffer(rg::Heap &heap,
+                     ChunkStreamer &chunkStreamer,
                      const rg::Buffer::Capability capabilities,
-                     const size_t initialSize = 1024)
-            : heap(heap), bufferSize(initialSize) {
-            buffer = heap.allocateBuffer(rg::Buffer(initialSize,
+                     const size_t initialSize = 0)
+            : heap(heap),
+              chunkStreamer(chunkStreamer),
+              buffer(heap.allocateBuffer(rg::Buffer(initialSize,
                                                     capabilities
                                                     | rg::Buffer::CAPABILITY_TRANSFER_SRC
                                                     | rg::Buffer::CAPABILITY_TRANSFER_DST,
-                                                    rg::Buffer::MEMORY_GPU_ONLY));
+                                                    rg::Buffer::MEMORY_GPU_ONLY))),
+              backBuffer(heap.allocateBuffer(rg::Buffer(initialSize,
+                                                        rg::Buffer::CAPABILITY_TRANSFER_SRC
+                                                        | rg::Buffer::CAPABILITY_TRANSFER_DST,
+                                                        rg::Buffer::MEMORY_GPU_ONLY))),
+              bufferSize(initialSize) {
         }
 
         ~StreamBuffer() = default;
@@ -61,63 +58,21 @@ namespace xng {
         }
 
         /**
-         * Upload data to the stream buffer.
-         * The copy to the staging buffer is performed on the calling thread.
-         *
          * Uploads are not ordered.
          *
          * Concurrent overlapping uploads are forbidden.
          *
          * @param data The pointer to the start of the data to upload
-         * @param size The size of the data to upload
+         * @param dataSize The size of the data to upload
          * @param offset The offset into the stable buffer to upload to.
          * @return The offset of the data in the stable buffer.
          */
-        Handle upload(const uint8_t *data, const size_t size, const size_t offset) {
-            //TODO: Upload batching (Single staging / temp buffer) + Double Buffered temp buffer
-            for (auto &pendingUpload: pendingUploads) {
-                const auto start = pendingUpload.second.offset;
-                const auto end = start + pendingUpload.second.buffer.getDescription().size;
-                if (offset < end && start < offset + size) {
-                    // Overlapping upload
-                    throw std::runtime_error("Overlapping upload");
-                }
+        Handle upload(const uint8_t *data, const size_t dataSize, const size_t offset) {
+            if (offset + dataSize > bufferSize) {
+                bufferSize = offset + dataSize;
             }
-
-            if (offset + size > bufferSize) {
-                bufferSize = offset + size;
-            }
-
-            const auto ret = createUploadHandle();
-
-            const auto stagingBuffer = heap.allocateBuffer(rg::Buffer(size,
-                                                                      rg::Buffer::CAPABILITY_TRANSFER_SRC,
-                                                                      rg::Buffer::MEMORY_CPU_TO_GPU));
-
-            // Perform copy to staging buffer
-            {
-                const auto mapping = heap.map(stagingBuffer);
-                assert(stagingBuffer.getDescription().size >= size);
-                std::memcpy(mapping->begin(), data, size);
-            }
-
-            const auto tempBuffer = heap.allocateBuffer(rg::Buffer(size,
-                                                                   rg::Buffer::CAPABILITY_TRANSFER_SRC
-                                                                   | rg::Buffer::CAPABILITY_TRANSFER_DST,
-                                                                   rg::Buffer::MEMORY_GPU_ONLY));
-
-            // Queue copy of staging -> temp buffer
-            const auto pass = rg::TransferPassBuilder("StreamBuffer/Upload")
-                    .read(stagingBuffer, 0, 0)
-                    .write(tempBuffer, 0, 0)
-                    .execute([stagingBuffer, tempBuffer, size](rg::TransferContext &ctx) {
-                        ctx.copyBuffer(tempBuffer, stagingBuffer, 0, 0, size);
-                    });
-
-            auto transfer = heap.transfer(pass);
-
-            pendingUploads.emplace(ret, PendingUpload(offset, tempBuffer, std::move(transfer)));
-
+            const auto ret = chunkStreamer.upload(data, dataSize, backBuffer, offset);
+            pendingUploads.emplace(ret, PendingUpload{offset, dataSize});
             return ret;
         }
 
@@ -127,11 +82,17 @@ namespace xng {
          * @return True if the passed upload has finished.
          */
         bool isUploadComplete(const Handle handle) const {
-            const auto it = pendingUploads.find(handle);
-            if (it == pendingUploads.end()) {
-                return true;
-            }
-            return it->second.transferHandle->isFinished();
+            return chunkStreamer.isUploadComplete(handle);
+        }
+
+        /**
+         * Forces a flush of the passed upload handle.
+         *
+         * @param handle The handle of the upload to flush
+         */
+        void flush(const Handle handle) {
+            flushedUploads.insert(handle);
+            chunkStreamer.flush(handle);
         }
 
         /**
@@ -141,24 +102,10 @@ namespace xng {
          * @param handle The handle to release
          */
         void release(const Handle handle) {
-            const auto it = pendingUploads.find(handle);
-            if (it == pendingUploads.end()) {
-                return;
-            }
+            chunkStreamer.release(handle);
+            pendingUploads.erase(handle);
             flushedUploads.erase(handle);
-            pendingUploads.erase(it);
-            freeUploadHandle(handle);
-        }
-
-        /**
-         * Forces a flush of the passed create.
-         *
-         * @param handle The handle of the upload to flush
-         */
-        void flush(const Handle handle) {
-            if (pendingUploads.find(handle) != pendingUploads.end()) {
-                flushedUploads.insert(handle);
-            }
+            finishedUploads.erase(handle);
         }
 
         /**
@@ -166,57 +113,80 @@ namespace xng {
          *
          * Allocates and initializes a new stable buffer on resize
          *
-         * Inserts the transfer pass performing the copy from the temp buffers to the stable buffer.
-         *
-         * Must be called every frame where the stable buffer is referenced.
-         *
          * @param graph
          * @return The handle to the buffer.
          */
         const rg::HeapResource<rg::Buffer> &commit(rg::GraphBuilder &graph) {
-            // Reallocate / Copy buffer on resize
-            if (buffer.getDescription().size != bufferSize) {
+            // On Resize the chunk streamer might have chunks in flight writing to the stale buffer
+            // The copy of staleBackBuffer -> new backBuffer synchronizes the in flight chunks
+            // By setting a new target buffer on the chunk streamer the ChunkStreamer::commit then
+            // submits new chunks to the new target buffer, and the copy syncs in flight transfers.
+            // Chunk streamer commit must be called after all stream buffer commits.
+            if (bufferSize > buffer.getDescription().size) {
+                // This will stall the graph execution on all in flight chunk uploads on the backBuffer
+                // and may issue a queue ownership transfer if the runtime executes the graph transfer passes
+                // on the graphics queue.
                 const auto staleBuffer = buffer;
                 buffer = heap.allocateBuffer(rg::Buffer(bufferSize,
                                                         buffer.getDescription().capabilityFlags,
-                                                        rg::Buffer::MEMORY_GPU_ONLY));
-                const auto pass = rg::TransferPassBuilder("StreamBuffer/Commit/Resize")
-                        .read(staleBuffer, 0, 0)
+                                                        buffer.getDescription().memoryType));
+
+                const auto staleBackBuffer = backBuffer;
+                backBuffer = heap.allocateBuffer(rg::Buffer(bufferSize,
+                                                            backBuffer.getDescription().capabilityFlags,
+                                                            backBuffer.getDescription().memoryType));
+
+                const auto pass = rg::TransferPassBuilder("StreamBuffer/Resize")
+                        .read(staleBuffer, 0, staleBuffer.getDescription().size)
                         .write(buffer, 0, staleBuffer.getDescription().size)
-                        .execute([this, staleBuffer](rg::TransferContext &ctx) {
+                        .read(staleBackBuffer, 0, staleBackBuffer.getDescription().size)
+                        .write(backBuffer, 0, staleBackBuffer.getDescription().size)
+                        .execute([this, staleBuffer, staleBackBuffer](rg::TransferContext &ctx) {
                             ctx.copyBuffer(buffer, staleBuffer, 0, 0, staleBuffer.getDescription().size);
+                            ctx.copyBuffer(backBuffer, staleBackBuffer, 0, 0, staleBackBuffer.getDescription().size);
                         });
                 graph.addPass(pass);
-            }
 
-            const auto pendingUploadsCopy = pendingUploads;
-            std::unordered_map<Handle, PendingUpload> frameUploads;
-            for (auto &upload: pendingUploadsCopy) {
-                if (upload.second.transferHandle->isFinished()
-                    || flushedUploads.find(upload.first) != flushedUploads.end()) {
-                    frameUploads.emplace(upload);
-                    pendingUploads.erase(upload.first);
-                    flushedUploads.erase(upload.first);
+                for (auto &upload: pendingUploads) {
+                    chunkStreamer.setTargetBuffer(upload.first, backBuffer);
                 }
             }
 
+            std::unordered_map<Handle, PendingUpload> frameUploads;
+            for (auto &upload: pendingUploads) {
+                if (finishedUploads.find(upload.first) == finishedUploads.end()) {
+                    if (flushedUploads.find(upload.first) != flushedUploads.end()
+                        || chunkStreamer.isUploadComplete(upload.first)) {
+                        frameUploads.emplace(upload.first, upload.second);
+                        flushedUploads.erase(upload.first);
+                        finishedUploads.insert(upload.first);
+                    }
+                }
+            }
+
+            // Perform copies of the finished uploads in the heap context.
+            // This means subsequent RasterPasses stall only on the ownership transfer of the buffer after the copy is finished
+            // while in the copy pass the queue synchronizes on the range granular copies from staging -> backBuffer -> buffer
             if (!frameUploads.empty()) {
-                auto builder = rg::TransferPassBuilder("StreamBuffer/Commit/Upload");
+                auto builder = rg::TransferPassBuilder("StreamBuffer/Copy");
                 for (auto &upload: frameUploads) {
-                    builder.read(upload.second.buffer, 0, 0);
-                    builder.write(buffer, upload.second.offset, upload.second.buffer.getDescription().size);
+                    builder.read(backBuffer, upload.second.offset, upload.second.size);
+                    builder.write(buffer, upload.second.offset, upload.second.size);
                 }
                 const auto pass = builder.execute([this, frameUploads](rg::TransferContext &ctx) {
-                    // Copy flushed create buffers into stable.
                     for (auto &upload: frameUploads) {
                         ctx.copyBuffer(buffer,
-                                       upload.second.buffer,
+                                       backBuffer,
                                        upload.second.offset,
-                                       0,
-                                       upload.second.buffer.getDescription().size);
+                                       upload.second.offset,
+                                       upload.second.size);
                     }
                 });
-                graph.addPass(pass);
+                /**
+                 * This inserts a WAR hazard from the subsequent ChunkStreamer::commit call which the runtime
+                 * must resolve in the execute call.
+                 */
+                heap.transfer(pass);
             }
 
             return buffer;
@@ -225,40 +195,19 @@ namespace xng {
     private:
         struct PendingUpload {
             size_t offset;
-            rg::HeapResource<rg::Buffer> buffer;
-            std::shared_ptr<rg::HeapTransfer> transferHandle;
-
-            PendingUpload(const size_t offset,
-                          rg::HeapResource<rg::Buffer> _buffer,
-                          std::unique_ptr<rg::HeapTransfer> _transferHandle)
-                : offset(offset), buffer(std::move(_buffer)), transferHandle(std::move(_transferHandle)) {
-            }
+            size_t size;
         };
 
-        Handle createUploadHandle() {
-            if (freeUploadHandles.empty()) {
-                return nextUploadHandle++;
-            }
-            const auto ret = freeUploadHandles.back();
-            freeUploadHandles.pop_back();
-            return ret;
-        }
-
-        void freeUploadHandle(const Handle handle) {
-            freeUploadHandles.push_back(handle);
-        }
-
-        Handle nextUploadHandle = 0;
-        std::vector<Handle> freeUploadHandles;
-
         rg::Heap &heap;
+        ChunkStreamer &chunkStreamer;
 
         rg::HeapResource<rg::Buffer> buffer;
+        rg::HeapResource<rg::Buffer> backBuffer;
+        size_t bufferSize = 0;
 
         std::unordered_map<Handle, PendingUpload> pendingUploads;
         std::unordered_set<Handle> flushedUploads;
-
-        size_t bufferSize = 0;
+        std::unordered_set<Handle> finishedUploads;
     };
 }
 

@@ -26,18 +26,34 @@
 namespace xng {
     class RangeAllocator {
     public:
-        size_t allocate(const size_t count) {
-            bool foundFreeRange = false;
-            size_t ret = rangeCount;
-            for (auto &pair: freeRanges) {
-                if (pair.second >= count) {
-                    ret = pair.first;
-                    foundFreeRange = true;
-                    break;
+        explicit RangeAllocator(const size_t initialSize = 0)
+            : rangeCount(initialSize) {
+        }
+
+        bool hasFreeRange(const size_t count) const {
+            size_t offset;
+            return getFreeRange(count, offset);
+        }
+
+        bool allocate(const size_t count, size_t &out) {
+            out = rangeCount;
+            if (getFreeRange(count, out)) {
+                const auto it = freeRanges.find(out);
+                assert(it != freeRanges.end());
+                it->second -= count;
+                out = it->first + it->second;
+                if (it->second == 0) {
+                    freeRanges.erase(it);
                 }
+                return true;
             }
-            if (foundFreeRange) {
-                auto it = freeRanges.find(ret);
+            return false;
+        }
+
+        size_t allocate(const size_t count) {
+            size_t ret = rangeCount;
+            if (getFreeRange(count, ret)) {
+                const auto it = freeRanges.find(ret);
                 assert(it != freeRanges.end());
                 it->second -= count;
                 ret = it->first + it->second;
@@ -110,6 +126,16 @@ namespace xng {
         }
 
     private:
+        bool getFreeRange(const size_t count, size_t &out) const {
+            for (auto &pair: freeRanges) {
+                if (pair.second >= count) {
+                    out = pair.first;
+                    return true;
+                }
+            }
+            return false;
+        }
+
         std::map<size_t, size_t> freeRanges;
         size_t rangeCount = 0;
     };

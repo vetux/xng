@@ -83,7 +83,7 @@ namespace xng {
             }
         };
 
-        explicit TextureStreamer(rg::Heap &heap) {
+        explicit TextureStreamer(rg::Heap &heap, ChunkStreamer &chunkStreamer) {
             for (auto res = RESOLUTION_BEGIN; res <= RESOLUTION_END; res = static_cast<TextureResolution>(res + 1)) {
                 rg::Texture desc;
                 desc.textureType = rg::TEXTURE_2D;
@@ -95,7 +95,7 @@ namespace xng {
                 desc.filterMin = rg::NEAREST;
                 desc.filterMag = rg::NEAREST;
                 desc.wrapping = rg::TextureWrapping::CLAMP_TO_BORDER;
-                textures.emplace(res, StreamTexture(heap, desc));
+                textures.emplace(res, StreamTexture(heap, chunkStreamer, desc));
             }
         }
 

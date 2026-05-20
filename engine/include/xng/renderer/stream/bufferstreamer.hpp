@@ -34,8 +34,8 @@ namespace xng {
          */
         typedef unsigned int Slot;
 
-        explicit BufferStreamer(rg::Heap &heap)
-            : buffer(heap, rg::Buffer::CAPABILITY_STORAGE) {
+        explicit BufferStreamer(rg::Heap &heap, ChunkStreamer &chunkStreamer)
+            : buffer(heap, chunkStreamer, rg::Buffer::CAPABILITY_STORAGE) {
         }
 
         Slot create() {
@@ -57,10 +57,15 @@ namespace xng {
         }
 
         void upload(const Slot slot, const T &data) {
+            auto it = pendingUploads.find(slot);
+            if (it != pendingUploads.end()) {
+                buffer.release(it->second.handle);
+                pendingUploads.erase(slot);
+            }
             const auto handle = buffer.upload(reinterpret_cast<const uint8_t *>(&data),
                           sizeof(T),
                           slot * sizeof(T));
-            pendingUploads.emplace(slot, PendingUpload{handle});
+            pendingUploads.insert(std::pair(slot, PendingUpload{handle}));
         }
 
         bool isUploadComplete(Slot slot) {
@@ -87,9 +92,9 @@ namespace xng {
                     evictedHandles.insert(pair.first);
                 }
             }
-            for (auto &handle: evictedHandles) {
-                buffer.release(handle);
-                pendingUploads.erase(handle);
+            for (auto &slot: evictedHandles) {
+                buffer.release(pendingUploads.at(slot).handle);
+                pendingUploads.erase(slot);
             }
             return buffer.commit(ctx);
         }

@@ -43,8 +43,10 @@ namespace xng {
          */
         typedef unsigned int Slot;
 
-        explicit StreamTexture(rg::Heap &heap, rg::Texture desc)
-            : heap(heap) {
+        explicit StreamTexture(rg::Heap &heap, ChunkStreamer &chunkStreamer, rg::Texture desc)
+            : heap(heap),
+              chunkStreamer(chunkStreamer),
+              buffer(heap, chunkStreamer, rg::Buffer::CAPABILITY_TRANSFER_SRC) {
             switch (desc.textureType) {
                 case rg::TEXTURE_2D:
                     desc.textureType = rg::TEXTURE_2D_ARRAY;
@@ -73,32 +75,39 @@ namespace xng {
             return nextSlot++;
         }
 
-        void destroy(const Slot &handle) {
-            auto it = pendingUploads.find(handle);
+        void destroy(const Slot &slot) {
+            auto it = pendingUploads.find(slot);
             if (it != pendingUploads.end()) {
-                it->second.buffer.release(it->second.bufferHandle);
+                buffer.release(it->second.bufferHandle);
             }
-            pendingUploads.erase(handle);
-            freeSlots.push_back(handle);
+            pendingUploads.erase(slot);
+            freeSlots.push_back(slot);
         }
 
-        void upload(const Slot &handle,
+        void upload(const Slot &slot,
                     const ImageRGBA &image,
                     const int mipLevel = 0) {
-            //TODO: Upload batching (Single StreamBuffer)
-            StreamBuffer buffer(heap,
-                                rg::Buffer::CAPABILITY_TRANSFER_SRC | rg::Buffer::CAPABILITY_TRANSFER_DST,
-                                sizeof(ColorRGBA) * image.getBuffer().size());
+            auto it = pendingUploads.find(slot);
+            if (it != pendingUploads.end()) {
+                buffer.release(it->second.bufferHandle);
+                bufferAllocator.free(it->second.bufferOffset, it->second.bufferSize);
+                pendingUploads.erase(slot);
+            }
+
+            const auto offset = bufferAllocator.allocate(sizeof(ColorRGBA) * image.getBuffer().size());
+            const auto size = sizeof(ColorRGBA) * image.getBuffer().size();
+
             const auto bufferHandle = buffer.upload(reinterpret_cast<const uint8_t *>(image.getBuffer().data()),
-                                                    sizeof(ColorRGBA) * image.getBuffer().size(),
-                                                    0);
-            pendingUploads.emplace(handle, PendingUpload(std::move(buffer), bufferHandle, rg::SRGB8_ALPHA8, mipLevel));
+                                                    size,
+                                                    offset);
+
+            pendingUploads.insert(std::pair(slot, PendingUpload(bufferHandle, rg::SRGB8_ALPHA8, offset, size, mipLevel)));
         }
 
-        bool isUploadComplete(const Slot &handle) {
-            const auto it = pendingUploads.find(handle);
+        bool isUploadComplete(const Slot &slot) {
+            const auto it = pendingUploads.find(slot);
             if (it == pendingUploads.end()) return true;
-            return it->second.buffer.isUploadComplete(it->second.bufferHandle);
+            return buffer.isUploadComplete(it->second.bufferHandle);
         }
 
         void flush(const Slot &handle) {
@@ -106,7 +115,7 @@ namespace xng {
             if (it == pendingUploads.end()) return;
             auto &pendingUpload = it->second;
             if (!pendingUpload.flushed) {
-                pendingUpload.buffer.flush(pendingUpload.bufferHandle);
+                buffer.flush(pendingUpload.bufferHandle);
                 pendingUpload.flushed = true;
             }
         }
@@ -147,25 +156,26 @@ namespace xng {
                 graph.addPass(pass);
             }
 
+            const auto stableBuffer = buffer.commit(graph);
+
             // Copy flushed / Completed uploads
             std::unordered_set<Slot> evictedHandles;
             for (auto &pair: pendingUploads) {
                 auto &pendingUpload = pair.second;
-                const auto buffer = pendingUpload.buffer.commit(graph);
-                if (pendingUpload.flushed || pendingUpload.buffer.isUploadComplete(pendingUpload.bufferHandle)) {
+                if (pendingUpload.flushed || buffer.isUploadComplete(pendingUpload.bufferHandle)) {
                     // Execute copy from stream buffer to texture
                     const auto slot = pair.first;
                     const auto upload = std::move(pendingUpload);
 
                     const auto pass = rg::TransferPassBuilder("StreamTexture/Commit")
-                            .read(buffer, 0, 0)
+                            .read(stableBuffer, upload.bufferOffset, upload.bufferSize)
                             .write(texture, rg::TextureBinding::Range(upload.mipLevel, 1, pair.first, 1))
-                            .execute([this, slot, upload, buffer](rg::TransferContext &ctx) {
+                            .execute([this, slot, upload, stableBuffer](rg::TransferContext &ctx) {
                                 const auto mipSize = texture.getDescription().getMipLevelSize(upload.mipLevel);
                                 ctx.copyBufferToTexture(texture,
-                                                        buffer,
+                                                        stableBuffer,
                                                         rg::Texture::SubResource(upload.mipLevel, slot, {}),
-                                                        0,
+                                                        upload.bufferOffset,
                                                         Recti({}, mipSize),
                                                         upload.bufferFormat);
                             });
@@ -176,7 +186,9 @@ namespace xng {
             }
 
             for (auto &handle: evictedHandles) {
-                pendingUploads.at(handle).buffer.release(pendingUploads.at(handle).bufferHandle);
+                buffer.release(pendingUploads.at(handle).bufferHandle);
+                auto &p = pendingUploads.at(handle);
+                bufferAllocator.free(p.bufferOffset, p.bufferSize);
                 pendingUploads.erase(handle);
             }
 
@@ -185,25 +197,34 @@ namespace xng {
 
     private:
         struct PendingUpload {
-            StreamBuffer buffer;
             StreamBuffer::Handle bufferHandle;
             rg::ColorFormat bufferFormat;
+
+            size_t bufferOffset;
+            size_t bufferSize;
 
             int mipLevel;
             bool flushed = false;
 
-            PendingUpload(StreamBuffer _buffer,
-                          const StreamBuffer::Handle bufferHandle,
+            PendingUpload(const StreamBuffer::Handle bufferHandle,
                           const rg::ColorFormat bufferFormat,
+                          size_t bufferOffset,
+                          size_t bufferSize,
                           const int mipLevel)
-                : buffer(std::move(_buffer)),
-                  bufferHandle(bufferHandle),
+                : bufferHandle(bufferHandle),
                   bufferFormat(bufferFormat),
+                  bufferOffset(bufferOffset),
+                  bufferSize(bufferSize),
                   mipLevel(mipLevel) {
             }
         };
 
         rg::Heap &heap;
+        ChunkStreamer &chunkStreamer;
+
+        StreamBuffer buffer;
+        RangeAllocator bufferAllocator;
+
         rg::HeapResource<rg::Texture> texture;
 
         std::unordered_map<Slot, PendingUpload> pendingUploads;

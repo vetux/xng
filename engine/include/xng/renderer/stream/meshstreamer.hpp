@@ -30,7 +30,7 @@
 
 #include "xng/renderer/vertexattribute.hpp"
 #include "xng/renderer/vertexbuilder.hpp"
-#include "xng/renderer/stream/bufferstreamer.hpp"
+#include "xng/renderer/stream/chunkstreamer.hpp"
 
 namespace xng {
     /**
@@ -62,11 +62,11 @@ namespace xng {
             int skinBaseVertex{}; // The offset applied to each vertex for indexing into the skinned buffers.
         };
 
-        explicit MeshStreamer(rg::Heap &heap)
-            : indexBuffer(StreamBuffer(heap, rg::Buffer::CAPABILITY_INDEX)),
-              skinnedBindPosBuffer(StreamBuffer(heap, rg::Buffer::CAPABILITY_STORAGE)),
-              skinnedBoneIndicesBuffer(StreamBuffer(heap, rg::Buffer::CAPABILITY_STORAGE)),
-              skinnedBoneWeightsBuffer(StreamBuffer(heap, rg::Buffer::CAPABILITY_STORAGE)) {
+        explicit MeshStreamer(rg::Heap &heap, ChunkStreamer &chunkStreamer)
+            : indexBuffer(StreamBuffer(heap, chunkStreamer, rg::Buffer::CAPABILITY_INDEX)),
+              skinnedBindPosBuffer(StreamBuffer(heap, chunkStreamer, rg::Buffer::CAPABILITY_STORAGE)),
+              skinnedBoneIndicesBuffer(StreamBuffer(heap, chunkStreamer, rg::Buffer::CAPABILITY_STORAGE)),
+              skinnedBoneWeightsBuffer(StreamBuffer(heap, chunkStreamer, rg::Buffer::CAPABILITY_STORAGE)) {
             for (auto attr = ATTRIBUTE_BEGIN;
                  attr <= ATTRIBUTE_END;
                  attr = static_cast<VertexAttribute>(attr + 1)) {
@@ -74,7 +74,7 @@ namespace xng {
                 if (attr == POSITION) {
                     caps = caps | rg::Buffer::CAPABILITY_STORAGE;
                 }
-                vertexBuffers.emplace(attr, StreamBuffer(heap, caps));
+                vertexBuffers.emplace(attr, StreamBuffer(heap, chunkStreamer, caps));
             }
             skinnedBufferAlloc = RangeAllocator();
         }
