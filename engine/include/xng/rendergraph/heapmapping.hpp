@@ -23,7 +23,7 @@
 #include <memory>
 #include <stdexcept>
 
-namespace xng {
+namespace xng::rg {
     class HeapMapping {
     public:
         virtual ~HeapMapping() = default;
