@@ -42,6 +42,7 @@ namespace xng::opengl {
     }
 
     std::unique_ptr<HeapTransfer> HeapGL::transfer(const TransferPass &pass) {
+        // TODO: Transfer pass deferred recording and ordering
         pass.callback(*transferContext);
         return transferContext->finishTransfer();
     }
