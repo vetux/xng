@@ -91,12 +91,13 @@ namespace xng::rg {
          * The passed callback is invoked on the calling thread before returning.
          * The runtime internally pins resources referenced in the pass until the transfer has finished.
          *
+         * The runtime performs RAW / WAR hazard resolution for all resources in Runtime::execute.
+         * This means transfers may not be executed until calling Runtime::execute.
+         *
          * On Vulkan all resources are EXCLUSIVE ownership.
          *
          * This means if a resource is being accessed in a transfer pass on the heap the runtime
-         * must perform an ownership transfer of the resource when it is referenced in a graph.
-         *
-         * Ownership transfers prevent a resource being simultaneously bound to heap / graphics queues without stalling.
+         * may perform an ownership transfer of the resource when it is referenced in a graph.
          *
          * Therefore, for streaming resources to the heap for consumption by graphs the best approach is:
          *
