@@ -32,25 +32,25 @@ namespace xng {
     /**
      * There should only be one instance of a chunk streamer shared among all streamers.
      *
-     * chunkSize * pinnedChunks is the expected streaming budget for the buffer.
+     * chunkSize * pinnedChunks is the expected streaming budget.
      * The budget is never exceeded without flushing.
      *
-     * Flushed uploads can cause the upload buffer to allocate new chunks and exceed the streaming budget.
+     * Flushed uploads can cause the chunk streamer to allocate new chunks and exceed the streaming budget.
      *
      * This allows hard flushes at the cost of dynamic allocation of staging buffers on budget overflow.
      *
-     * A large chunkSize means bigger buffer allocation if a flushed upload requires a new chunk beyond pinnedChunks.
-     * A small chunkSize means more copy commands per upload.
+     * A large chunkSize means bigger staging buffer allocations if a flushed upload requires new chunks beyond pinnedChunks.
+     * A small chunkSize means more copy commands per upload but more granular streaming priority because the
+     * non⁻flushed transfers from previous frames may complete faster and become available for flushed transfers.
      *
      * Upload works by splitting the uploaded data into fixed size chunks in ram and then uploading individual chunks
-     * by copying into fixed size staging buffers and from staging buffers to the target buffer.
+     * by copying into fixed size (chunkSize) staging buffers and from staging buffers to the target buffer.
      */
     class ChunkStreamer {
     public:
         typedef size_t Handle;
 
         /**
-         *
          * @param heap The heap to use for streaming
          * @param chunkSize The size of one streaming chunk.
          * @param pinnedChunks The minimum number of chunks that are kept pinned.
