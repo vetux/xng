@@ -195,7 +195,7 @@ namespace xng {
             auto uploads = std::move(uploadChunks);
             uploadChunks.reserve(uploads.size());
             for (auto &pair: uploads) {
-                if (inFlightSize < budget) {
+                if (inFlightSize < budget && stagingBuffers.size() <= pinnedChunks) {
                     auto chunks = std::move(pair.second);
                     pair.second.clear();
                     for (auto &chunk: chunks) {
