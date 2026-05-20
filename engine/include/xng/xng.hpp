@@ -86,7 +86,7 @@
 #include "xng/renderer/renderobject.hpp"
 #include "xng/renderer/vertexattribute.hpp"
 #include "xng/renderer/renderpass.hpp"
-#include "xng/renderer/renderallocator.hpp"
+#include "xng/renderer/scenestreamer.hpp"
 #include "xng/renderer/renderer.hpp"
 #include "xng/renderer/renderscene.hpp"
 #include "xng/renderer/rendererstatistics.hpp"

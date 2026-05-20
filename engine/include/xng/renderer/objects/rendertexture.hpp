@@ -23,16 +23,20 @@
 #include "xng/renderer/stream/texturestreamer.hpp"
 
 namespace xng {
+    // TODO: Design texture mip level streaming user interface
     class RenderTexture final : public RenderObject {
     public:
-        explicit RenderTexture(TextureStreamer &textureStreamer,
-                               const ImageRGBA &image)
+        explicit RenderTexture(TextureStreamer &textureStreamer, const Vec2i &resolution)
             : RenderObject(OBJECT_TEXTURE), textureStreamer(textureStreamer) {
-            textureHandle = textureStreamer.upload(image);
+            textureHandle = textureStreamer.create(resolution);
         }
 
         ~RenderTexture() override {
             textureStreamer.destroy(textureHandle);
+        }
+
+        void setImage(const ImageRGBA &image, const int mipLevel = 0) const {
+            textureStreamer.upload(textureHandle, image, mipLevel);
         }
 
         [[nodiscard]] TextureStreamer::Handle getHandle() const {
@@ -40,7 +44,7 @@ namespace xng {
         }
 
         bool isUploadComplete() override {
-            return textureStreamer.isUploadComplete(textureHandle);
+            return textureStreamer.isUploadComplete(textureHandle, 0);
         }
 
         void flush() override {

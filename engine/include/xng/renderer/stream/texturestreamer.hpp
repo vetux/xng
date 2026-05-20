@@ -99,20 +99,22 @@ namespace xng {
             }
         }
 
-        Handle upload(const ImageRGBA &image) {
-            const auto level = getClosestMatchingResolutionLevel(image.getResolution());
-            auto &texture = textures.at(level);
-            const auto slot = texture.create();
-            texture.upload(slot, image);
-            return {slot, level, image.getResolution()};
+        Handle create(const Vec2i &imageSize) {
+            const auto level = getClosestMatchingResolutionLevel(imageSize);
+            return {textures.at(level).create(), level, imageSize};
+        }
+
+        void upload(const Handle &handle, const ImageRGBA &image, const int mipLevel) {
+            auto &texture = textures.at(handle.level);
+            texture.upload(handle.slot, image, mipLevel);
         }
 
         void destroy(const Handle &handle) {
             textures.at(handle.level).destroy(handle.slot);
         }
 
-        bool isUploadComplete(const Handle &handle) {
-            return textures.at(handle.level).isUploadComplete(handle.slot);
+        bool isUploadComplete(const Handle &handle, const int mipLevel) const {
+            return textures.at(handle.level).isUploadComplete(handle.slot, mipLevel);
         }
 
         void flush(const Handle &handle) {

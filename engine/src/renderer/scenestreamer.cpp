@@ -32,8 +32,8 @@ namespace xng {
           textureStream(heap, chunkStreamer) {
     }
 
-    RenderObjectHandle<RenderTexture> SceneStreamer::createTexture(const ImageRGBA &image) {
-        return std::make_shared<RenderTexture>(textureStream, image);
+    RenderObjectHandle<RenderTexture> SceneStreamer::createTexture(const Vec2i &resolution) {
+        return std::make_shared<RenderTexture>(textureStream, resolution);
     }
 
     RenderObjectHandle<RenderMaterial> SceneStreamer::createMaterial(const ColorRGBA &albedo,

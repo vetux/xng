@@ -60,7 +60,7 @@ namespace xng {
          */
         explicit SceneStreamer(rg::Heap &heap, size_t streamingBudget);
 
-        RenderObjectHandle<RenderTexture> createTexture(const ImageRGBA &image);
+        RenderObjectHandle<RenderTexture> createTexture(const Vec2i &resolution);
 
         RenderObjectHandle<RenderMaterial> createMaterial(const ColorRGBA &albedo,
                                                           float metallic,

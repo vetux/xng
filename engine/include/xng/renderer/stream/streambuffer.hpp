@@ -91,8 +91,10 @@ namespace xng {
          * @param handle The handle of the upload to flush
          */
         void flush(const Handle handle) {
-            flushedUploads.insert(handle);
-            chunkStreamer.flush(handle);
+            if (finishedUploads.find(handle) == finishedUploads.end()) {
+                flushedUploads.insert(handle);
+                chunkStreamer.flush(handle);
+            }
         }
 
         /**
