@@ -30,7 +30,7 @@ namespace xng {
                    RenderObjectHandle<RenderSkeleton> _skeleton)
             : RenderObject(OBJECT_MESH), meshStream(meshStream), skeleton(std::move(_skeleton)) {
             if (skeleton) {
-                meshHandle = meshStream.create(mesh, skeleton->getSlots());
+                meshHandle = meshStream.create(mesh, skeleton->getOffsets());
             } else {
                 meshHandle = meshStream.create(mesh, {});
             }
@@ -42,6 +42,14 @@ namespace xng {
 
         [[nodiscard]] MeshStreamer::Handle getHandle() const {
             return meshHandle;
+        }
+
+        [[nodiscard]] const MeshStreamer::Allocation &getAllocation() const {
+            return meshStream.getAllocation(meshHandle);
+        }
+
+        [[nodiscard]] RenderObjectHandle<RenderSkeleton> getSkeleton() const {
+            return skeleton;
         }
 
         bool isUploadComplete() override {

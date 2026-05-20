@@ -20,7 +20,7 @@
 #define XENGINE_RENDERER_HPP
 
 #include "xng/rendergraph/runtime.hpp"
-#include "xng/renderer/renderallocator.hpp"
+#include "xng/renderer/scenestreamer.hpp"
 #include "xng/renderer/renderdrawlist.hpp"
 #include "xng/renderer/renderpass.hpp"
 
@@ -31,27 +31,34 @@ namespace xng {
 
         static rg::Shader compileScenePrepassShader();
 
-        explicit Renderer(rg::Runtime &runtime)
-            : Renderer(runtime, compileSkinningShader(), compileScenePrepassShader()) {
+        /**
+         * @param runtime The runtime to use
+         * @param streamingBudget The streaming budget (Default 64MB)
+         */
+        explicit Renderer(rg::Runtime &runtime, const size_t streamingBudget = 64 * (1024 * 1024))
+            : Renderer(runtime, streamingBudget, compileSkinningShader(), compileScenePrepassShader()) {
         }
 
-        Renderer(rg::Runtime &runtime, const rg::Shader &skinningShader, const rg::Shader &scenePrepassShader);
+        Renderer(rg::Runtime &runtime,
+                 size_t streamingBudget,
+                 const rg::Shader &skinningShader,
+                 const rg::Shader &scenePrepassShader);
 
-        RenderAllocator &getAllocator();
+        SceneStreamer &getStreamer();
 
         void setPasses(std::vector<std::shared_ptr<RenderPass> > passes);
 
         void draw(rg::Surface &surface, const RenderDrawList &drawList);
 
     private:
-        rg::ComputePass recordSkinningPass(const RenderDrawList &drawList, const RenderAllocator::Buffers &buffers);
+        rg::ComputePass recordSkinningPass(const RenderDrawList &drawList, const SceneStreamer::Buffers &buffers) const;
 
         rg::ComputePass recordScenePrePass(const RenderDrawList &drawList,
-                                           const RenderAllocator::Buffers &buffers,
+                                           const SceneStreamer::Buffers &buffers,
                                            RenderScene &scene);
 
         rg::Runtime &runtime;
-        RenderAllocator allocator;
+        SceneStreamer streamer;
         std::vector<std::shared_ptr<RenderPass> > passes;
 
         rg::PipelineCache::Handle skinningPipeline;

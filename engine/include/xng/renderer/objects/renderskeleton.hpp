@@ -22,58 +22,60 @@
 #include "xng/renderer/renderobject.hpp"
 #include "xng/renderer/shadertypes.hpp"
 #include "xng/renderer/stream/bufferstreamer.hpp"
+#include "xng/renderer/stream/skeletonstreamer.hpp"
 
 namespace xng {
     class RenderSkeleton final : public RenderObject {
     public:
-        RenderSkeleton(BufferStreamer<ShaderTransform::CPU> &boneStream,
+        RenderSkeleton(SkeletonStreamer &boneStream,
                        const std::vector<std::string> &boneNames)
-            : RenderObject(OBJECT_SKELETON), boneStream(boneStream) {
-            for (const auto &name: boneNames) {
-                boneHandles[name] = boneStream.create();
+            : RenderObject(OBJECT_SKELETON),
+              skeletonStream(boneStream),
+              skeletonHandle(skeletonStream.create(boneNames.size())) {
+            for (size_t i = 0; i < boneNames.size(); i++) {
+                boneOffsets[boneNames.at(i)] = static_cast<unsigned int>(i);
             }
         }
 
         ~RenderSkeleton() override {
-            for (const auto &pair: boneHandles) {
-                boneStream.destroy(pair.second);
-            }
+            skeletonStream.destroy(skeletonHandle);
         }
 
         /**
+         * Update a set of bones in the skeleton.
+         * The passed map must contain all bones.
+         *
          * @param bones The absolute transforms (animated) of the bones.
          */
-        void setBones(const std::unordered_map<std::string, Mat4f> &bones) {
-            for (const auto &pair: boneHandles) {
-                const auto &it = bones.find(pair.first);
-                if (it != bones.end()) {
-                    boneStream.upload(pair.second, {it->second});
-                }
+        void setBones(const std::unordered_map<std::string, Mat4f> &bones) const {
+            std::vector<Mat4f> boneMatrices;
+            boneMatrices.resize(boneOffsets.size());
+            for (const auto &pair: boneOffsets) {
+                boneMatrices[pair.second] = bones.at(pair.first);
             }
+            skeletonStream.upload(skeletonHandle, boneMatrices);
         }
 
-        const std::unordered_map<std::string, BufferStreamer<ShaderTransform::CPU>::Slot> &getSlots() const {
-            return boneHandles;
+        SkeletonStreamer::BaseBone getBaseBone() const {
+            return skeletonHandle;
+        }
+
+        const std::unordered_map<std::string, unsigned int> &getOffsets() const {
+            return boneOffsets;
         }
 
         bool isUploadComplete() override {
-            for (const auto &pair: boneHandles) {
-                if (!boneStream.isUploadComplete(pair.second)) {
-                    return false;
-                }
-            }
-            return true;
+            return skeletonStream.isUploadComplete(skeletonHandle);
         }
 
         void flush() override {
-            for (const auto &pair: boneHandles) {
-                boneStream.flush(pair.second);
-            }
+            skeletonStream.flush(skeletonHandle);
         }
 
     private:
-        BufferStreamer<ShaderTransform::CPU> &boneStream;
-        std::unordered_map<std::string, BufferStreamer<ShaderTransform::CPU>::Slot> boneHandles;
+        SkeletonStreamer &skeletonStream;
+        SkeletonStreamer::BaseBone skeletonHandle;
+        std::unordered_map<std::string, unsigned int> boneOffsets; // Indices into the skeleton buffer relative to base
     };
 }
 

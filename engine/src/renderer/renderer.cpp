@@ -25,15 +25,18 @@ namespace xng {
         return cache.create(pip);
     }
 
-    Renderer::Renderer(rg::Runtime &runtime, const rg::Shader &skinningShader, const rg::Shader &scenePrepassShader)
+    Renderer::Renderer(rg::Runtime &runtime,
+                       const size_t streamingBudget,
+                       const rg::Shader &skinningShader,
+                       const rg::Shader &scenePrepassShader)
         : runtime(runtime),
-          allocator(runtime.getResourceHeap()),
+          streamer(runtime.getResourceHeap(), streamingBudget),
           skinningPipeline(createPipeline(runtime.getPipelineCache(), skinningShader)),
           scenePrepassPipeline(createPipeline(runtime.getPipelineCache(), scenePrepassShader)) {
     }
 
-    RenderAllocator &Renderer::getAllocator() {
-        return allocator;
+    SceneStreamer &Renderer::getStreamer() {
+        return streamer;
     }
 
     void Renderer::setPasses(std::vector<std::shared_ptr<RenderPass> > _passes) {
@@ -61,7 +64,7 @@ namespace xng {
         rg::GraphBuilder graph;
 
         // Commit streams
-        auto buffers = allocator.commit(graph);
+        const auto buffers = streamer.commit(graph);
 
         // Record compute skinning
         graph.addPass(recordSkinningPass(drawList, buffers));
@@ -72,16 +75,87 @@ namespace xng {
 
         // Record passes
         RenderPassRegistry registry;
-        for (const auto &pass : passes) {
+        for (const auto &pass: passes) {
             pass->record(graph, surface, registry, scene);
         }
 
         runtime.execute(graph.build());
     }
 
-    rg::ComputePass Renderer::recordSkinningPass(const RenderDrawList &drawList, const RenderAllocator::Buffers &buffers) {
+    rg::ComputePass Renderer::recordSkinningPass(const RenderDrawList &drawList,
+                                                 const SceneStreamer::Buffers &buffers) const {
+        std::unordered_set<RenderObjectHandle<RenderMesh> > meshes;
+        for (auto &model: drawList.models) {
+            for (auto &mesh: model->getMeshes()) {
+                if (mesh->getSkeleton()) {
+                    meshes.insert(mesh);
+                }
+            }
+        }
+
+        rg::ComputePassBuilder builder("SkinningPass");
+
+        // Declare Accesses
+        std::unordered_set<RenderObjectHandle<RenderSkeleton> > processedSkeletons;
+        for (auto &mesh: meshes) {
+            auto skeleton = mesh->getSkeleton();
+
+            assert(skeleton);
+
+            if (processedSkeletons.find(skeleton) == processedSkeletons.end()) {
+                builder.storageRead(buffers.boneBuffer,
+                                    skeleton->getBaseBone() * sizeof(ShaderTransform::CPU),
+                                    skeleton->getOffsets().size() * sizeof(ShaderTransform::CPU));
+                processedSkeletons.insert(skeleton);
+            }
+
+            const auto bonePosSize = getVertexAttributeSize(POSITION);
+            constexpr auto boneIndexSize = sizeof(int) * 4;
+            constexpr auto boneWeightSize = sizeof(float) * 4;
+
+            const auto &alloc = mesh->getAllocation();
+
+            builder.storageRead(buffers.skinnedBoneIndicesBuffer,
+                                alloc.skinBaseVertex * boneIndexSize,
+                                alloc.vertexCount * boneIndexSize);
+            builder.storageRead(buffers.skinnedBoneWeightsBuffer,
+                                alloc.skinBaseVertex * boneWeightSize,
+                                alloc.vertexCount * boneWeightSize);
+
+            builder.storageRead(buffers.skinnedBindPosBuffer,
+                                alloc.skinBaseVertex * bonePosSize,
+                                alloc.vertexCount * bonePosSize);
+            builder.storageWrite(buffers.vertexBuffers.at(POSITION),
+                                 alloc.baseVertex * bonePosSize,
+                                 alloc.vertexCount * bonePosSize);
+        }
+
+        // Execute
+        return builder.execute([this, buffers, meshes = std::move(meshes)](rg::ComputeContext &ctx) {
+            ctx.bindPipeline(skinningPipeline);
+            ctx.bindStorageBuffer("bones", buffers.boneBuffer, 0, 0);
+            ctx.bindStorageBuffer("positions", buffers.skinnedBindPosBuffer, 0, 0);
+            ctx.bindStorageBuffer("boneIds", buffers.skinnedBoneIndicesBuffer, 0, 0);
+            ctx.bindStorageBuffer("boneWeights", buffers.skinnedBoneWeightsBuffer, 0, 0);
+            ctx.bindStorageBuffer("skinnedPositions", buffers.vertexBuffers.at(POSITION), 0, 0);
+            for (auto &mesh: meshes) {
+                const auto &alloc = mesh->getAllocation();
+                const auto baseBone = mesh->getSkeleton()->getBaseBone();
+                ctx.setShaderParameter("vertexCount",
+                                       rg::ShaderPrimitive(static_cast<unsigned int>(alloc.vertexCount)));
+                ctx.setShaderParameter("baseVertex",
+                                       rg::ShaderPrimitive(static_cast<unsigned int>(alloc.baseVertex)));
+                ctx.setShaderParameter("skinBaseVertex",
+                                       rg::ShaderPrimitive(static_cast<unsigned int>(alloc.skinBaseVertex)));
+                ctx.setShaderParameter("baseBone",
+                                       rg::ShaderPrimitive(static_cast<unsigned int>(baseBone)));
+                ctx.dispatch(Vec3u((alloc.vertexCount + 63) / 64, 1, 1));
+            }
+        });
     }
 
-    rg::ComputePass Renderer::recordScenePrePass(const RenderDrawList &drawList, const RenderAllocator::Buffers &buffers, RenderScene &scene) {
+    rg::ComputePass Renderer::recordScenePrePass(const RenderDrawList &drawList,
+                                                 const SceneStreamer::Buffers &buffers,
+                                                 RenderScene &scene) {
     }
 }

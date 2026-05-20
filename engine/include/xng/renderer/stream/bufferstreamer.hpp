@@ -23,6 +23,7 @@
 
 namespace xng {
     /**
+     * The BufferStreamer streams fixed size data (StorageBuffer).
      *
      * @tparam T sizeof(T) is the size of one element in the streamer.
      */

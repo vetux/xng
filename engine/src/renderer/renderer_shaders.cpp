@@ -39,6 +39,7 @@ namespace xng {
         Parameter(UInt, vertexCount)
         Parameter(UInt, baseVertex)
         Parameter(UInt, skinBaseVertex)
+        Parameter(UInt, baseBone)
 
         If(getGlobalInvocationID().x() >= vertexCount)
             Return();
@@ -59,25 +60,25 @@ namespace xng {
 
         If(vertexBoneIds.x() > -1)
             vec4 localPosition;
-            localPosition = bones[vertexBoneIds.x()].transform * position;
+            localPosition = bones[baseBone + vertexBoneIds.x()].transform * position;
             totalPosition += localPosition * vertexBoneWeights.x();
         Fi
 
         If(vertexBoneIds.y() > -1)
             vec4 localPosition;
-            localPosition = bones[vertexBoneIds.y()].transform * position;
+            localPosition = bones[baseBone + vertexBoneIds.y()].transform * position;
             totalPosition += localPosition * vertexBoneWeights.y();
         Fi
 
         If(vertexBoneIds.z() > -1)
             vec4 localPosition;
-            localPosition = bones[vertexBoneIds.z()].transform * position;
+            localPosition = bones[baseBone + vertexBoneIds.z()].transform * position;
             totalPosition += localPosition * vertexBoneWeights.z();
         Fi
 
         If(vertexBoneIds.w() > -1)
             vec4 localPosition;
-            localPosition = bones[vertexBoneIds.w()].transform * position;
+            localPosition = bones[baseBone + vertexBoneIds.w()].transform * position;
             totalPosition += localPosition * vertexBoneWeights.w();
         Fi
 
