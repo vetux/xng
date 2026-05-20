@@ -88,7 +88,9 @@ namespace xng::rg {
          *
          * Heap transfer operations run asynchronously and can be checked for completion via the returned transfer handle.
          *
-         * The passed callback is invoked on the calling thread before returning.
+         * The passed callback may be invoked in a later call to Runtime::execute,
+         * so it must not capture local references in the call site.
+         *
          * The runtime internally pins resources referenced in the pass until the transfer has finished.
          *
          * The runtime performs RAW / WAR hazard resolution for all resources in Runtime::execute.
