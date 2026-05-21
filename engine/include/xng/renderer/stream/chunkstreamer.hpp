@@ -45,6 +45,8 @@ namespace xng {
      *
      * Upload works by splitting the uploaded data into fixed size chunks in ram and then uploading individual chunks
      * by copying into fixed size (chunkSize) staging buffers and from staging buffers to the target buffer.
+     *
+     * TODO: Implement ChunkStreamer upload priorities
      */
     class ChunkStreamer {
     public:
