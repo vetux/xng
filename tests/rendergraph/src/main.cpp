@@ -237,7 +237,7 @@ int main(int argc, char *argv[]) {
                                                                attributes));
     auto &input = window->getInput();
 
-    const auto &surface = runtime->createSurface(window);
+    const auto &surface = runtime->createSurface(window, 2);
 
     const auto &tuxImg = tux.get();
     const auto &smileyImg = smiley.get();

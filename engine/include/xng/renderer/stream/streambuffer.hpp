@@ -118,7 +118,7 @@ namespace xng {
          * @param graph
          * @return The handle to the buffer.
          */
-        const rg::HeapResource<rg::Buffer> &commit(rg::GraphBuilder &graph) {
+        std::vector<rg::TransferPass> commit(rg::GraphBuilder &graph) {
             // On Resize the chunk streamer might have chunks in flight writing to the stale buffer
             // The copy of staleBackBuffer -> new backBuffer synchronizes the in flight chunks
             // By setting a new target buffer on the chunk streamer the ChunkStreamer::commit then
@@ -169,13 +169,14 @@ namespace xng {
             // Perform copies of the finished uploads in the heap context.
             // This means subsequent RasterPasses stall only on the ownership transfer of the buffer after the copy is finished
             // while in the copy pass the queue synchronizes on the range granular copies from staging -> backBuffer -> buffer
+            std::vector<rg::TransferPass> ret;
             if (!frameUploads.empty()) {
                 auto builder = rg::TransferPassBuilder("StreamBuffer/Copy");
                 for (auto &upload: frameUploads) {
                     builder.read(backBuffer, upload.second.offset, upload.second.size);
                     builder.write(buffer, upload.second.offset, upload.second.size);
                 }
-                const auto pass = builder.execute([this, frameUploads](rg::TransferContext &ctx) {
+                auto pass = builder.execute([this, frameUploads](rg::TransferContext &ctx) {
                     for (auto &upload: frameUploads) {
                         ctx.copyBuffer(buffer,
                                        backBuffer,
@@ -185,12 +186,16 @@ namespace xng {
                     }
                 });
                 /**
-                 * This inserts a WAR hazard from the subsequent ChunkStreamer::commit call which the runtime
-                 * must resolve in the execute call.
+                 * This is a WAR hazard if the chunk streamer commit passes are not submitted before this pass
+                 * because the flushed uploads to the backBuffer must complete before copying them to the stable buffer.
+                 * To solve this the heap transfer dispatch is deferred to the caller.
                  */
-                heap.transfer(pass);
+                ret.emplace_back(std::move(pass));
             }
+            return ret;
+        }
 
+        rg::HeapResource<rg::Buffer> getBuffer() const {
             return buffer;
         }
 

@@ -318,28 +318,50 @@ namespace xng {
             return allocations.at(handle);
         }
 
-        std::unordered_map<VertexAttribute, rg::HeapResource<rg::Buffer> > commitVertexBuffers(rg::GraphBuilder &ctx) {
+        std::vector<rg::TransferPass> commit(rg::GraphBuilder &graph) {
+            std::vector<rg::TransferPass> ret;
+            for (auto &pair: vertexBuffers) {
+                auto passes = pair.second.commit(graph);
+                ret.insert(ret.end(), passes.begin(), passes.end());
+            }
+
+            auto passes = indexBuffer.commit(graph);
+            ret.insert(ret.end(), passes.begin(), passes.end());
+
+            passes = skinnedBindPosBuffer.commit(graph);
+            ret.insert(ret.end(), passes.begin(), passes.end());
+
+            passes = skinnedBoneIndicesBuffer.commit(graph);
+            ret.insert(ret.end(), passes.begin(), passes.end());
+
+            passes = skinnedBoneWeightsBuffer.commit(graph);
+            ret.insert(ret.end(), passes.begin(), passes.end());
+
+            return ret;
+        }
+
+        std::unordered_map<VertexAttribute, rg::HeapResource<rg::Buffer> > getVertexBuffers() const {
             std::unordered_map<VertexAttribute, rg::HeapResource<rg::Buffer> > ret;
             for (auto &pair: vertexBuffers) {
-                ret.emplace(pair.first, pair.second.commit(ctx));
+                ret.emplace(pair.first, pair.second.getBuffer());
             }
             return ret;
         }
 
-        rg::HeapResource<rg::Buffer> commitIndexBuffer(rg::GraphBuilder &ctx) {
-            return indexBuffer.commit(ctx);
+        rg::HeapResource<rg::Buffer> getIndexBuffer() const {
+            return indexBuffer.getBuffer();
         }
 
-        rg::HeapResource<rg::Buffer> commitSkinnedBindPosBuffer(rg::GraphBuilder &ctx) {
-            return skinnedBindPosBuffer.commit(ctx);
+        rg::HeapResource<rg::Buffer> getSkinnedBindPosBuffer() const {
+            return skinnedBindPosBuffer.getBuffer();
         }
 
-        rg::HeapResource<rg::Buffer> commitSkinnedBoneIndicesBuffer(rg::GraphBuilder &ctx) {
-            return skinnedBoneIndicesBuffer.commit(ctx);
+        rg::HeapResource<rg::Buffer> getSkinnedBoneIndicesBuffer() const {
+            return skinnedBoneIndicesBuffer.getBuffer();
         }
 
-        rg::HeapResource<rg::Buffer> commitSkinnedBoneWeightsBuffer(rg::GraphBuilder &ctx) {
-            return skinnedBoneWeightsBuffer.commit(ctx);
+        rg::HeapResource<rg::Buffer> getSkinnedBoneWeightsBuffer() const {
+            return skinnedBoneWeightsBuffer.getBuffer();
         }
 
     private:

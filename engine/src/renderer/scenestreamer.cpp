@@ -92,21 +92,34 @@ namespace xng {
         return std::make_shared<RenderDirectionalLight>(directionalLightStream);
     }
 
+    static void concatPasses(const std::vector<rg::TransferPass> &passes, std::vector<rg::TransferPass> &out) {
+        out.insert(out.end(), passes.begin(), passes.end());
+    }
+
     [[nodiscard]] SceneStreamer::Buffers SceneStreamer::commit(rg::GraphBuilder &graph) {
-        auto ret = Buffers{
-            transformStream.commit(graph),
-            materialStream.commit(graph),
-            skeletonStream.commit(graph),
-            pointLightStream.commit(graph),
-            spotLightStream.commit(graph),
-            directionalLightStream.commit(graph),
-            meshStream.commitVertexBuffers(graph),
-            meshStream.commitIndexBuffer(graph),
-            meshStream.commitSkinnedBindPosBuffer(graph),
-            meshStream.commitSkinnedBoneIndicesBuffer(graph),
-            meshStream.commitSkinnedBoneWeightsBuffer(graph)
+        std::vector<rg::TransferPass> streamPasses;
+        concatPasses(transformStream.commit(graph), streamPasses);
+        concatPasses(materialStream.commit(graph), streamPasses);
+        concatPasses(skeletonStream.commit(graph), streamPasses);
+        concatPasses(pointLightStream.commit(graph), streamPasses);
+        concatPasses(spotLightStream.commit(graph), streamPasses);
+        concatPasses(directionalLightStream.commit(graph), streamPasses);
+        concatPasses(meshStream.commit(graph), streamPasses);
+        concatPasses(textureStream.commit(graph), streamPasses);
+        chunkStreamer.commit((std::move(streamPasses)));
+        return {
+            transformStream.getBuffer(),
+            materialStream.getBuffer(),
+            skeletonStream.getBuffer(),
+            pointLightStream.getBuffer(),
+            spotLightStream.getBuffer(),
+            directionalLightStream.getBuffer(),
+            meshStream.getVertexBuffers(),
+            meshStream.getIndexBuffer(),
+            meshStream.getSkinnedBindPosBuffer(),
+            meshStream.getSkinnedBoneIndicesBuffer(),
+            meshStream.getSkinnedBoneWeightsBuffer(),
+            textureStream.getTextures()
         };
-        chunkStreamer.commit();
-        return ret;
     }
 }

@@ -129,7 +129,7 @@ namespace xng {
             }
         }
 
-        const rg::HeapResource<rg::Texture> &commit(rg::GraphBuilder &graph) {
+        std::vector<rg::TransferPass> commit(rg::GraphBuilder &graph) {
             // Resize / copy texture
             if (nextSlot > texture.getDescription().arrayLayers) {
                 const auto staleTexture = texture;
@@ -165,7 +165,9 @@ namespace xng {
                 graph.addPass(pass);
             }
 
-            const auto stableBuffer = buffer.commit(graph);
+            auto ret = buffer.commit(graph);
+
+            const auto stableBuffer = buffer.getBuffer();
 
             // Copy flushed / Completed uploads
             const auto pendingUploadsCopy = std::move(pendingUploads);
@@ -200,6 +202,10 @@ namespace xng {
                 }
             }
 
+            return ret;
+        }
+
+        rg::HeapResource<rg::Texture> getTexture() const {
             return texture;
         }
 

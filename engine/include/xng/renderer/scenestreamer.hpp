@@ -50,6 +50,8 @@ namespace xng {
             rg::HeapResource<rg::Buffer> skinnedBindPosBuffer;
             rg::HeapResource<rg::Buffer> skinnedBoneIndicesBuffer;
             rg::HeapResource<rg::Buffer> skinnedBoneWeightsBuffer;
+
+            std::unordered_map<TextureResolution, rg::HeapResource<rg::Texture> > textures;
         };
 
         /**

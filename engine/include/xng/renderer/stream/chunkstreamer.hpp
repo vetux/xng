@@ -129,7 +129,7 @@ namespace xng {
                 auto copy = it->second;
                 it->second.clear();
                 for (auto &transfer: copy) {
-                    if (!transfer->isFinished()) {
+                    if (!transfer->isSignaled()) {
                         it->second.insert(transfer);
                     }
                 }
@@ -160,7 +160,7 @@ namespace xng {
             targetBuffers[handle] = targetBuffer;
         }
 
-        void commit() {
+        void commit(std::vector<rg::TransferPass> passes) {
             const size_t budget = chunkSize * pinnedChunks;
 
             // Prune finished transfers and accumulate in flight size
@@ -170,7 +170,7 @@ namespace xng {
             for (auto &stagingBuffer: stagingBuffersCopy) {
                 auto pendingCopy = stagingBuffer.pendingTransfers;
                 for (auto &transfer: pendingCopy) {
-                    if (transfer.first->isFinished()) {
+                    if (transfer.first->isSignaled()) {
                         stagingBuffer.allocator.free(transfer.second.offset, transfer.second.size);
                         stagingBuffer.pendingTransfers.erase(transfer.first);
                     } else {
@@ -241,7 +241,7 @@ namespace xng {
                 builder.write(upload.targetBuffer, upload.chunkOffset, upload.chunkSize);
             }
 
-            const auto pass = builder.execute(
+            auto pass = builder.execute(
                 [this, chunkUploads](rg::TransferContext &ctx) {
                     for (auto &upload: chunkUploads) {
                         ctx.copyBuffer(upload.targetBuffer,
@@ -252,7 +252,9 @@ namespace xng {
                     }
                 });
 
-            auto transferHandle = std::shared_ptr(std::move(heap.transfer(pass)));
+            passes.insert(passes.begin(), std::move(pass));
+
+            auto transferHandle = std::shared_ptr(std::move(heap.transfer(passes)));
 
             for (auto &upload: chunkUploads) {
                 stagingBuffers.at(upload.stagingIndex).pendingTransfers.emplace(transferHandle,
@@ -280,7 +282,7 @@ namespace xng {
         struct StagingBuffer {
             rg::HeapResource<rg::Buffer> buffer;
             std::unique_ptr<rg::HeapMapping> mapping;
-            std::unordered_map<std::shared_ptr<rg::HeapTransfer>, ChunkTransfer> pendingTransfers;
+            std::unordered_map<std::shared_ptr<rg::Semaphore>, ChunkTransfer> pendingTransfers;
 
             RangeAllocator allocator;
 
@@ -344,7 +346,7 @@ namespace xng {
         std::unordered_map<Handle, std::vector<UploadChunk> > uploadChunks;
         std::unordered_set<Handle> flushedUploads;
 
-        std::unordered_map<Handle, std::unordered_set<std::shared_ptr<rg::HeapTransfer> > > inFlightUploads;
+        std::unordered_map<Handle, std::unordered_set<std::shared_ptr<rg::Semaphore> > > inFlightUploads;
 
         std::vector<StagingBuffer> stagingBuffers; // Each staging buffer is sized chunkSize
 
