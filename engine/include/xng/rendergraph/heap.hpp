@@ -21,7 +21,7 @@
 
 #include "xng/rendergraph/resourceid.hpp"
 #include "xng/rendergraph/heapmapping.hpp"
-#include "xng/rendergraph/heaptransfer.hpp"
+#include "xng/rendergraph/semaphore.hpp"
 #include "xng/rendergraph/pass.hpp"
 
 #include "xng/rendergraph/resource/buffer.hpp"
@@ -76,6 +76,12 @@ namespace xng::rg {
          *
          * The returned mapping must only be accessed by the thread which mapped it.
          *
+         * Ranges of the returned mapping which are currently in use by a transfer or Runtime::execute invocation
+         * must not be accessed until the execution has finished.
+         *
+         * There is no way for the runtime to guarantee synchronization safety in this case,
+         * so users must exercise caution when using mapped resources.
+         *
          * The returned mapping internally holds a reference to the passed resource.
          *
          * @param target
@@ -88,17 +94,15 @@ namespace xng::rg {
          *
          * Heap transfer operations run asynchronously and can be checked for completion via the returned transfer handle.
          *
-         * The passed callback may be invoked in a later call to Runtime::execute,
-         * so it must not capture local references in the call site.
-         *
          * The runtime internally pins resources referenced in the pass until the transfer has finished.
          *
-         * The runtime performs RAW / WAR hazard resolution for all resources in Runtime::execute.
-         * This means transfers may not be executed until calling Runtime::execute.
+         * For the passes the ordering and callback rules from the graph apply.
+         * The runtime will treat a heap transfer submission like any other Runtime::execute() submission
+         * and order / synchronize / overlap separate invocations accordingly.
          *
          * On Vulkan all resources are EXCLUSIVE ownership.
          *
-         * This means if a resource is being accessed in a transfer pass on the heap the runtime
+         * This means if a resource is being accessed in a transfer pass on the heap, the runtime
          * may perform an ownership transfer of the resource when it is referenced in a graph.
          *
          * Therefore, for streaming resources to the heap for consumption by graphs the best approach is:
@@ -110,12 +114,12 @@ namespace xng::rg {
          * Big Stable Buffer on Heap (MEMORY_GPU_ONLY, Contains all the streamed data)
          *  -> Copy Intermediate Buffer to stable buffer in runtime transfer pass. (Only when the copy from staging to intermediate has finished)
          *
-         * This ensures the runtime does not stall on pending streamed data by double buffering the intermediate buffer.
+         * The double buffering of the intermediate buffer ensures that the runtime can overlap streaming with graph execution.
          *
-         * @param pass The pass containing the transfer operations
-         * @return The transfer handle representing the pending operations
+         * @param passes The passes containing the transfer operations
+         * @return The semaphore representing the pending transfer operations.
          */
-        virtual std::unique_ptr<HeapTransfer> transfer(const TransferPass &pass) = 0;
+        virtual std::unique_ptr<Semaphore> transfer(const std::vector<TransferPass> &passes) = 0;
 
     private:
         virtual void incrementReference(const ResourceId &handle) = 0;

@@ -24,7 +24,7 @@
 
 #include "glad/glad.h"
 
-#include "xng/rendergraph/heaptransfer.hpp"
+#include "xng/rendergraph/semaphore.hpp"
 
 namespace xng::opengl {
     struct HeapTransferSync {
@@ -33,16 +33,23 @@ namespace xng::opengl {
         bool done = false;
     };
 
-    class HeapTransferGL final : public HeapTransfer {
+    class SemaphoreGL final : public rg::Semaphore {
     public:
-        explicit HeapTransferGL(std::shared_ptr<HeapTransferSync> sync)
+        explicit SemaphoreGL() = default;
+
+        explicit SemaphoreGL(std::shared_ptr<HeapTransferSync> sync)
             : sync(std::move(sync)) {}
 
-        bool isFinished() override {
+        bool isSignaled() override {
+            return wait(0);
+        }
+
+        bool wait(const size_t timeOut) override {
+            if (!sync) return true;
             std::lock_guard lock(sync->mutex);
             if (sync->done) return true;
             if (!sync->fence) return false;
-            const auto result = glClientWaitSync(sync->fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
+            const auto result = glClientWaitSync(sync->fence, GL_SYNC_FLUSH_COMMANDS_BIT, timeOut);
             if (result == GL_ALREADY_SIGNALED || result == GL_CONDITION_SATISFIED) {
                 glDeleteSync(sync->fence);
                 sync->fence = nullptr;

@@ -116,7 +116,7 @@
 #include "xng/rendergraph/texturebinding.hpp"
 #include "xng/rendergraph/primitive.hpp"
 #include "xng/rendergraph/resourceid.hpp"
-#include "xng/rendergraph/heaptransfer.hpp"
+#include "xng/rendergraph/semaphore.hpp"
 #include "xng/rendergraph/graph.hpp"
 #include "xng/rendergraph/pass.hpp"
 #include "xng/rendergraph/pipelinecache.hpp"

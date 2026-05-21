@@ -194,11 +194,8 @@ namespace xng::opengl {
 
     Runtime::~Runtime() = default;
 
-    std::shared_ptr<rg::Surface> Runtime::createSurface(std::shared_ptr<Window> window) {
+    std::shared_ptr<rg::Surface> Runtime::createSurface(std::shared_ptr<Window> window, size_t swapCount) {
         return std::make_shared<SurfaceGL>(std::move(window));
-    }
-
-    void Runtime::setFramesInFlight(size_t framesInFlight) {
     }
 
     rg::Heap &Runtime::getResourceHeap() {
@@ -209,7 +206,7 @@ namespace xng::opengl {
         return data->pipelineCache;
     }
 
-    void Runtime::execute(const rg::Graph &graph) {
+    std::unique_ptr<Semaphore> Runtime::execute(const rg::Graph &graph) {
         std::unordered_set<SurfaceGL *> surfaces;
 
         // TODO: Transient Aliasing
@@ -319,7 +316,6 @@ namespace xng::opengl {
         RasterContextGL rasterContext(passResources, data->pipelineCache);
         ComputeContextGL computeContext(passResources, data->pipelineCache);
 
-        //TODO: Pass Ordering
         for (auto &pass: graph.passes) {
             switch (pass.index()) {
                 case 0: {
@@ -361,11 +357,14 @@ namespace xng::opengl {
         for (auto &tex: transientResources.textures) {
             data->cachedTextures[tex.second->desc].emplace_back(std::move(tex.second));
         }
+
+        return std::make_unique<SemaphoreGL>();
     }
 
-    void Runtime::execute(const std::vector<rg::Graph> &graphs) {
+    std::unique_ptr<Semaphore> Runtime::execute(const std::vector<rg::Graph> &graphs) {
         for (auto &graph: graphs) {
             execute(graph);
         }
+        return std::make_unique<SemaphoreGL>();
     }
 }

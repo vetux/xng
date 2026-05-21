@@ -177,11 +177,7 @@ namespace xng::vulkan {
                 vkDestroyInstance(getData(instanceData.get()).instance, nullptr);*/
     }
 
-    std::shared_ptr<rg::Surface> Runtime::createSurface(std::shared_ptr<Window> window) {
-        throw std::runtime_error("Not Implemented");
-    }
-
-    void Runtime::setFramesInFlight(size_t framesInFlight) {
+    std::shared_ptr<rg::Surface> Runtime::createSurface(std::shared_ptr<Window> window, size_t swapCount) {
         throw std::runtime_error("Not Implemented");
     }
 
@@ -193,11 +189,11 @@ namespace xng::vulkan {
         throw std::runtime_error("Not Implemented");
     }
 
-    void Runtime::execute(const rg::Graph &graph) {
+    std::unique_ptr<rg::Semaphore> Runtime::execute(const rg::Graph &graph) {
         throw std::runtime_error("Not Implemented");
     }
 
-    void Runtime::execute(const std::vector<rg::Graph> &graphs) {
+    std::unique_ptr<rg::Semaphore> Runtime::execute(const std::vector<rg::Graph> &graphs) {
         throw std::runtime_error("Not Implemented");
     }
 }

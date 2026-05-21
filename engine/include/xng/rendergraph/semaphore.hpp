@@ -20,11 +20,17 @@
 #define XENGINE_HEAPTRANSFER_HPP
 
 namespace xng::rg {
-    class HeapTransfer {
+    class Semaphore {
     public:
-        virtual ~HeapTransfer() = default;
+        virtual ~Semaphore() = default;
 
-        virtual bool isFinished() = 0;
+        virtual bool isSignaled() = 0;
+
+        /**
+         * @param timeOut Time timeout in nanoseconds.
+         * @return Whether the semaphore was signaled.
+         */
+        virtual bool wait(size_t timeOut) = 0;
     };
 }
 

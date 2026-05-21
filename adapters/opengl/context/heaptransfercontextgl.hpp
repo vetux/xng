@@ -36,7 +36,7 @@
 #include "ogldebug.hpp"
 
 #include "heapgl.hpp"
-#include "heaptransfergl.hpp"
+#include "semaphoregl.hpp"
 #include "passresources.hpp"
 
 #include "display/windowgl.hpp"
@@ -273,14 +273,14 @@ namespace xng::opengl {
             cv.notify_one();
         }
 
-        std::unique_ptr<HeapTransferGL> finishTransfer() {
+        std::unique_ptr<SemaphoreGL> finishTransfer() {
             auto sync = std::make_shared<HeapTransferSync>();
             {
                 std::lock_guard lock(mutex);
                 commandQueue.emplace_back(SyncCmd{sync});
                 cv.notify_one();
             }
-            return std::make_unique<HeapTransferGL>(sync);
+            return std::make_unique<SemaphoreGL>(sync);
         }
 
         // Wait up to timeoutMs for overlapping buffer transfers to complete.

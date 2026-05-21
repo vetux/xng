@@ -24,6 +24,7 @@
 #include "xng/rendergraph/heap.hpp"
 #include "xng/rendergraph/pipelinecache.hpp"
 #include "xng/rendergraph/graph.hpp"
+#include "xng/rendergraph/semaphore.hpp"
 
 /**
  * The Render Graph namespace.
@@ -45,28 +46,10 @@ namespace xng::rg {
          * On Vulkan it is completely decoupled, and the windowing system interaction exists solely in this method.
          *
          * @param window The window for which to create a surface.
+         * @param swapCount The number of swap chain images to create for the surface.
          * @return The Surface representing the window contents.
          */
-        virtual std::shared_ptr<Surface> createSurface(std::shared_ptr<Window> window) = 0;
-
-        /**
-         * TODO: Design support for user implementation of frames in flight.
-         *
-         * For each frame in flight the runtime will manage:
-         *  - Copies of heap MEMORY_CPU_TO_GPU / MEMORY_GPU_TO_CPU buffers
-         *  - Transient resources
-         *  - Swap chain images of surfaces
-         *
-         * This means frames in flight come at the cost of extra memory usage.
-         *
-         * The in flight rendering is completely transparent to the user.
-         *
-         * Some implementations (OpenGL) may not perform frames in flight manually and ignore the passed value,
-         * or internally cap the maximum number of frames in flight (E.g. 2/3 for vulkan)
-         *
-         * @param framesInFlight The maximum number of requested frames in flight.
-         */
-        virtual void setFramesInFlight(size_t framesInFlight) = 0;
+        virtual std::shared_ptr<Surface> createSurface(std::shared_ptr<Window> window, size_t swapCount) = 0;
 
         /**
          * Destroying a heap resource currently referenced by a compiled graph is forbidden.
@@ -83,10 +66,10 @@ namespace xng::rg {
         /**
          * Execute a single graph.
          *
-         * Passes run in parallel where possible.
+         * Passes run in parallel where possible, and executions may overlap.
          *
-         * Write-After-Write is treated as undefined-behavior.
-         * Runtimes may perform Last write wins or throw an exception.
+         * The runtime guarantees resource access synchronization correctness at all times based on
+         * graph ordering rules and execute() invocation order.
          *
          * The runtime will internally queue swapping operations for all referenced surfaces.
          *
@@ -96,21 +79,19 @@ namespace xng::rg {
          * What exactly is drawn in the screen buffer if a swap chain / framebuffer size doesn't match
          * is not clearly defined in the graphic apis.
          *
-         *  For Example,
-         *        pass[0] writes resource0
-         *        pass[1] reads/writes resource0
-         *        pass[2] reads resource0
-         *
-         *        pass[1] will receive the changes from pass[0]
-         *        pass[2] will receive the changes from pass[1]
          * @param graph
+         *
+         * @return The semaphore representing this submission.
          */
-        virtual void execute(const Graph &graph) = 0;
+        virtual std::unique_ptr<Semaphore> execute(const Graph &graph) = 0;
 
         /**
          * Execute multiple graphs.
          *
-         * The graphs run in parallel where possible.
+         * Passes run in parallel where possible, and executions may overlap.
+         *
+         * The runtime guarantees resource access synchronization correctness at all times based on
+         * graph ordering rules and execute() invocation order.
          *
          * The runtime will internally queue swapping operations for all referenced surfaces.
          *
@@ -120,18 +101,11 @@ namespace xng::rg {
          * What exactly is drawn in the screen buffer if a swap chain / framebuffer size doesn't match
          * is not clearly defined in the graphic apis.
          *
-         *  For Example,
-         *      graphs[0] write heap
-         *      graphs[1] read and write heap
-         *      graphs[2] read heap
-         *      graphs[3] read and write heap
-         *
-         *      graphs[1] will receive the changes to the heap from graph[0]
-         *      graphs[2] will receive the changes to the heap from graph[1]
-         *      graphs[3] will receive the changes to the heap from graph[1], and the read operation might run in parallel with graphs[2]
          * @param graphs
+         *
+         * @return The semaphore representing this submission.
          */
-        virtual void execute(const std::vector<Graph> &graphs) = 0;
+        virtual std::unique_ptr<Semaphore> execute(const std::vector<Graph> &graphs) = 0;
     };
 }
 

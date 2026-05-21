@@ -50,7 +50,7 @@ namespace xng::opengl {
 
         std::unique_ptr<HeapMapping> map(const HeapResource<Buffer> &target) override;
 
-        std::unique_ptr<HeapTransfer> transfer(const TransferPass &pass) override;
+        std::unique_ptr<Semaphore> transfer(const std::vector<TransferPass> &passes) override;
 
         void incrementReference(const ResourceId &handle) override {
             refCounter.inc(handle.getHandle());

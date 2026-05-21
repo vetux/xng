@@ -28,17 +28,15 @@ namespace xng::vulkan {
 
         ~Runtime() override;
 
-        std::shared_ptr<rg::Surface> createSurface(std::shared_ptr<Window> window) override;
-
-        void setFramesInFlight(size_t framesInFlight) override;
+        std::shared_ptr<rg::Surface> createSurface(std::shared_ptr<Window> window, size_t swapCount) override;
 
         rg::Heap &getResourceHeap() override;
 
         rg::PipelineCache &getPipelineCache() override;
 
-        void execute(const rg::Graph &graph) override;
+        std::unique_ptr<rg::Semaphore> execute(const rg::Graph &graph) override;
 
-        void execute(const std::vector<rg::Graph> &graphs) override;
+        std::unique_ptr<rg::Semaphore> execute(const std::vector<rg::Graph> &graphs) override;
     };
 }
 
