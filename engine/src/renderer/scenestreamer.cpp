@@ -40,7 +40,7 @@ namespace xng {
                                                                      float metallic,
                                                                      float roughness,
                                                                      float ambientOcclusion,
-                                                                     Vec4f normalIntensity,
+                                                                     const Vec4f &normalIntensity,
                                                                      RenderObjectHandle<RenderTexture> albedoTexture,
                                                                      RenderObjectHandle<RenderTexture> metallicTexture,
                                                                      RenderObjectHandle<RenderTexture> roughnessTexture,
