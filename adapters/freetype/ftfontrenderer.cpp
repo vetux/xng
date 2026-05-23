@@ -41,51 +41,40 @@ namespace xng {
         FT_Done_Face(face);
     }
 
-    void FTFontRenderer::setPixelSize(Vec2i size) {
+    void FTFontRenderer::setPixelSize(const Vec2i &size) {
         FT_Set_Pixel_Sizes(face, size.x, size.y);
     }
 
-    Character FTFontRenderer::renderAscii(const char c) {
+    Glyph FTFontRenderer::render(const char32_t c) {
         auto r = FT_Load_Char(face, c, FT_LOAD_RENDER);
         if (r != 0) {
-            throw std::runtime_error("Failed to rasterize character " + std::to_string(c) + " " + std::to_string(r));
+            throw std::runtime_error("Failed to rasterize Glyph " + std::to_string(c) + " " + std::to_string(r));
         }
 
-        Character ret;
-        ret.value = c;
-        ret.bearing = Vec2i(face->glyph->bitmap_left, face->glyph->bitmap_top);
-        ret.advance = static_cast<int>(face->glyph->advance.x) >> 6;
-        ret.bitmapSize = Vec2i(static_cast<int>(face->glyph->bitmap.width), static_cast<int>(face->glyph->bitmap.rows));
+        Glyph ret;
+        ret.character = c;
+        ret.metrics.bearing = Vec2i(face->glyph->bitmap_left, face->glyph->bitmap_top);
+        ret.metrics.advance = static_cast<int>(face->glyph->advance.x) >> 6;
+        ret.metrics.bitmapSize = Vec2i(static_cast<int>(face->glyph->bitmap.width),
+                                       static_cast<int>(face->glyph->bitmap.rows));
 
         const auto bitmap = face->glyph->bitmap;
         const auto pitch = bitmap.pitch;
 
         if (pitch != 0) {
             const auto absPitch = std::abs(pitch);
-            ret.bitmap.resize(ret.bitmapSize.x * ret.bitmapSize.y);
-            for (auto y = 0; y < ret.bitmapSize.y; y++) {
-                const size_t srcRow = pitch > 0 ? y : (ret.bitmapSize.y - y - 1);
+            ret.bitmap.resize(ret.metrics.bitmapSize.x * ret.metrics.bitmapSize.y);
+            for (auto y = 0; y < ret.metrics.bitmapSize.y; y++) {
+                const size_t srcRow = pitch > 0 ? y : (ret.metrics.bitmapSize.y - y - 1);
                 const size_t sourceOffset = srcRow * absPitch;
-                const size_t dstOffset = y * ret.bitmapSize.x;
-                std::memcpy(ret.bitmap.data() + dstOffset, bitmap.buffer + sourceOffset, ret.bitmapSize.x);
+                const size_t dstOffset = y * ret.metrics.bitmapSize.x;
+                std::memcpy(ret.bitmap.data() + dstOffset, bitmap.buffer + sourceOffset, ret.metrics.bitmapSize.x);
             }
         } else {
             throw std::runtime_error("Invalid font pitch");
         }
 
         return ret;
-    }
-
-    std::map<char, Character> FTFontRenderer::renderAscii() {
-        std::map<char, Character> ret;
-        for (int i = 0; i <= 127; i++) {
-            ret[static_cast<char>(i)] = std::move(renderAscii(static_cast<char>(i)));
-        }
-        return ret;
-    }
-
-    Character FTFontRenderer::renderUnicode(wchar_t c) {
-        throw std::runtime_error("FreeType unicode rendering not implemented yet.");
     }
 
     int FTFontRenderer::getAscender() {

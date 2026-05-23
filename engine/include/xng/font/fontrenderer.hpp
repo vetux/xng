@@ -20,7 +20,7 @@
 #define XENGINE_FONTRENDERER_HPP
 
 #include "xng/math/vector2.hpp"
-#include "xng/font/character.hpp"
+#include "xng/font/glyph.hpp"
 
 namespace xng {
     /**
@@ -35,30 +35,15 @@ namespace xng {
          *
          * @param size
          */
-        virtual void setPixelSize(Vec2i size) = 0;
+        virtual void setPixelSize(const Vec2i &size) = 0;
 
         /**
-         * Rasterize the given ascii character.
+         * Rasterize the given Unicode character.
          *
          * @param c
          * @return
          */
-        virtual Character renderAscii(char c) = 0;
-
-        /**
-         * Rasterize all ascii characters and return the character mapping.
-         *
-         * @return
-         */
-        virtual std::map<char, Character> renderAscii() = 0;
-
-        /**
-         * Rasterize the given unicode character.
-         *
-         * @param c
-         * @return
-         */
-        virtual Character renderUnicode(wchar_t c) = 0;
+        virtual Glyph render(char32_t c) = 0;
 
         /**
          * @return The distance between baseline and the largest top value in pixels.
@@ -66,7 +51,7 @@ namespace xng {
         virtual int getAscender() = 0;
 
         /**
-         * @return The distance between baseline and the lowest bottom value in pixels.
+         * @return The distance between the baseline and the lowest bottom value in pixels.
          */
         virtual int getDescender() = 0;
 

@@ -201,7 +201,7 @@
 #include "xng/math/rotation.hpp"
 #include "xng/font/fontrenderer.hpp"
 #include "xng/font/fontengine.hpp"
-#include "xng/font/character.hpp"
+#include "xng/font/glyph.hpp"
 #include "xng/physics/collider.hpp"
 #include "xng/physics/colliderproperties.hpp"
 #include "xng/physics/world.hpp"

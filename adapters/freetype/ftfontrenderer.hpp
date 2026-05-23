@@ -26,7 +26,7 @@
 #include "xng/font/fontrenderer.hpp"
 
 namespace xng {
-    class FTFontRenderer : public FontRenderer {
+    class FTFontRenderer final : public FontRenderer {
     public:
         FT_Library library{};
         FT_Face face{};
@@ -36,13 +36,9 @@ namespace xng {
 
         ~FTFontRenderer() override;
 
-        void setPixelSize(Vec2i size) override;
+        void setPixelSize(const Vec2i &size) override;
 
-        Character renderAscii(char c) override;
-
-        std::map<char, Character> renderAscii() override;
-
-        Character renderUnicode(wchar_t c) override;
+        Glyph render(char32_t c) override;
 
         int getAscender() override;
 
