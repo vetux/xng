@@ -16,32 +16,14 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef XENGINE_TEXTLAYOUT_HPP
-#define XENGINE_TEXTLAYOUT_HPP
+#ifndef XENGINE_DECODEUTF8_HPP
+#define XENGINE_DECODEUTF8_HPP
 
-#include <utility>
-
-#include "xng/math/vector2.hpp"
+#include <string_view>
+#include <vector>
 
 namespace xng {
-    struct TextLayout {
-        struct Character {
-            Vec2f position; // The absolute position of the character bitmap
-            char32_t character; // The character code point
-
-            Character(Vec2f position, const char32_t character)
-                : position(std::move(position)), character(character) {
-            }
-        };
-
-        TextLayout(Vec2i size, const std::vector<Character> &characters)
-            : size(std::move(size)),
-              characters(characters) {
-        }
-
-        Vec2i size; // The total size of the text layout
-        std::vector<Character> characters;
-    };
+    std::vector<char32_t> decodeUtf8(std::string_view str);
 }
 
-#endif //XENGINE_TEXTLAYOUT_HPP
+#endif //XENGINE_DECODEUTF8_HPP

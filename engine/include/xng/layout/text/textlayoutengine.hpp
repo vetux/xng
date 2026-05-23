@@ -28,22 +28,15 @@
 namespace xng {
     class XENGINE_EXPORT TextLayoutEngine {
     public:
-        explicit TextLayoutEngine(FontEngine &fontEngine,
-                                  const ResourceHandle<Font> &font,
-                                  const Vec2i &fontPixelSize);
+        static Vec2i getSize(const std::u32string &text,
+                             const TextLayoutParameters &layoutParameters,
+                             const FontMetrics &fontMetrics,
+                             const std::unordered_map<char32_t, Glyph::Metrics> &glyphMetrics);
 
-        [[nodiscard]] Vec2i getSize(const std::string &text, const TextLayoutParameters &layoutParameters) const;
-
-        [[nodiscard]] TextLayout getLayout(const std::string &text, const TextLayoutParameters &layoutParameters) const;
-
-    private:
-        Uri fontUri;
-        Vec2i fontPixelSize{};
-
-        int ascender = 0;
-        int descender = 0;
-        int lineHeight = 0;
-        std::map<char, std::shared_ptr<Character>> ascii;
+        static TextLayout getLayout(const std::u32string &text,
+                                    const TextLayoutParameters &layoutParameters,
+                                    const FontMetrics &fontMetrics,
+                                    const std::unordered_map<char32_t, Glyph::Metrics> &glyphMetrics);
     };
 }
 

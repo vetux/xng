@@ -21,64 +21,58 @@
 #include <utility>
 
 namespace xng {
-    TextLayoutEngine::TextLayoutEngine(FontEngine &fontEngine,
-                                       const ResourceHandle<Font> &font,
-                                       const Vec2i &fontPixelSize)
-        : fontUri(font.getUri()), fontPixelSize(fontPixelSize) {
-        const auto fontRenderer = fontEngine.createFontRenderer(font.get().data);
-        fontRenderer->setPixelSize(fontPixelSize);
-        ascender = fontRenderer->getAscender();
-        descender = fontRenderer->getDescender();
-        lineHeight = fontRenderer->getHeight();
-        auto a = fontRenderer->renderAscii();
-        for (auto &c: a) {
-            ascii.emplace(c.first, std::make_shared<Character>(std::move(c.second)));
-        }
-    }
-
-    Vec2i TextLayoutEngine::getSize(const std::string &str, const TextLayoutParameters &layout) const {
+    Vec2i TextLayoutEngine::getSize(const std::u32string &str,
+                                    const TextLayoutParameters &layout,
+                                    const FontMetrics &fontMetrics,
+                                    const std::unordered_map<char32_t, Glyph::Metrics> &glyphMetrics) {
         size_t numberOfLines = 1;
         size_t currentLineWidth = 0;
         size_t maximumLineWidth = 0;
         for (auto c: str) {
-            auto &chr = *ascii.at(c);
-            if (c == '\n' || (layout.maxLineWidth > 0 && currentLineWidth + chr.advance > layout.maxLineWidth)) {
+            const auto metrics = glyphMetrics.at(c);
+            if (c == '\n' || (layout.maxLineWidth > 0 && currentLineWidth + metrics.advance > layout.maxLineWidth)) {
                 numberOfLines++;
                 currentLineWidth = 0;
             }
-            currentLineWidth += chr.advance;
+            currentLineWidth += metrics.advance;
             if (currentLineWidth > maximumLineWidth)
                 maximumLineWidth = currentLineWidth;
         }
 
-        return Vec2i(maximumLineWidth, (numberOfLines * (lineHeight)) + (descender * -1));
+        return Vec2i(static_cast<int>(maximumLineWidth),
+                     static_cast<int>((numberOfLines * (fontMetrics.height)) + (fontMetrics.descender * -1)));
     }
 
-    int getWidth(const std::vector<TextLayout::Glyph> &line) {
+    int getWidth(const std::vector<TextLayout::Character> &line,
+                 const std::unordered_map<char32_t, Glyph::Metrics> &glyphMetrics) {
         auto ret = 0;
         for (auto &c: line) {
-            ret += c.character->advance;
+            ret += glyphMetrics.at(c.character).advance;
         }
         return ret;
     }
 
-    TextLayout TextLayoutEngine::getLayout(const std::string &text, const TextLayoutParameters &layout) const {
+    TextLayout TextLayoutEngine::getLayout(const std::u32string &text,
+                                           const TextLayoutParameters &layoutParameters,
+                                           const FontMetrics &fontMetrics,
+                                           const std::unordered_map<char32_t, Glyph::Metrics> &glyphMetrics) {
         if (text.empty())
             throw std::runtime_error("Text cannot be empty");
 
         float posx = 0;
-
         int largestWidth = 0;
-        std::vector<std::vector<TextLayout::Glyph> > lines = std::vector<std::vector<TextLayout::Glyph> >();
+
+        auto lines = std::vector<std::vector<TextLayout::Character> >();
         lines.emplace_back();
 
         for (auto &c: text) {
             auto lineIndex = lines.size() - 1;
-            auto &character = ascii.at(c);
-            auto lineWidth = getWidth(lines.at(lineIndex));
+            auto &character = glyphMetrics.at(c);
+            auto lineWidth = getWidth(lines.at(lineIndex), glyphMetrics);
 
             if (c == '\n'
-                || (layout.maxLineWidth > 0 && lineWidth + character->advance > layout.maxLineWidth)) {
+                || (layoutParameters.maxLineWidth > 0 && lineWidth + character.advance > layoutParameters.
+                    maxLineWidth)) {
                 lines.emplace_back();
                 posx = 0;
                 lineIndex = lines.size() - 1;
@@ -88,30 +82,30 @@ namespace xng {
             if (c < 32)
                 continue; // Skip non printable characters
 
-            if (lineWidth + character->advance > largestWidth)
-                largestWidth = lineWidth + character->advance;
+            if (lineWidth + character.advance > largestWidth)
+                largestWidth = lineWidth + character.advance;
 
-            float posy = (static_cast<float>(lineIndex) * static_cast<float>(layout.lineSpacing))
-                         + (static_cast<float>(lineIndex) * static_cast<float>(lineHeight));
+            float posy = (static_cast<float>(lineIndex) * static_cast<float>(layoutParameters.lineSpacing))
+                         + (static_cast<float>(lineIndex) * static_cast<float>(fontMetrics.height));
 
-            TextLayout::Glyph renderChar(Vec2f(posx, posy), character);
+            TextLayout::Character renderChar(Vec2f(posx, posy), c);
 
             // Add horizontal advance
-            posx += static_cast<float>(character->advance);
+            posx += static_cast<float>(character.advance);
 
             lines.at(lineIndex).emplace_back(renderChar);
         }
 
-        auto origin = Vec2f(0, static_cast<float>(ascender + descender));
+        auto origin = Vec2f(0, static_cast<float>(fontMetrics.ascender + fontMetrics.descender));
 
         // Apply alignment offset
-        std::vector<TextLayout::Glyph> renderText;
+        std::vector<TextLayout::Character> renderText;
         for (const auto &line: lines) {
-            auto width = getWidth(line);
+            auto width = getWidth(line, glyphMetrics);
             float diff = static_cast<float>(largestWidth) - static_cast<float>(width);
 
             float offset = 0;
-            switch (layout.alignment) {
+            switch (layoutParameters.alignment) {
                 default:
                 case TEXT_ALIGN_LEFT:
                     break;
@@ -124,13 +118,13 @@ namespace xng {
             }
 
             for (auto c: line) {
+                const auto &metrics = glyphMetrics.at(c.character);
                 c.position.x += offset;
-                c.position.x = c.position.x + (origin.x + static_cast<float>(c.character->bearing.x));
-                c.position.y = c.position.y + (origin.y - static_cast<float>(c.character->bearing.y));
+                c.position.x = c.position.x + (origin.x + static_cast<float>(metrics.bearing.x));
+                c.position.y = c.position.y + (origin.y - static_cast<float>(metrics.bearing.y));
                 renderText.emplace_back(c);
             }
         }
-
-        return {getSize(text, layout), renderText, fontUri, fontPixelSize, text, layout};
+        return {getSize(text, layoutParameters, fontMetrics, glyphMetrics), renderText};
     }
 }
