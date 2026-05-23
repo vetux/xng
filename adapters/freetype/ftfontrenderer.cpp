@@ -77,15 +77,11 @@ namespace xng {
         return ret;
     }
 
-    int FTFontRenderer::getAscender() {
-        return static_cast<int>(face->ascender * (face->size->metrics.height >> 6)) / face->units_per_EM;
-    }
-
-    int FTFontRenderer::getDescender() {
-        return static_cast<int>(face->descender * (face->size->metrics.height >> 6)) / face->units_per_EM;
-    }
-
-    int FTFontRenderer::getHeight() {
-        return static_cast<int>(face->size->metrics.height >> 6);
+    FontMetrics FTFontRenderer::getFontMetrics() {
+        return {
+            static_cast<int>(face->ascender * (face->size->metrics.height >> 6)) / face->units_per_EM,
+            static_cast<int>(face->descender * (face->size->metrics.height >> 6)) / face->units_per_EM,
+            static_cast<int>(face->size->metrics.height >> 6)
+        };
     }
 }

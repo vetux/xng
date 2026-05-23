@@ -21,6 +21,7 @@
 
 #include "xng/math/vector2.hpp"
 #include "xng/font/glyph.hpp"
+#include "xng/font/fontmetrics.hpp"
 
 namespace xng {
     /**
@@ -46,19 +47,9 @@ namespace xng {
         virtual Glyph render(char32_t c) = 0;
 
         /**
-         * @return The distance between baseline and the largest top value in pixels.
+         * @return The font metrics for the current pixel size.
          */
-        virtual int getAscender() = 0;
-
-        /**
-         * @return The distance between the baseline and the lowest bottom value in pixels.
-         */
-        virtual int getDescender() = 0;
-
-        /**
-         * @return The suggested distance between baselines.
-         */
-        virtual int getHeight() = 0;
+        virtual FontMetrics getFontMetrics() = 0;
     };
 }
 

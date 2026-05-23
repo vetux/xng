@@ -16,32 +16,21 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef XENGINE_FTFONTRENDERER_HPP
-#define XENGINE_FTFONTRENDERER_HPP
-
-#include <ft2build.h>
-
-#include "freetype/freetype.h"
-
-#include "xng/font/fontrenderer.hpp"
+#ifndef XENGINE_FONTMETRICS_HPP
+#define XENGINE_FONTMETRICS_HPP
 
 namespace xng {
-    class FTFontRenderer final : public FontRenderer {
-    public:
-        FT_Library library{};
-        FT_Face face{};
-        std::vector<uint8_t> bytes; //Freetype requires the data to stay in memory when loading with FT_New_Memory_Face
+    struct FontMetrics {
+        int ascender; // The distance between baseline and the largest top value in pixels.
+        int descender; // The distance between the baseline and the lowest bottom value in pixels.
+        int height; // The suggested distance between baselines.
 
-        explicit FTFontRenderer(const std::vector<uint8_t> &font, FT_Library library);
+        FontMetrics() = default;
 
-        ~FTFontRenderer() override;
-
-        void setPixelSize(const Vec2i &size) override;
-
-        Glyph render(char32_t c) override;
-
-        FontMetrics getFontMetrics() override;
+        FontMetrics(const int ascender, const int descender, const int height)
+            : ascender(ascender), descender(descender), height(height) {
+        }
     };
 }
 
-#endif //XENGINE_FTFONTRENDERER_HPP
+#endif //XENGINE_FONTMETRICS_HPP
