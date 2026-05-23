@@ -53,6 +53,10 @@ namespace xng {
             : buffer() {
         }
 
+        Image(const int width, const int height, std::vector<T> &&buffer)
+            : resolution(width, height), buffer(std::move(buffer)) {
+        }
+
         Image(const int width, const int height, const std::vector<T> &buffer)
             : resolution(width, height), buffer(buffer) {
         }
@@ -116,11 +120,11 @@ namespace xng {
         }
 
         void copyRow(const Image &source,
-            const int srcRow,
-            const int srcColumn,
-            const int dstRow,
-            const int dstColumn,
-            const size_t count) {
+                     const int srcRow,
+                     const int srcColumn,
+                     const int dstRow,
+                     const int dstColumn,
+                     const size_t count) {
             if (source.resolution.y <= srcRow
                 || source.resolution.x <= srcColumn
                 || source.resolution.x < srcColumn + count
@@ -213,6 +217,7 @@ namespace xng {
     typedef Image<ColorRGBA> ImageRGBA;
     typedef Image<ColorRGB> ImageRGB;
     typedef Image<ColorRGBF> ImageRGBF;
+    typedef Image<uint8_t> ImageGrayscale;
 }
 
 #endif //XENGINE_IMAGE_HPP

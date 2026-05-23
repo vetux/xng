@@ -21,8 +21,10 @@
 
 #include <memory>
 #include <utility>
+#include <variant>
 
 #include "xng/math/vector2.hpp"
+#include "xng/assets/image.hpp"
 
 namespace xng {
     class XENGINE_EXPORT Glyph {
@@ -41,7 +43,12 @@ namespace xng {
 
         char32_t character{};
         Metrics metrics{};
-        std::vector<uint8_t> bitmap{}; // The character bitmap, 1 byte grayscale per pixel, packed row ascending
+
+        /**
+         * The character bitmap.
+         * Either 1 byte grayscale per pixel or BGRA.
+         */
+        std::variant<ImageGrayscale, ImageRGBA> bitmap{};
 
         Glyph() = default;
 
@@ -49,7 +56,17 @@ namespace xng {
               Vec2i bearing,
               const int advance,
               Vec2i bitmapSize,
-              std::vector<uint8_t> bitmap)
+              ImageGrayscale bitmap)
+            : character(character),
+              metrics(std::move(bearing), advance, std::move(bitmapSize)),
+              bitmap(std::move(bitmap)) {
+        }
+
+        Glyph(const char32_t character,
+              Vec2i bearing,
+              const int advance,
+              Vec2i bitmapSize,
+              ImageRGBA bitmap)
             : character(character),
               metrics(std::move(bearing), advance, std::move(bitmapSize)),
               bitmap(std::move(bitmap)) {

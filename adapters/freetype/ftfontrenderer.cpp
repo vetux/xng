@@ -58,20 +58,44 @@ namespace xng {
         ret.metrics.bitmapSize = Vec2i(static_cast<int>(face->glyph->bitmap.width),
                                        static_cast<int>(face->glyph->bitmap.rows));
 
-        const auto bitmap = face->glyph->bitmap;
-        const auto pitch = bitmap.pitch;
-
-        if (pitch != 0) {
-            const auto absPitch = std::abs(pitch);
-            ret.bitmap.resize(ret.metrics.bitmapSize.x * ret.metrics.bitmapSize.y);
-            for (auto y = 0; y < ret.metrics.bitmapSize.y; y++) {
-                const size_t srcRow = pitch > 0 ? y : (ret.metrics.bitmapSize.y - y - 1);
-                const size_t sourceOffset = srcRow * absPitch;
-                const size_t dstOffset = y * ret.metrics.bitmapSize.x;
-                std::memcpy(ret.bitmap.data() + dstOffset, bitmap.buffer + sourceOffset, ret.metrics.bitmapSize.x);
+        if (face->glyph->bitmap.pixel_mode == FT_PIXEL_MODE_GRAY) {
+            const auto bitmap = face->glyph->bitmap;
+            const auto pitch = bitmap.pitch;
+            if (pitch != 0) {
+                const auto absPitch = std::abs(pitch);
+                std::vector<uint8_t> pixels(ret.metrics.bitmapSize.x * ret.metrics.bitmapSize.y);
+                for (auto y = 0; y < ret.metrics.bitmapSize.y; y++) {
+                    const size_t srcRow = pitch > 0 ? y : (ret.metrics.bitmapSize.y - y - 1);
+                    const size_t sourceOffset = srcRow * absPitch;
+                    const size_t dstOffset = y * ret.metrics.bitmapSize.x;
+                    std::memcpy(pixels.data() + dstOffset, bitmap.buffer + sourceOffset, ret.metrics.bitmapSize.x);
+                }
+                ret.bitmap = std::move(ImageGrayscale(ret.metrics.bitmapSize.x,
+                                                      ret.metrics.bitmapSize.y,
+                                                      std::move(pixels)));
+            } else {
+                throw std::runtime_error("Invalid font pitch");
+            }
+        } else if (face->glyph->bitmap.pixel_mode == FT_PIXEL_MODE_BGRA) {
+            const auto bitmap = face->glyph->bitmap;
+            const auto pitch = bitmap.pitch;
+            if (pitch != 0) {
+                const auto absPitch = std::abs(pitch);
+                std::vector<ColorRGBA> pixels(ret.metrics.bitmapSize.x * ret.metrics.bitmapSize.y);
+                for (auto y = 0; y < ret.metrics.bitmapSize.y; y++) {
+                    const size_t srcRow = pitch > 0 ? y : (ret.metrics.bitmapSize.y - y - 1);
+                    const size_t sourceOffset = srcRow * absPitch;
+                    const size_t dstOffset = y * ret.metrics.bitmapSize.x;
+                    std::memcpy(pixels.data() + dstOffset, bitmap.buffer + sourceOffset, ret.metrics.bitmapSize.x * 4);
+                }
+                ret.bitmap = std::move(ImageRGBA(ret.metrics.bitmapSize.x,
+                                                 ret.metrics.bitmapSize.y,
+                                                 std::move(pixels)));
+            } else {
+                throw std::runtime_error("Invalid font pitch");
             }
         } else {
-            throw std::runtime_error("Invalid font pitch");
+            throw std::runtime_error("Unsupported font pixel mode");
         }
 
         return ret;
