@@ -140,6 +140,14 @@ namespace xng::rg {
         std::vector<Shader> shaders;
 
         std::vector<ColorFormat> colorAttachments;
+
+        /**
+         * For the depth / stencil attachments when using combined depth / stencil, both depth and stencil must be set
+         * to the combined format.
+         *
+         * The pipeline specification only specifies the formats of the depth / stencil attachments
+         * whether the same texture is bound to the attachments is not declared here.
+         */
         std::optional<ColorFormat> depthAttachment;// Specifies the format of the texture bound as the depth attachment.
         std::optional<ColorFormat> stencilAttachment;// Specifies the format of the texture bound as the stencil attachment.
 
