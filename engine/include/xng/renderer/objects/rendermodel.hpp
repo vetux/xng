@@ -22,6 +22,7 @@
 #include "xng/math/transform.hpp"
 #include "xng/renderer/renderobject.hpp"
 #include "xng/renderer/shadertypes.hpp"
+#include "xng/renderer/shadingmodel.hpp"
 #include "xng/renderer/stream/bufferstreamer.hpp"
 #include "xng/renderer/objects/rendermaterial.hpp"
 #include "xng/renderer/objects/rendermesh.hpp"
@@ -35,6 +36,7 @@ namespace xng {
         RenderModel(BufferStreamer<ShaderTransform::CPU> &transformStream,
                     std::vector<RenderObjectHandle<RenderMesh> > _meshes,
                     RenderObjectHandle<RenderMaterial> _material,
+                    const ShadingModel &shadingModel,
                     const bool receiveShadows,
                     const bool castShadows)
             : RenderObject(OBJECT_MODEL),
@@ -42,6 +44,7 @@ namespace xng {
               transformHandle(transformStream.create()),
               meshes(std::move(_meshes)),
               material(std::move(_material)),
+              shadingModel(shadingModel),
               receiveShadows(receiveShadows),
               castShadows(castShadows) {
         }
@@ -104,6 +107,7 @@ namespace xng {
         std::vector<RenderObjectHandle<RenderMesh> > meshes;
         RenderObjectHandle<RenderMaterial> material;
 
+        ShadingModel shadingModel = SHADING_MODEL_UNLIT;
         bool receiveShadows = false;
         bool castShadows = false;
     };

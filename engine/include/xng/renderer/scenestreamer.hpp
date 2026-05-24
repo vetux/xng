@@ -81,6 +81,7 @@ namespace xng {
 
         RenderObjectHandle<RenderModel> createModel(std::vector<RenderObjectHandle<RenderMesh> > meshes,
                                                     RenderObjectHandle<RenderMaterial> material,
+                                                    ShadingModel shadingModel,
                                                     bool receiveShadows,
                                                     bool castShadows);
 

@@ -27,6 +27,10 @@
 namespace xng {
     class ConstructionPass final : public RenderPass {
     public:
+        /**
+         * The geometry buffer.
+         * The shading model ID is stored in the stencil buffer.
+         */
         struct GBuffer {
             static std::vector<rg::ColorFormat> getColorFormats() {
                 return {
@@ -56,8 +60,8 @@ namespace xng {
                 desc.format = rg::ColorFormat::RGBA32UI;
                 objectIdReceiveShadows = graph.allocateTexture(desc);
 
-                desc.format = rg::ColorFormat::DEPTH_32F;
-                depth = graph.allocateTexture(desc);
+                desc.format = rg::ColorFormat::DEPTH24_STENCIL8;
+                depthStencil = graph.allocateTexture(desc);
             }
 
             void subscribe(RenderPassRegistry &registry) const {
@@ -67,7 +71,7 @@ namespace xng {
                 registry.set(RenderPassRegistry::G_BUFFER_ROUGHNESS_METALLIC_AO, roughnessMetallicAO);
                 registry.set(RenderPassRegistry::G_BUFFER_ALBEDO, albedo);
                 registry.set(RenderPassRegistry::G_BUFFER_OBJECT_ID_RECEIVE_SHADOWS, objectIdReceiveShadows);
-                registry.set(RenderPassRegistry::G_BUFFER_DEPTH, depth);
+                registry.set(RenderPassRegistry::G_BUFFER_DEPTH, depthStencil);
             }
 
             Vec2i resolution;
@@ -78,7 +82,7 @@ namespace xng {
             rg::Resource<rg::Texture> roughnessMetallicAO;
             rg::Resource<rg::Texture> albedo;
             rg::Resource<rg::Texture> objectIdReceiveShadows;
-            rg::Resource<rg::Texture> depth;
+            rg::Resource<rg::Texture> depthStencil;
         };
 
         static rg::Shader compileVertexShader();
@@ -122,42 +126,50 @@ namespace xng {
                     .attachColor(rg::Attachment(gBuffer.roughnessMetallicAO, Vec4f(0)))
                     .attachColor(rg::Attachment(gBuffer.albedo, Vec4f(0)))
                     .attachColor(rg::Attachment(gBuffer.objectIdReceiveShadows, Vec4i(0)))
-                    .attachDepth(rg::Attachment(gBuffer.depth, 1.0f));
+                    .attachDepth(rg::Attachment(gBuffer.depthStencil,
+                                                rg::Texture::DepthStencilClearValue(1.0f, SHADING_MODEL_NONE)));
 
             // Declare Accesses
             builder.storageRead(scene.cameraBuffer, {rg::Shader::VERTEX});
 
-            for (auto &access: scene.modelBufferAccesses) {
-                builder.storageRead(scene.modelBuffer, {rg::Shader::VERTEX}, access.offset, access.size);
-            }
-
-            for (auto &access: scene.transformBufferAccesses) {
-                builder.storageRead(scene.transformBuffer, {rg::Shader::VERTEX}, access.offset, access.size);
-            }
-
-            for (auto &access: scene.materialBufferAccesses) {
-                builder.storageRead(scene.materialBuffer, {rg::Shader::FRAGMENT}, access.offset, access.size);
-            }
-
-            for (auto &pair: scene.vertexBufferAccesses) {
-                for (auto &access: pair.second) {
-                    builder.vertexRead(scene.vertexBuffers.at(pair.first), access.offset, access.size);
+            for (auto &batch: scene.drawList) {
+                if (batch.transparency) {
+                    continue;
                 }
-            }
 
-            for (auto &access: scene.indexBufferAccesses) {
-                builder.indexRead(scene.indexBuffer, access.offset, access.size);
-            }
+                for (auto &access: batch.modelBufferAccesses) {
+                    builder.storageRead(scene.modelBuffer, {rg::Shader::VERTEX}, access.offset, access.size);
+                }
 
-            for (auto &pair: scene.textureAccesses) {
-                for (auto &access: pair.second) {
-                    builder.textureSampledRead(scene.textures.at(pair.first),
-                                               {rg::Shader::FRAGMENT},
-                                               rg::TextureBinding::Range(0,
-                                                                         scene.textures.at(pair.first).getDescription().
-                                                                         mipLevels,
-                                                                         access,
-                                                                         1));
+                for (auto &access: batch.transformBufferAccesses) {
+                    builder.storageRead(scene.transformBuffer, {rg::Shader::VERTEX}, access.offset, access.size);
+                }
+
+                for (auto &access: batch.materialBufferAccesses) {
+                    builder.storageRead(scene.materialBuffer, {rg::Shader::FRAGMENT}, access.offset, access.size);
+                }
+
+                for (auto &pair: batch.vertexBufferAccesses) {
+                    for (auto &access: pair.second) {
+                        builder.vertexRead(scene.vertexBuffers.at(pair.first), access.offset, access.size);
+                    }
+                }
+
+                for (auto &access: batch.indexBufferAccesses) {
+                    builder.indexRead(scene.indexBuffer, access.offset, access.size);
+                }
+
+                for (auto &pair: batch.textureAccesses) {
+                    for (auto &access: pair.second) {
+                        builder.textureSampledRead(scene.textures.at(pair.first),
+                                                   {rg::Shader::FRAGMENT},
+                                                   rg::TextureBinding::Range(0,
+                                                                             scene.textures.at(pair.first).
+                                                                             getDescription().
+                                                                             mipLevels,
+                                                                             access,
+                                                                             1));
+                    }
                 }
             }
 
@@ -210,7 +222,11 @@ namespace xng {
                 }
                 cmd.bindTexture("textures", textureBindings);
 
-                for (auto &batch: scene.batches) {
+                for (auto &batch: scene.drawList) {
+                    if (batch.transparency) {
+                        continue;
+                    }
+                    cmd.setStencilReference(batch.shadingModel);
                     cmd.drawIndexedMultiIndirectCount(batch.indirectBuffer,
                                                       batch.indirectCountBuffer,
                                                       batch.indirectBufferOffset,
@@ -228,8 +244,17 @@ namespace xng {
             ret.enableDepthTest = true;
             ret.depthTestWrite = true;
 
+            ret.enableStencilTest = true;
+            ret.enableDynamicStencilReference = true;
+            ret.stencilTestMask = 0xFF;
+            ret.stencilMode = rg::RasterPipeline::StencilMode::STENCIL_ALWAYS;
+            ret.stencilPass = rg::RasterPipeline::StencilAction::STENCIL_REPLACE;
+            ret.stencilFail = rg::RasterPipeline::StencilAction::STENCIL_KEEP;
+            ret.stencilDepthFail = rg::RasterPipeline::StencilAction::STENCIL_KEEP;
+
             ret.colorAttachments = GBuffer::getColorFormats();
-            ret.depthAttachment = rg::ColorFormat::DEPTH_32F;
+            ret.depthAttachment = rg::ColorFormat::DEPTH24_STENCIL8;
+            ret.stencilAttachment = rg::ColorFormat::DEPTH24_STENCIL8;
 
             ret.vertexFormat = rg::RasterPipeline::VertexFormat(vertexShader.inputLayout,
                                                                 {

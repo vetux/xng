@@ -21,6 +21,7 @@
 
 #include "xng/rendergraph/heap.hpp"
 
+#include "xng/renderer/shadingmodel.hpp"
 #include "xng/renderer/vertexattribute.hpp"
 #include "xng/renderer/objects/rendermodel.hpp"
 #include "xng/renderer/objects/renderpointlight.hpp"
@@ -70,27 +71,67 @@ namespace xng {
             rg::Resource<rg::Buffer> indirectCountBuffer;
             size_t indirectCountBufferOffset;
 
+            /**
+             * Whether this batch contains transparency.
+             * The scene prepass handles batch / draw ordering.
+             */
+            bool transparency;
+
+            /**
+             * The shading model to use for this batch.
+             */
+            ShadingModel shadingModel;
+
+            /**
+             * The set of byte ranges / texture layers in the buffers that may be read by this draw batch.
+             */
+            std::vector<BufferAccessRange> modelBufferAccesses;
+            std::vector<BufferAccessRange> transformBufferAccesses;
+            std::vector<BufferAccessRange> materialBufferAccesses;
+
+            std::unordered_map<VertexAttribute, std::vector<BufferAccessRange> > vertexBufferAccesses;
+            std::vector<BufferAccessRange> indexBufferAccesses;
+
+            std::unordered_map<TextureResolution, std::vector<size_t> > textureAccesses;
+
             Batch(const size_t batchSize,
                   const size_t stride,
                   const rg::Resource<rg::Buffer> &indirectBuffer,
                   const size_t indirectBufferOffset,
                   const rg::Resource<rg::Buffer> &indirectCountBuffer,
-                  const size_t indirectCountBufferOffset) : batchSize(batchSize),
-                                                            stride(stride),
-                                                            indirectBuffer(indirectBuffer),
-                                                            indirectBufferOffset(indirectBufferOffset),
-                                                            indirectCountBuffer(indirectCountBuffer),
-                                                            indirectCountBufferOffset(indirectCountBufferOffset) {
+                  const size_t indirectCountBufferOffset,
+                  const bool transparency,
+                  const ShadingModel shadingModel,
+                  std::vector<BufferAccessRange> modelBufferAccesses,
+                  std::vector<BufferAccessRange> transformBufferAccesses,
+                  std::vector<BufferAccessRange> materialBufferAccesses,
+                  std::unordered_map<VertexAttribute, std::vector<BufferAccessRange> > vertexBufferAccesses,
+                  std::vector<BufferAccessRange> indexBufferAccesses,
+                  std::unordered_map<TextureResolution, std::vector<size_t> > textureAccesses)
+                : batchSize(batchSize),
+                  stride(stride),
+                  indirectBuffer(indirectBuffer),
+                  indirectBufferOffset(indirectBufferOffset),
+                  indirectCountBuffer(indirectCountBuffer),
+                  indirectCountBufferOffset(indirectCountBufferOffset),
+                  transparency(transparency),
+                  shadingModel(shadingModel),
+                  modelBufferAccesses(std::move(modelBufferAccesses)),
+                  transformBufferAccesses(std::move(transformBufferAccesses)),
+                  materialBufferAccesses(std::move(materialBufferAccesses)),
+                  vertexBufferAccesses(std::move(vertexBufferAccesses)),
+                  indexBufferAccesses(std::move(indexBufferAccesses)),
+                  textureAccesses(std::move(textureAccesses)) {
             }
         };
 
         /**
-         * The render batches.
+         * The render batches for drawing the models.
          */
-        std::vector<Batch> batches;
+        std::vector<Batch> drawList;
 
         /**
-         * The model buffer indexed via GetBaseInstance + GetDrawID + GetInstanceID
+         * The model buffer indexed by the draw batches via GetBaseInstance + GetDrawID + GetInstanceID
          */
         rg::Resource<rg::Buffer> modelBuffer;
 
@@ -123,18 +164,6 @@ namespace xng {
          * The camera buffer.
          */
         rg::Resource<rg::Buffer> cameraBuffer;
-
-        /**
-         * The set of byte ranges / texture layers in the buffers that may be accessed by the batches.
-         */
-        std::vector<BufferAccessRange> modelBufferAccesses;
-        std::vector<BufferAccessRange> transformBufferAccesses;
-        std::vector<BufferAccessRange> materialBufferAccesses;
-
-        std::unordered_map<VertexAttribute, std::vector<BufferAccessRange>> vertexBufferAccesses;
-        std::vector<BufferAccessRange> indexBufferAccesses;
-
-        std::unordered_map<TextureResolution, std::vector<size_t>> textureAccesses;
     };
 }
 

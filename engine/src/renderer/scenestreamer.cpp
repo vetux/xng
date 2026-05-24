@@ -71,11 +71,13 @@ namespace xng {
 
     RenderObjectHandle<RenderModel> SceneStreamer::createModel(std::vector<RenderObjectHandle<RenderMesh> > meshes,
                                                                RenderObjectHandle<RenderMaterial> material,
+                                                               ShadingModel shadingModel,
                                                                bool receiveShadows,
                                                                bool castShadows) {
         return std::make_shared<RenderModel>(transformStream,
                                              std::move(meshes),
                                              std::move(material),
+                                             shadingModel,
                                              receiveShadows,
                                              castShadows);
     }
