@@ -154,6 +154,7 @@ namespace xng::rg {
         DepthTestMode depthTestMode = DEPTH_TEST_LESS;
 
         bool enableStencilTest = false;
+        bool enableDynamicStencilReference = true; // Enables reference updates via RasterContext::setStencilReference.
         unsigned int stencilTestMask = 0xFF;
         StencilMode stencilMode = STENCIL_ALWAYS;
         int stencilReference = 1;

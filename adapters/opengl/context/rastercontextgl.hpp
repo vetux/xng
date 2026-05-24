@@ -443,6 +443,27 @@ namespace xng::opengl {
             oglDebugEndGroup();
         }
 
+        void setStencilReference(const int value) override {
+            if (!boundPipeline.has_value()) {
+                throw std::runtime_error("Must bind pipeline before setting stencil reference.");
+            }
+
+            const auto &pipeline = pipelineCache.getRasterPipeline(boundPipeline.value());
+
+            if (!pipeline.enableDynamicStencilReference) {
+                throw std::runtime_error("Dynamic stencil reference not enabled.");
+            }
+
+            oglDebugStartGroup("RasterContextGL::setStencilReference");
+
+            glStencilFunc(convert(pipeline.stencilMode),
+                          value,
+                          pipeline.stencilFunctionMask);
+            oglCheckError();
+
+            oglDebugEndGroup();
+        }
+
         void drawArray(const DrawCall &drawCall) override {
             if (!boundPipeline.has_value()) {
                 throw std::runtime_error("Must bind pipeline before drawing.");

@@ -116,6 +116,15 @@ namespace xng::rg {
         virtual void setViewport(Vec2i viewportOffset, Vec2i viewportSize) = 0;
 
         /**
+         * Update the stencil reference value in the pipeline.
+         *
+         * RasterPipeline::enableDynamicStencilReference must be set.
+         *
+         * @param value The new stencil reference to set.
+         */
+        virtual void setStencilReference(int value) = 0;
+
+        /**
          * Draw vertices from a bound vertex buffer.
          *
          * drawCall.offset specifies byte offset into the bound vertex buffer.
