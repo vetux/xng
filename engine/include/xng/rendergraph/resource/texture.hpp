@@ -31,6 +31,12 @@ namespace xng::rg {
         struct DepthStencilClearValue {
             float clearDepth{};
             unsigned int clearStencil{};
+
+            DepthStencilClearValue() = default;
+
+            DepthStencilClearValue(const float clearDepth, const unsigned int clearStencil)
+                : clearDepth(clearDepth), clearStencil(clearStencil) {
+            }
         };
 
         typedef std::variant<Vector4<uint8_t>, Vec4f, Vec4i, Vec4u, DepthStencilClearValue, float, unsigned> ClearValue;
