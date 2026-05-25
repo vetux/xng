@@ -19,10 +19,10 @@
 #ifndef XENGINE_GRAPHICSMATH_HPP
 #define XENGINE_GRAPHICSMATH_HPP
 
-#include "vector2.hpp"
-#include "vector3.hpp"
-#include "vector4.hpp"
-#include "matrix.hpp"
+#include "xng/math/vector2.hpp"
+#include "xng/math/vector3.hpp"
+#include "xng/math/vector4.hpp"
+#include "xng/math/matrix.hpp"
 
 /**
  * TODO: NDC Independent transform coordinate space

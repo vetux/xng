@@ -22,8 +22,8 @@
 #include <cassert>
 #include <vector>
 
-#include "rectangle.hpp"
-#include "vector2.hpp"
+#include "xng/math/rectangle.hpp"
+#include "xng/math/vector2.hpp"
 
 #include "xng/io/messageable.hpp"
 

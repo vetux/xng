@@ -24,7 +24,7 @@
 
 #include "xng/display/displayenvironment.hpp"
 
-#include "androidapp.hpp"
+#include "xng/adapters/android/androidapp.hpp"
 
 namespace xng::android {
     class XENGINE_EXPORT DisplayEnvironment : public xng::DisplayEnvironment {

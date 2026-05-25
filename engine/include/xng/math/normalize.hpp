@@ -19,9 +19,9 @@
 #ifndef XENGINE_NORMALIZE_HPP
 #define XENGINE_NORMALIZE_HPP
 
-#include "vector2.hpp"
-#include "vector3.hpp"
-#include "vector4.hpp"
+#include "xng/math/vector2.hpp"
+#include "xng/math/vector3.hpp"
+#include "xng/math/vector4.hpp"
 
 namespace xng {
     template<typename T>

@@ -19,7 +19,7 @@
 #ifndef XENGINE_SCRIPTENGINE_HPP
 #define XENGINE_SCRIPTENGINE_HPP
 
-#include "scriptruntime.hpp"
+#include "xng/script/scriptruntime.hpp"
 
 namespace xng {
     class ScriptEngine {

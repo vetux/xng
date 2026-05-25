@@ -22,7 +22,7 @@
 #include <string>
 #include <memory>
 
-#include "audiocontext.hpp"
+#include "xng/audio/audiocontext.hpp"
 
 namespace xng {
     class XENGINE_EXPORT AudioDevice {

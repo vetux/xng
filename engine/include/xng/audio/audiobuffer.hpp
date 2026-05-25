@@ -23,7 +23,7 @@
 
 #include <cstdint>
 
-#include "audioformat.hpp"
+#include "xng/audio/audioformat.hpp"
 
 namespace xng {
     class XENGINE_EXPORT AudioBuffer {

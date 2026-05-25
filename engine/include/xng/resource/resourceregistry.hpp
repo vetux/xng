@@ -28,10 +28,10 @@
 
 #include "xng/io/archive.hpp"
 
-#include "uri.hpp"
-#include "resourcebase.hpp"
-#include "resourcebundle.hpp"
-#include "resourceimporter.hpp"
+#include "xng/resource/uri.hpp"
+#include "xng/resource/resourcebase.hpp"
+#include "xng/resource/resourcebundle.hpp"
+#include "xng/resource/resourceimporter.hpp"
 
 #include "xng/async/threadpool.hpp"
 

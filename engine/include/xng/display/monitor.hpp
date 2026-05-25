@@ -22,7 +22,7 @@
 #include <vector>
 #include <string>
 
-#include "videomode.hpp"
+#include "xng/display/videomode.hpp"
 #include "xng/math/vector2.hpp"
 #include "xng/math/rectangle.hpp"
 

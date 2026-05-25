@@ -25,7 +25,7 @@
 #include <set>
 #include <mutex>
 
-#include "loglevel.hpp"
+#include "xng/log/loglevel.hpp"
 
 namespace xng {
     class Log {

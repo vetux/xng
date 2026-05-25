@@ -22,8 +22,8 @@
 #include <memory>
 #include <utility>
 
-#include "uri.hpp"
-#include "resourceregistry.hpp"
+#include "xng/resource/uri.hpp"
+#include "xng/resource/resourceregistry.hpp"
 
 #include "xng/io/messageable.hpp"
 

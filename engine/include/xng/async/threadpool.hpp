@@ -27,7 +27,7 @@
 #include <cassert>
 #include <stdexcept>
 
-#include "task.hpp"
+#include "xng/async/task.hpp"
 
 namespace xng {
     class XENGINE_EXPORT ThreadPool {

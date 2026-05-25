@@ -19,7 +19,7 @@
 #ifndef XENGINE_QUATERNION_HPP
 #define XENGINE_QUATERNION_HPP
 
-#include "matrix.hpp"
+#include "xng/math/matrix.hpp"
 
 #include "xng/io/messageable.hpp"
 

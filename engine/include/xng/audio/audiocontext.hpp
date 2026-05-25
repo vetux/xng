@@ -21,9 +21,9 @@
 
 #include <memory>
 
-#include "audiolistener.hpp"
-#include "audiobuffer.hpp"
-#include "audiosource.hpp"
+#include "xng/audio/audiolistener.hpp"
+#include "xng/audio/audiobuffer.hpp"
+#include "xng/audio/audiosource.hpp"
 
 namespace xng {
     class XENGINE_EXPORT AudioContext {

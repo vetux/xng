@@ -23,7 +23,7 @@
 #include <vector>
 #include <array>
 
-#include "random.hpp"
+#include "xng/crypto/random.hpp"
 
 namespace xng {
     /**

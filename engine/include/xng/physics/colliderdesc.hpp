@@ -21,7 +21,7 @@
 
 #include "xng/resource/resourcebase.hpp"
 
-#include "collidershape.hpp"
+#include "xng/physics/collidershape.hpp"
 #include "xng/physics/colliderproperties.hpp"
 
 namespace xng {

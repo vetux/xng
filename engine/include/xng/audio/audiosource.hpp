@@ -21,7 +21,7 @@
 
 #include <memory>
 
-#include "audiobuffer.hpp"
+#include "xng/audio/audiobuffer.hpp"
 
 #include "xng/math/vector3.hpp"
 

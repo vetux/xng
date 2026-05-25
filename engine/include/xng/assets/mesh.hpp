@@ -24,7 +24,7 @@
 
 #include "xng/resource/resourcebase.hpp"
 
-#include "material.hpp"
+#include "xng/assets/material.hpp"
 
 #include "xng/rendergraph/shader/shaderattributelayout.hpp"
 

@@ -19,7 +19,7 @@
 #ifndef XENGINE_RENDERVIEW_HPP
 #define XENGINE_RENDERVIEW_HPP
 
-#include "camera.hpp"
+#include "xng/renderer/camera.hpp"
 #include "xng/renderer/objects/rendermodel.hpp"
 #include "xng/renderer/objects/rendercanvas.hpp"
 #include "xng/renderer/objects/renderdirectionallight.hpp"

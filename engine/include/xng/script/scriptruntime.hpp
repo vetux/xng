@@ -21,7 +21,7 @@
 
 #include <memory>
 
-#include "script.hpp"
+#include "xng/script/script.hpp"
 
 namespace xng {
     class ScriptRuntime {

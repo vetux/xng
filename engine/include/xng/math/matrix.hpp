@@ -22,8 +22,8 @@
 #include <vector>
 #include <cassert>
 
-#include "vector3.hpp"
-#include "vector4.hpp"
+#include "xng/math/vector3.hpp"
+#include "xng/math/vector4.hpp"
 
 namespace xng {
     /**

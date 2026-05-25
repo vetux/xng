@@ -19,7 +19,7 @@
 #ifndef RECTANGLE_HPP
 #define RECTANGLE_HPP
 
-#include "vector2.hpp"
+#include "xng/math/vector2.hpp"
 
 #include "xng/io/messageable.hpp"
 
