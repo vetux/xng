@@ -323,7 +323,7 @@ namespace xng {
                 rg::Buffer::CAPABILITY_STORAGE | rg::Buffer::CAPABILITY_INDIRECT,
                 rg::Buffer::MEMORY_GPU_ONLY));
             const auto indirectCountBuffer = graphBuilder.allocateBuffer(rg::Buffer(
-                sizeof(int) * batch.meshIndices.size(),
+                sizeof(int),
                 rg::Buffer::CAPABILITY_STORAGE | rg::Buffer::CAPABILITY_INDIRECT,
                 rg::Buffer::MEMORY_GPU_ONLY));
             scene.drawList.emplace_back(batch.meshIndices.size(),
@@ -345,7 +345,7 @@ namespace xng {
                                  batch.meshIndices.size() * sizeof(ShaderScript::ShaderDrawIndirectIndexed::CPU));
             builder.storageWrite(indirectCountBuffer,
                                  0,
-                                 batch.meshIndices.size() * sizeof(int));
+                                 sizeof(int));
             for (auto &access: batch.drawBufferAccesses) {
                 builder.storageWrite(scene.drawBuffer, access.offset, access.size);
             }
@@ -364,7 +364,7 @@ namespace xng {
                 rg::Buffer::CAPABILITY_STORAGE | rg::Buffer::CAPABILITY_INDIRECT,
                 rg::Buffer::MEMORY_GPU_ONLY));
             const auto indirectCountBuffer = graphBuilder.allocateBuffer(rg::Buffer(
-                sizeof(int) * batch.meshIndices.size(),
+                sizeof(int),
                 rg::Buffer::CAPABILITY_STORAGE | rg::Buffer::CAPABILITY_INDIRECT,
                 rg::Buffer::MEMORY_GPU_ONLY));
             scene.drawList.emplace_back(batch.meshIndices.size(),
@@ -386,7 +386,7 @@ namespace xng {
                                  batch.meshIndices.size() * sizeof(ShaderScript::ShaderDrawIndirectIndexed::CPU));
             builder.storageWrite(indirectCountBuffer,
                                  0,
-                                 batch.meshIndices.size() * sizeof(int));
+                                 sizeof(int));
             for (auto &access: batch.drawBufferAccesses) {
                 builder.storageWrite(scene.drawBuffer, access.offset, access.size);
             }
