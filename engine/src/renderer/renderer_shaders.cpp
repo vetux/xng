@@ -118,7 +118,7 @@ namespace xng {
         // TODO: Multi Draw / Instancing
 
         ShaderDrawMesh drawMesh;
-        drawMesh.mvp =  camera.projection * camera.view * transforms[mesh.transformIndex].transform;
+        drawMesh.mvp = camera.projection * camera.view * transforms[mesh.transformIndex].transform;
         drawMesh.modelID = mesh.modelID;
         drawMesh.meshID = mesh.meshID;
         drawMesh.transformIndex = mesh.transformIndex;
@@ -134,7 +134,11 @@ namespace xng {
         command.baseInstance = UInt(getGlobalInvocationID().x() + meshIndexOffset);
         commandBuffer[getGlobalInvocationID().x()] = command;
 
-        commandCountBuffer[getGlobalInvocationID().x()] = Int(1);
+        // Currently no Culling, so we set to batchSize.
+        // When culling is implemented, the count buffer would only increment with the draws which survive culling.
+        If(getGlobalInvocationID().x() == 0)
+            commandCountBuffer[0] = Int(batchSize);
+        Fi
 
         return BuildShader();
     }
