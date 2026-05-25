@@ -55,6 +55,7 @@ namespace xng {
         ivec4 vertexBoneIds = boneIds[index];
         vec4 vertexBoneWeights = boneWeights[index];
 
+        //TODO: Implement Normals / Tangents and bitangents skinning
         vec4 totalPosition;
         totalPosition = vec4(0, 0, 0, 0);
 
