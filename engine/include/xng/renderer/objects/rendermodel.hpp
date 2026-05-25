@@ -23,6 +23,7 @@
 #include "xng/renderer/renderobject.hpp"
 #include "xng/renderer/shadertypes.hpp"
 #include "xng/renderer/shadingmodel.hpp"
+#include "xng/renderer/renderpath.hpp"
 #include "xng/renderer/stream/bufferstreamer.hpp"
 #include "xng/renderer/objects/rendermaterial.hpp"
 #include "xng/renderer/objects/rendermesh.hpp"
@@ -33,24 +34,46 @@ namespace xng {
      */
     class RenderModel final : public RenderObject {
     public:
-        RenderModel(BufferStreamer<ShaderTransform::CPU> &transformStream,
+        RenderModel(const Id id,
+                    BufferStreamer<ShaderTransform::CPU> &transformStream,
+                    BufferStreamer<ShaderMesh::CPU> &shaderMeshStream,
                     std::vector<RenderObjectHandle<RenderMesh> > _meshes,
                     RenderObjectHandle<RenderMaterial> _material,
-                    const ShadingModel &shadingModel,
+                    const RenderPath renderPath,
+                    const ShadingModel shadingModel,
                     const bool receiveShadows,
                     const bool castShadows)
-            : RenderObject(OBJECT_MODEL),
+            : RenderObject(OBJECT_MODEL, id),
               transformStream(transformStream),
               transformHandle(transformStream.create()),
+              shaderMeshStream(shaderMeshStream),
               meshes(std::move(_meshes)),
               material(std::move(_material)),
+              renderPath(renderPath),
               shadingModel(shadingModel),
               receiveShadows(receiveShadows),
               castShadows(castShadows) {
+            for (const auto &mesh: meshes) {
+                ShaderMesh::CPU shaderMesh{};
+                shaderMesh.baseVertex = mesh->getAllocation().baseVertex;
+                shaderMesh.indexOffset = mesh->getAllocation().drawCall.offset / sizeof(unsigned int);
+                shaderMesh.indexCount = mesh->getAllocation().drawCall.count;
+                shaderMesh.modelID = id;
+                shaderMesh.meshID = mesh->getId();
+                shaderMesh.transformIndex = transformHandle;
+                shaderMesh.materialIndex = material->getSlot();
+                shaderMesh.receiveShadows = receiveShadows;
+                const auto handle = shaderMeshStream.create();
+                shaderMeshStream.upload(handle, shaderMesh);
+                shaderMeshSlots.emplace_back(handle);
+            }
         }
 
         ~RenderModel() override {
             transformStream.destroy(transformHandle);
+            for (auto &handle: shaderMeshSlots) {
+                shaderMeshStream.destroy(handle);
+            }
         }
 
         void setTransform(const Transform &transform) const {
@@ -62,12 +85,24 @@ namespace xng {
             return transformHandle;
         }
 
+        [[nodiscard]] const std::vector<BufferStreamer<ShaderMesh::CPU>::Slot> &getShaderMeshSlots() const {
+            return shaderMeshSlots;
+        }
+
         [[nodiscard]] const std::vector<RenderObjectHandle<RenderMesh> > &getMeshes() const {
             return meshes;
         }
 
         [[nodiscard]] const RenderObjectHandle<RenderMaterial> &getMaterial() const {
             return material;
+        }
+
+        [[nodiscard]] RenderPath getRenderPath() const {
+            return renderPath;
+        }
+
+        [[nodiscard]] ShadingModel getShadingModel() const {
+            return shadingModel;
         }
 
         [[nodiscard]] bool isReceiveShadows() const {
@@ -104,10 +139,15 @@ namespace xng {
         BufferStreamer<ShaderTransform::CPU> &transformStream;
         BufferStreamer<ShaderTransform::CPU>::Slot transformHandle;
 
+        BufferStreamer<ShaderMesh::CPU> shaderMeshStream;
+        std::vector<BufferStreamer<ShaderMesh::CPU>::Slot> shaderMeshSlots;
+
         std::vector<RenderObjectHandle<RenderMesh> > meshes;
         RenderObjectHandle<RenderMaterial> material;
 
+        RenderPath renderPath = RENDER_PATH_DEFERRED;
         ShadingModel shadingModel = SHADING_MODEL_UNLIT;
+
         bool receiveShadows = false;
         bool castShadows = false;
     };

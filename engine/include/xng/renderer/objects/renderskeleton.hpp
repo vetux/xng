@@ -27,9 +27,10 @@
 namespace xng {
     class RenderSkeleton final : public RenderObject {
     public:
-        RenderSkeleton(SkeletonStreamer &boneStream,
+        RenderSkeleton(const Id id,
+                       SkeletonStreamer &boneStream,
                        const std::vector<std::string> &boneNames)
-            : RenderObject(OBJECT_SKELETON),
+            : RenderObject(OBJECT_SKELETON, id),
               skeletonStream(boneStream),
               skeletonHandle(skeletonStream.create(boneNames.size())) {
             for (size_t i = 0; i < boneNames.size(); i++) {

@@ -51,9 +51,15 @@ namespace xng {
         void draw(rg::Surface &surface, const RenderDrawList &drawList);
 
     private:
-        rg::ComputePass recordSkinningPass(const RenderDrawList &drawList, const RenderAllocator::Buffers &buffers) const;
+        static constexpr int skinningLocalSize = 64;
+        static constexpr int prePassLocalSize = 256;
 
-        rg::ComputePass recordScenePrePass(const RenderDrawList &drawList,
+        rg::ComputePass recordSkinningPass(const RenderDrawList &drawList,
+                                           const RenderAllocator::Buffers &buffers) const;
+
+        rg::ComputePass recordScenePrePass(rg::GraphBuilder &graphBuilder,
+                                           rg::Heap &heap,
+                                           const RenderDrawList &drawList,
                                            const RenderAllocator::Buffers &buffers,
                                            RenderScene &scene);
 
@@ -65,6 +71,7 @@ namespace xng {
         rg::PipelineCache::Handle scenePrepassPipeline;
 
         rg::HeapResource<rg::Buffer> cameraBuffer;
+        rg::HeapResource<rg::Buffer> meshIndicesBuffer;
     };
 }
 

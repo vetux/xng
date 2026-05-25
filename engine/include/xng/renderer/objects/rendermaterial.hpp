@@ -24,7 +24,8 @@
 namespace xng {
     class RenderMaterial final : public RenderObject {
     public:
-        explicit RenderMaterial(BufferStreamer<ShaderMaterial::CPU> &materialStream,
+        explicit RenderMaterial(const Id id,
+                                BufferStreamer<ShaderMaterial::CPU> &materialStream,
                                 ColorRGBA albedoColor,
                                 float metallicColor,
                                 float roughnessColor,
@@ -35,7 +36,7 @@ namespace xng {
                                 RenderObjectHandle<RenderTexture> _ambientOcclusion,
                                 RenderObjectHandle<RenderTexture> _normal,
                                 const Vec4f &normalIntensity)
-            : RenderObject(OBJECT_MATERIAL),
+            : RenderObject(OBJECT_MATERIAL, id),
               materialStream(materialStream),
               albedo(std::move(_albedo)),
               metallic(std::move(_metallic)),
@@ -178,6 +179,26 @@ namespace xng {
                 normal->flush();
             }
             materialStream.flush(materialHandle);
+        }
+
+        [[nodiscard]] const RenderObjectHandle<RenderTexture> &getAlbedo() const {
+            return albedo;
+        }
+
+        [[nodiscard]] const RenderObjectHandle<RenderTexture> &getMetallic() const {
+            return metallic;
+        }
+
+        [[nodiscard]] const RenderObjectHandle<RenderTexture> &getRoughness() const {
+            return roughness;
+        }
+
+        [[nodiscard]] const RenderObjectHandle<RenderTexture> &getAmbientOcclusion() const {
+            return ambientOcclusion;
+        }
+
+        [[nodiscard]] const RenderObjectHandle<RenderTexture> &getNormal() const {
+            return normal;
         }
 
     private:

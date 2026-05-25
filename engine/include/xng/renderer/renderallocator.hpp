@@ -37,6 +37,8 @@ namespace xng {
     class RenderAllocator {
     public:
         struct Buffers {
+            rg::HeapResource<rg::Buffer> meshBuffer;
+
             rg::HeapResource<rg::Buffer> transformBuffer;
             rg::HeapResource<rg::Buffer> materialBuffer;
 
@@ -83,6 +85,7 @@ namespace xng {
 
         RenderObjectHandle<RenderModel> createModel(std::vector<RenderObjectHandle<RenderMesh> > meshes,
                                                     RenderObjectHandle<RenderMaterial> material,
+                                                    RenderPath renderPath,
                                                     ShadingModel shadingModel,
                                                     bool receiveShadows,
                                                     bool castShadows);
@@ -97,12 +100,32 @@ namespace xng {
 
         RenderObjectHandle<RenderCanvas> createCanvas();
 
+        void destroy(const RenderObject &object);
+
         [[nodiscard]] Buffers commit(rg::GraphBuilder &graph);
 
     private:
+        RenderObject::Id allocateId() {
+            if (freeIds.empty()) {
+                return nextId++;
+            }
+            const auto ret = freeIds.back();
+            freeIds.pop_back();
+            return ret;
+        }
+
+        void deallocateId(const RenderObject::Id id) {
+            freeIds.push_back(id);
+        }
+
+        RenderObject::Id nextId;
+        std::vector<RenderObject::Id> freeIds;
+
         rg::Heap &heap;
 
         ChunkStreamer chunkStreamer;
+
+        BufferStreamer<ShaderMesh::CPU> shaderMeshStream;
 
         BufferStreamer<ShaderTransform::CPU> transformStream;
         BufferStreamer<ShaderMaterial::CPU> materialStream;

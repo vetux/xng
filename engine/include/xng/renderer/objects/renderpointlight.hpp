@@ -25,8 +25,8 @@
 namespace xng {
     class RenderPointLight final : public RenderObject {
     public:
-        explicit RenderPointLight(BufferStreamer<ShaderPointLight::CPU> &lightStream)
-            : RenderObject(OBJECT_POINT_LIGHT),
+        explicit RenderPointLight(const Id id, BufferStreamer<ShaderPointLight::CPU> &lightStream)
+            : RenderObject(OBJECT_POINT_LIGHT, id),
               lightStream(lightStream) {
             lightHandle = lightStream.create();
         }

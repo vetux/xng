@@ -66,10 +66,11 @@ namespace xng {
         /**
          * Construct a screen space canvas.
          *
+         * @param id
          * @param _localProjection The canvas space projection to apply to the paints
          */
-        explicit RenderCanvas(Mat4f _localProjection)
-            : RenderObject(OBJECT_CANVAS),
+        explicit RenderCanvas(const Id id, Mat4f _localProjection)
+            : RenderObject(OBJECT_CANVAS, id),
               localProjection(std::move(_localProjection)) {
         }
 
@@ -78,11 +79,12 @@ namespace xng {
          *
          * The paints are rendered to the texture using the local projection.
          *
+         * @param id
          * @param _localProjection The canvas space projection to apply to the paints
          * @param texture The texture to render the canvas to
          */
-        RenderCanvas(Mat4f _localProjection, RenderObjectHandle<RenderTexture> texture)
-            : RenderObject(OBJECT_CANVAS),
+        RenderCanvas(const Id id, Mat4f _localProjection, RenderObjectHandle<RenderTexture> texture)
+            : RenderObject(OBJECT_CANVAS, id),
               localProjection(std::move(_localProjection)),
               texture(std::move(texture)) {
         }

@@ -23,6 +23,7 @@
 
 #include "xng/renderer/shadingmodel.hpp"
 #include "xng/renderer/vertexattribute.hpp"
+#include "xng/renderer/renderpath.hpp"
 #include "xng/renderer/objects/rendermodel.hpp"
 #include "xng/renderer/objects/renderpointlight.hpp"
 #include "xng/renderer/objects/renderspotlight.hpp"
@@ -73,10 +74,10 @@ namespace xng {
             size_t indirectCountBufferOffset;
 
             /**
-             * Whether this batch contains transparency.
+             * Which render path to use for this batch.
              * The scene prepass handles batch / draw ordering.
              */
-            bool transparency;
+            RenderPath renderPath;
 
             /**
              * The shading model to use for this batch.
@@ -86,7 +87,7 @@ namespace xng {
             /**
              * The set of byte ranges / texture layers in the buffers that may be read by this draw batch.
              */
-            std::vector<BufferAccessRange> modelBufferAccesses;
+            std::vector<BufferAccessRange> drawBufferAccesses;
             std::vector<BufferAccessRange> transformBufferAccesses;
             std::vector<BufferAccessRange> materialBufferAccesses;
 
@@ -101,9 +102,9 @@ namespace xng {
                   const size_t indirectBufferOffset,
                   const rg::Resource<rg::Buffer> &indirectCountBuffer,
                   const size_t indirectCountBufferOffset,
-                  const bool transparency,
+                  const RenderPath renderPath,
                   const ShadingModel shadingModel,
-                  std::vector<BufferAccessRange> modelBufferAccesses,
+                  std::vector<BufferAccessRange> drawBufferAccesses,
                   std::vector<BufferAccessRange> transformBufferAccesses,
                   std::vector<BufferAccessRange> materialBufferAccesses,
                   std::unordered_map<VertexAttribute, std::vector<BufferAccessRange> > vertexBufferAccesses,
@@ -115,9 +116,9 @@ namespace xng {
                   indirectBufferOffset(indirectBufferOffset),
                   indirectCountBuffer(indirectCountBuffer),
                   indirectCountBufferOffset(indirectCountBufferOffset),
-                  transparency(transparency),
+                  renderPath(renderPath),
                   shadingModel(shadingModel),
-                  modelBufferAccesses(std::move(modelBufferAccesses)),
+                  drawBufferAccesses(std::move(drawBufferAccesses)),
                   transformBufferAccesses(std::move(transformBufferAccesses)),
                   materialBufferAccesses(std::move(materialBufferAccesses)),
                   vertexBufferAccesses(std::move(vertexBufferAccesses)),
@@ -132,9 +133,9 @@ namespace xng {
         std::vector<Batch> drawList;
 
         /**
-         * The model buffer indexed by the draw batches via GetBaseInstance + GetDrawID + GetInstanceID
+         * The draw buffer indexed by the draw batches via GetBaseInstance + GetDrawID + GetInstanceID
          */
-        rg::Resource<rg::Buffer> modelBuffer;
+        rg::Resource<rg::Buffer> drawBuffer;
 
         /**
          * The buffers indexed via the indices in the model buffer
@@ -166,62 +167,14 @@ namespace xng {
          */
         rg::Resource<rg::Buffer> cameraBuffer;
 
-        struct CanvasBatch {
-            /**
-             * The target texture, if unassigned, the canvas batch should be drawn on the screen surface.
-             */
-            rg::Resource<rg::Texture> canvasTexture;
-
-            /**
-            * The maximum number of commands in the indirect buffer.
-            */
-            size_t batchSize;
-
-            /**
-             * The stride between commands in the indirect buffer.
-             */
-            size_t stride;
-
-            /**
-             * The indirect buffer containing up to batchSize commands.
-             *
-             * The size of the indirect buffer is batchSize * sizeof(ShaderDrawIndirectIndexed)
-             */
-            rg::Resource<rg::Buffer> indirectBuffer;
-            size_t indirectBufferOffset;
-
-            /**
-             * The count buffer containing the number of commands in the indirect buffer
-             */
-            rg::Resource<rg::Buffer> indirectCountBuffer;
-            size_t indirectCountBufferOffset;
-
-            /**
-             * The set of byte ranges / texture layers in the buffers that may be read by this draw batch.
-             */
-            std::vector<BufferAccessRange> canvasModelBufferAccesses;
-            std::vector<BufferAccessRange> paintBufferAccesses;
-
-            std::unordered_map<VertexAttribute, std::vector<BufferAccessRange> > vertexBufferAccesses;
-            std::vector<BufferAccessRange> indexBufferAccesses;
-
-            std::unordered_map<TextureResolution, std::vector<size_t> > textureAccesses;
-        };
-
-        /**
-         * The batches containing the commands to render the canvases.
-         */
-        std::vector<CanvasBatch> canvasDrawList;
-
-        /**
-         * The canvas model buffer indexed by the canvas batch commands.
-         */
-        rg::Resource<rg::Buffer> canvasModelBuffer;
+        //TODO: Design canvas rendering strategy
 
         /**
          * The paint buffer indexed by the canvas model buffer.
          */
         rg::Resource<rg::Buffer> paintBuffer;
+
+        std::vector<RenderObjectHandle<RenderCanvas> > canvases;
     };
 }
 

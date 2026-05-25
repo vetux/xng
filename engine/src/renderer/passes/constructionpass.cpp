@@ -79,17 +79,16 @@ namespace xng {
         Buffer(ShaderCamera, camera)
         DynamicBuffer(ShaderTransform, transforms)
         DynamicBuffer(ShaderMaterial, materials)
-        DynamicBuffer(ShaderModel, models)
+        DynamicBuffer(ShaderDrawMesh, drawBuffer)
 
         TextureArray(TEXTURE_2D_ARRAY, RGBA8, 12, atlasTextures)
 
         UInt modelIndex = getBaseInstance() + getDrawID() + getInstanceID();
 
         vec4 pos = vec4(position, 1.0f);
-        //pos = getSkinnedVertexPosition(models[modelIndex].baseBoneIndex, position, boneIds, boneWeights);
 
-        mat4 model = transforms[models[modelIndex].transformIndex].transform;
-        mat4 mvp = models[modelIndex].mvp;
+        mat4 model = transforms[drawBuffer[modelIndex].transformIndex].transform;
+        mat4 mvp = drawBuffer[modelIndex].mvp;
 
         vPos = mvp * pos;
         fPos = (model * pos).xyz();
@@ -105,9 +104,9 @@ namespace xng {
 
         fModel = model;
 
-        fMaterialIndex = models[modelIndex].materialIndex;
-        fObjectID = models[modelIndex].objectID;
-        fReceiveShadows = models[modelIndex].receiveShadows;
+        fMaterialIndex = drawBuffer[modelIndex].materialIndex;
+        fObjectID = drawBuffer[modelIndex].modelID;
+        fReceiveShadows = drawBuffer[modelIndex].receiveShadows;
 
         setVertexPosition(vPos);
 
@@ -143,7 +142,7 @@ namespace xng {
         DynamicBuffer(ShaderTransform, transforms)
         DynamicBuffer(ShaderMaterial, materials)
         DynamicBuffer(ShaderTransform, bones)
-        DynamicBuffer(ShaderModel, models)
+        DynamicBuffer(ShaderDrawMesh, drawBuffer)
 
         TextureArray(TEXTURE_2D_ARRAY, RGBA8, 12, atlasTextures)
 

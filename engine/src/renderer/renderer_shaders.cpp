@@ -27,7 +27,7 @@ namespace xng {
     rg::Shader Renderer::compileSkinningShader() {
         BeginShader(rg::Shader::COMPUTE)
 
-        ComputeLocalSize(64, 1, 1);
+        ComputeLocalSize(skinningLocalSize, 1, 1);
 
         DynamicBuffer(ShaderTransform, bones)
         DynamicBuffer(Float, positions)
@@ -91,6 +91,50 @@ namespace xng {
 
     rg::Shader Renderer::compileScenePrepassShader() {
         BeginShader(rg::Shader::COMPUTE)
+
+        ComputeLocalSize(prePassLocalSize, 1, 1);
+
+        Buffer(ShaderCamera, camera)
+        DynamicBuffer(ShaderTransform, transforms)
+        DynamicBuffer(ShaderMesh, meshBuffer)
+        DynamicBuffer(UInt, meshIndices)
+        DynamicBufferRW(ShaderDrawMesh, drawBuffer)
+
+        DynamicBufferRW(ShaderDrawIndirectIndexed, commandBuffer)
+        DynamicBufferRW(Int, commandCountBuffer)
+
+        Parameter(UInt, meshIndexOffset)
+        Parameter(UInt, batchSize)
+
+        If(getGlobalInvocationID().x() >= batchSize)
+            Return();
+        Fi
+
+        UInt meshIndex = meshIndices[getGlobalInvocationID().x() + meshIndexOffset];
+        ShaderMesh mesh = meshBuffer[meshIndex];
+
+        // TODO: Culling
+        // TODO: Multi Draw / Instancing
+
+        ShaderDrawMesh drawMesh;
+        drawMesh.mvp =  camera.projection * camera.view * transforms[mesh.transformIndex].transform;
+        drawMesh.modelID = mesh.modelID;
+        drawMesh.meshID = mesh.meshID;
+        drawMesh.transformIndex = mesh.transformIndex;
+        drawMesh.materialIndex = mesh.materialIndex;
+        drawMesh.receiveShadows = mesh.receiveShadows;
+        drawBuffer[getGlobalInvocationID().x() + meshIndexOffset] = drawMesh;
+
+        ShaderDrawIndirectIndexed command;
+        command.indexCount = mesh.indexCount;
+        command.instanceCount = UInt(1);
+        command.firstIndex = mesh.indexOffset;
+        command.baseVertex = mesh.baseVertex;
+        command.baseInstance = UInt(getGlobalInvocationID().x() + meshIndexOffset);
+        commandBuffer[getGlobalInvocationID().x()] = command;
+
+        commandCountBuffer[getGlobalInvocationID().x()] = Int(1);
+
         return BuildShader();
     }
 }

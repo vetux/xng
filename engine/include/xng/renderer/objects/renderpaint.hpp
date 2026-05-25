@@ -37,14 +37,16 @@ namespace xng {
         /**
          * Paint Point
          *
+         * @param id
          * @param paintStream
          * @param position
          * @param color
          */
-        RenderPaint(BufferStreamer<ShaderCanvasPaint::CPU> &paintStream,
+        RenderPaint(const Id id,
+                    BufferStreamer<ShaderCanvasPaint::CPU> &paintStream,
                     Vec2f position,
                     const ColorRGBA &color)
-            : RenderObject(OBJECT_PAINT),
+            : RenderObject(OBJECT_PAINT, id),
               type(PAINT_POINT),
               paintStream(paintStream),
               slot(paintStream.create()),
@@ -59,6 +61,7 @@ namespace xng {
         /**
          * Paint Line
          *
+         * @param id
          * @param paintStream
          * @param _meshStreamer
          * @param _start
@@ -67,14 +70,15 @@ namespace xng {
          * @param center
          * @param rotation
          */
-        RenderPaint(BufferStreamer<ShaderCanvasPaint::CPU> &paintStream,
+        RenderPaint(const Id id,
+                    BufferStreamer<ShaderCanvasPaint::CPU> &paintStream,
                     MeshStreamer &_meshStreamer,
                     Vec2f _start,
                     Vec2f _end,
                     const ColorRGBA &color,
                     Vec2f center = {},
                     const float rotation = 0)
-            : RenderObject(OBJECT_PAINT),
+            : RenderObject(OBJECT_PAINT, id),
               type(PAINT_LINE),
               paintStream(paintStream),
               slot(paintStream.create()),
@@ -99,18 +103,20 @@ namespace xng {
         /**
          * Paint rectangle (For non-filled rectangles use lines)
          *
+         * @param id
          * @param paintStream
          * @param dstRect
          * @param color
          * @param center
          * @param rotation
          */
-        RenderPaint(BufferStreamer<ShaderCanvasPaint::CPU> &paintStream,
+        RenderPaint(const Id id,
+                    BufferStreamer<ShaderCanvasPaint::CPU> &paintStream,
                     Rectf dstRect,
                     const ColorRGBA &color,
                     Vec2f center = {},
                     const float rotation = 0)
-            : RenderObject(OBJECT_PAINT),
+            : RenderObject(OBJECT_PAINT, id),
               type(PAINT_RECTANGLE),
               paintStream(paintStream),
               slot(paintStream.create()),
@@ -127,6 +133,7 @@ namespace xng {
         /**
          * Paint texture
          *
+         * @param id
          * @param paintStream
          * @param _srcRect
          * @param _dstRect
@@ -138,7 +145,8 @@ namespace xng {
          * @param center
          * @param rotation
          */
-        RenderPaint(BufferStreamer<ShaderCanvasPaint::CPU> &paintStream,
+        RenderPaint(const Id id,
+                    BufferStreamer<ShaderCanvasPaint::CPU> &paintStream,
                     Rectf _srcRect,
                     Rectf _dstRect,
                     RenderObjectHandle<RenderTexture> _texture,
@@ -148,7 +156,7 @@ namespace xng {
                     const ColorRGBA &mixColor = {},
                     const Vec2f &center = {},
                     const float rotation = 0)
-            : RenderObject(OBJECT_PAINT),
+            : RenderObject(OBJECT_PAINT, id),
               type(PAINT_TEXTURE),
               paintStream(paintStream),
               slot(paintStream.create()),

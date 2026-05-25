@@ -22,6 +22,7 @@ namespace xng {
     RenderAllocator::RenderAllocator(rg::Heap &heap, const size_t streamingBudget)
         : heap(heap),
           chunkStreamer(heap, 256 * 1024, streamingBudget / (256 * 1024)),
+          shaderMeshStream(heap, chunkStreamer),
           transformStream(heap, chunkStreamer),
           materialStream(heap, chunkStreamer),
           skeletonStream(heap, chunkStreamer),
@@ -33,21 +34,25 @@ namespace xng {
     }
 
     RenderObjectHandle<RenderTexture> RenderAllocator::createTexture(const Vec2i &resolution) {
-        return std::make_shared<RenderTexture>(textureStream, resolution);
+        return std::make_shared<RenderTexture>(allocateId(), textureStream, resolution);
     }
 
     RenderObjectHandle<RenderMaterial> RenderAllocator::createMaterial(const ColorRGBA &albedo,
-                                                                     float metallic,
-                                                                     float roughness,
-                                                                     float ambientOcclusion,
-                                                                     const Vec4f &normalIntensity,
-                                                                     RenderObjectHandle<RenderTexture> albedoTexture,
-                                                                     RenderObjectHandle<RenderTexture> metallicTexture,
-                                                                     RenderObjectHandle<RenderTexture> roughnessTexture,
-                                                                     RenderObjectHandle<RenderTexture>
-                                                                     ambientOcclusionTexture,
-                                                                     RenderObjectHandle<RenderTexture> normalTexture) {
-        return std::make_shared<RenderMaterial>(materialStream,
+                                                                       float metallic,
+                                                                       float roughness,
+                                                                       float ambientOcclusion,
+                                                                       const Vec4f &normalIntensity,
+                                                                       RenderObjectHandle<RenderTexture> albedoTexture,
+                                                                       RenderObjectHandle<RenderTexture>
+                                                                       metallicTexture,
+                                                                       RenderObjectHandle<RenderTexture>
+                                                                       roughnessTexture,
+                                                                       RenderObjectHandle<RenderTexture>
+                                                                       ambientOcclusionTexture,
+                                                                       RenderObjectHandle<RenderTexture>
+                                                                       normalTexture) {
+        return std::make_shared<RenderMaterial>(allocateId(),
+                                                materialStream,
                                                 albedo,
                                                 metallic,
                                                 roughness,
@@ -61,37 +66,41 @@ namespace xng {
     }
 
     RenderObjectHandle<RenderSkeleton> RenderAllocator::createSkeleton(const std::vector<std::string> &boneNames) {
-        return std::make_shared<RenderSkeleton>(skeletonStream, boneNames);
+        return std::make_shared<RenderSkeleton>(allocateId(), skeletonStream, boneNames);
     }
 
     RenderObjectHandle<RenderMesh> RenderAllocator::createMesh(const Mesh &mesh,
-                                                             RenderObjectHandle<RenderSkeleton> skeleton) {
-        return std::make_shared<RenderMesh>(meshStream, mesh, std::move(skeleton));
+                                                               RenderObjectHandle<RenderSkeleton> skeleton) {
+        return std::make_shared<RenderMesh>(allocateId(), meshStream, mesh, std::move(skeleton));
     }
 
     RenderObjectHandle<RenderModel> RenderAllocator::createModel(std::vector<RenderObjectHandle<RenderMesh> > meshes,
-                                                               RenderObjectHandle<RenderMaterial> material,
-                                                               ShadingModel shadingModel,
-                                                               bool receiveShadows,
-                                                               bool castShadows) {
-        return std::make_shared<RenderModel>(transformStream,
+                                                                 RenderObjectHandle<RenderMaterial> material,
+                                                                 RenderPath renderPath,
+                                                                 ShadingModel shadingModel,
+                                                                 bool receiveShadows,
+                                                                 bool castShadows) {
+        return std::make_shared<RenderModel>(allocateId(),
+                                             transformStream,
+                                             shaderMeshStream,
                                              std::move(meshes),
                                              std::move(material),
+                                             renderPath,
                                              shadingModel,
                                              receiveShadows,
                                              castShadows);
     }
 
     RenderObjectHandle<RenderPointLight> RenderAllocator::createPointLight() {
-        return std::make_shared<RenderPointLight>(pointLightStream);
+        return std::make_shared<RenderPointLight>(allocateId(), pointLightStream);
     }
 
     RenderObjectHandle<RenderSpotLight> RenderAllocator::createSpotLight() {
-        return std::make_shared<RenderSpotLight>(spotLightStream);
+        return std::make_shared<RenderSpotLight>(allocateId(), spotLightStream);
     }
 
     RenderObjectHandle<RenderDirectionalLight> RenderAllocator::createDirectionalLight() {
-        return std::make_shared<RenderDirectionalLight>(directionalLightStream);
+        return std::make_shared<RenderDirectionalLight>(allocateId(), directionalLightStream);
     }
 
     RenderObjectHandle<RenderPaint> RenderAllocator::createPaint() {
@@ -102,12 +111,17 @@ namespace xng {
         // ...
     }
 
+    void RenderAllocator::destroy(const RenderObject &object) {
+        deallocateId(object.getId());
+    }
+
     static void concatPasses(const std::vector<rg::TransferPass> &passes, std::vector<rg::TransferPass> &out) {
         out.insert(out.end(), passes.begin(), passes.end());
     }
 
     [[nodiscard]] RenderAllocator::Buffers RenderAllocator::commit(rg::GraphBuilder &graph) {
         std::vector<rg::TransferPass> streamPasses;
+        concatPasses(shaderMeshStream.commit(graph), streamPasses);
         concatPasses(transformStream.commit(graph), streamPasses);
         concatPasses(materialStream.commit(graph), streamPasses);
         concatPasses(skeletonStream.commit(graph), streamPasses);
@@ -118,6 +132,7 @@ namespace xng {
         concatPasses(textureStream.commit(graph), streamPasses);
         chunkStreamer.commit((std::move(streamPasses)));
         return {
+            shaderMeshStream.getBuffer(),
             transformStream.getBuffer(),
             materialStream.getBuffer(),
             skeletonStream.getBuffer(),

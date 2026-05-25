@@ -25,10 +25,11 @@
 namespace xng {
     class RenderMesh final : public RenderObject {
     public:
-        RenderMesh(MeshStreamer &meshStream,
+        RenderMesh(const Id id,
+                   MeshStreamer &meshStream,
                    const Mesh &mesh,
                    RenderObjectHandle<RenderSkeleton> _skeleton)
-            : RenderObject(OBJECT_MESH), meshStream(meshStream), skeleton(std::move(_skeleton)) {
+            : RenderObject(OBJECT_MESH, id), meshStream(meshStream), skeleton(std::move(_skeleton)) {
             if (skeleton) {
                 meshHandle = meshStream.create(mesh, skeleton->getOffsets());
             } else {

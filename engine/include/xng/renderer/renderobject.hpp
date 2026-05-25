@@ -42,6 +42,8 @@ namespace xng {
      */
     class RenderObject {
     public:
+        typedef size_t Id;
+
         enum Type {
             OBJECT_TEXTURE,
             OBJECT_MATERIAL,
@@ -55,14 +57,18 @@ namespace xng {
             OBJECT_PAINT,
         };
 
-        explicit RenderObject(const Type type)
-            : type(type) {
+        explicit RenderObject(const Type type, const Id id)
+            : type(type), id(id) {
         }
 
         virtual ~RenderObject() = default;
 
         [[nodiscard]] Type getType() const {
             return type;
+        }
+
+        [[nodiscard]] Id getId() const {
+            return id;
         }
 
         /**
@@ -81,6 +87,7 @@ namespace xng {
 
     protected:
         Type type;
+        Id id;
     };
 }
 

@@ -34,8 +34,8 @@ namespace xng {
                    * MatrixMath::translate(transform.getPosition() * -1);
         }
 
-        explicit RenderSpotLight(BufferStreamer<ShaderSpotLight::CPU> &lightStream)
-            : RenderObject(OBJECT_SPOT_LIGHT),
+        explicit RenderSpotLight(const Id id, BufferStreamer<ShaderSpotLight::CPU> &lightStream)
+            : RenderObject(OBJECT_SPOT_LIGHT, id),
               lightStream(lightStream) {
             lightHandle = lightStream.create();
         }

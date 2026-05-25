@@ -38,8 +38,8 @@ namespace xng {
                    * MatrixMath::inverse(transform.getRotation().matrix());
         }
 
-        explicit RenderDirectionalLight(BufferStreamer<ShaderDirectionalLight::CPU> &lightStream)
-            : RenderObject(OBJECT_DIRECTIONAL_LIGHT),
+        explicit RenderDirectionalLight(const Id id, BufferStreamer<ShaderDirectionalLight::CPU> &lightStream)
+            : RenderObject(OBJECT_DIRECTIONAL_LIGHT, id),
               lightStream(lightStream) {
             lightHandle = lightStream.create();
         }

@@ -18,6 +18,8 @@
 
 #include "xng/renderer/renderer.hpp"
 
+#include <cstring>
+
 namespace xng {
     static rg::PipelineCache::Handle createPipeline(rg::PipelineCache &cache, const rg::Shader &shader) {
         rg::ComputePipeline pip;
@@ -33,6 +35,10 @@ namespace xng {
           allocator(runtime.getResourceHeap(), streamingBudget),
           skinningPipeline(createPipeline(runtime.getPipelineCache(), skinningShader)),
           scenePrepassPipeline(createPipeline(runtime.getPipelineCache(), scenePrepassShader)) {
+        cameraBuffer = runtime.getResourceHeap().allocateBuffer(rg::Buffer(sizeof(ShaderCamera::CPU),
+                                                                           rg::Buffer::CAPABILITY_STORAGE
+                                                                           | rg::Buffer::CAPABILITY_TRANSFER_DST,
+                                                                           rg::Buffer::MEMORY_CPU_TO_GPU));
     }
 
     RenderAllocator &Renderer::getAllocator() {
@@ -71,7 +77,7 @@ namespace xng {
 
         // Record prepass
         RenderScene scene;
-        graph.addPass(recordScenePrePass(drawList, buffers, scene));
+        graph.addPass(recordScenePrePass(graph, runtime.getResourceHeap(), drawList, buffers, scene));
 
         // Record passes
         RenderPassRegistry registry;
@@ -149,13 +155,273 @@ namespace xng {
                                        rg::ShaderPrimitive(static_cast<unsigned int>(alloc.skinBaseVertex)));
                 ctx.setShaderParameter("baseBone",
                                        rg::ShaderPrimitive(static_cast<unsigned int>(baseBone)));
-                ctx.dispatch(Vec3u((alloc.vertexCount + 63) / 64, 1, 1));
+                ctx.dispatch(Vec3u((alloc.vertexCount + (skinningLocalSize - 1)) / skinningLocalSize, 1, 1));
             }
         });
     }
 
-    rg::ComputePass Renderer::recordScenePrePass(const RenderDrawList &drawList,
+    struct DrawBatch {
+        ShadingModel shadingModel;
+        std::vector<unsigned int> meshIndices;
+
+        std::vector<RenderScene::BufferAccessRange> drawBufferAccesses;
+        std::vector<RenderScene::BufferAccessRange> transformBufferAccesses;
+        std::vector<RenderScene::BufferAccessRange> materialBufferAccesses;
+
+        std::unordered_map<VertexAttribute, std::vector<RenderScene::BufferAccessRange> > vertexBufferAccesses;
+        std::vector<RenderScene::BufferAccessRange> indexBufferAccesses;
+
+        std::unordered_map<TextureResolution, std::vector<size_t> > textureAccesses;
+    };
+
+    rg::ComputePass Renderer::recordScenePrePass(rg::GraphBuilder &graphBuilder,
+                                                 rg::Heap &heap,
+                                                 const RenderDrawList &drawList,
                                                  const RenderAllocator::Buffers &buffers,
                                                  RenderScene &scene) {
+        // Gather / Sort forward and deferred batches
+        std::map<ShadingModel, DrawBatch> deferredBatches;
+        std::vector<DrawBatch> forwardBatches;
+        DrawBatch currentForwardBatch;
+
+        size_t totalDrawCount = 0;
+        for (auto &model: drawList.models) {
+            DrawBatch *currentBatch = &currentForwardBatch;
+            if (model->getRenderPath() == RENDER_PATH_DEFERRED) {
+                currentBatch = &deferredBatches[model->getShadingModel()];
+            } else {
+                const auto shadingModel = model->getShadingModel();
+                if (shadingModel != currentForwardBatch.shadingModel) {
+                    if (!currentForwardBatch.meshIndices.empty()) {
+                        forwardBatches.emplace_back(currentForwardBatch);
+                        currentForwardBatch = {};
+                    }
+                    currentForwardBatch.shadingModel = shadingModel;
+                }
+            }
+
+            auto &batch = *currentBatch;
+            for (auto &meshSlot: model->getShaderMeshSlots()) {
+                batch.meshIndices.push_back(meshSlot);
+                batch.drawBufferAccesses.emplace_back(RenderScene::BufferAccessRange{
+                    meshSlot * sizeof(ShaderDrawMesh), sizeof(ShaderDrawMesh)
+                });
+            }
+            for (auto &mesh: model->getMeshes()) {
+                for (auto attr = ATTRIBUTE_BEGIN;
+                     attr <= ATTRIBUTE_END;
+                     attr = static_cast<VertexAttribute>(attr + 1)) {
+                    batch.vertexBufferAccesses[attr].emplace_back(RenderScene::BufferAccessRange{
+                        mesh->getAllocation().baseVertex * getVertexAttributeSize(attr),
+                        mesh->getAllocation().vertexCount * getVertexAttributeSize(attr)
+                    });
+                }
+                batch.indexBufferAccesses.emplace_back(RenderScene::BufferAccessRange{
+                    mesh->getAllocation().drawCall.offset,
+                    mesh->getAllocation().drawCall.count * sizeof(unsigned int)
+                });
+            }
+            batch.transformBufferAccesses.emplace_back(RenderScene::BufferAccessRange{
+                model->getTransformSlot() * sizeof(ShaderTransform::CPU),
+                sizeof(ShaderTransform::CPU)
+            });
+            batch.materialBufferAccesses.emplace_back(RenderScene::BufferAccessRange{
+                model->getMaterial()->getSlot() * sizeof(ShaderMaterial::CPU),
+                sizeof(ShaderMaterial::CPU)
+            });
+            if (model->getMaterial()->getAlbedo()) {
+                const auto &handle = model->getMaterial()->getAlbedo()->getHandle();
+                batch.textureAccesses[handle.level].emplace_back(handle.slot);
+            }
+            if (model->getMaterial()->getMetallic()) {
+                const auto &handle = model->getMaterial()->getMetallic()->getHandle();
+                batch.textureAccesses[handle.level].emplace_back(handle.slot);
+            }
+            if (model->getMaterial()->getRoughness()) {
+                const auto &handle = model->getMaterial()->getRoughness()->getHandle();
+                batch.textureAccesses[handle.level].emplace_back(handle.slot);
+            }
+            if (model->getMaterial()->getAmbientOcclusion()) {
+                const auto &handle = model->getMaterial()->getAmbientOcclusion()->getHandle();
+                batch.textureAccesses[handle.level].emplace_back(handle.slot);
+            }
+            if (model->getMaterial()->getNormal()) {
+                const auto &handle = model->getMaterial()->getNormal()->getHandle();
+                batch.textureAccesses[handle.level].emplace_back(handle.slot);
+            }
+            totalDrawCount += model->getShaderMeshSlots().size();
+        }
+
+        if (!currentForwardBatch.meshIndices.empty()) {
+            forwardBatches.emplace_back(currentForwardBatch);
+        }
+
+        scene.cameraBuffer = rg::Resource(cameraBuffer);
+
+        scene.transformBuffer = rg::Resource(buffers.transformBuffer);
+        scene.materialBuffer = rg::Resource(buffers.materialBuffer);
+
+        for (auto &pair: buffers.vertexBuffers) {
+            scene.vertexBuffers.emplace(pair.first, rg::Resource(pair.second));
+        }
+
+        scene.indexBuffer = rg::Resource(buffers.indexBuffer);
+
+        for (auto &pair: buffers.textures) {
+            scene.textures.emplace(pair.first, rg::Resource(pair.second));
+        }
+
+        scene.pointLightBuffer = rg::Resource(buffers.pointLightBuffer);
+        scene.spotLightBuffer = rg::Resource(buffers.spotLightBuffer);
+        scene.directionalLightBuffer = rg::Resource(buffers.directionalLightBuffer);
+
+        scene.drawBuffer = graphBuilder.allocateBuffer(rg::Buffer(totalDrawCount * sizeof(ShaderDrawMesh::CPU),
+                                                                  rg::Buffer::CAPABILITY_STORAGE,
+                                                                  rg::Buffer::MEMORY_GPU_ONLY));
+
+        //TODO: Staging buffers for camera / meshIndices
+        {
+            ShaderCamera::CPU camera;
+            camera.viewPosition = drawList.camera.getPosition();
+            camera.view = drawList.camera.getView();
+            camera.projection = drawList.camera.getProjection();
+            const auto cameraMapping = heap.map(cameraBuffer);
+            std::memcpy(cameraMapping->data(), &camera, sizeof(ShaderCamera::CPU));
+        }
+
+        meshIndicesBuffer = heap.allocateBuffer(rg::Buffer(totalDrawCount * sizeof(unsigned int),
+                                                           rg::Buffer::CAPABILITY_STORAGE
+                                                           | rg::Buffer::CAPABILITY_TRANSFER_DST,
+                                                           rg::Buffer::MEMORY_CPU_TO_GPU));
+
+        // Copy mesh indices in execution order
+        {
+            const auto meshIndicesMapping = heap.map(meshIndicesBuffer);
+            size_t currentMeshIndex = 0;
+            for (auto &batch: forwardBatches) {
+                std::memcpy(meshIndicesMapping->data() + currentMeshIndex * sizeof(unsigned int),
+                            batch.meshIndices.data(),
+                            batch.meshIndices.size() * sizeof(unsigned int));
+                currentMeshIndex += batch.meshIndices.size();
+            }
+            for (auto &batch: deferredBatches) {
+                std::memcpy(meshIndicesMapping->data() + currentMeshIndex * sizeof(unsigned int),
+                            batch.second.meshIndices.data(),
+                            batch.second.meshIndices.size() * sizeof(unsigned int));
+                currentMeshIndex += batch.second.meshIndices.size();
+            }
+        }
+
+        // TODO: Split draw batches across (oversized) batch counts to allow command buffer reuse.
+        // TODO: Share single indirect / count buffer across batches.
+
+        rg::ComputePassBuilder builder("ScenePrePass");
+
+        for (const auto &batch: forwardBatches) {
+            const auto indirectBuffer = graphBuilder.allocateBuffer(rg::Buffer(
+                sizeof(ShaderScript::ShaderDrawIndirectIndexed::CPU) * batch.meshIndices.size(),
+                rg::Buffer::CAPABILITY_STORAGE | rg::Buffer::CAPABILITY_INDIRECT,
+                rg::Buffer::MEMORY_GPU_ONLY));
+            const auto indirectCountBuffer = graphBuilder.allocateBuffer(rg::Buffer(
+                sizeof(int) * batch.meshIndices.size(),
+                rg::Buffer::CAPABILITY_STORAGE | rg::Buffer::CAPABILITY_INDIRECT,
+                rg::Buffer::MEMORY_GPU_ONLY));
+            scene.drawList.emplace_back(batch.meshIndices.size(),
+                                        sizeof(ShaderScript::ShaderDrawIndirectIndexed::CPU),
+                                        indirectBuffer,
+                                        0,
+                                        indirectCountBuffer,
+                                        0,
+                                        RENDER_PATH_FORWARD,
+                                        batch.shadingModel,
+                                        batch.drawBufferAccesses,
+                                        batch.transformBufferAccesses,
+                                        batch.materialBufferAccesses,
+                                        batch.vertexBufferAccesses,
+                                        batch.indexBufferAccesses,
+                                        batch.textureAccesses);
+            builder.storageWrite(indirectBuffer,
+                                 0,
+                                 batch.meshIndices.size() * sizeof(ShaderScript::ShaderDrawIndirectIndexed::CPU));
+            builder.storageWrite(indirectCountBuffer,
+                                 0,
+                                 batch.meshIndices.size() * sizeof(int));
+            for (auto &access: batch.drawBufferAccesses) {
+                builder.storageWrite(scene.drawBuffer, access.offset, access.size);
+            }
+            for (auto &access: batch.transformBufferAccesses) {
+                builder.storageRead(scene.transformBuffer, access.offset, access.size);
+            }
+            for (auto &index: batch.meshIndices) {
+                builder.storageRead(buffers.meshBuffer, index * sizeof(ShaderMesh::CPU), sizeof(ShaderMesh::CPU));
+            }
+        }
+
+        for (const auto &pair: deferredBatches) {
+            const auto &batch = pair.second;
+            const auto indirectBuffer = graphBuilder.allocateBuffer(rg::Buffer(
+                sizeof(ShaderScript::ShaderDrawIndirectIndexed::CPU) * batch.meshIndices.size(),
+                rg::Buffer::CAPABILITY_STORAGE | rg::Buffer::CAPABILITY_INDIRECT,
+                rg::Buffer::MEMORY_GPU_ONLY));
+            const auto indirectCountBuffer = graphBuilder.allocateBuffer(rg::Buffer(
+                sizeof(int) * batch.meshIndices.size(),
+                rg::Buffer::CAPABILITY_STORAGE | rg::Buffer::CAPABILITY_INDIRECT,
+                rg::Buffer::MEMORY_GPU_ONLY));
+            scene.drawList.emplace_back(batch.meshIndices.size(),
+                                        sizeof(ShaderScript::ShaderDrawIndirectIndexed::CPU),
+                                        indirectBuffer,
+                                        0,
+                                        indirectCountBuffer,
+                                        0,
+                                        RENDER_PATH_DEFERRED,
+                                        pair.first,
+                                        batch.drawBufferAccesses,
+                                        batch.transformBufferAccesses,
+                                        batch.materialBufferAccesses,
+                                        batch.vertexBufferAccesses,
+                                        batch.indexBufferAccesses,
+                                        batch.textureAccesses);
+            builder.storageWrite(indirectBuffer,
+                                 0,
+                                 batch.meshIndices.size() * sizeof(ShaderScript::ShaderDrawIndirectIndexed::CPU));
+            builder.storageWrite(indirectCountBuffer,
+                                 0,
+                                 batch.meshIndices.size() * sizeof(int));
+            for (auto &access: batch.drawBufferAccesses) {
+                builder.storageWrite(scene.drawBuffer, access.offset, access.size);
+            }
+            for (auto &access: batch.transformBufferAccesses) {
+                builder.storageRead(scene.transformBuffer, access.offset, access.size);
+            }
+            for (auto &index: batch.meshIndices) {
+                builder.storageRead(buffers.meshBuffer, index * sizeof(ShaderMesh::CPU), sizeof(ShaderMesh::CPU));
+            }
+        }
+
+        builder.storageRead(scene.cameraBuffer, 0, 0);
+        builder.storageRead(meshIndicesBuffer, 0, 0);
+
+        return builder.execute([this, &scene, &buffers](rg::ComputeContext &ctx) {
+            ctx.bindPipeline(scenePrepassPipeline);
+
+            ctx.bindStorageBuffer("camera", scene.cameraBuffer, 0, 0);
+            ctx.bindStorageBuffer("transforms", scene.transformBuffer, 0, 0);
+            ctx.bindStorageBuffer("meshBuffer", buffers.meshBuffer, 0, 0);
+            ctx.bindStorageBuffer("meshIndices", meshIndicesBuffer, 0, 0);
+            ctx.bindStorageBuffer("drawBuffer", scene.drawBuffer, 0, 0);
+
+            size_t currentMeshIndex = 0;
+            for (auto &batch: scene.drawList) {
+                ctx.bindStorageBuffer("commandBuffer", batch.indirectBuffer, 0, 0);
+                ctx.bindStorageBuffer("commandCountBuffer", batch.indirectCountBuffer, 0, 0);
+                ctx.setShaderParameter("meshIndexOffset",
+                                       rg::ShaderPrimitive(static_cast<unsigned int>(currentMeshIndex)));
+                ctx.setShaderParameter("batchSize", rg::ShaderPrimitive(static_cast<unsigned int>(batch.batchSize)));
+                ctx.dispatch(Vec3u((batch.batchSize + (prePassLocalSize - 1)) / prePassLocalSize,
+                                   1,
+                                   1));
+                currentMeshIndex += batch.batchSize;
+            }
+        });
     }
 }

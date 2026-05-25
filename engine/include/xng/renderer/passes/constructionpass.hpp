@@ -136,12 +136,12 @@ namespace xng {
             builder.storageRead(scene.cameraBuffer, {rg::Shader::VERTEX});
 
             for (auto &batch: scene.drawList) {
-                if (batch.transparency) {
+                if (batch.renderPath != RENDER_PATH_DEFERRED) {
                     continue;
                 }
 
-                for (auto &access: batch.modelBufferAccesses) {
-                    builder.storageRead(scene.modelBuffer, {rg::Shader::VERTEX}, access.offset, access.size);
+                for (auto &access: batch.drawBufferAccesses) {
+                    builder.storageRead(scene.drawBuffer, {rg::Shader::VERTEX}, access.offset, access.size);
                 }
 
                 for (auto &access: batch.transformBufferAccesses) {
@@ -201,10 +201,10 @@ namespace xng {
                                       0,
                                       scene.cameraBuffer.getDescription().size);
 
-                cmd.bindStorageBuffer("models",
-                                      scene.modelBuffer,
+                cmd.bindStorageBuffer("drawBuffer",
+                                      scene.drawBuffer,
                                       0,
-                                      scene.modelBuffer.getDescription().size);
+                                      scene.drawBuffer.getDescription().size);
 
                 cmd.bindStorageBuffer("transforms",
                                       scene.transformBuffer,
@@ -226,7 +226,7 @@ namespace xng {
                 cmd.bindTexture("textures", textureBindings);
 
                 for (auto &batch: scene.drawList) {
-                    if (batch.transparency) {
+                    if (batch.renderPath != RENDER_PATH_DEFERRED) {
                         continue;
                     }
                     cmd.setStencilReference(batch.shadingModel);
