@@ -115,7 +115,6 @@ namespace xng {
         ShaderMesh mesh = meshBuffer[meshIndex];
 
         // TODO: Culling
-        // TODO: Multi Draw / Instancing
 
         ShaderDrawMesh drawMesh;
         drawMesh.mvp = camera.projection * camera.view * transforms[mesh.transformIndex].transform;
