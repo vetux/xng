@@ -16,10 +16,10 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "xng/renderer/scenestreamer.hpp"
+#include "xng/renderer/renderallocator.hpp"
 
 namespace xng {
-    SceneStreamer::SceneStreamer(rg::Heap &heap, const size_t streamingBudget)
+    RenderAllocator::RenderAllocator(rg::Heap &heap, const size_t streamingBudget)
         : heap(heap),
           chunkStreamer(heap, 256 * 1024, streamingBudget / (256 * 1024)),
           transformStream(heap, chunkStreamer),
@@ -32,11 +32,11 @@ namespace xng {
           textureStream(heap, chunkStreamer) {
     }
 
-    RenderObjectHandle<RenderTexture> SceneStreamer::createTexture(const Vec2i &resolution) {
+    RenderObjectHandle<RenderTexture> RenderAllocator::createTexture(const Vec2i &resolution) {
         return std::make_shared<RenderTexture>(textureStream, resolution);
     }
 
-    RenderObjectHandle<RenderMaterial> SceneStreamer::createMaterial(const ColorRGBA &albedo,
+    RenderObjectHandle<RenderMaterial> RenderAllocator::createMaterial(const ColorRGBA &albedo,
                                                                      float metallic,
                                                                      float roughness,
                                                                      float ambientOcclusion,
@@ -60,16 +60,16 @@ namespace xng {
                                                 normalIntensity);
     }
 
-    RenderObjectHandle<RenderSkeleton> SceneStreamer::createSkeleton(const std::vector<std::string> &boneNames) {
+    RenderObjectHandle<RenderSkeleton> RenderAllocator::createSkeleton(const std::vector<std::string> &boneNames) {
         return std::make_shared<RenderSkeleton>(skeletonStream, boneNames);
     }
 
-    RenderObjectHandle<RenderMesh> SceneStreamer::createMesh(const Mesh &mesh,
+    RenderObjectHandle<RenderMesh> RenderAllocator::createMesh(const Mesh &mesh,
                                                              RenderObjectHandle<RenderSkeleton> skeleton) {
         return std::make_shared<RenderMesh>(meshStream, mesh, std::move(skeleton));
     }
 
-    RenderObjectHandle<RenderModel> SceneStreamer::createModel(std::vector<RenderObjectHandle<RenderMesh> > meshes,
+    RenderObjectHandle<RenderModel> RenderAllocator::createModel(std::vector<RenderObjectHandle<RenderMesh> > meshes,
                                                                RenderObjectHandle<RenderMaterial> material,
                                                                ShadingModel shadingModel,
                                                                bool receiveShadows,
@@ -82,23 +82,31 @@ namespace xng {
                                              castShadows);
     }
 
-    RenderObjectHandle<RenderPointLight> SceneStreamer::createPointLight() {
+    RenderObjectHandle<RenderPointLight> RenderAllocator::createPointLight() {
         return std::make_shared<RenderPointLight>(pointLightStream);
     }
 
-    RenderObjectHandle<RenderSpotLight> SceneStreamer::createSpotLight() {
+    RenderObjectHandle<RenderSpotLight> RenderAllocator::createSpotLight() {
         return std::make_shared<RenderSpotLight>(spotLightStream);
     }
 
-    RenderObjectHandle<RenderDirectionalLight> SceneStreamer::createDirectionalLight() {
+    RenderObjectHandle<RenderDirectionalLight> RenderAllocator::createDirectionalLight() {
         return std::make_shared<RenderDirectionalLight>(directionalLightStream);
+    }
+
+    RenderObjectHandle<RenderPaint> RenderAllocator::createPaint() {
+        // ...
+    }
+
+    RenderObjectHandle<RenderCanvas> RenderAllocator::createCanvas() {
+        // ...
     }
 
     static void concatPasses(const std::vector<rg::TransferPass> &passes, std::vector<rg::TransferPass> &out) {
         out.insert(out.end(), passes.begin(), passes.end());
     }
 
-    [[nodiscard]] SceneStreamer::Buffers SceneStreamer::commit(rg::GraphBuilder &graph) {
+    [[nodiscard]] RenderAllocator::Buffers RenderAllocator::commit(rg::GraphBuilder &graph) {
         std::vector<rg::TransferPass> streamPasses;
         concatPasses(transformStream.commit(graph), streamPasses);
         concatPasses(materialStream.commit(graph), streamPasses);

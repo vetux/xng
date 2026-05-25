@@ -30,13 +30,13 @@ namespace xng {
                        const rg::Shader &skinningShader,
                        const rg::Shader &scenePrepassShader)
         : runtime(runtime),
-          streamer(runtime.getResourceHeap(), streamingBudget),
+          allocator(runtime.getResourceHeap(), streamingBudget),
           skinningPipeline(createPipeline(runtime.getPipelineCache(), skinningShader)),
           scenePrepassPipeline(createPipeline(runtime.getPipelineCache(), scenePrepassShader)) {
     }
 
-    SceneStreamer &Renderer::getStreamer() {
-        return streamer;
+    RenderAllocator &Renderer::getAllocator() {
+        return allocator;
     }
 
     void Renderer::setPasses(std::vector<std::shared_ptr<RenderPass> > _passes) {
@@ -64,7 +64,7 @@ namespace xng {
         rg::GraphBuilder graph;
 
         // Commit streams
-        const auto buffers = streamer.commit(graph);
+        const auto buffers = allocator.commit(graph);
 
         // Record compute skinning
         graph.addPass(recordSkinningPass(drawList, buffers));
@@ -83,7 +83,7 @@ namespace xng {
     }
 
     rg::ComputePass Renderer::recordSkinningPass(const RenderDrawList &drawList,
-                                                 const SceneStreamer::Buffers &buffers) const {
+                                                 const RenderAllocator::Buffers &buffers) const {
         std::unordered_set<RenderObjectHandle<RenderMesh> > meshes;
         for (auto &model: drawList.models) {
             for (auto &mesh: model->getMeshes()) {
@@ -155,7 +155,7 @@ namespace xng {
     }
 
     rg::ComputePass Renderer::recordScenePrePass(const RenderDrawList &drawList,
-                                                 const SceneStreamer::Buffers &buffers,
+                                                 const RenderAllocator::Buffers &buffers,
                                                  RenderScene &scene) {
     }
 }

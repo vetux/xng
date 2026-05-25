@@ -27,6 +27,7 @@
 #include "xng/renderer/objects/renderpointlight.hpp"
 #include "xng/renderer/objects/renderspotlight.hpp"
 #include "xng/renderer/objects/renderdirectionallight.hpp"
+#include "xng/renderer/objects/rendercanvas.hpp"
 
 #include "xng/shaderscript/indirectbuffers.hpp"
 
@@ -164,6 +165,63 @@ namespace xng {
          * The camera buffer.
          */
         rg::Resource<rg::Buffer> cameraBuffer;
+
+        struct CanvasBatch {
+            /**
+             * The target texture, if unassigned, the canvas batch should be drawn on the screen surface.
+             */
+            rg::Resource<rg::Texture> canvasTexture;
+
+            /**
+            * The maximum number of commands in the indirect buffer.
+            */
+            size_t batchSize;
+
+            /**
+             * The stride between commands in the indirect buffer.
+             */
+            size_t stride;
+
+            /**
+             * The indirect buffer containing up to batchSize commands.
+             *
+             * The size of the indirect buffer is batchSize * sizeof(ShaderDrawIndirectIndexed)
+             */
+            rg::Resource<rg::Buffer> indirectBuffer;
+            size_t indirectBufferOffset;
+
+            /**
+             * The count buffer containing the number of commands in the indirect buffer
+             */
+            rg::Resource<rg::Buffer> indirectCountBuffer;
+            size_t indirectCountBufferOffset;
+
+            /**
+             * The set of byte ranges / texture layers in the buffers that may be read by this draw batch.
+             */
+            std::vector<BufferAccessRange> canvasModelBufferAccesses;
+            std::vector<BufferAccessRange> paintBufferAccesses;
+
+            std::unordered_map<VertexAttribute, std::vector<BufferAccessRange> > vertexBufferAccesses;
+            std::vector<BufferAccessRange> indexBufferAccesses;
+
+            std::unordered_map<TextureResolution, std::vector<size_t> > textureAccesses;
+        };
+
+        /**
+         * The batches containing the commands to render the canvases.
+         */
+        std::vector<CanvasBatch> canvasDrawList;
+
+        /**
+         * The canvas model buffer indexed by the canvas batch commands.
+         */
+        rg::Resource<rg::Buffer> canvasModelBuffer;
+
+        /**
+         * The paint buffer indexed by the canvas model buffer.
+         */
+        rg::Resource<rg::Buffer> paintBuffer;
     };
 }
 

@@ -20,7 +20,6 @@
 #define XENGINE_RENDERCONFIGURATION_HPP
 
 #include "xng/renderer/renderscene.hpp"
-#include "xng/renderer/canvas/canvas.hpp"
 
 namespace xng {
     struct RenderConfiguration {

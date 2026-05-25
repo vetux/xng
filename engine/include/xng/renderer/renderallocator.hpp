@@ -16,8 +16,8 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef XENGINE_SCENESTREAMER_HPP
-#define XENGINE_SCENESTREAMER_HPP
+#ifndef XENGINE_RENDERALLOCATOR_HPP
+#define XENGINE_RENDERALLOCATOR_HPP
 
 #include "xng/assets/assetscene.hpp"
 
@@ -30,9 +30,11 @@
 #include "xng/renderer/objects/renderskeleton.hpp"
 #include "xng/renderer/objects/renderspotlight.hpp"
 #include "xng/renderer/objects/rendertexture.hpp"
+#include "xng/renderer/objects/renderpaint.hpp"
+#include "xng/renderer/objects/rendercanvas.hpp"
 
 namespace xng {
-    class SceneStreamer {
+    class RenderAllocator {
     public:
         struct Buffers {
             rg::HeapResource<rg::Buffer> transformBuffer;
@@ -60,7 +62,7 @@ namespace xng {
          * @param heap
          * @param streamingBudget The total streaming budget to saturate in bytes. Should be multiple of 1KB.
          */
-        explicit SceneStreamer(rg::Heap &heap, size_t streamingBudget);
+        explicit RenderAllocator(rg::Heap &heap, size_t streamingBudget);
 
         RenderObjectHandle<RenderTexture> createTexture(const Vec2i &resolution);
 
@@ -91,6 +93,10 @@ namespace xng {
 
         RenderObjectHandle<RenderDirectionalLight> createDirectionalLight();
 
+        RenderObjectHandle<RenderPaint> createPaint();
+
+        RenderObjectHandle<RenderCanvas> createCanvas();
+
         [[nodiscard]] Buffers commit(rg::GraphBuilder &graph);
 
     private:
@@ -112,4 +118,4 @@ namespace xng {
     };
 }
 
-#endif //XENGINE_SCENESTREAMER_HPP
+#endif //XENGINE_RENDERALLOCATOR_HPP

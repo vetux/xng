@@ -19,7 +19,7 @@
 #include "xng/renderer/renderer2d.hpp"
 
 #include <utility>
-
+/*
 namespace xng {
     Renderer2D::Renderer2D()
         : canvas({1, 1}){
@@ -86,4 +86,4 @@ namespace xng {
     void Renderer2D::draw(const Vec2f &point, const ColorRGBA &color) {
         canvas.paint(PaintPoint(point, color));
     }
-}
+}*/

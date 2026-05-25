@@ -144,8 +144,6 @@ namespace xng {
 
     private:
         bool isRendering = false;
-
-        Canvas canvas;
     };
 }
 

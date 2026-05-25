@@ -66,17 +66,6 @@ namespace xng {
                  ShaderTexture, ambientOcclusion,
                  ShaderTexture, albedo)
 
-    ShaderStruct(ShaderCanvasPaint,
-                 Vec4f, color,
-                 float, colorMixFactor,
-                 float, alphaMixFactor,
-                 float, colorFactor,
-                 Vec4f, uvOffset_uvScale,
-                 ShaderTexture, texture)
-
-    ShaderStruct(ShaderConfiguration,
-                 Vec4f, gamma)
-
     ShaderStruct(ShaderModel,
                  Mat4f, mvp,
                  unsigned int, transformIndex,
@@ -84,6 +73,20 @@ namespace xng {
                  unsigned int, baseBoneIndex,
                  unsigned int, objectID, // The index of the model in the draw list
                  bool, receiveShadows)
+
+    ShaderStruct(ShaderCanvasPaint,
+                 Vec4f, color,
+                 float, colorMixFactor,
+                 float, alphaMixFactor,
+                 Vec4f, uvOffset_uvScale,
+                 ShaderTexture, texture)
+
+    ShaderStruct(ShaderCanvasModel,
+                 Mat4f, mvp,
+                 unsigned int, paintIndex)
+
+    ShaderStruct(ShaderConfiguration,
+                 Vec4f, gamma)
 }
 
 #endif //XENGINE_SHADERTYPES_HPP

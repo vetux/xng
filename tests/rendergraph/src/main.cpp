@@ -272,7 +272,7 @@ int main(int argc, char *argv[]) {
     FrameLimiter frameLimiter(0);
     frameLimiter.reset();
 
-    auto textLayoutEngine = TextLayoutEngine(*freeType, font, {0, 30});
+    /*auto textLayoutEngine = TextLayoutEngine(*freeType, font, {0, 30});
     auto text = textLayoutEngine.getLayout(
         "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.",
         {
@@ -322,7 +322,7 @@ int main(int argc, char *argv[]) {
                                                             TEXT_ALIGN_RIGHT
                                                         });
         }
-
+*/
     /*    auto fbSize = passScheduler->updateBackBuffer();
 
         scene.camera.aspectRatio = static_cast<float>(fbSize.x)
@@ -364,7 +364,7 @@ int main(int argc, char *argv[]) {
         }
 
         stats = passScheduler->execute(graph3D);*/
-    }
+    //}
 
     return 0;
 }

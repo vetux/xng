@@ -25,6 +25,9 @@
 #include "xng/rendergraph/builder/graphbuilder.hpp"
 
 namespace xng {
+    /**
+     * Generates the GBuffer for deferred shading.
+     */
     class ConstructionPass final : public RenderPass {
     public:
         /**

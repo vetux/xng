@@ -19,20 +19,257 @@
 #ifndef XENGINE_RENDERPAINT_HPP
 #define XENGINE_RENDERPAINT_HPP
 
+#include <utility>
+
+#include "xng/assets/color.hpp"
 #include "xng/renderer/renderobject.hpp"
 
 namespace xng {
     class RenderPaint final : public RenderObject {
     public:
-        RenderPaint()
-            : RenderObject(OBJECT_PAINT) {
+        enum Type {
+            PAINT_POINT,
+            PAINT_LINE,
+            PAINT_RECTANGLE,
+            PAINT_TEXTURE
+        };
+
+        /**
+         * Paint Point
+         *
+         * @param paintStream
+         * @param position
+         * @param color
+         */
+        RenderPaint(BufferStreamer<ShaderCanvasPaint::CPU> &paintStream,
+                    Vec2f position,
+                    const ColorRGBA &color)
+            : RenderObject(OBJECT_PAINT),
+              type(PAINT_POINT),
+              paintStream(paintStream),
+              slot(paintStream.create()),
+              dstRect(std::move(position), {}),
+              color(color) {
+            const auto colorF = color.divide();
+            ShaderCanvasPaint::CPU paint{};
+            paint.color = colorF;
+            paintStream.upload(slot, paint);
         }
 
-        // TODO: Scene paint data handling
-        // Use the existing deferred / forward pipelines for the canvas rendering
-        // by adding more fine grained materials.
-        // Then a paint object becomes a normal MeshObject + Unlit Material Object
-        // and i can support more shading / material types.
+        /**
+         * Paint Line
+         *
+         * @param paintStream
+         * @param _meshStreamer
+         * @param _start
+         * @param _end
+         * @param color
+         * @param center
+         * @param rotation
+         */
+        RenderPaint(BufferStreamer<ShaderCanvasPaint::CPU> &paintStream,
+                    MeshStreamer &_meshStreamer,
+                    Vec2f _start,
+                    Vec2f _end,
+                    const ColorRGBA &color,
+                    Vec2f center = {},
+                    const float rotation = 0)
+            : RenderObject(OBJECT_PAINT),
+              type(PAINT_LINE),
+              paintStream(paintStream),
+              slot(paintStream.create()),
+              meshStreamer(&_meshStreamer),
+              dstRect(std::move(_start), std::move(_end)),
+              center(std::move(center)),
+              rotation(rotation),
+              color(color) {
+            Mesh mesh;
+            mesh.primitive = Mesh::TRIANGLES;
+            mesh.positions.emplace_back(dstRect.position.x, dstRect.position.y, 1);
+            mesh.positions.emplace_back(dstRect.dimensions.x, dstRect.dimensions.y, 1);
+            mesh.positions.emplace_back(dstRect.dimensions.x, dstRect.dimensions.y, 1);
+            lineMeshHandle = meshStreamer->create(mesh, {});
+
+            const auto colorF = color.divide();
+            ShaderCanvasPaint::CPU paint{};
+            paint.color = colorF;
+            paintStream.upload(slot, paint);
+        }
+
+        /**
+         * Paint rectangle (For non-filled rectangles use lines)
+         *
+         * @param paintStream
+         * @param dstRect
+         * @param color
+         * @param center
+         * @param rotation
+         */
+        RenderPaint(BufferStreamer<ShaderCanvasPaint::CPU> &paintStream,
+                    Rectf dstRect,
+                    const ColorRGBA &color,
+                    Vec2f center = {},
+                    const float rotation = 0)
+            : RenderObject(OBJECT_PAINT),
+              type(PAINT_RECTANGLE),
+              paintStream(paintStream),
+              slot(paintStream.create()),
+              dstRect(std::move(dstRect)),
+              center(std::move(center)),
+              rotation(rotation),
+              color(color) {
+            const auto colorF = color.divide();
+            ShaderCanvasPaint::CPU paint{};
+            paint.color = colorF;
+            paintStream.upload(slot, paint);
+        }
+
+        /**
+         * Paint texture
+         *
+         * @param paintStream
+         * @param _srcRect
+         * @param _dstRect
+         * @param _texture
+         * @param filter
+         * @param mix
+         * @param alpha_mix
+         * @param mixColor
+         * @param center
+         * @param rotation
+         */
+        RenderPaint(BufferStreamer<ShaderCanvasPaint::CPU> &paintStream,
+                    Rectf _srcRect,
+                    Rectf _dstRect,
+                    RenderObjectHandle<RenderTexture> _texture,
+                    const bool filter,
+                    const float mix = 0,
+                    const float alpha_mix = 0,
+                    const ColorRGBA &mixColor = {},
+                    const Vec2f &center = {},
+                    const float rotation = 0)
+            : RenderObject(OBJECT_PAINT),
+              type(PAINT_TEXTURE),
+              paintStream(paintStream),
+              slot(paintStream.create()),
+              srcRect(std::move(_srcRect)),
+              dstRect(std::move(_dstRect)),
+              center(center),
+              rotation(rotation),
+              color(mixColor),
+              texture(std::move(_texture)),
+              filter(filter),
+              mix(mix),
+              alpha_mix(alpha_mix) {
+            const auto colorF = color.divide();
+            ShaderCanvasPaint::CPU paint{};
+            paint.color = colorF;
+            paint.colorMixFactor = mix;
+            paint.alphaMixFactor = alpha_mix;
+
+            const auto uvOffset = srcRect.position / texture->getHandle().size.convert<float>();
+            const auto uvScale = (srcRect.dimensions / texture->getHandle().size.convert<float>());
+            paint.uvOffset_uvScale = Vec4f(uvOffset.x, uvOffset.y, uvScale.x, uvScale.y);
+
+            paint.texture.level_index_filtering_assigned = Vec4i(texture->getHandle().level,
+                                                                 texture->getHandle().slot,
+                                                                 filter,
+                                                                 true);
+
+            const auto scale = texture->getHandle().getScale();
+            paint.texture.scale_texSize = Vec4f(scale.x,
+                                                scale.y,
+                                                texture->getHandle().size.x,
+                                                texture->getHandle().size.y);
+
+            paintStream.upload(slot, paint);
+        }
+
+        [[nodiscard]] Type getPaintType() const {
+            return type;
+        }
+
+        [[nodiscard]] BufferStreamer<ShaderCanvasPaint::CPU>::Slot getSlot() const {
+            return slot;
+        }
+
+        [[nodiscard]] const Rectf &getSrcRect() const {
+            return srcRect;
+        }
+
+        [[nodiscard]] const Rectf &getDstRect() const {
+            return dstRect;
+        }
+
+        [[nodiscard]] const Vec2f &getCenter() const {
+            return center;
+        }
+
+        [[nodiscard]] float getRotation() const {
+            return rotation;
+        }
+
+        [[nodiscard]] const ColorRGBA &getColor() const {
+            return color;
+        }
+
+        [[nodiscard]] RenderObjectHandle<RenderTexture> getTexture() const {
+            return texture;
+        }
+
+        [[nodiscard]] bool isFilter() const {
+            return filter;
+        }
+
+        [[nodiscard]] float getMix() const {
+            return mix;
+        }
+
+        [[nodiscard]] float getAlphaMix() const {
+            return alpha_mix;
+        }
+
+        bool isUploadComplete() override {
+            if (meshStreamer && !meshStreamer->isUploadComplete(lineMeshHandle)) {
+                return false;
+            }
+            if (texture && !texture->isUploadComplete()) {
+                return false;
+            }
+            return paintStream.isUploadComplete(slot);
+        }
+
+        void flush() override {
+            if (meshStreamer) {
+                meshStreamer->flush(lineMeshHandle);
+            }
+            if (texture) {
+                texture->flush();
+            }
+            paintStream.flush(slot);
+        }
+
+    private:
+        Type type;
+
+        BufferStreamer<ShaderCanvasPaint::CPU> &paintStream;
+        BufferStreamer<ShaderCanvasPaint::CPU>::Slot slot;
+
+        MeshStreamer *meshStreamer = nullptr;
+        MeshStreamer::Handle lineMeshHandle{};
+
+        Rectf srcRect{};
+        Rectf dstRect{};
+
+        Vec2f center{};
+        float rotation{};
+
+        ColorRGBA color{};
+
+        RenderObjectHandle<RenderTexture> texture{};
+        bool filter{};
+        float mix{};
+        float alpha_mix{};
     };
 }
 

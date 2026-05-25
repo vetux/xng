@@ -42,6 +42,10 @@ namespace xng {
         std::vector<RenderObjectHandle<RenderPointLight> > pointLights;
         std::vector<RenderObjectHandle<RenderSpotLight> > spotLights;
 
+        /**
+         * The canvases to draw.
+         * The screen space canvases are presented to the output surface in declaration order.
+         */
         std::vector<RenderObjectHandle<RenderCanvas> > canvases;
     };
 }

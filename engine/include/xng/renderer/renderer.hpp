@@ -20,7 +20,7 @@
 #define XENGINE_RENDERER_HPP
 
 #include "xng/rendergraph/runtime.hpp"
-#include "xng/renderer/scenestreamer.hpp"
+#include "xng/renderer/renderallocator.hpp"
 #include "xng/renderer/renderdrawlist.hpp"
 #include "xng/renderer/renderpass.hpp"
 
@@ -44,21 +44,21 @@ namespace xng {
                  const rg::Shader &skinningShader,
                  const rg::Shader &scenePrepassShader);
 
-        SceneStreamer &getStreamer();
+        RenderAllocator &getAllocator();
 
         void setPasses(std::vector<std::shared_ptr<RenderPass> > passes);
 
         void draw(rg::Surface &surface, const RenderDrawList &drawList);
 
     private:
-        rg::ComputePass recordSkinningPass(const RenderDrawList &drawList, const SceneStreamer::Buffers &buffers) const;
+        rg::ComputePass recordSkinningPass(const RenderDrawList &drawList, const RenderAllocator::Buffers &buffers) const;
 
         rg::ComputePass recordScenePrePass(const RenderDrawList &drawList,
-                                           const SceneStreamer::Buffers &buffers,
+                                           const RenderAllocator::Buffers &buffers,
                                            RenderScene &scene);
 
         rg::Runtime &runtime;
-        SceneStreamer streamer;
+        RenderAllocator allocator;
         std::vector<std::shared_ptr<RenderPass> > passes;
 
         rg::PipelineCache::Handle skinningPipeline;
