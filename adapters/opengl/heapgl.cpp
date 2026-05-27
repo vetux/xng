@@ -49,8 +49,7 @@ namespace xng::opengl {
     }
 
     void HeapGL::decrementReference(const ResourceId &handle) {
-        refCounter.dec(handle.getHandle());
-        if (refCounter.get(handle.getHandle()) == 0) {
+        if (refCounter.dec(handle.getHandle())) {
             transferContext->free(handle.getHandle());
         }
     }
