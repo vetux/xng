@@ -45,8 +45,8 @@ namespace xng {
             if (c == std::numeric_limits<C>::min()) {
                 throw std::runtime_error("Counter underflow");
             }
-            c--;
-            bool ret = c == std::numeric_limits<C>::min();
+            --c;
+            const bool ret = c == std::numeric_limits<C>::min();
             if (ret) {
                 counters.erase(key);
             }
