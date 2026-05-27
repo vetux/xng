@@ -39,7 +39,13 @@ struct ShaderProgram {
     GLuint programHandle{};
 
     explicit ShaderProgram(const CompiledShader &pipeline) {
-        auto it = pipeline.sourceCode.find(Shader::VERTEX);
+        auto it = pipeline.sourceCode.find(Shader::COMPUTE);
+        if (it != pipeline.sourceCode.end()) {
+            buildShader(it->second);
+            return;
+        }
+
+        it = pipeline.sourceCode.find(Shader::VERTEX);
         if (it == pipeline.sourceCode.end())
             throw std::runtime_error("No vertex shader");
 
@@ -66,6 +72,44 @@ struct ShaderProgram {
 
     ~ShaderProgram() {
         glDeleteProgram(programHandle);
+        oglCheckError();
+    }
+
+    void buildShader(const std::string &computeSource) {
+        const auto src = computeSource.c_str();
+
+        programHandle = glCreateProgram();
+
+        const GLuint sH = glCreateShader(GL_COMPUTE_SHADER);
+        glShaderSource(sH, 1, &src, nullptr);
+        glCompileShader(sH);
+
+        GLint success;
+        glGetShaderiv(sH, GL_COMPILE_STATUS, &success);
+        if (!success) {
+            GLchar infoLog[512];
+            glGetShaderInfoLog(sH, 512, nullptr, infoLog);
+            glDeleteShader(sH);
+            std::string error = "Failed to compile compute shader: ";
+            error.append(infoLog);
+            throw std::runtime_error(error);
+        }
+        glAttachShader(programHandle, sH);
+
+        glLinkProgram(programHandle);
+
+        glDeleteShader(sH);
+
+        glGetProgramiv(programHandle, GL_LINK_STATUS, &success);
+        if (!success) {
+            GLchar infoLog[512];
+            glGetProgramInfoLog(programHandle, 512, nullptr, infoLog);
+            glDeleteProgram(programHandle);
+            std::string error = "Failed to link shader program: ";
+            error.append(infoLog);
+            throw std::runtime_error(error);
+        }
+
         oglCheckError();
     }
 
