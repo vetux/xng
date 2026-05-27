@@ -74,7 +74,7 @@ namespace xng {
                 if (attr == POSITION) {
                     caps = caps | rg::Buffer::CAPABILITY_STORAGE;
                 }
-                vertexBuffers.emplace(attr, StreamBuffer(heap, chunkStreamer, caps));
+                vertexBuffers.emplace(attr, std::move(StreamBuffer(heap, chunkStreamer, caps)));
             }
             skinnedBufferAlloc = RangeAllocator();
         }
