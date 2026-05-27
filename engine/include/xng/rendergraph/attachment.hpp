@@ -63,11 +63,11 @@ namespace xng::rg {
             : target(std::move(target)), targetSubResource(targetSubResource), clearValue(std::move(clearColor)) {
         }
 
-        explicit Attachment(const std::shared_ptr<Surface> &target)
+        explicit Attachment(std::shared_ptr<Surface> target)
             : target(std::move(target)) {
         }
 
-        Attachment(const std::shared_ptr<Surface> &target, Texture::ClearValue clearColor)
+        Attachment(std::shared_ptr<Surface> target, Texture::ClearValue clearColor)
             : target(std::move(target)), clearValue(std::move(clearColor)) {
         }
     };
