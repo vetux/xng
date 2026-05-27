@@ -139,7 +139,7 @@ namespace xng {
         BufferStreamer<ShaderTransform::CPU> &transformStream;
         BufferStreamer<ShaderTransform::CPU>::Slot transformHandle;
 
-        BufferStreamer<ShaderMesh::CPU> shaderMeshStream;
+        BufferStreamer<ShaderMesh::CPU> &shaderMeshStream;
         std::vector<BufferStreamer<ShaderMesh::CPU>::Slot> shaderMeshSlots;
 
         std::vector<RenderObjectHandle<RenderMesh> > meshes;

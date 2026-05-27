@@ -86,7 +86,7 @@ namespace xng {
         }
 
     private:
-        BufferStreamer<ShaderDirectionalLight::CPU> lightStream;
+        BufferStreamer<ShaderDirectionalLight::CPU> &lightStream;
         BufferStreamer<ShaderDirectionalLight::CPU>::Slot lightHandle;
     };
 }
