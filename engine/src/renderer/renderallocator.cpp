@@ -104,11 +104,11 @@ namespace xng {
     }
 
     RenderObjectHandle<RenderPaint> RenderAllocator::createPaint() {
-        // ...
+        return nullptr;
     }
 
     RenderObjectHandle<RenderCanvas> RenderAllocator::createCanvas() {
-        // ...
+        return nullptr;
     }
 
     void RenderAllocator::destroy(const RenderObject &object) {
