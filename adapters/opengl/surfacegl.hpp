@@ -32,8 +32,8 @@ namespace xng::opengl {
 
     class SurfaceGL final : public rg::Surface {
     public:
-        explicit SurfaceGL(std::shared_ptr<Window> window)
-            : window(std::move(window)) {
+        explicit SurfaceGL(std::shared_ptr<Window> _window)
+            : window(std::move(_window)) {
             windowGl = down_cast<WindowGl *>(window.get());
             windowGl->bindContext();
             update();
