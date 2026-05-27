@@ -28,6 +28,7 @@ namespace xng {
     public:
         explicit RangeAllocator(const size_t initialSize = 0)
             : rangeCount(initialSize) {
+            freeRanges.emplace(0, initialSize);
         }
 
         bool hasFreeRange(const size_t count) const {
