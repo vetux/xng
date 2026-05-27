@@ -160,6 +160,10 @@ namespace xng::opengl {
                 throw std::runtime_error("Must bind pipeline before binding vertex buffer");
             }
 
+            if (!buffer.isAssigned()) {
+                throw std::runtime_error("Unassigned buffer resource");
+            }
+
             if (!(buffer.getDescription().capabilityFlags & Buffer::CAPABILITY_VERTEX)) {
                 throw std::runtime_error("Buffer must have CAPABILITY_VERTEX");
             }
@@ -176,6 +180,10 @@ namespace xng::opengl {
         void bindIndexBuffer(const Resource<Buffer> &buffer, const IndexFormat format) override {
             if (!boundPipeline.has_value()) {
                 throw std::runtime_error("Must bind pipeline before binding index buffer");
+            }
+
+            if (!buffer.isAssigned()) {
+                throw std::runtime_error("Unassigned buffer resource");
             }
 
             if (!(buffer.getDescription().capabilityFlags & Buffer::CAPABILITY_INDEX)) {
@@ -199,6 +207,10 @@ namespace xng::opengl {
                                const size_t size) override {
             if (!boundPipeline.has_value()) {
                 throw std::runtime_error("Must bind pipeline before binding storage buffer");
+            }
+
+            if (!buffer.isAssigned()) {
+                throw std::runtime_error("Unassigned buffer resource");
             }
 
             if (!(buffer.getDescription().capabilityFlags & Buffer::CAPABILITY_STORAGE)) {
@@ -247,6 +259,9 @@ namespace xng::opengl {
                     .getTextureArrayBinding(target);
 
             for (auto i = 0; i < textureArray.size(); i++) {
+                if (!textureArray.at(i).texture.isAssigned()) {
+                    throw std::runtime_error("Unassigned texture resource");
+                }
                 const auto &texture = resources.getTexture(textureArray.at(i).texture);
                 glActiveTexture(getTextureSlot(binding + i));
                 glBindTexture(texture.textureType, texture.handle);
@@ -258,7 +273,7 @@ namespace xng::opengl {
         }
 
         void setShaderParameter(const std::string &name, const ShaderPrimitive &value) override {
-            const auto location = pipelineCache.getCompiledShader(boundPipeline.value()).getTextureArrayBinding(name);
+            const auto location = pipelineCache.getCompiledShader(boundPipeline.value()).getParameterBinding(name);
             const auto paramType = pipelineCache.getCompiledShader(boundPipeline.value()).parameterTypes.at(location);
 
             if (paramType != value.getType()) {
@@ -623,6 +638,10 @@ namespace xng::opengl {
                 throw std::runtime_error("Must bind pipeline before drawing.");
             }
 
+            if (!indirectBuffer.isAssigned()) {
+                throw std::runtime_error("Unassigned buffer resource");
+            }
+
             const auto primitive = pipelineCache.getRasterPipeline(boundPipeline.value()).primitive;
             const auto &buffer = resources.getBuffer(indirectBuffer);
 
@@ -640,6 +659,10 @@ namespace xng::opengl {
         void drawIndexedIndirect(const Resource<Buffer> &indirectBuffer, const size_t offset) override {
             if (!boundPipeline.has_value()) {
                 throw std::runtime_error("Must bind pipeline before drawing.");
+            }
+
+            if (!indirectBuffer.isAssigned()) {
+                throw std::runtime_error("Unassigned buffer resource");
             }
 
             if (indexFormat == INDEX_UNDEFINED) {
@@ -670,6 +693,10 @@ namespace xng::opengl {
                 throw std::runtime_error("Must bind pipeline before drawing.");
             }
 
+            if (!indirectBuffer.isAssigned()) {
+                throw std::runtime_error("Unassigned buffer resource");
+            }
+
             const auto primitive = pipelineCache.getRasterPipeline(boundPipeline.value()).primitive;
             const auto &buffer = resources.getBuffer(indirectBuffer);
 
@@ -693,6 +720,10 @@ namespace xng::opengl {
                                       const size_t stride) override {
             if (!boundPipeline.has_value()) {
                 throw std::runtime_error("Must bind pipeline before drawing.");
+            }
+
+            if (!indirectBuffer.isAssigned()) {
+                throw std::runtime_error("Unassigned buffer resource");
             }
 
             if (indexFormat == INDEX_UNDEFINED) {
@@ -727,6 +758,10 @@ namespace xng::opengl {
                 throw std::runtime_error("Must bind pipeline before drawing.");
             }
 
+            if (!indirectBuffer.isAssigned() || !drawCountBuffer.isAssigned()) {
+                throw std::runtime_error("Unassigned buffer resource");
+            }
+
             const auto primitive = pipelineCache.getRasterPipeline(boundPipeline.value()).primitive;
 
             const auto &indirectBuff = resources.getBuffer(indirectBuffer);
@@ -756,6 +791,10 @@ namespace xng::opengl {
                                            const size_t stride) override {
             if (!boundPipeline.has_value()) {
                 throw std::runtime_error("Must bind pipeline before drawing.");
+            }
+
+            if (!indirectBuffer.isAssigned() || !drawCountBuffer.isAssigned()) {
+                throw std::runtime_error("Unassigned buffer resource");
             }
 
             if (indexFormat == INDEX_UNDEFINED) {

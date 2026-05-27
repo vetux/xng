@@ -174,6 +174,11 @@ namespace xng::opengl {
                         const size_t targetOffset,
                         const size_t sourceOffset,
                         const size_t count) override {
+            if (!target.isAssigned() || !source.isAssigned()) { throw std::runtime_error("Unassigned resource"); }
+            if (target.getDescription().size < targetOffset + count ||
+                source.getDescription().size < sourceOffset + count) {
+                throw std::runtime_error("Invalid buffer offset");
+            }
             std::lock_guard lock(mutex);
             commandQueue.emplace_back(CopyBufferCmd{
                 HeapResource(target.getHandle(), target.getDescription(), heap),
@@ -188,6 +193,7 @@ namespace xng::opengl {
         void copyTexture(const Resource<Texture> &target,
                          const Resource<Texture> &source,
                          const std::vector<TextureCopyRegion> &regions) override {
+            if (!target.isAssigned() || !source.isAssigned()) { throw std::runtime_error("Unassigned resource"); }
             std::lock_guard lock(mutex);
             commandQueue.emplace_back(CopyTextureCmd{
                 HeapResource(target.getHandle(), target.getDescription(), heap),
@@ -203,6 +209,7 @@ namespace xng::opengl {
                                  const size_t bufferOffset,
                                  const Recti &textureOffset,
                                  const ColorFormat bufferFormat) override {
+            if (!texture.isAssigned() || !buffer.isAssigned()) { throw std::runtime_error("Unassigned resource"); }
             std::lock_guard lock(mutex);
             commandQueue.emplace_back(CopyBufferToTextureCmd{
                 HeapResource(texture.getHandle(), texture.getDescription(), heap),
@@ -221,6 +228,7 @@ namespace xng::opengl {
                                  const size_t bufferOffset,
                                  const Recti &textureOffset,
                                  const ColorFormat bufferFormat) override {
+            if (!texture.isAssigned() || !buffer.isAssigned()) { throw std::runtime_error("Unassigned resource"); }
             std::lock_guard lock(mutex);
             commandQueue.emplace_back(CopyTextureToBufferCmd{
                 HeapResource(buffer.getHandle(), buffer.getDescription(), heap),
@@ -236,6 +244,7 @@ namespace xng::opengl {
         void clearTexture(const Resource<Texture> &texture,
                           const Texture::SubResource &target,
                           const Texture::ClearValue &clearValue) override {
+            if (!texture.isAssigned()) { throw std::runtime_error("Unassigned resource"); }
             std::lock_guard lock(mutex);
             commandQueue.emplace_back(ClearTextureCmd{
                 HeapResource(texture.getHandle(), texture.getDescription(), heap),
@@ -252,6 +261,7 @@ namespace xng::opengl {
                          const Recti &srcRect,
                          const Recti &dstRect,
                          const TextureFiltering &filtering) override {
+            if (!src.isAssigned() || !dst.isAssigned()) { throw std::runtime_error("Unassigned resource"); }
             std::lock_guard lock(mutex);
             commandQueue.emplace_back(BlitTextureCmd{
                 HeapResource(src.getHandle(), src.getDescription(), heap),
@@ -266,6 +276,7 @@ namespace xng::opengl {
         }
 
         void generateMipMaps(const Resource<Texture> &texture) override {
+            if (!texture.isAssigned()) { throw std::runtime_error("Unassigned resource"); }
             std::lock_guard lock(mutex);
             commandQueue.emplace_back(GenerateMipMapsCmd{
                 HeapResource(texture.getHandle(), texture.getDescription(), heap)
@@ -859,7 +870,9 @@ namespace xng::opengl {
                     }
                 }
 
-                TransferContextGL context(PassResources({}, ctxResources));
+                PassResources res({}, ctxResources);
+
+                TransferContextGL context(res);
 
                 // Regions accumulated since the last SyncCmd (or batch start).
                 std::unordered_map<ResourceId::Handle, std::vector<BufferRegion> > pendingBuffers;

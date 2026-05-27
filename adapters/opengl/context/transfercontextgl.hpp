@@ -163,6 +163,15 @@ namespace xng::opengl {
                         const size_t targetOffset,
                         const size_t sourceOffset,
                         const size_t count) override {
+            if (!target.isAssigned() || !source.isAssigned()) {
+                throw std::runtime_error("Unassigned buffer resource");
+            }
+
+            if (target.getDescription().size < targetOffset + count ||
+                source.getDescription().size < sourceOffset + count) {
+                throw std::runtime_error("Invalid buffer offset");
+            }
+
             oglDebugStartGroup("TransferContextGL::copyBuffer");
 
             const auto readBuffer = resources.getBuffer(source).handle;
@@ -186,6 +195,10 @@ namespace xng::opengl {
         void copyTexture(const Resource<Texture> &target,
                          const Resource<Texture> &source,
                          const std::vector<TextureCopyRegion> &regions) override {
+            if (!target.isAssigned() || !source.isAssigned()) {
+                throw std::runtime_error("Unassigned texture resource");
+            }
+
             oglDebugStartGroup("TransferContextGL::copyTexture");
 
             const auto srcTexture = resources.getTexture(source);
@@ -228,6 +241,10 @@ namespace xng::opengl {
                                  const size_t bufferOffset,
                                  const Recti &textureOffset,
                                  const ColorFormat bufferFormat) override {
+            if (!texture.isAssigned() || !buffer.isAssigned()) {
+                throw std::runtime_error("Unassigned resource");
+            }
+
             oglDebugStartGroup("TransferContextGL::copyBufferToTexture");
 
             const auto &tex = resources.getTexture(texture);
@@ -328,6 +345,10 @@ namespace xng::opengl {
                                  const size_t bufferOffset,
                                  const Recti &textureOffset,
                                  const ColorFormat bufferFormat) override {
+            if (!texture.isAssigned() || !buffer.isAssigned()) {
+                throw std::runtime_error("Unassigned resource");
+            }
+
             oglDebugStartGroup("TransferContextGL::copyTextureToBuffer");
 
             const auto &tex = resources.getTexture(texture);
@@ -405,6 +426,10 @@ namespace xng::opengl {
         void clearTexture(const Resource<Texture> &texture,
                           const Texture::SubResource &target,
                           const Texture::ClearValue &clearVal) override {
+            if (!texture.isAssigned()) {
+                throw std::runtime_error("Unassigned resource");
+            }
+
             const auto &tex = resources.getTexture(texture);
             clearTexture(tex, target, clearVal);
         }
@@ -416,6 +441,10 @@ namespace xng::opengl {
                          const Recti &srcRect,
                          const Recti &dstRect,
                          const TextureFiltering &filtering) override {
+            if (!src.isAssigned() || !dst.isAssigned()) {
+                throw std::runtime_error("Unassigned resource");
+            }
+
             if (src == dst && srcTarget == dstTarget) {
                 return;
             }
@@ -472,6 +501,10 @@ namespace xng::opengl {
         }
 
         void generateMipMaps(const Resource<Texture> &texture) override {
+            if (!texture.isAssigned()) {
+                throw std::runtime_error("Unassigned resource");
+            }
+
             oglDebugStartGroup("TransferContextGL::generateMipMaps");
 
             const auto &tex = resources.getTexture(texture);
@@ -486,8 +519,8 @@ namespace xng::opengl {
         }
 
         static void clearTexture(const TextureGL &tex,
-                          const Texture::SubResource &target,
-                          const Texture::ClearValue &clearVal) {
+                                 const Texture::SubResource &target,
+                                 const Texture::ClearValue &clearVal) {
             oglDebugStartGroup("TransferContextGL::clearTexture");
 
             const auto mipSize = tex.desc.getMipLevelSize(target.mipLevel);
@@ -594,13 +627,20 @@ namespace xng::opengl {
                     default:
                         throw std::runtime_error("Invalid clear value index");
                 }
+
+                GLint zOffset = 0;
+                if (tex.desc.textureType == TEXTURE_CUBE_MAP_ARRAY) {
+                    zOffset = static_cast<GLint>(target.arrayLayer * 6 + target.face);
+                } else if (tex.desc.textureType == TEXTURE_CUBE_MAP) {
+                    zOffset = target.face;
+                } else if (tex.desc.textureType == TEXTURE_2D_ARRAY) {
+                    zOffset = static_cast<GLint>(target.arrayLayer);
+                }
                 glClearTexSubImage(tex.handle,
                                    static_cast<GLint>(target.mipLevel),
                                    0,
                                    0,
-                                   tex.textureType == TEXTURE_CUBE_MAP
-                                       ? static_cast<GLint>(target.arrayLayer * 6 + target.face)
-                                       : static_cast<GLint>(target.arrayLayer),
+                                   zOffset,
                                    mipSize.x,
                                    mipSize.y,
                                    1,
