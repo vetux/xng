@@ -64,6 +64,7 @@ namespace xng {
                 case RESOLUTION_2048x2048: return {2048, 2048};
                 case RESOLUTION_4096x4096: return {4096, 4096};
                 case RESOLUTION_8192x8192: return {8192, 8192};
+                case RESOLUTION_16384x16384: return {16384, 16384};
                 default:
                     throw std::runtime_error("Invalid TextureResolution level");
             }
