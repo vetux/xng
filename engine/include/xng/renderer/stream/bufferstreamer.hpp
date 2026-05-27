@@ -89,7 +89,7 @@ namespace xng {
             std::unordered_set<Slot> evictedHandles;
             for (auto &pair: pendingUploads) {
                 auto &pendingUpload = pair.second;
-                if (pendingUpload.flushed || buffer.isUploadComplete(pendingUpload.handle)) {
+                if (buffer.isUploadComplete(pendingUpload.handle)) {
                     evictedHandles.insert(pair.first);
                 }
             }
