@@ -184,7 +184,7 @@ namespace xng::opengl {
         : data(std::make_unique<MemberData>()) {
         auto wndAttr = WindowAttributes();
         wndAttr.visible = false;
-        auto wnd = env.createWindow("XNG_HeapContext", Vec2i(0, 0), wndAttr);
+        auto wnd = env.createWindow("XNG_HeapContext", Vec2i(1, 1), wndAttr);
         down_cast<WindowGl &>(*wnd).unbindContext();
         data->heap = std::make_unique<HeapGL>(std::move(wnd));
         data->vendor = std::string(reinterpret_cast<const char *>(glGetString(GL_VENDOR)));

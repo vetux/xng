@@ -125,7 +125,7 @@ namespace xng::glfw {
 #ifdef BUILD_GLFW_OPENGL
         auto attr = WindowAttributes();
         attr.visible = false;
-        primaryWindow = makeWindowGL("XNG Window", Vec2i(0, 0), attr);
+        primaryWindow = makeWindowGL("XNG Window", Vec2i(1, 1), attr);
 #endif
     }
 
