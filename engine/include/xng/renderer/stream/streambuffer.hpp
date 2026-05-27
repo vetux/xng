@@ -36,7 +36,7 @@ namespace xng {
         StreamBuffer(rg::Heap &heap,
                      ChunkStreamer &chunkStreamer,
                      const rg::Buffer::Capability capabilities,
-                     const size_t initialSize = 0)
+                     const size_t initialSize = 1)
             : heap(heap),
               chunkStreamer(chunkStreamer),
               buffer(heap.allocateBuffer(rg::Buffer(initialSize,
