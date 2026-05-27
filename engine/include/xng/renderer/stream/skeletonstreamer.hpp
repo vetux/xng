@@ -34,7 +34,7 @@ namespace xng {
         typedef size_t BaseBone;
 
         SkeletonStreamer(rg::Heap &heap, ChunkStreamer &chunkStreamer)
-            : buffer(heap, chunkStreamer, rg::Buffer::CAPABILITY_TRANSFER_DST) {
+            : buffer(heap, chunkStreamer, rg::Buffer::CAPABILITY_STORAGE | rg::Buffer::CAPABILITY_TRANSFER_DST) {
         }
 
         BaseBone create(const size_t count) {
