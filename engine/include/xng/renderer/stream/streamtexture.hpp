@@ -136,33 +136,35 @@ namespace xng {
                 auto desc = staleTexture.getDescription();
                 desc.arrayLayers = nextSlot;
                 texture = heap.allocateTexture(desc);
-                const auto pass = rg::TransferPassBuilder("StreamTexture/Resize")
-                        .read(staleTexture, rg::TextureBinding::Range(0,
+                if (staleTexture.getDescription().arrayLayers > 0) {
+                    const auto pass = rg::TransferPassBuilder("StreamTexture/Resize")
+                            .read(staleTexture, rg::TextureBinding::Range(0,
+                                                                          staleTexture.getDescription().mipLevels,
+                                                                          0,
+                                                                          staleTexture.getDescription().arrayLayers))
+                            .write(texture, rg::TextureBinding::Range(0,
                                                                       staleTexture.getDescription().mipLevels,
                                                                       0,
-                                                                      staleTexture.getDescription().arrayLayers))
-                        .write(texture, rg::TextureBinding::Range(0,
-                                                                  staleTexture.getDescription().mipLevels,
-                                                                  0,
-                                                                  staleTexture.getDescription().arrayLayers
-                               ))
-                        .execute([this, staleTexture](rg::TransferContext &ctx) {
-                            std::vector<rg::TransferContext::TextureCopyRegion> regions;
-                            for (auto i = 0; i < staleTexture.getDescription().mipLevels; i++) {
-                                rg::TransferContext::TextureCopyRegion region;
-                                region.src = rg::Texture::SubResource(i, 0, {});
-                                region.dst = rg::Texture::SubResource(i, 0, {});
-                                region.size = staleTexture.getDescription().getMipLevelSize(i);
-                                if (texture.getDescription().textureType == rg::TEXTURE_CUBE_MAP_ARRAY) {
-                                    region.depth = staleTexture.getDescription().arrayLayers * 6;
-                                } else {
-                                    region.depth = staleTexture.getDescription().arrayLayers;
+                                                                      staleTexture.getDescription().arrayLayers
+                                   ))
+                            .execute([this, staleTexture](rg::TransferContext &ctx) {
+                                std::vector<rg::TransferContext::TextureCopyRegion> regions;
+                                for (auto i = 0; i < staleTexture.getDescription().mipLevels; i++) {
+                                    rg::TransferContext::TextureCopyRegion region;
+                                    region.src = rg::Texture::SubResource(i, 0, {});
+                                    region.dst = rg::Texture::SubResource(i, 0, {});
+                                    region.size = staleTexture.getDescription().getMipLevelSize(i);
+                                    if (texture.getDescription().textureType == rg::TEXTURE_CUBE_MAP_ARRAY) {
+                                        region.depth = staleTexture.getDescription().arrayLayers * 6;
+                                    } else {
+                                        region.depth = staleTexture.getDescription().arrayLayers;
+                                    }
+                                    regions.push_back(region);
                                 }
-                                regions.push_back(region);
-                            }
-                            ctx.copyTexture(texture, staleTexture, regions);
-                        });
-                graph.addPass(pass);
+                                ctx.copyTexture(texture, staleTexture, regions);
+                            });
+                    graph.addPass(pass);
+                }
             }
 
             auto ret = buffer.commit(graph);
