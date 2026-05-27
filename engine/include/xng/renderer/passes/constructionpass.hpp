@@ -110,10 +110,10 @@ namespace xng {
         }
 
         void record(rg::GraphBuilder &graph,
-                    rg::Surface &surface,
+                    const std::shared_ptr<rg::Surface> surface,
                     RenderPassRegistry &registry,
                     const RenderScene &scene) override {
-            const GBuffer gBuffer(graph, surface.getDimensions());
+            const GBuffer gBuffer(graph, surface->getDimensions());
             gBuffer.subscribe(registry);
             graph.addPass(createPass(scene, gBuffer));
         }

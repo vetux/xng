@@ -25,7 +25,7 @@
 #include "xng/renderer/renderpass.hpp"
 
 namespace xng {
-    class Renderer {
+    class XENGINE_EXPORT Renderer {
     public:
         static rg::Shader compileSkinningShader();
 
@@ -48,7 +48,7 @@ namespace xng {
 
         void setPasses(std::vector<std::shared_ptr<RenderPass> > passes);
 
-        void draw(rg::Surface &surface, const RenderDrawList &drawList);
+        void draw(const std::shared_ptr<rg::Surface> &surface, const RenderDrawList &drawList);
 
     private:
         static constexpr int skinningLocalSize = 64;

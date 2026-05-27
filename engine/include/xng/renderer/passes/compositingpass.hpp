@@ -28,9 +28,14 @@ namespace xng {
     class CompositingPass final : public RenderPass {
     public:
         void record(rg::GraphBuilder &builder,
-                    rg::Surface &surface,
+                    const std::shared_ptr<rg::Surface> surface,
                     RenderPassRegistry &registry,
                     const RenderScene &scene) override {
+            builder.addPass(rg::RasterPassBuilder("CompositingPass")
+                .attachColor(rg::Attachment(surface, Vec4f(0)))
+                .execute([](rg::RasterContext &ctx) {
+
+                }));
         }
     };
 }

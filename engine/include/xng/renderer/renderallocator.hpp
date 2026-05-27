@@ -34,7 +34,7 @@
 #include "xng/renderer/objects/rendercanvas.hpp"
 
 namespace xng {
-    class RenderAllocator {
+    class XENGINE_EXPORT RenderAllocator {
     public:
         struct Buffers {
             rg::HeapResource<rg::Buffer> meshBuffer;

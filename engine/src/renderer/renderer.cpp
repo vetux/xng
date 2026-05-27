@@ -49,7 +49,7 @@ namespace xng {
         passes = std::move(_passes);
     }
 
-    void Renderer::draw(rg::Surface &surface, const RenderDrawList &drawList) {
+    void Renderer::draw(const std::shared_ptr<rg::Surface> &surface, const RenderDrawList &drawList) {
         // Flush all referenced objects
         for (auto &model: drawList.models) {
             model->flush();

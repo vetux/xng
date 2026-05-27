@@ -28,7 +28,7 @@ namespace xng {
     class CanvasPass final : public RenderPass {
     public:
         void record(rg::GraphBuilder &builder,
-                    rg::Surface &surface,
+                    std::shared_ptr<rg::Surface> surface,
                     RenderPassRegistry &registry,
                     const RenderScene &scene) override {
         }
