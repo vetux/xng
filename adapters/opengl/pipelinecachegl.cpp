@@ -23,11 +23,10 @@
 namespace xng::opengl {
     rg::PipelineCache::Handle PipelineCacheGL::create(const rg::RasterPipeline &desc) {
         auto shader = ShaderCompilerGLSL::compile(desc.shaders);
-        auto program = ShaderProgram(shader);
         auto handle = allocateHandle();
 
         rasterPipelines.emplace(handle, desc);
-        shaderPrograms.emplace(handle, std::move(program));
+        shaderPrograms.emplace(handle, shader);
         compiledShaders.emplace(handle, std::move(shader));
 
         return handle;
@@ -35,11 +34,10 @@ namespace xng::opengl {
 
     rg::PipelineCache::Handle PipelineCacheGL::create(const rg::ComputePipeline &desc) {
         auto shader = ShaderCompilerGLSL::compile({desc.shader});
-        auto program = ShaderProgram(shader);
         auto handle = allocateHandle();
 
         computePipelines.emplace(handle, desc);
-        shaderPrograms.emplace(handle, std::move(program));
+        shaderPrograms.emplace(handle, shader);
         compiledShaders.emplace(handle, std::move(shader));
 
         return handle;
