@@ -33,7 +33,7 @@ namespace xng::opengl {
         ~ComputeContextGL() override = default;
 
         void bindPipeline(const PipelineCache::Handle &pipeline) override {
-            oglDebugStartGroup("ContextGL::bindPipeline");
+            oglDebugStartGroup("ComputeContextGL::bindPipeline");
 
             const auto &shaderProgram = pipelineCache.getShaderProgram(pipeline);
 
@@ -129,6 +129,8 @@ namespace xng::opengl {
             if (paramType != value.getType()) {
                 throw std::runtime_error("Shader parameter type mismatch");
             }
+
+            oglDebugStartGroup("ComputeContextGL::setShaderParameter");
 
             switch (paramType.type) {
                 case ShaderPrimitiveType::SCALAR: {
@@ -293,10 +295,14 @@ namespace xng::opengl {
                 }
                 break;
             }
+
+            oglDebugEndGroup();
         }
 
         void dispatch(const Vec3u groupCount) override {
+            oglDebugStartGroup("ComputeContextGL::dispatch");
             glDispatchCompute(groupCount.x, groupCount.y, groupCount.z);
+            oglDebugEndGroup();
         }
 
         void dispatchIndirect(const Resource<Buffer> &indirectBuffer, const size_t offset) override {
@@ -304,8 +310,10 @@ namespace xng::opengl {
                 throw std::runtime_error("Unassigned buffer resource");
             }
             const auto &buf = resources.getBuffer(indirectBuffer);
+            oglDebugStartGroup("ComputeContextGL::dispatchIndirect");
             glBindBuffer(GL_DISPATCH_INDIRECT_BUFFER, buf.handle);
             glDispatchComputeIndirect(static_cast<GLintptr>(offset));
+            oglDebugEndGroup();
         }
 
     private:
