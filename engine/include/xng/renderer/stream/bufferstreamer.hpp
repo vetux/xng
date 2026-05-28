@@ -86,6 +86,8 @@ namespace xng {
         }
 
         std::vector<rg::TransferPass> commit(rg::GraphBuilder &graph) {
+            auto ret = buffer.commit(graph);
+
             std::unordered_set<Slot> evictedHandles;
             for (auto &pair: pendingUploads) {
                 auto &pendingUpload = pair.second;
@@ -97,7 +99,7 @@ namespace xng {
                 buffer.release(pendingUploads.at(slot).handle);
                 pendingUploads.erase(slot);
             }
-            return buffer.commit(graph);
+            return ret;
         }
 
         rg::HeapResource<rg::Buffer> getBuffer() const {
