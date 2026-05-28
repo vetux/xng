@@ -99,6 +99,10 @@ namespace InstructionCompiler {
                 return compileTextureSample(instruction, source, functionName, indent);
             case ShaderInstruction::TextureSampleArray:
                 return compileTextureSampleArray(instruction, source, functionName, indent);
+            case ShaderInstruction::TextureSampleLod:
+                return compileTextureSampleLod(instruction, source, functionName, indent);
+            case ShaderInstruction::TextureSampleArrayLod:
+                return compileTextureSampleArrayLod(instruction, source, functionName, indent);
             case ShaderInstruction::TextureSampleCubeMap:
                 return compileTextureSampleCubeMap(instruction, source, functionName, indent);
             case ShaderInstruction::TextureSampleCubeMapArray:
@@ -155,6 +159,8 @@ namespace InstructionCompiler {
             case ShaderInstruction::FaceForward:
             case ShaderInstruction::Transpose:
             case ShaderInstruction::Inverse:
+            case ShaderInstruction::PartialDerivativeX:
+            case ShaderInstruction::PartialDerivativeY:
                 return compileCallBuiltIn(instruction, source, functionName, indent);
         }
     }
@@ -320,6 +326,28 @@ namespace InstructionCompiler {
             return "texture(" + name + ", " + coords + ", " + lod + ")";
         }
         return "texture(" + name + ", " + coords + ")";
+    }
+
+    std::string compileTextureSampleLod(const ShaderInstruction &instruction,
+                                        const Shader &source,
+                                        const std::string &functionName,
+                                        const std::string &indent) {
+        const auto name = compileOperand(instruction.operands.at(0), source, functionName);
+        auto coords = compileOperand(instruction.operands.at(1), source, functionName);
+        coords = "vec2(" + coords + ".x, 1 - " + coords + ".y)";
+        const auto lod = compileOperand(instruction.operands.at(2), source, functionName);
+        return "textureLod(" + name + ", " + coords + ", " + lod + ")";
+    }
+
+    std::string compileTextureSampleArrayLod(const ShaderInstruction &instruction,
+                                             const Shader &source,
+                                             const std::string &functionName,
+                                             const std::string &indent) {
+        auto name = compileOperand(instruction.operands.at(0), source, functionName);
+        auto coords = compileOperand(instruction.operands.at(1), source, functionName);
+        coords = "vec3(" + coords + ".x, 1 - " + coords + ".y, " + coords + ".z)";
+        auto lod = compileOperand(instruction.operands.at(2), source, functionName);
+        return "textureLod(" + name + ", " + coords + ", " + lod + ")";
     }
 
     std::string compileTextureSampleCubeMap(const ShaderInstruction &instruction,
@@ -624,9 +652,12 @@ namespace InstructionCompiler {
                        + compileOperand(instruction.operands.at(2), source, functionName) + ")";
             case ShaderInstruction::Transpose:
                 return "transpose(" + compileOperand(instruction.operands.at(0), source, functionName) + ")";
-
             case ShaderInstruction::Inverse:
                 return "inverse(" + compileOperand(instruction.operands.at(0), source, functionName) + ")";
+            case ShaderInstruction::PartialDerivativeX:
+                return "dFdx(" + compileOperand(instruction.operands.at(0), source, functionName) + ")";
+            case ShaderInstruction::PartialDerivativeY:
+                return "dFdy(" + compileOperand(instruction.operands.at(0), source, functionName) + ")";
         }
     }
 

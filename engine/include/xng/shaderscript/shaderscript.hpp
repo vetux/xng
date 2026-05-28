@@ -406,6 +406,22 @@ namespace xng::ShaderScript {
                                                                              bias.operand));
     }
 
+    inline ShaderObject textureSampleLod(const ShaderObject &texture,
+                                         const ShaderObject &coords,
+                                         const ShaderObject &lod) {
+        return ShaderObject(rg::ShaderInstructionFactory::textureSampleLod(texture.operand,
+                                                                           coords.operand,
+                                                                           lod.operand));
+    }
+
+    inline ShaderObject textureSampleArrayLod(const ShaderObject &texture,
+                                              const ShaderObject &coords,
+                                              const ShaderObject &lod) {
+        return ShaderObject(rg::ShaderInstructionFactory::textureSampleArrayLod(texture.operand,
+            coords.operand,
+            lod.operand));
+    }
+
     inline ShaderObject texelFetch(const ShaderObject &texture,
                                    const ShaderObject &coords,
                                    const ShaderObject &index) {
@@ -612,6 +628,14 @@ namespace xng::ShaderScript {
 
     inline ShaderObject inverse(const ShaderObject &v) {
         return ShaderObject(rg::ShaderInstructionFactory::inverse(v.operand));
+    }
+
+    inline ShaderObject partialDerivativeX(const ShaderObject &value) {
+        return ShaderObject(rg::ShaderInstructionFactory::partialDerivativeX(value.operand));
+    }
+
+    inline ShaderObject partialDerivativeY(const ShaderObject &value) {
+        return ShaderObject(rg::ShaderInstructionFactory::partialDerivativeY(value.operand));
     }
 
     template<typename T>

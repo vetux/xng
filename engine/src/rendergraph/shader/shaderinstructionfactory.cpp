@@ -300,6 +300,24 @@ namespace xng::rg::ShaderInstructionFactory {
         return ret;
     }
 
+    ShaderInstruction textureSampleLod(ShaderOperand texture, ShaderOperand coordinate, ShaderOperand lod) {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::TextureSampleLod;
+        ret.operands.push_back(std::move(texture));
+        ret.operands.push_back(std::move(coordinate));
+        ret.operands.push_back(std::move(lod));
+        return ret;
+    }
+
+    ShaderInstruction textureSampleArrayLod(ShaderOperand texture, ShaderOperand coordinate, ShaderOperand lod) {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::TextureSampleArrayLod;
+        ret.operands.push_back(std::move(texture));
+        ret.operands.push_back(std::move(coordinate));
+        ret.operands.push_back(std::move(lod));
+        return ret;
+    }
+
     ShaderInstruction textureSampleCubeMap(ShaderOperand texture, ShaderOperand coordinate, ShaderOperand bias) {
         ShaderInstruction ret;
         ret.code = ShaderInstruction::TextureSampleCubeMap;
@@ -691,6 +709,20 @@ namespace xng::rg::ShaderInstructionFactory {
         ShaderInstruction ret;
         ret.code = ShaderInstruction::Inverse;
         ret.operands.push_back(std::move(x));
+        return ret;
+    }
+
+    ShaderInstruction partialDerivativeX(ShaderOperand value) {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::PartialDerivativeX;
+        ret.operands.push_back(std::move(value));
+        return ret;
+    }
+
+    ShaderInstruction partialDerivativeY(ShaderOperand value) {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::PartialDerivativeY;
+        ret.operands.push_back(std::move(value));
         return ret;
     }
 }

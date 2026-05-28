@@ -189,6 +189,28 @@ namespace xng::rg {
                                                             ShaderOperand bias = {});
 
         /**
+         *
+         * @param texture
+         * @param coordinate
+         * @param lod
+         * @return
+         */
+        XENGINE_EXPORT ShaderInstruction textureSampleLod(ShaderOperand texture,
+                                                          ShaderOperand coordinate,
+                                                          ShaderOperand lod);
+
+        /**
+         *
+         * @param texture
+         * @param coordinate
+         * @param lod
+         * @return
+         */
+        XENGINE_EXPORT ShaderInstruction textureSampleArrayLod(ShaderOperand texture,
+                                                               ShaderOperand coordinate,
+                                                               ShaderOperand lod);
+
+        /**
          * Sample a TEXTURE_CUBE_MAP texture.
          *
          * The sampled texel is computed by interpreting the coordinate in left-hand coordinate space
@@ -325,6 +347,10 @@ namespace xng::rg {
         XENGINE_EXPORT ShaderInstruction transpose(ShaderOperand x);
 
         XENGINE_EXPORT ShaderInstruction inverse(ShaderOperand x);
+
+        XENGINE_EXPORT ShaderInstruction partialDerivativeX(ShaderOperand value);
+
+        XENGINE_EXPORT ShaderInstruction partialDerivativeY(ShaderOperand value);
     }
 }
 

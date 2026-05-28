@@ -90,6 +90,9 @@ namespace xng::rg {
             TextureSample,
             TextureSampleArray,
 
+            TextureSampleLod,
+            TextureSampleArrayLod,
+
             TextureSampleCubeMap,
             TextureSampleCubeMapArray,
 
@@ -152,6 +155,8 @@ namespace xng::rg {
             FaceForward,
             Transpose,
             Inverse,
+            PartialDerivativeX,
+            PartialDerivativeY,
 
             LHS_START = DeclareVariable,
             LHS_END = VectorSwizzle,
