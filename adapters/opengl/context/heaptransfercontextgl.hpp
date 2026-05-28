@@ -934,8 +934,6 @@ namespace xng::opengl {
                 }
                 batchCv.notify_all();
             }
-
-            windowGl.unbindContext();
         }
 
         void execute(TransferContextGL &ctx, const CopyBufferCmd &cmd) {
