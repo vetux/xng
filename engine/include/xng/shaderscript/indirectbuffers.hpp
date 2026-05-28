@@ -33,12 +33,16 @@ namespace xng::ShaderScript {
                  unsigned int, instanceCount,
                  unsigned int, firstIndex,
                  int, baseVertex,
-                 unsigned int, baseInstance)
+                 unsigned int, baseInstance,
+                 unsigned int, padding0,
+                 unsigned int, padding1,
+                 unsigned int, padding2)
 
     ShaderStruct(ShaderComputeIndirect,
                  unsigned int, x,
                  unsigned int, y,
-                 unsigned int, z)
+                 unsigned int, z,
+                 unsigned int, padding0)
 }
 
 #endif //XENGINE_INDIRECTBUFFERS_HPP
