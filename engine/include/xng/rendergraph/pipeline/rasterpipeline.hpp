@@ -110,13 +110,13 @@ namespace xng::rg {
              * The binding points specify where each attribute in the layout is read from.
              * The offsets specify offsets into each of the buffers bound to a given binding point.
              *
-             * @param layout The layout of the vertex
-             * @param bindingPoints The binding points of each attribute
-             * @param offsets The relative offsets of each attribute
+             * @param _layout The layout of the vertex
+             * @param _bindingPoints The binding points of each attribute
+             * @param _offsets The relative offsets of each attribute
              */
-            VertexFormat(ShaderAttributeLayout layout, std::vector<size_t> bindingPoints, std::vector<size_t> offsets)
-                : layout(std::move(layout)), bindingPoints(std::move(bindingPoints)), offsets(std::move(offsets)) {
-                if (this->layout.getElements().size() != this->offsets.size()) {
+            VertexFormat(ShaderAttributeLayout _layout, std::vector<size_t> _bindingPoints, std::vector<size_t> _offsets)
+                : layout(std::move(_layout)), bindingPoints(std::move(_bindingPoints)), offsets(std::move(_offsets)) {
+                if (layout.getElements().size() != offsets.size()) {
                     throw std::runtime_error("Vertex layout and offsets must have the same number of elements");
                 }
             }
