@@ -119,6 +119,11 @@ namespace xng {
                     return false;
                 }
             }
+            for (auto &slot: shaderMeshSlots) {
+                if (!shaderMeshStream.isUploadComplete(slot)) {
+                    return false;
+                }
+            }
             if (material && !material->isUploadComplete()) {
                 return false;
             }
@@ -126,13 +131,16 @@ namespace xng {
         }
 
         void flush() override {
+            transformStream.flush(transformHandle);
+            for (auto &slot: shaderMeshSlots) {
+                shaderMeshStream.flush(slot);
+            }
             for (auto &mesh: meshes) {
                 mesh->flush();
             }
             if (material) {
                 material->flush();
             }
-            transformStream.flush(transformHandle);
         }
 
     private:
