@@ -528,6 +528,8 @@ namespace xng::opengl {
             if (tex.desc.format == DEPTH24_STENCIL8 || tex.desc.format == DEPTH32F_STENCIL8) {
                 //Workaround using the raster pipeline to clear because there doesn't seem to be a standard 24bit_8bit depth stencil format.
                 const auto clearValue = std::get<Texture::DepthStencilClearValue>(clearVal);
+                GLint previousDrawFb = 0;
+                glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &previousDrawFb);
                 Framebuffer clearFb;
                 clearFb.bind(GL_DRAW_FRAMEBUFFER);
                 {
@@ -539,6 +541,7 @@ namespace xng::opengl {
                     glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
                 }
                 clearFb.unbind();
+                glBindFramebuffer(GL_DRAW_FRAMEBUFFER, static_cast<GLuint>(previousDrawFb));
             } else if (tex.desc.format == DEPTH_16 || tex.desc.format == DEPTH_32F) {
                 const GLfloat depthData = std::get<float>(clearVal);
                 glClearTexSubImage(tex.handle,
