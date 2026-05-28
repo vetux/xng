@@ -48,7 +48,8 @@ namespace xng {
         }
 
         void setTransform(const Transform &cameraTransform) {
-            view = getView(cameraTransform);
+            transform = cameraTransform;
+            view = getView(transform);
             viewProjection = projection * view;
         }
 
