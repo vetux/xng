@@ -70,13 +70,13 @@ namespace xng {
      * Indexed by the pre pass to build the ShaderDrawMesh list.
      */
     ShaderStruct(ShaderMesh,
-                 unsigned int, baseVertex,
+                 int, baseVertex,
                  unsigned int, indexOffset, // The first index
                  unsigned int, indexCount,
-                 unsigned int, modelID, // The ID of the RenderModel object
-                 unsigned int, meshID, // The ID of the RenderMesh object
-                 unsigned int, transformIndex,
-                 unsigned int, materialIndex,
+                 int, modelID, // The ID of the RenderModel object
+                 int, meshID, // The ID of the RenderMesh object
+                 int, transformIndex,
+                 int, materialIndex,
                  bool, receiveShadows)
 
     /**
@@ -84,10 +84,10 @@ namespace xng {
      */
     ShaderStruct(ShaderDrawMesh,
                  Mat4f, mvp,
-                 unsigned int, modelID,
-                 unsigned int, meshID,
-                 unsigned int, transformIndex,
-                 unsigned int, materialIndex,
+                 int, modelID,
+                 int, meshID,
+                 int, transformIndex,
+                 int, materialIndex,
                  bool, receiveShadows)
 
     ShaderStruct(ShaderCanvasPaint,

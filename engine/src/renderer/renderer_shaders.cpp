@@ -87,6 +87,8 @@ namespace xng {
         skinnedPositions[floatOutputIndex + 1] = totalPosition.y();
         skinnedPositions[floatOutputIndex + 2] = totalPosition.z();
 
+        EndShader();
+
         return BuildShader();
     }
 
@@ -98,20 +100,20 @@ namespace xng {
         Buffer(ShaderCamera, camera)
         DynamicBuffer(ShaderTransform, transforms)
         DynamicBuffer(ShaderMesh, meshBuffer)
-        DynamicBuffer(UInt, meshIndices)
+        DynamicBuffer(Int, meshIndices)
         DynamicBufferRW(ShaderDrawMesh, drawBuffer)
 
         DynamicBufferRW(ShaderDrawIndirectIndexed, commandBuffer)
         DynamicBufferRW(Int, commandCountBuffer)
 
-        Parameter(UInt, meshIndexOffset)
-        Parameter(UInt, batchSize)
+        Parameter(Int, meshIndexOffset)
+        Parameter(Int, batchSize)
 
         If(getGlobalInvocationID().x() >= batchSize)
             Return();
         Fi
 
-        UInt meshIndex = meshIndices[getGlobalInvocationID().x() + meshIndexOffset];
+        Int meshIndex = meshIndices[getGlobalInvocationID().x() + meshIndexOffset];
         ShaderMesh mesh = meshBuffer[meshIndex];
 
         // TODO: Culling
@@ -130,7 +132,7 @@ namespace xng {
         command.instanceCount = UInt(1);
         command.firstIndex = mesh.indexOffset;
         command.baseVertex = mesh.baseVertex;
-        command.baseInstance = UInt(getGlobalInvocationID().x() + meshIndexOffset);
+        command.baseInstance = UInt(meshIndexOffset);
         commandBuffer[getGlobalInvocationID().x()] = command;
 
         // Currently no Culling, so we set to batchSize.
@@ -138,6 +140,8 @@ namespace xng {
         If(getGlobalInvocationID().x() == 0)
             commandCountBuffer[0] = Int(batchSize);
         Fi
+
+        EndShader();
 
         return BuildShader();
     }

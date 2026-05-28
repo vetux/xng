@@ -162,7 +162,7 @@ namespace xng {
 
     struct DrawBatch {
         ShadingModel shadingModel;
-        std::vector<unsigned int> meshIndices;
+        std::vector<int> meshIndices;
 
         std::vector<RenderScene::BufferAccessRange> drawBufferAccesses;
         std::vector<RenderScene::BufferAccessRange> transformBufferAccesses;
@@ -202,9 +202,9 @@ namespace xng {
 
             auto &batch = *currentBatch;
             for (auto &meshSlot: model->getShaderMeshSlots()) {
-                batch.meshIndices.push_back(meshSlot);
+                batch.meshIndices.push_back(static_cast<int>(meshSlot));
                 batch.drawBufferAccesses.emplace_back(RenderScene::BufferAccessRange{
-                    meshSlot * sizeof(ShaderDrawMesh), sizeof(ShaderDrawMesh)
+                    meshSlot * sizeof(ShaderDrawMesh::CPU), sizeof(ShaderDrawMesh::CPU)
                 });
             }
             for (auto &mesh: model->getMeshes()) {
@@ -289,7 +289,7 @@ namespace xng {
             std::memcpy(cameraMapping->data(), &camera, sizeof(ShaderCamera::CPU));
         }
 
-        meshIndicesBuffer = heap.allocateBuffer(rg::Buffer(totalDrawCount * sizeof(unsigned int),
+        meshIndicesBuffer = heap.allocateBuffer(rg::Buffer(totalDrawCount * sizeof(int),
                                                            rg::Buffer::CAPABILITY_STORAGE
                                                            | rg::Buffer::CAPABILITY_TRANSFER_DST,
                                                            rg::Buffer::MEMORY_CPU_TO_GPU));
@@ -299,15 +299,15 @@ namespace xng {
             const auto meshIndicesMapping = heap.map(meshIndicesBuffer);
             size_t currentMeshIndex = 0;
             for (auto &batch: forwardBatches) {
-                std::memcpy(meshIndicesMapping->data() + currentMeshIndex * sizeof(unsigned int),
+                std::memcpy(meshIndicesMapping->data() + currentMeshIndex * sizeof(int),
                             batch.meshIndices.data(),
-                            batch.meshIndices.size() * sizeof(unsigned int));
+                            batch.meshIndices.size() * sizeof(int));
                 currentMeshIndex += batch.meshIndices.size();
             }
             for (auto &batch: deferredBatches) {
-                std::memcpy(meshIndicesMapping->data() + currentMeshIndex * sizeof(unsigned int),
+                std::memcpy(meshIndicesMapping->data() + currentMeshIndex * sizeof(int),
                             batch.second.meshIndices.data(),
-                            batch.second.meshIndices.size() * sizeof(unsigned int));
+                            batch.second.meshIndices.size() * sizeof(int));
                 currentMeshIndex += batch.second.meshIndices.size();
             }
         }
@@ -415,8 +415,8 @@ namespace xng {
                 ctx.bindStorageBuffer("commandBuffer", batch.indirectBuffer, 0, 0);
                 ctx.bindStorageBuffer("commandCountBuffer", batch.indirectCountBuffer, 0, 0);
                 ctx.setShaderParameter("meshIndexOffset",
-                                       rg::ShaderPrimitive(static_cast<unsigned int>(currentMeshIndex)));
-                ctx.setShaderParameter("batchSize", rg::ShaderPrimitive(static_cast<unsigned int>(batch.batchSize)));
+                                       rg::ShaderPrimitive(static_cast<int>(currentMeshIndex)));
+                ctx.setShaderParameter("batchSize", rg::ShaderPrimitive(static_cast<int>(batch.batchSize)));
                 ctx.dispatch(Vec3u((batch.batchSize + (prePassLocalSize - 1)) / prePassLocalSize,
                                    1,
                                    1));
