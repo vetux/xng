@@ -353,14 +353,14 @@ namespace xng::opengl {
                         if (usage.first.getNameSpace() == ResourceId::HEAP) {
                             data->heap->getTransferContextGL().waitForTransfers(usage.first.getHandle(),
                                 usage.second.entries,
-                                std::numeric_limits<size_t>::max());
+                                std::chrono::milliseconds::max());
                         }
                     }
                     for (auto &usage: p.textureUsages) {
                         if (usage.first.getNameSpace() == ResourceId::HEAP) {
                             data->heap->getTransferContextGL().waitForTransfers(usage.first.getHandle(),
                                 usage.second.entries,
-                                std::numeric_limits<size_t>::max());
+                                std::chrono::milliseconds::max());
                         }
                     }
                     break;
@@ -375,7 +375,7 @@ namespace xng::opengl {
                             }
                             data->heap->getTransferContextGL().waitForTransfers(usage.first.getHandle(),
                                 entries,
-                                std::numeric_limits<size_t>::max());
+                                std::chrono::milliseconds::max());
                         }
                     }
                     for (auto &usage: p.textureUsages) {
@@ -386,7 +386,7 @@ namespace xng::opengl {
                             }
                             data->heap->getTransferContextGL().waitForTransfers(usage.first.getHandle(),
                                 entries,
-                                std::numeric_limits<size_t>::max());
+                                std::chrono::milliseconds::max());
                         }
                     }
                     for (auto &att: p.colorAttachments) {
@@ -403,14 +403,14 @@ namespace xng::opengl {
                         if (usage.first.getNameSpace() == ResourceId::HEAP) {
                             data->heap->getTransferContextGL().waitForTransfers(usage.first.getHandle(),
                                 usage.second.entries,
-                                std::numeric_limits<size_t>::max());
+                                std::chrono::milliseconds::max());
                         }
                     }
                     for (auto &usage: p.textureUsages) {
                         if (usage.first.getNameSpace() == ResourceId::HEAP) {
                             data->heap->getTransferContextGL().waitForTransfers(usage.first.getHandle(),
                                 usage.second.entries,
-                                std::numeric_limits<size_t>::max());
+                                std::chrono::milliseconds::max());
                         }
                     }
                     break;

@@ -299,8 +299,8 @@ namespace xng::opengl {
         // timeoutMs == 0 is a non-blocking check.
         bool waitForTransfers(const ResourceId::Handle handle,
                               const std::vector<BufferAccess> &accesses,
-                              const size_t timeoutMs) {
-            const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeoutMs);
+                              const std::chrono::milliseconds timeoutMs) {
+            const auto deadline = std::chrono::steady_clock::now() + timeoutMs;
             {
                 std::unique_lock lock(mutex);
                 const auto pred = [&] {
@@ -315,7 +315,7 @@ namespace xng::opengl {
                     }
                     return true;
                 };
-                if (timeoutMs == 0) {
+                if (timeoutMs.count() == 0) {
                     if (!pred()) return true;
                 } else {
                     if (!batchCv.wait_until(lock, deadline, pred)) return true;
@@ -329,8 +329,8 @@ namespace xng::opengl {
         // timeoutMs == 0 is a non-blocking check.
         bool waitForTransfers(const ResourceId::Handle handle,
                               const std::vector<TextureAccess> &accesses,
-                              const size_t timeoutMs) {
-            const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeoutMs);
+                              const std::chrono::milliseconds timeoutMs) {
+            const auto deadline = std::chrono::steady_clock::now() + timeoutMs;
             {
                 std::unique_lock lock(mutex);
                 const auto pred = [&] {
@@ -345,7 +345,7 @@ namespace xng::opengl {
                     }
                     return true;
                 };
-                if (timeoutMs == 0) {
+                if (timeoutMs.count() == 0) {
                     if (!pred()) return true;
                 } else {
                     if (!batchCv.wait_until(lock, deadline, pred)) return true;
