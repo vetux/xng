@@ -300,7 +300,12 @@ namespace xng::opengl {
         bool waitForTransfers(const ResourceId::Handle handle,
                               const std::vector<BufferAccess> &accesses,
                               const std::chrono::milliseconds timeoutMs) {
-            const auto deadline = std::chrono::steady_clock::now() + timeoutMs;
+            // milliseconds::max() means "wait forever". Adding it to now() would overflow the
+            // nanosecond-resolution time_point and wrap to a past deadline, so use a sentinel instead.
+            const bool infinite = timeoutMs == std::chrono::milliseconds::max();
+            const auto deadline = infinite
+                                      ? std::chrono::steady_clock::time_point::max()
+                                      : std::chrono::steady_clock::now() + timeoutMs;
             {
                 std::unique_lock lock(mutex);
                 const auto pred = [&] {
@@ -317,6 +322,8 @@ namespace xng::opengl {
                 };
                 if (timeoutMs.count() == 0) {
                     if (!pred()) return true;
+                } else if (infinite) {
+                    batchCv.wait(lock, pred);
                 } else {
                     if (!batchCv.wait_until(lock, deadline, pred)) return true;
                 }
@@ -330,7 +337,12 @@ namespace xng::opengl {
         bool waitForTransfers(const ResourceId::Handle handle,
                               const std::vector<TextureAccess> &accesses,
                               const std::chrono::milliseconds timeoutMs) {
-            const auto deadline = std::chrono::steady_clock::now() + timeoutMs;
+            // milliseconds::max() means "wait forever". Adding it to now() would overflow the
+            // nanosecond-resolution time_point and wrap to a past deadline, so use a sentinel instead.
+            const bool infinite = timeoutMs == std::chrono::milliseconds::max();
+            const auto deadline = infinite
+                                      ? std::chrono::steady_clock::time_point::max()
+                                      : std::chrono::steady_clock::now() + timeoutMs;
             {
                 std::unique_lock lock(mutex);
                 const auto pred = [&] {
@@ -347,6 +359,8 @@ namespace xng::opengl {
                 };
                 if (timeoutMs.count() == 0) {
                     if (!pred()) return true;
+                } else if (infinite) {
+                    batchCv.wait(lock, pred);
                 } else {
                     if (!batchCv.wait_until(lock, deadline, pred)) return true;
                 }
@@ -733,6 +747,7 @@ namespace xng::opengl {
                         toWait.push_back(e.sync);
                 }
             }
+            const bool infinite = deadline == std::chrono::steady_clock::time_point::max();
             bool pending = false;
             for (const auto &sync: toWait) {
                 std::lock_guard lock(sync->mutex);
@@ -741,10 +756,18 @@ namespace xng::opengl {
                     pending = true;
                     continue;
                 }
-                const auto remainingNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
-                    deadline - std::chrono::steady_clock::now()).count();
-                const GLuint64 timeoutNs = remainingNs > 0 ? static_cast<GLuint64>(remainingNs) : 0;
-                const auto result = glClientWaitSync(sync->fence, GL_SYNC_FLUSH_COMMANDS_BIT, timeoutNs);
+                GLenum result;
+                if (infinite) {
+                    // Block until the fence signals. Loop because drivers may clamp the timeout.
+                    do {
+                        result = glClientWaitSync(sync->fence, GL_SYNC_FLUSH_COMMANDS_BIT, 1000000000ull);
+                    } while (result == GL_TIMEOUT_EXPIRED);
+                } else {
+                    const auto remainingNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                        deadline - std::chrono::steady_clock::now()).count();
+                    const GLuint64 timeoutNs = remainingNs > 0 ? static_cast<GLuint64>(remainingNs) : 0;
+                    result = glClientWaitSync(sync->fence, GL_SYNC_FLUSH_COMMANDS_BIT, timeoutNs);
+                }
                 if (result == GL_ALREADY_SIGNALED || result == GL_CONDITION_SATISFIED) {
                     glDeleteSync(sync->fence);
                     sync->fence = nullptr;
@@ -770,6 +793,7 @@ namespace xng::opengl {
                         toWait.push_back(e.sync);
                 }
             }
+            const bool infinite = deadline == std::chrono::steady_clock::time_point::max();
             bool pending = false;
             for (const auto &sync: toWait) {
                 std::lock_guard lock(sync->mutex);
@@ -778,10 +802,18 @@ namespace xng::opengl {
                     pending = true;
                     continue;
                 }
-                const auto remainingNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
-                    deadline - std::chrono::steady_clock::now()).count();
-                const GLuint64 timeoutNs = remainingNs > 0 ? static_cast<GLuint64>(remainingNs) : 0;
-                const auto result = glClientWaitSync(sync->fence, GL_SYNC_FLUSH_COMMANDS_BIT, timeoutNs);
+                GLenum result;
+                if (infinite) {
+                    // Block until the fence signals. Loop because drivers may clamp the timeout.
+                    do {
+                        result = glClientWaitSync(sync->fence, GL_SYNC_FLUSH_COMMANDS_BIT, 1000000000ull);
+                    } while (result == GL_TIMEOUT_EXPIRED);
+                } else {
+                    const auto remainingNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                        deadline - std::chrono::steady_clock::now()).count();
+                    const GLuint64 timeoutNs = remainingNs > 0 ? static_cast<GLuint64>(remainingNs) : 0;
+                    result = glClientWaitSync(sync->fence, GL_SYNC_FLUSH_COMMANDS_BIT, timeoutNs);
+                }
                 if (result == GL_ALREADY_SIGNALED || result == GL_CONDITION_SATISFIED) {
                     glDeleteSync(sync->fence);
                     sync->fence = nullptr;
