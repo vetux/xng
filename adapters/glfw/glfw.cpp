@@ -130,6 +130,7 @@ namespace xng::glfw {
     }
 
     DisplayEnvironment::~DisplayEnvironment() {
+        primaryWindow = nullptr;
         glfwTerminate();
     }
 
