@@ -21,9 +21,30 @@
 
 #include "xng/renderer/objects/rendertexture.hpp"
 
+#include "xng/renderer/samplingproperties.hpp"
+
 namespace xng {
     class RenderMaterial final : public RenderObject {
     public:
+        /**
+         * @param id
+         * @param materialStream
+         * @param albedoColor
+         * @param metallicColor
+         * @param roughnessColor
+         * @param ambientOcclusionColor
+         * @param _albedo The albedo texture. Must use sRGB color space!
+         * @param albedoProperties
+         * @param _metallic
+         * @param metallicProperties
+         * @param _roughness
+         * @param roughnessProperties
+         * @param _ambientOcclusion
+         * @param ambientOcclusionProperties
+         * @param _normal
+         * @param normalProperties
+         * @param normalIntensity
+         */
         explicit RenderMaterial(const Id id,
                                 BufferStreamer<ShaderMaterial::CPU> &materialStream,
                                 ColorRGBA albedoColor,
@@ -31,10 +52,15 @@ namespace xng {
                                 float roughnessColor,
                                 float ambientOcclusionColor,
                                 RenderObjectHandle<RenderTexture> _albedo,
+                                const SamplingProperties &albedoProperties,
                                 RenderObjectHandle<RenderTexture> _metallic,
+                                const SamplingProperties &metallicProperties,
                                 RenderObjectHandle<RenderTexture> _roughness,
+                                const SamplingProperties &roughnessProperties,
                                 RenderObjectHandle<RenderTexture> _ambientOcclusion,
+                                const SamplingProperties &ambientOcclusionProperties,
                                 RenderObjectHandle<RenderTexture> _normal,
+                                const SamplingProperties &normalProperties,
                                 const Vec4f &normalIntensity)
             : RenderObject(OBJECT_MATERIAL, id),
               materialStream(materialStream),
@@ -57,81 +83,87 @@ namespace xng {
                 const auto &handle = albedo->getHandle();
                 auto scale = handle.getScale();
 
-                material.albedo.level_index_filtering_assigned = Vec4i(handle.level,
-                                                                       static_cast<int>(handle.slot),
-                                                                       0,
-                                                                       1);
+                material.albedo.level_index = Vec2i(handle.level, static_cast<int>(handle.slot));
+                material.albedo.minFilter_magFilter_mipFilter_wrap = Vec4i(albedoProperties.minFilter,
+                                                                           albedoProperties.magFilter,
+                                                                           albedoProperties.mipFilter,
+                                                                           albedoProperties.wrapping);
                 material.albedo.scale_texSize = Vec4f(scale.x,
                                                       scale.y,
                                                       static_cast<float>(handle.size.x),
                                                       static_cast<float>(handle.size.y));
             } else {
-                material.albedo.level_index_filtering_assigned = Vec4i(0, 0, 0, 0);
+                material.albedo.level_index = Vec2i(-1);
             }
 
             if (metallic) {
                 const auto &handle = metallic->getHandle();
                 auto scale = handle.getScale();
 
-                material.metallic.level_index_filtering_assigned = Vec4i(handle.level,
-                                                                         static_cast<int>(handle.slot),
-                                                                         0,
-                                                                         1);
+                material.metallic.level_index = Vec2i(handle.level, static_cast<int>(handle.slot));
+                material.metallic.minFilter_magFilter_mipFilter_wrap = Vec4i(metallicProperties.minFilter,
+                                                                             metallicProperties.magFilter,
+                                                                             metallicProperties.mipFilter,
+                                                                             metallicProperties.wrapping);
                 material.metallic.scale_texSize = Vec4f(scale.x,
                                                         scale.y,
                                                         static_cast<float>(handle.size.x),
                                                         static_cast<float>(handle.size.y));
             } else {
-                material.metallic.level_index_filtering_assigned = Vec4i(0, 0, 0, 0);
+                material.metallic.level_index = Vec2i(-1);
             }
 
             if (roughness) {
                 const auto &handle = roughness->getHandle();
                 auto scale = handle.getScale();
 
-                material.roughness.level_index_filtering_assigned = Vec4i(handle.level,
-                                                                          static_cast<int>(handle.slot),
-                                                                          0,
-                                                                          1);
+                material.roughness.level_index = Vec2i(handle.level, static_cast<int>(handle.slot));
+                material.roughness.minFilter_magFilter_mipFilter_wrap = Vec4i(roughnessProperties.minFilter,
+                                                                              roughnessProperties.magFilter,
+                                                                              roughnessProperties.mipFilter,
+                                                                              roughnessProperties.wrapping);
                 material.roughness.scale_texSize = Vec4f(scale.x,
                                                          scale.y,
                                                          static_cast<float>(handle.size.x),
                                                          static_cast<float>(handle.size.y));
             } else {
-                material.roughness.level_index_filtering_assigned = Vec4i(0, 0, 0, 0);
+                material.roughness.minFilter_magFilter_mipFilter_wrap = Vec4i(-1);
             }
 
             if (ambientOcclusion) {
                 const auto &handle = ambientOcclusion->getHandle();
                 auto scale = handle.getScale();
 
-                material.ambientOcclusion.level_index_filtering_assigned = Vec4i(handle.level,
-                    static_cast<int>(handle.slot),
-                    0,
-                    1);
+                material.ambientOcclusion.level_index = Vec2i(handle.level, static_cast<int>(handle.slot));
+                material.ambientOcclusion.minFilter_magFilter_mipFilter_wrap = Vec4i(
+                    ambientOcclusionProperties.minFilter,
+                    ambientOcclusionProperties.magFilter,
+                    ambientOcclusionProperties.mipFilter,
+                    ambientOcclusionProperties.wrapping);
 
                 material.ambientOcclusion.scale_texSize = Vec4f(scale.x,
                                                                 scale.y,
                                                                 static_cast<float>(handle.size.x),
                                                                 static_cast<float>(handle.size.y));
             } else {
-                material.ambientOcclusion.level_index_filtering_assigned = Vec4i(0, 0, 0, 0);
+                material.ambientOcclusion.level_index = Vec2i(-1);
             }
 
             if (normal) {
                 const auto &handle = normal->getHandle();
                 auto scale = handle.getScale();
 
-                material.normal.level_index_filtering_assigned = Vec4i(handle.level,
-                                                                       static_cast<int>(handle.slot),
-                                                                       0,
-                                                                       1);
+                material.normal.level_index = Vec2i(handle.level, static_cast<int>(handle.slot));
+                material.normal.minFilter_magFilter_mipFilter_wrap = Vec4i(normalProperties.minFilter,
+                                                                           normalProperties.magFilter,
+                                                                           normalProperties.mipFilter,
+                                                                           normalProperties.wrapping);
                 material.normal.scale_texSize = Vec4f(scale.x,
                                                       scale.y,
                                                       static_cast<float>(handle.size.x),
                                                       static_cast<float>(handle.size.y));
             } else {
-                material.normal.level_index_filtering_assigned = Vec4i(0, 0, 0, 0);
+                material.normal.level_index = Vec2i(-1);
             }
 
             materialStream.upload(materialHandle, material);

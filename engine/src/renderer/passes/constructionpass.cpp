@@ -34,22 +34,81 @@ namespace xng {
 
         TextureArray(TEXTURE_2D_ARRAY, RGBA8, 12, textures)
 
-        ivec4 level_index_filtering_assigned = textureDef.value().level_index_filtering_assigned;
+        ivec2 level_index = textureDef.value().level_index;
         vec4 atlasScale_texSize = textureDef.value().scale_texSize;
+        ivec4 minFilter_magFilter_mipFilter_wrap = textureDef.value().minFilter_magFilter_mipFilter_wrap;
 
-        If(level_index_filtering_assigned.w() == 0)
-            IRReturn(vec4(0.0f, 0.0f, 0.0f, 0.0f));
+        vec2 wrappedUv;
+        If(minFilter_magFilter_mipFilter_wrap.w() == rg::REPEAT)
+            wrappedUv = fract(inUv); // REPEAT
         Else
-            vec2 uv = inUv * atlasScale_texSize.xy();
-            If(level_index_filtering_assigned.z() == 1)
-                IRReturn(textureBicubicArray(textures[level_index_filtering_assigned.x()],
-                    vec3(uv.x(), uv.y(), level_index_filtering_assigned.y()),
-                    atlasScale_texSize.zw()));
+            If(minFilter_magFilter_mipFilter_wrap.w() == rg::CLAMP_TO_EDGE)
+                wrappedUv = clamp(inUv, vec2(0.0f), vec2(1.0f)); // CLAMP
             Else
-                IRReturn(vec4(textureSampleArray(textures[level_index_filtering_assigned.x()],
-                    vec3(uv.x(), uv.y(), level_index_filtering_assigned.y()))));
+                wrappedUv = 1.0f - abs(mod(inUv, vec2(2.0f)) - 1.0f); // MIRROR
             Fi
         Fi
+
+        vec2 uv = wrappedUv * atlasScale_texSize.xy();
+
+        // Actual pixel dimensions of this image within the layer
+        vec2 imagePixelSize = atlasScale_texSize.xy() * atlasScale_texSize.zw();
+
+        // Derivatives in texel space — use inUv not uv, before the scale bakes in
+        vec2 dx = partialDerivativeX(inUv * imagePixelSize);
+        vec2 dy = partialDerivativeY(inUv * imagePixelSize);
+        Float lod = 0.5f * log2(max(dot(dx, dx), dot(dy, dy)) + 1e-10f);
+
+        // Clamp so you never sample a mip level coarser than the image content
+        Float maxLod = log2(min(imagePixelSize.x(), imagePixelSize.y()));
+        lod = clamp(lod, 0.0f, maxLod);
+
+        Int layer = level_index.y();
+        Int arrayIndex = level_index.x();
+
+        vec4 ret;
+        If(lod <= 0.0f)
+            // Magnification
+            Int magFilter = minFilter_magFilter_mipFilter_wrap.y();
+            If(magFilter == rg::LINEAR)
+                ret = textureBicubicArray(textures[arrayIndex], vec3(uv.x(), uv.y(), layer), imagePixelSize);
+            Else
+                ret = textureSampleArray(textures[arrayIndex], vec3(uv.x(), uv.y(), layer));
+            Fi
+        Else
+            // Minification
+            Int minFilter = minFilter_magFilter_mipFilter_wrap.x();
+            Int mipFilter = minFilter_magFilter_mipFilter_wrap.z();
+
+            Float lodFloor = floor(lod);
+            Float lodCeil = min(lodFloor + 1.0f, maxLod); // clamp s1
+            Float lodFrac = fract(lod);
+
+            If(minFilter == rg::LINEAR)
+                If(mipFilter == rg::NEAREST)
+                    ret = textureBicubicArrayLod(textures[arrayIndex],
+                                                 vec3(uv.x(), uv.y(), layer), imagePixelSize, lodFloor);
+                Else
+                    vec4 s0 = textureBicubicArrayLod(textures[arrayIndex],
+                                                     vec3(uv.x(), uv.y(), layer), imagePixelSize, lodFloor);
+                    vec4 s1 = textureBicubicArrayLod(textures[arrayIndex],
+                                                     vec3(uv.x(), uv.y(), layer), imagePixelSize, lodCeil);
+                    ret = mix(s0, s1, lodFrac);
+                Fi
+            Else
+                If(mipFilter == rg::NEAREST)
+                    ret = textureSampleArrayLod(textures[arrayIndex], vec3(uv.x(), uv.y(), layer), lodFloor);
+                Else
+                    vec4 s0 = textureSampleArrayLod(textures[arrayIndex],
+                                                    vec3(uv.x(), uv.y(), layer), lodFloor);
+                    vec4 s1 = textureSampleArrayLod(textures[arrayIndex],
+                                                    vec3(uv.x(), uv.y(), layer), lodCeil);
+                    ret = mix(s0, s1, lodFrac);
+                Fi
+            Fi
+        Fi
+
+        IRReturn(ret);
 
         IRFunctionEnd
     }
@@ -158,7 +217,7 @@ namespace xng {
 
         oPosition = vec4(fPos, 1);
 
-        If(material.albedo.level_index_filtering_assigned.w() == 0)
+        If(material.albedo.level_index.x() < 0)
             oAlbedo = material.albedoColor;
         Else
             oAlbedo = texture_atlas(material.albedo, fUv);
@@ -167,7 +226,7 @@ namespace xng {
         oRoughnessMetallicAO = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
         // Roughness
-        If(material.roughness.level_index_filtering_assigned.w() == 0)
+        If(material.roughness.level_index.x() < 0)
             oRoughnessMetallicAO.x() = material.metallic_roughness_ambientOcclusion.y();
         Else
             oRoughnessMetallicAO.x() = texture_atlas(material.roughness, fUv).x();
@@ -175,14 +234,14 @@ namespace xng {
 
 
         // Metallic
-        If(material.metallic.level_index_filtering_assigned.w() == 0)
+        If(material.metallic.level_index.x() < 0)
             oRoughnessMetallicAO.y() = material.metallic_roughness_ambientOcclusion.x();
         Else
             oRoughnessMetallicAO.y() = texture_atlas(material.metallic, fUv).x();
         Fi
 
         // Ambient Occlusion
-        If(material.ambientOcclusion.level_index_filtering_assigned.w() == 0)
+        If(material.ambientOcclusion.level_index.x() < 0)
             oRoughnessMetallicAO.z() = material.metallic_roughness_ambientOcclusion.z();
         Else
             oRoughnessMetallicAO.z() = texture_atlas(material.ambientOcclusion, fUv).x();
@@ -192,7 +251,7 @@ namespace xng {
         oNormal = vec4(normalize(normalMatrix * fNorm), 1);
         oTangent = vec4(normalize(normalMatrix * fTan), 1);
 
-        If(material.normal.level_index_filtering_assigned.w() != 0)
+        If(material.normal.level_index.x() >= 0)
             mat3 tbn = mat3(fT, fB, fN);
             vec3 texNormal = texture_atlas(material.normal, fUv).xyz()
                              * vec3(material.normalIntensity.x(), material.normalIntensity.x(), 1);

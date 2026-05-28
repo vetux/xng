@@ -43,14 +43,19 @@ namespace xng {
                                                                        float ambientOcclusion,
                                                                        const Vec4f &normalIntensity,
                                                                        RenderObjectHandle<RenderTexture> albedoTexture,
+                                                                       SamplingProperties albedoProperties,
                                                                        RenderObjectHandle<RenderTexture>
                                                                        metallicTexture,
+                                                                       SamplingProperties metallicProperties,
                                                                        RenderObjectHandle<RenderTexture>
                                                                        roughnessTexture,
+                                                                       SamplingProperties roughnessProperties,
                                                                        RenderObjectHandle<RenderTexture>
                                                                        ambientOcclusionTexture,
+                                                                       SamplingProperties ambientOcclusionProperties,
                                                                        RenderObjectHandle<RenderTexture>
-                                                                       normalTexture) {
+                                                                       normalTexture,
+                                                                       SamplingProperties normalProperties) {
         return std::make_shared<RenderMaterial>(allocateId(),
                                                 materialStream,
                                                 albedo,
@@ -58,10 +63,15 @@ namespace xng {
                                                 roughness,
                                                 ambientOcclusion,
                                                 std::move(albedoTexture),
+                                                albedoProperties,
                                                 std::move(metallicTexture),
+                                                metallicProperties,
                                                 std::move(roughnessTexture),
+                                                roughnessProperties,
                                                 std::move(ambientOcclusionTexture),
+                                                ambientOcclusionProperties,
                                                 std::move(normalTexture),
+                                                normalProperties,
                                                 normalIntensity);
     }
 

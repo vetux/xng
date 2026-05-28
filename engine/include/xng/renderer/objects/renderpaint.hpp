@@ -150,7 +150,7 @@ namespace xng {
                     Rectf _srcRect,
                     Rectf _dstRect,
                     RenderObjectHandle<RenderTexture> _texture,
-                    const bool filter,
+                    const rg::TextureFiltering filter,
                     const float mix = 0,
                     const float alpha_mix = 0,
                     const ColorRGBA &mixColor = {},
@@ -179,10 +179,9 @@ namespace xng {
             const auto uvScale = (srcRect.dimensions / texture->getHandle().size.convert<float>());
             paint.uvOffset_uvScale = Vec4f(uvOffset.x, uvOffset.y, uvScale.x, uvScale.y);
 
-            paint.texture.level_index_filtering_assigned = Vec4i(texture->getHandle().level,
-                                                                 texture->getHandle().slot,
-                                                                 filter,
-                                                                 true);
+            paint.texture.level_index = Vec2i(texture->getHandle().level, texture->getHandle().slot);
+            paint.texture.minFilter_magFilter_mipFilter_wrap = Vec4i(rg::NEAREST, filter, rg::NEAREST,
+                                                                     rg::CLAMP_TO_EDGE);
 
             const auto scale = texture->getHandle().getScale();
             paint.texture.scale_texSize = Vec4f(scale.x,

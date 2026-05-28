@@ -74,10 +74,15 @@ namespace xng {
                                                           float ambientOcclusion,
                                                           const Vec4f &normalIntensity,
                                                           RenderObjectHandle<RenderTexture> albedoTexture,
+                                                          SamplingProperties albedoProperties,
                                                           RenderObjectHandle<RenderTexture> metallicTexture,
+                                                          SamplingProperties metallicProperties,
                                                           RenderObjectHandle<RenderTexture> roughnessTexture,
+                                                          SamplingProperties roughnessProperties,
                                                           RenderObjectHandle<RenderTexture> ambientOcclusionTexture,
-                                                          RenderObjectHandle<RenderTexture> normalTexture);
+                                                          SamplingProperties ambientOcclusionProperties,
+                                                          RenderObjectHandle<RenderTexture> normalTexture,
+                                                          SamplingProperties normalProperties);
 
         RenderObjectHandle<RenderSkeleton> createSkeleton(const std::vector<std::string> &boneNames);
 

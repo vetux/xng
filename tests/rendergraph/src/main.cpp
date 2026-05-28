@@ -74,6 +74,11 @@ void createCornellInstance(RenderAllocator &allocator, Resources &res, RenderDra
                                                 {},
                                                 {},
                                                 {},
+                                                {},
+                                                {},
+                                                {},
+                                                {},
+                                                {},
                                                 {});
 
     auto boxMesh = allocator.createMesh(res.boxMesh.get(), {});
@@ -101,16 +106,23 @@ void createCornellInstance(RenderAllocator &allocator, Resources &res, RenderDra
     brickAo->setImage(res.brickAo.get());
     brickNormal->setImage(res.brickNormal.get());
 
+    SamplingProperties brickProps(rg::LINEAR, rg::LINEAR, rg::LINEAR, rg::REPEAT);
+
     auto brickMaterial = allocator.createMaterial({},
                                                   1,
                                                   1,
                                                   1,
                                                   Vec4f(1),
                                                   brickAlbedo,
+                                                  brickProps,
                                                   brickMetallic,
+                                                  brickProps,
                                                   brickRoughness,
+                                                  brickProps,
                                                   brickAo,
-                                                  brickNormal);
+                                                  brickProps,
+                                                  brickNormal,
+                                                  brickProps);
 
     auto brickMesh = allocator.createMesh(res.cubeMesh.get(), {});
 
@@ -144,10 +156,15 @@ void createCornellInstance(RenderAllocator &allocator, Resources &res, RenderDra
                                                              0,
                                                              Vec4f(1),
                                                              rustedIronAlbedo,
+                                                             {},
                                                              rustedIronMetallic,
+                                                             {},
                                                              rustedIronRoughness,
                                                              {},
-                                                             sphereNormal);
+                                                             {},
+                                                             {},
+                                                             sphereNormal,
+                                                             {});
 
     auto rustedIronSphereModel = allocator.createModel({sphereMesh},
                                                        rustedIronSphereMaterial,
@@ -173,10 +190,15 @@ void createCornellInstance(RenderAllocator &allocator, Resources &res, RenderDra
                                                        0,
                                                        Vec4f(1),
                                                        goldAlbedo,
+                                                       {},
                                                        goldMetallic,
+                                                       {},
                                                        goldRoughness,
                                                        {},
-                                                       sphereNormal);
+                                                       {},
+                                                       {},
+                                                       sphereNormal,
+                                                       {});
 
     auto goldSphereModel = allocator.createModel({sphereMesh2},
                                                  goldSphereMaterial,
@@ -205,7 +227,7 @@ RenderDrawList createDrawList(RenderAllocator &allocator) {
     RenderDrawList ret;
 
     // scene.hdri = ResourceHandle<ImageRGBF>(Uri("file://hdri/church_stairway_4k.hdr"));
-    ret.camera.setTransform(Transform(Vec3f(0, 0, -5),
+    ret.camera.setTransform(Transform(Vec3f(0, 0, -2),
                                       Quaternion(Vec3f(0, 0, 0)),
                                       Vec3f(1)));
     ret.camera.setProjection(Camera::getPerspectiveProjection(90, 4 / 3, 0.001f, 1000.0f));

@@ -53,7 +53,8 @@ namespace xng {
                  Mat4f, shadowProjectionMatrix)
 
     ShaderStruct(ShaderTexture,
-                 Vec4i, level_index_filtering_assigned,
+                 Vec2i, level_index,
+                 Vec4i, minFilter_magFilter_mipFilter_wrap,
                  Vec4f, scale_texSize)
 
     ShaderStruct(ShaderMaterial,
