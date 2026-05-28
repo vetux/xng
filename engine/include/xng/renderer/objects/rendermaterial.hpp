@@ -133,6 +133,8 @@ namespace xng {
             } else {
                 material.normal.level_index_filtering_assigned = Vec4i(0, 0, 0, 0);
             }
+
+            materialStream.upload(materialHandle, material);
         }
 
         ~RenderMaterial() override {
