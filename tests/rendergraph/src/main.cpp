@@ -126,6 +126,7 @@ void createCornellInstance(RenderAllocator &allocator, Resources &res, RenderDra
     drawList.models.emplace_back(brickModel);
 
     auto sphereMesh = allocator.createMesh(res.sphereMesh1.get(), {});
+    auto sphereMesh2 = allocator.createMesh(res.sphereMesh2.get(), {});
 
     auto sphereNormal = allocator.createTexture(res.sphereNormal.get().getResolution());
     sphereNormal->setImage(res.sphereNormal.get());
@@ -177,7 +178,7 @@ void createCornellInstance(RenderAllocator &allocator, Resources &res, RenderDra
                                                        {},
                                                        sphereNormal);
 
-    auto goldSphereModel = allocator.createModel({sphereMesh},
+    auto goldSphereModel = allocator.createModel({sphereMesh2},
                                                  goldSphereMaterial,
                                                  RENDER_PATH_DEFERRED,
                                                  SHADING_MODEL_PBR,
