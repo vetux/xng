@@ -280,6 +280,8 @@ namespace xng::opengl {
                 throw std::runtime_error("Shader parameter type mismatch");
             }
 
+            oglDebugStartGroup("RasterContextGL::setShaderParameter");
+
             switch (paramType.type) {
                 case ShaderPrimitiveType::SCALAR: {
                     switch (paramType.component) {
@@ -443,6 +445,8 @@ namespace xng::opengl {
                 }
                 break;
             }
+
+            oglDebugEndGroup();
         }
 
         void setViewport(const Vec2i viewportOffset, const Vec2i viewportSize) override {
