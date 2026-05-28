@@ -120,7 +120,8 @@ std::string generateHeader(const Shader &source, CompiledShader &compiledShader)
     }
 
     std::string inputAttributes;
-    size_t attributeCount = 0;
+    size_t layoutIndex = 0;
+    size_t elementIndex = 0;
     if (source.stage == Shader::GEOMETRY) {
         switch (source.geometryInput) {
             case POINTS:
@@ -153,9 +154,9 @@ std::string generateHeader(const Shader &source, CompiledShader &compiledShader)
 
         for (auto i = 0; i < source.inputLayout.getElements().size(); i++) {
             auto element = source.inputLayout.getElements().at(i);
-            auto location = attributeCount++;
+            auto location = elementIndex++;
             inputAttributes += "layout(location = "
-                    + std::to_string(location)
+                    + std::to_string(layoutIndex)
                     + ") "
                     + getInterpolationKeyword(source.inputLayout.getInterpolationModes().at(i))
                     + " in "
@@ -163,24 +164,58 @@ std::string generateHeader(const Shader &source, CompiledShader &compiledShader)
                                       ShaderDataType(element),
                                       "")
                     + "[];\n";
+            switch (element.type) {
+                case ShaderPrimitiveType::SCALAR:
+                case ShaderPrimitiveType::VECTOR2:
+                case ShaderPrimitiveType::VECTOR3:
+                case ShaderPrimitiveType::VECTOR4:
+                    layoutIndex += 1;
+                    break;
+                case ShaderPrimitiveType::MAT2:
+                    layoutIndex += 2;
+                    break;
+                case ShaderPrimitiveType::MAT3:
+                    layoutIndex += 3;
+                    break;
+                case ShaderPrimitiveType::MAT4:
+                    layoutIndex += 4;
+                    break;
+            }
         }
     } else if (source.stage == Shader::VERTEX || source.stage == Shader::FRAGMENT) {
         for (auto i = 0; i < source.inputLayout.getElements().size(); i++) {
             auto element = source.inputLayout.getElements().at(i);
-            auto location = attributeCount++;
+            auto location = elementIndex++;
             inputAttributes += "layout(location = "
-                    + std::to_string(location)
+                    + std::to_string(layoutIndex)
                     + ")";
             if (source.stage == Shader::FRAGMENT) {
                 inputAttributes += " "
                         + getInterpolationKeyword(source.inputLayout.getInterpolationModes().at(i))
                         + " ";
             }
-            inputAttributes += "in "
+            inputAttributes += " in "
                     + generateElement(inputAttributePrefix + source.inputLayout.getElementName(location),
                                       ShaderDataType(element),
                                       "")
                     + ";\n";
+            switch (element.type) {
+                case ShaderPrimitiveType::SCALAR:
+                case ShaderPrimitiveType::VECTOR2:
+                case ShaderPrimitiveType::VECTOR3:
+                case ShaderPrimitiveType::VECTOR4:
+                    layoutIndex += 1;
+                    break;
+                case ShaderPrimitiveType::MAT2:
+                    layoutIndex += 2;
+                    break;
+                case ShaderPrimitiveType::MAT3:
+                    layoutIndex += 3;
+                    break;
+                case ShaderPrimitiveType::MAT4:
+                    layoutIndex += 4;
+                    break;
+            }
         }
     } else {
         inputAttributes += "layout(local_size_x = " + std::to_string(source.computeLocalSize.x)
@@ -194,11 +229,12 @@ std::string generateHeader(const Shader &source, CompiledShader &compiledShader)
 
     if (source.stage != Shader::COMPUTE) {
         std::string outputAttributes;
-        attributeCount = 0;
+        layoutIndex = 0;
+        elementIndex = 0;
         for (auto element: source.outputLayout.getElements()) {
-            auto location = attributeCount++;
+            auto location = elementIndex++;
             outputAttributes += "layout(location = "
-                    + std::to_string(location)
+                    + std::to_string(layoutIndex)
                     + ")";
             if (source.stage == Shader::VERTEX || source.stage == Shader::GEOMETRY) {
                 outputAttributes += " "
@@ -210,6 +246,23 @@ std::string generateHeader(const Shader &source, CompiledShader &compiledShader)
                                       ShaderDataType(element),
                                       "")
                     + ";\n";
+            switch (element.type) {
+                case ShaderPrimitiveType::SCALAR:
+                case ShaderPrimitiveType::VECTOR2:
+                case ShaderPrimitiveType::VECTOR3:
+                case ShaderPrimitiveType::VECTOR4:
+                    layoutIndex += 1;
+                    break;
+                case ShaderPrimitiveType::MAT2:
+                    layoutIndex += 2;
+                    break;
+                case ShaderPrimitiveType::MAT3:
+                    layoutIndex += 3;
+                    break;
+                case ShaderPrimitiveType::MAT4:
+                    layoutIndex += 4;
+                    break;
+            }
         }
         ret += outputAttributes;
         ret += "\n";
