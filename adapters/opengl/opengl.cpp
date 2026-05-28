@@ -48,12 +48,14 @@ namespace xng::opengl {
         Framebuffer framebuffer;
     };
 
-    Vec2i bindAttachments(Framebuffer &framebuffer,
-                          const rg::RasterPass &pass,
-                          const PassResources &passResources) {
+    static Vec2i bindAttachments(Framebuffer &framebuffer,
+                                 const rg::RasterPass &pass,
+                                 const PassResources &passResources) {
         oglDebugStartGroup("Runtime::bindAttachments");
 
         framebuffer.bind(GL_DRAW_FRAMEBUFFER);
+
+        std::vector<GLenum> drawBuffers;
 
         Vec2i ret(0);
         for (auto i = 0; i < pass.colorAttachments.size(); ++i) {
@@ -82,7 +84,10 @@ namespace xng::opengl {
                 TransferContextGL::clearTexture(texture, attachment.targetSubResource, attachment.clearValue.value());
             }
             framebuffer.attach(GL_COLOR_ATTACHMENT0 + i, texture, attachment.targetSubResource);
+            drawBuffers.emplace_back(GL_COLOR_ATTACHMENT0 + i);
         }
+
+        glDrawBuffers(static_cast<GLsizei>(drawBuffers.size()), drawBuffers.data());
 
         if (pass.depthStencilAttachment.has_value()) {
             if (std::holds_alternative<RasterPass::DepthStencilAttachment>(pass.depthStencilAttachment.value())) {
@@ -178,6 +183,113 @@ namespace xng::opengl {
         oglDebugEndGroup();
 
         return ret;
+    }
+
+    //TODO: Implement DAG based barrier insertion.
+    static void insertBarrier(const RasterPass &pass) {
+        for (auto &pair: pass.bufferUsages) {
+            for (auto &entry: pair.second.entries) {
+                switch (entry.access.type) {
+                    case BufferAccess::StorageWrite:
+                        glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT
+                                        | GL_ELEMENT_ARRAY_BARRIER_BIT
+                                        | GL_UNIFORM_BARRIER_BIT
+                                        | GL_TEXTURE_FETCH_BARRIER_BIT
+                                        | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT
+                                        | GL_COMMAND_BARRIER_BIT
+                                        | GL_PIXEL_BUFFER_BARRIER_BIT
+                                        | GL_TEXTURE_UPDATE_BARRIER_BIT
+                                        | GL_BUFFER_UPDATE_BARRIER_BIT
+                                        | GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT
+                                        | GL_FRAMEBUFFER_BARRIER_BIT
+                                        | GL_TRANSFORM_FEEDBACK_BARRIER_BIT
+                                        | GL_ATOMIC_COUNTER_BARRIER_BIT
+                                        | GL_SHADER_STORAGE_BARRIER_BIT
+                                        | GL_QUERY_BUFFER_BARRIER_BIT);
+                        return;
+                    default:
+                        break;
+                }
+            }
+        }
+        for (auto &pair: pass.textureUsages) {
+            for (auto &entry: pair.second.entries) {
+                switch (entry.access.type) {
+                    case TextureAccess::TextureStorageWrite:
+                        glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT
+                                        | GL_ELEMENT_ARRAY_BARRIER_BIT
+                                        | GL_UNIFORM_BARRIER_BIT
+                                        | GL_TEXTURE_FETCH_BARRIER_BIT
+                                        | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT
+                                        | GL_COMMAND_BARRIER_BIT
+                                        | GL_PIXEL_BUFFER_BARRIER_BIT
+                                        | GL_TEXTURE_UPDATE_BARRIER_BIT
+                                        | GL_BUFFER_UPDATE_BARRIER_BIT
+                                        | GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT
+                                        | GL_FRAMEBUFFER_BARRIER_BIT
+                                        | GL_TRANSFORM_FEEDBACK_BARRIER_BIT
+                                        | GL_ATOMIC_COUNTER_BARRIER_BIT
+                                        | GL_SHADER_STORAGE_BARRIER_BIT
+                                        | GL_QUERY_BUFFER_BARRIER_BIT);
+                        return;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+
+    static void insertBarrier(const ComputePass &pass) {
+        for (auto &pair: pass.bufferUsages) {
+            for (auto &entry: pair.second.entries) {
+                switch (entry.type) {
+                    case BufferAccess::StorageWrite:
+                        glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT
+                                        | GL_ELEMENT_ARRAY_BARRIER_BIT
+                                        | GL_UNIFORM_BARRIER_BIT
+                                        | GL_TEXTURE_FETCH_BARRIER_BIT
+                                        | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT
+                                        | GL_COMMAND_BARRIER_BIT
+                                        | GL_PIXEL_BUFFER_BARRIER_BIT
+                                        | GL_TEXTURE_UPDATE_BARRIER_BIT
+                                        | GL_BUFFER_UPDATE_BARRIER_BIT
+                                        | GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT
+                                        | GL_FRAMEBUFFER_BARRIER_BIT
+                                        | GL_TRANSFORM_FEEDBACK_BARRIER_BIT
+                                        | GL_ATOMIC_COUNTER_BARRIER_BIT
+                                        | GL_SHADER_STORAGE_BARRIER_BIT
+                                        | GL_QUERY_BUFFER_BARRIER_BIT);
+                        return;
+                    default:
+                        break;
+                }
+            }
+        }
+        for (auto &pair: pass.textureUsages) {
+            for (auto &entry: pair.second.entries) {
+                switch (entry.type) {
+                    case TextureAccess::TextureStorageWrite:
+                        glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT
+                                        | GL_ELEMENT_ARRAY_BARRIER_BIT
+                                        | GL_UNIFORM_BARRIER_BIT
+                                        | GL_TEXTURE_FETCH_BARRIER_BIT
+                                        | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT
+                                        | GL_COMMAND_BARRIER_BIT
+                                        | GL_PIXEL_BUFFER_BARRIER_BIT
+                                        | GL_TEXTURE_UPDATE_BARRIER_BIT
+                                        | GL_BUFFER_UPDATE_BARRIER_BIT
+                                        | GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT
+                                        | GL_FRAMEBUFFER_BARRIER_BIT
+                                        | GL_TRANSFORM_FEEDBACK_BARRIER_BIT
+                                        | GL_ATOMIC_COUNTER_BARRIER_BIT
+                                        | GL_SHADER_STORAGE_BARRIER_BIT
+                                        | GL_QUERY_BUFFER_BARRIER_BIT);
+                        return;
+                    default:
+                        break;
+                }
+            }
+        }
     }
 
     Runtime::Runtime(DisplayEnvironment &env)
@@ -328,11 +440,13 @@ namespace xng::opengl {
                     auto dimensions = bindAttachments(data->framebuffer, p, passResources);
                     rasterContext.setFrameBufferHeight(dimensions.y);
                     p.callback(rasterContext);
+                    insertBarrier(p);
                     break;
                 }
                 case 2: {
                     auto p = std::get<ComputePass>(pass);
                     p.callback(computeContext);
+                    insertBarrier(p);
                     break;
                 }
                 default:
