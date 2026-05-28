@@ -456,7 +456,10 @@ namespace xng::opengl {
 
             oglDebugStartGroup("RasterContextGL::setViewport");
 
-            glViewport(viewportOffset.x, frameBufferHeight - viewportOffset.y, viewportSize.x, viewportSize.y);
+            glViewport(viewportOffset.x,
+                       frameBufferHeight - (viewportOffset.y + viewportSize.y),
+                       viewportSize.x,
+                       viewportSize.y);
             oglCheckError();
 
             oglDebugEndGroup();
