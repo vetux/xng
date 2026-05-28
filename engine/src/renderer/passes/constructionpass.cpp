@@ -32,7 +32,7 @@ namespace xng {
     static vec4 texture_atlas(Param<ShaderTexture> textureDef, Param<vec2> inUv) {
         IRFunction
 
-        TextureArray(TEXTURE_2D_ARRAY, RGBA8, 12, atlasTextures)
+        TextureArray(TEXTURE_2D_ARRAY, RGBA8, 12, textures)
 
         ivec4 level_index_filtering_assigned = textureDef.value().level_index_filtering_assigned;
         vec4 atlasScale_texSize = textureDef.value().scale_texSize;
@@ -42,11 +42,11 @@ namespace xng {
         Else
             vec2 uv = inUv * atlasScale_texSize.xy();
             If(level_index_filtering_assigned.z() == 1)
-                IRReturn(textureBicubicArray(atlasTextures[level_index_filtering_assigned.x()],
+                IRReturn(textureBicubicArray(textures[level_index_filtering_assigned.x()],
                     vec3(uv.x(), uv.y(), level_index_filtering_assigned.y()),
                     atlasScale_texSize.zw()));
             Else
-                IRReturn(vec4(textureSampleArray(atlasTextures[level_index_filtering_assigned.x()],
+                IRReturn(vec4(textureSampleArray(textures[level_index_filtering_assigned.x()],
                     vec3(uv.x(), uv.y(), level_index_filtering_assigned.y()))));
             Fi
         Fi
@@ -71,17 +71,19 @@ namespace xng {
         Output(vec3, fT)
         Output(vec3, fB)
         Output(vec3, fN)
-        Output(mat4, fModel)
-        OutputFlat(UInt, fMaterialIndex)
-        OutputFlat(UInt, fObjectID)
-        OutputFlat(Bool, fReceiveShadows)
+        OutputFlat(mat4, fModel)
+        OutputFlat(Int, fMaterialIndex)
+        OutputFlat(Int, fObjectID)
+        OutputFlat(Int, fReceiveShadows)
 
-        Buffer(ShaderCamera, camera)
+        //TODO: Nested buffer struct type definitions
+        ShaderTexture _tex;
+
         DynamicBuffer(ShaderTransform, transforms)
         DynamicBuffer(ShaderMaterial, materials)
         DynamicBuffer(ShaderDrawMesh, drawBuffer)
 
-        TextureArray(TEXTURE_2D_ARRAY, RGBA8, 12, atlasTextures)
+        TextureArray(TEXTURE_2D_ARRAY, RGBA8, 12, textures)
 
         UInt modelIndex = getBaseInstance() + getDrawID() + getInstanceID();
 
@@ -104,9 +106,14 @@ namespace xng {
 
         fModel = model;
 
-        fMaterialIndex = drawBuffer[modelIndex].materialIndex;
-        fObjectID = drawBuffer[modelIndex].modelID;
-        fReceiveShadows = drawBuffer[modelIndex].receiveShadows;
+        fMaterialIndex = Int(drawBuffer[modelIndex].materialIndex);
+        fObjectID = Int(drawBuffer[modelIndex].modelID);
+
+        If(drawBuffer[modelIndex].receiveShadows)
+            fReceiveShadows = Int(1);
+        Else
+            fReceiveShadows = Int(0);
+        Fi
 
         setVertexPosition(vPos);
 
@@ -126,10 +133,10 @@ namespace xng {
         Input(vec3, fT)
         Input(vec3, fB)
         Input(vec3, fN)
-        Input(mat4, fModel)
-        InputFlat(UInt, fMaterialIndex)
-        InputFlat(UInt, fObjectID)
-        InputFlat(Bool, fReceiveShadows)
+        InputFlat(mat4, fModel)
+        InputFlat(Int, fMaterialIndex)
+        InputFlat(Int, fObjectID)
+        InputFlat(Int, fReceiveShadows)
 
         Output(vec4, oPosition)
         Output(vec4, oNormal)
@@ -138,13 +145,14 @@ namespace xng {
         Output(vec4, oAlbedo)
         Output(ivec4, oObjectShadows)
 
-        Buffer(ShaderCamera, camera)
+        //TODO: Nested buffer struct type definitions
+        ShaderTexture _tex;
+
         DynamicBuffer(ShaderTransform, transforms)
         DynamicBuffer(ShaderMaterial, materials)
-        DynamicBuffer(ShaderTransform, bones)
         DynamicBuffer(ShaderDrawMesh, drawBuffer)
 
-        TextureArray(TEXTURE_2D_ARRAY, RGBA8, 12, atlasTextures)
+        TextureArray(TEXTURE_2D_ARRAY, RGBA8, 12, textures)
 
         ShaderMaterial material = materials[fMaterialIndex];
 
@@ -192,10 +200,10 @@ namespace xng {
             oNormal = vec4(normalize(texNormal), 1);
         Fi
 
-        oObjectShadows.x() = fObjectID;
-        oObjectShadows.y() = fReceiveShadows;
-        oObjectShadows.z() = 0;
-        oObjectShadows.w() = 1;
+        oObjectShadows.x() = Int(fObjectID);
+        oObjectShadows.y() = Int(fReceiveShadows);
+        oObjectShadows.z() = Int(0);
+        oObjectShadows.w() = Int(0);
 
         EndShader();
 

@@ -28,7 +28,7 @@ namespace xng {
     /**
      * Generates the GBuffer for deferred shading.
      */
-    class ConstructionPass final : public RenderPass {
+    class XENGINE_EXPORT ConstructionPass final : public RenderPass {
     public:
         /**
          * The geometry buffer.
@@ -94,8 +94,8 @@ namespace xng {
 
         explicit ConstructionPass(rg::PipelineCache &pipelineCache)
             : ConstructionPass(pipelineCache,
-                               compileFragmentShader(),
-                               compileVertexShader()) {
+                               compileVertexShader(),
+                               compileFragmentShader()) {
         }
 
         ConstructionPass(rg::PipelineCache &pipelineCache,
@@ -129,8 +129,8 @@ namespace xng {
                     .attachColor(rg::Attachment(gBuffer.roughnessMetallicAO, Vec4f(0)))
                     .attachColor(rg::Attachment(gBuffer.albedo, Vec4f(0)))
                     .attachColor(rg::Attachment(gBuffer.objectIdReceiveShadows, Vec4i(0)))
-                    .attachDepth(rg::Attachment(gBuffer.depthStencil,
-                                                rg::Texture::DepthStencilClearValue(1.0f, SHADING_MODEL_NONE)));
+                    .attachDepthStencil(rg::Attachment(gBuffer.depthStencil,
+                                                       rg::Texture::DepthStencilClearValue(1.0f, SHADING_MODEL_NONE)));
 
             // Declare Accesses
             builder.storageRead(scene.cameraBuffer, {rg::Shader::VERTEX});
@@ -176,11 +176,11 @@ namespace xng {
                 }
             }
 
-            return builder.execute([this, &scene, &gBuffer](rg::RasterContext &cmd) {
-                cmd.setViewport({}, gBuffer.resolution);
-
+            return builder.execute([this, &scene, gBuffer](rg::RasterContext &cmd) {
                 // Bind pipeline
                 cmd.bindPipeline(pipeline);
+
+                cmd.setViewport({}, gBuffer.resolution);
 
                 // Bind Vertex Buffers
                 for (auto attr = ATTRIBUTE_BEGIN;
@@ -196,11 +196,6 @@ namespace xng {
                 cmd.bindIndexBuffer(scene.indexBuffer, rg::INDEX_UNSIGNED_INT);
 
                 // Bind storage buffers
-                cmd.bindStorageBuffer("camera",
-                                      scene.cameraBuffer,
-                                      0,
-                                      scene.cameraBuffer.getDescription().size);
-
                 cmd.bindStorageBuffer("drawBuffer",
                                       scene.drawBuffer,
                                       0,
@@ -259,15 +254,18 @@ namespace xng {
             ret.depthAttachment = rg::ColorFormat::DEPTH24_STENCIL8;
             ret.stencilAttachment = rg::ColorFormat::DEPTH24_STENCIL8;
 
+            std::vector<size_t> offsets;
+            offsets.resize(5, 0);
+
             ret.vertexFormat = rg::RasterPipeline::VertexFormat(vertexShader.inputLayout,
                                                                 {
                                                                     POSITION,
                                                                     NORMAL,
+                                                                    UV,
                                                                     TANGENT,
                                                                     BITANGENT,
-                                                                    UV
                                                                 },
-                                                                std::vector<size_t>(7, 0));
+                                                                offsets);
             return ret;
         }
 
