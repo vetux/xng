@@ -24,11 +24,18 @@
 namespace xng::shaderlib::texfilter {
     using namespace xng::ShaderScript;
 
-    XENGINE_EXPORT vec4 textureBicubic(Param<Texture2D<rg::RGBA8>> texture, Param<vec2> uv);
+    XENGINE_EXPORT vec4 textureBicubic(Param<Texture2D<rg::RGBA8> > texture, Param<vec2> uv);
 
-    XENGINE_EXPORT vec4 textureBicubicMS(Param<Texture2DMS<rg::RGBA8>> texture, Param<vec2> uv, Param<Int> samples);
+    XENGINE_EXPORT vec4 textureBicubicMS(Param<Texture2DMS<rg::RGBA8> > texture, Param<vec2> uv, Param<Int> samples);
 
-    XENGINE_EXPORT vec4 textureBicubicArray(Param<Texture2DArray<rg::RGBA8>> texture, Param<vec3> uv, Param<vec2> size);
+    XENGINE_EXPORT vec4 textureBicubicArray(Param<Texture2DArray<rg::RGBA8> > texture,
+                                            Param<vec3> uv,
+                                            Param<vec2> size);
+
+    XENGINE_EXPORT vec4 textureBicubicArrayLod(Param<Texture2DArray<rg::RGBA8> > texture,
+                                               Param<vec3> uv,
+                                               Param<vec2> size,
+                                               Param<Float> lod);
 }
 
 

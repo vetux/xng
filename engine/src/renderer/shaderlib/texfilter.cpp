@@ -27,10 +27,8 @@
 
 using namespace xng::ShaderScript;
 
-namespace xng::shaderlib
-{
-    vec4 textureMS(Param<Texture2DMS<rg::RGBA8>> color, Param<vec2> uv, Param<Int> samples)
-    {
+namespace xng::shaderlib {
+    vec4 textureMS(Param<Texture2DMS<rg::RGBA8> > color, Param<vec2> uv, Param<Int> samples) {
         IRFunction
 
         ivec2 size = textureSize(color);
@@ -49,8 +47,7 @@ namespace xng::shaderlib
         IRFunctionEnd
     }
 
-    vec4 cubic(Param<Float> v)
-    {
+    vec4 cubic(Param<Float> v) {
         IRFunction
         vec4 n = vec4(1.0f, 2.0f, 3.0f, 4.0f) - v;
         vec4 s = n * n * n;
@@ -62,8 +59,7 @@ namespace xng::shaderlib
         IRFunctionEnd
     }
 
-    vec4 texfilter::textureBicubic(Param<Texture2D<rg::RGBA8>> texture, Param<vec2> uv)
-    {
+    vec4 texfilter::textureBicubic(Param<Texture2D<rg::RGBA8> > texture, Param<vec2> uv) {
         IRFunction
         vec2 texSize;
         texSize = textureSize(texture, 0);
@@ -97,8 +93,7 @@ namespace xng::shaderlib
         IRFunctionEnd
     }
 
-    vec4 texfilter::textureBicubicMS(Param<Texture2DMS<rg::RGBA8>> texture, Param<vec2> uv, Param<Int> samples)
-    {
+    vec4 texfilter::textureBicubicMS(Param<Texture2DMS<rg::RGBA8> > texture, Param<vec2> uv, Param<Int> samples) {
         IRFunction
         vec2 texSize;
         texSize = textureSize(texture);
@@ -133,8 +128,9 @@ namespace xng::shaderlib
     }
 
     // TODO: Sample texture arrays with integer coordinates / texelFetch
-    vec4 texfilter::textureBicubicArray(Param<Texture2DArray<rg::RGBA8>> texture, Param<vec3> uv, Param<vec2> size)
-    {
+    vec4 texfilter::textureBicubicArray(Param<Texture2DArray<rg::RGBA8> > texture,
+                                        Param<vec3> uv,
+                                        Param<vec2> size) {
         IRFunction
         vec2 texCoords = uv.value().xy();
 
@@ -159,6 +155,42 @@ namespace xng::shaderlib
         vec4 sample1 = textureSampleArray(texture, vec3(offset.y(), offset.z(), uv.value().z()));
         vec4 sample2 = textureSampleArray(texture, vec3(offset.x(), offset.w(), uv.value().z()));
         vec4 sample3 = textureSampleArray(texture, vec3(offset.y(), offset.w(), uv.value().z()));
+
+        Float sx = s.x() / (s.x() + s.y());
+        Float sy = s.z() / (s.z() + s.w());
+
+        IRReturn(vec4(mix(mix(sample3, sample2, sx), mix(sample1, sample0, sx), sy)));
+        IRFunctionEnd
+    }
+
+    vec4 texfilter::textureBicubicArrayLod(Param<Texture2DArray<rg::RGBA8> > texture,
+                                           Param<vec3> uv,
+                                           Param<vec2> size,
+                                           Param<Float> lod) {
+        IRFunction
+        vec2 texCoords = uv.value().xy();
+
+        vec2 invTexSize = 1.0f / size;
+
+        texCoords = texCoords * size - 0.5f;
+
+        vec2 fxy = fract(texCoords);
+        texCoords -= fxy;
+
+        vec4 xcubic = cubic(fxy.x());
+        vec4 ycubic = cubic(fxy.y());
+
+        vec4 c = texCoords.xxyy() + vec2(-0.5f, +1.5f).xyxy();
+
+        vec4 s = vec4(xcubic.xz() + xcubic.yw(), ycubic.xz() + ycubic.yw());
+        vec4 offset = c + vec4(xcubic.yw(), ycubic.yw()) / s;
+
+        offset *= invTexSize.xxyy();
+
+        vec4 sample0 = textureSampleArrayLod(texture, vec3(offset.x(), offset.z(), uv.value().z()), lod);
+        vec4 sample1 = textureSampleArrayLod(texture, vec3(offset.y(), offset.z(), uv.value().z()), lod);
+        vec4 sample2 = textureSampleArrayLod(texture, vec3(offset.x(), offset.w(), uv.value().z()), lod);
+        vec4 sample3 = textureSampleArrayLod(texture, vec3(offset.y(), offset.w(), uv.value().z()), lod);
 
         Float sx = s.x() / (s.x() + s.y());
         Float sy = s.z() / (s.z() + s.w());
