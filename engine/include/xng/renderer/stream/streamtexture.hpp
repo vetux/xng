@@ -177,7 +177,15 @@ namespace xng {
             for (auto &pair: pendingUploadsCopy) {
                 pendingUploads[pair.first] = {};
                 for (auto &pendingUpload: pair.second) {
-                    if (pendingUpload.flushed || buffer.isUploadComplete(pendingUpload.bufferHandle)) {
+                    if (pendingUpload.committed) {
+                        // Pass already generated; wait for ChunkStreamer to finish before releasing.
+                        if (buffer.isUploadComplete(pendingUpload.bufferHandle)) {
+                            buffer.release(pendingUpload.bufferHandle);
+                            bufferAllocator.free(pendingUpload.bufferOffset, pendingUpload.bufferSize);
+                        } else {
+                            pendingUploads[pair.first].emplace_back(pendingUpload);
+                        }
+                    } else if (pendingUpload.flushed || buffer.isUploadComplete(pendingUpload.bufferHandle)) {
                         // Execute copy from stream buffer to texture
                         const auto slot = pair.first;
                         const auto upload = pendingUpload;
@@ -193,11 +201,22 @@ namespace xng {
                                                             upload.bufferOffset,
                                                             Recti({}, mipSize),
                                                             upload.bufferFormat);
+                                    ctx.generateMipMaps(texture);
                                 });
                         graph.addPass(pass);
 
-                        buffer.release(pendingUpload.bufferHandle);
-                        bufferAllocator.free(pendingUpload.bufferOffset, pendingUpload.bufferSize);
+                        if (buffer.isUploadComplete(pendingUpload.bufferHandle)) {
+                            // ChunkStreamer already done; safe to release now.
+                            buffer.release(pendingUpload.bufferHandle);
+                            bufferAllocator.free(pendingUpload.bufferOffset, pendingUpload.bufferSize);
+                        } else {
+                            // Flushed but ChunkStreamer hasn't run yet.
+                            // Defer release so chunkStreamer.release() doesn't erase the
+                            // upload chunks before chunkStreamer.commit() processes them.
+                            PendingUpload deferred = pendingUpload;
+                            deferred.committed = true;
+                            pendingUploads[pair.first].emplace_back(deferred);
+                        }
                     } else {
                         pendingUploads[pair.first].emplace_back(pendingUpload);
                     }
@@ -222,6 +241,7 @@ namespace xng {
             int mipLevel;
 
             bool flushed;
+            bool committed;
 
             PendingUpload(const StreamBuffer::Handle bufferHandle,
                           const rg::ColorFormat bufferFormat,
@@ -233,7 +253,8 @@ namespace xng {
                   bufferOffset(bufferOffset),
                   bufferSize(bufferSize),
                   mipLevel(mipLevel),
-                  flushed(false) {
+                  flushed(false),
+                  committed(false) {
             }
         };
 
