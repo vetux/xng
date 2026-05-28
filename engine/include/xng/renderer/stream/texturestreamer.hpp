@@ -95,7 +95,7 @@ namespace xng {
                 desc.mipMode = rg::NEAREST;
                 desc.filterMin = rg::NEAREST;
                 desc.filterMag = rg::NEAREST;
-                desc.wrapping = rg::TextureWrapping::CLAMP_TO_BORDER;
+                desc.wrapping = rg::TextureWrapping::CLAMP_TO_EDGE;
                 textures.emplace(res, StreamTexture(heap, chunkStreamer, desc));
             }
         }
