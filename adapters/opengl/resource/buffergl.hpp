@@ -97,6 +97,8 @@ namespace xng::opengl {
         }
 
         [[nodiscard]] uint8_t *map() const {
+            oglDebugStartGroup("BufferGL::map");
+
             glBindBuffer(target, handle);
 
             GLenum access = GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT | GL_MAP_WRITE_BIT | GL_MAP_READ_BIT;
@@ -115,14 +117,18 @@ namespace xng::opengl {
 
             oglCheckError();
 
+            oglDebugEndGroup();
+
             return static_cast<uint8_t *>(ret);
         }
 
         void unmap() const {
+            oglDebugStartGroup("BufferGL::unmap");
             glBindBuffer(target, handle);
             glUnmapBuffer(target);
             glBindBuffer(target, 0);
             oglCheckError();
+            oglDebugEndGroup();
         }
     };
 }
