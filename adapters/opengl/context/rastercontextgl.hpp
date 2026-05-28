@@ -131,12 +131,12 @@ namespace xng::opengl {
 
                 if (isIntegerFormat(elements.at(i).component)) {
                     glVertexAttribIFormat(i,
-                                          elements.at(i).getSize(),
+                                          ShaderPrimitiveType::getCount(elements.at(i).type),
                                           getType(elements.at(i).component),
                                           offsets.at(i));
                 } else {
                     glVertexAttribFormat(i,
-                                         elements.at(i).getSize(),
+                                         ShaderPrimitiveType::getCount(elements.at(i).type),
                                          getType(elements.at(i).component),
                                          GL_FALSE,
                                          offsets.at(i));
