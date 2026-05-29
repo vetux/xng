@@ -135,10 +135,13 @@ namespace xng {
             // Declare Accesses
             builder.storageRead(scene.cameraBuffer, {rg::Shader::VERTEX});
 
+            size_t totalDrawCount = 0;
             for (auto &batch: scene.drawList) {
                 if (batch.renderPath != RENDER_PATH_DEFERRED) {
                     continue;
                 }
+
+                totalDrawCount++;
 
                 for (auto &access: batch.drawBufferAccesses) {
                     builder.storageRead(scene.drawBuffer, {rg::Shader::VERTEX}, access.offset, access.size);
@@ -174,6 +177,11 @@ namespace xng {
                                                                              1));
                     }
                 }
+            }
+
+            if (totalDrawCount <= 0) {
+                return builder.execute([](rg::RasterContext &cmd) {
+                });
             }
 
             return builder.execute([this, &scene, gBuffer](rg::RasterContext &cmd) {

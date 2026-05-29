@@ -105,6 +105,11 @@ namespace xng {
 
         rg::ComputePassBuilder builder("SkinningPass");
 
+        if (meshes.empty()) {
+            return builder.execute([](rg::ComputeContext &ctx) {
+            });
+        }
+
         // Declare Accesses
         std::unordered_set<RenderObjectHandle<RenderSkeleton> > processedSkeletons;
         for (auto &mesh: meshes) {
@@ -277,10 +282,6 @@ namespace xng {
         scene.spotLightBuffer = rg::Resource(buffers.spotLightBuffer);
         scene.directionalLightBuffer = rg::Resource(buffers.directionalLightBuffer);
 
-        scene.drawBuffer = graphBuilder.allocateBuffer(rg::Buffer(totalDrawCount * sizeof(ShaderDrawMesh::CPU),
-                                                                  rg::Buffer::CAPABILITY_STORAGE,
-                                                                  rg::Buffer::MEMORY_GPU_ONLY));
-
         //TODO: Staging buffers for camera / meshIndices / config
         {
             ShaderCamera::CPU camera;
@@ -300,6 +301,17 @@ namespace xng {
             std::memcpy(configMapping->data(), &config, sizeof(ShaderConfiguration::CPU));
         }
         scene.configBuffer = rg::Resource(configBuffer);
+
+        rg::ComputePassBuilder builder("ScenePrePass");
+
+        if (totalDrawCount <= 0) {
+            return builder.execute([](rg::ComputeContext &ctx) {
+            });
+        }
+
+        scene.drawBuffer = graphBuilder.allocateBuffer(rg::Buffer(totalDrawCount * sizeof(ShaderDrawMesh::CPU),
+                                                          rg::Buffer::CAPABILITY_STORAGE,
+                                                          rg::Buffer::MEMORY_GPU_ONLY));
 
         meshIndicesBuffer = heap.allocateBuffer(rg::Buffer(totalDrawCount * sizeof(int),
                                                            rg::Buffer::CAPABILITY_STORAGE
@@ -326,8 +338,6 @@ namespace xng {
 
         // TODO: Split draw batches across (oversized) batch counts to allow command buffer reuse.
         // TODO: Share single indirect / count buffer across batches.
-
-        rg::ComputePassBuilder builder("ScenePrePass");
 
         for (const auto &batch: forwardBatches) {
             const auto indirectBuffer = graphBuilder.allocateBuffer(rg::Buffer(
