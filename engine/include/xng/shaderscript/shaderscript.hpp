@@ -676,11 +676,11 @@ namespace xng::ShaderScript {
         explicit DynamicBufferWrapper(ShaderObject &&buffer) : object(buffer) {
         }
 
-        ShaderDataObject<VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT> operator[](const Int &index) {
+        ShaderObject operator[](const Int &index) {
             return object[index];
         }
 
-        ShaderDataObject<VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT> operator[](const int index) {
+        ShaderObject operator[](const int index) {
             return object[Int(index)];
         }
 
