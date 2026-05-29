@@ -428,12 +428,13 @@ int main(int argc, char *argv[]) {
         std::make_shared<DeferredPBRPass>(runtime->getResourceHeap(), runtime->getPipelineCache())
     });
 
-    printf("Loading Assets...\n");
+    std::cout << "Loading Assets..." << std::endl;
     ResourceRegistry::getDefaultRegistry().awaitAll();
 
+    std::cout << "Allocating Objects..." << std::endl;
     auto drawList = createDrawList(ren.getAllocator());
 
-    printf("Ready\n");
+    std::cout << "Ready" << std::endl;
 
     FrameLimiter frameLimiter(0);
     frameLimiter.reset();
@@ -460,7 +461,7 @@ int main(int argc, char *argv[]) {
 
     RendererStatistics stats;
     while (!window->shouldClose()) {
-        std::cout << frameLimiter.getFramerate() << std::endl;
+        std::cout << frameLimiter.getFramerate() << " fps" << std::endl;
         frameLimiter.newFrame();
         window->update();
 
