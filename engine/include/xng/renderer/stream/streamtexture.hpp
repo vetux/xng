@@ -91,6 +91,12 @@ namespace xng {
         void upload(const Slot &slot,
                     const ImageRGBA &image,
                     const int mipLevel = 0) {
+            auto mipSize = texture.getDescription().getMipLevelSize(mipLevel);
+            if (image.getResolution().x > mipSize.x
+                || image.getResolution().y > mipSize.y) {
+                throw std::runtime_error("Image resolution exceeds mip size");
+            }
+
             const auto uploadsCopy = std::move(pendingUploads.at(slot));
             pendingUploads.at(slot).clear();
             for (auto &upload: uploadsCopy) {
@@ -109,7 +115,8 @@ namespace xng {
                                                     size,
                                                     offset);
 
-            pendingUploads[slot].emplace_back(PendingUpload(bufferHandle, rg::SRGB8_ALPHA8, offset, size, mipLevel));
+            pendingUploads[slot].emplace_back(PendingUpload(bufferHandle, rg::SRGB8_ALPHA8, offset, size, mipLevel,
+                                                            image.getResolution()));
         }
 
         bool isUploadComplete(const Slot &slot, const int mipLevel) const {
@@ -194,12 +201,11 @@ namespace xng {
                                 .read(stableBuffer, upload.bufferOffset, upload.bufferSize)
                                 .write(texture, rg::TextureBinding::Range(upload.mipLevel, 1, pair.first, 1))
                                 .execute([this, slot, upload, stableBuffer](rg::TransferContext &ctx) {
-                                    const auto mipSize = texture.getDescription().getMipLevelSize(upload.mipLevel);
                                     ctx.copyBufferToTexture(texture,
                                                             stableBuffer,
                                                             rg::Texture::SubResource(upload.mipLevel, slot, {}),
                                                             upload.bufferOffset,
-                                                            Recti({}, mipSize),
+                                                            Recti({}, upload.imageSize),
                                                             upload.bufferFormat);
                                     ctx.generateMipMaps(texture);
                                 });
@@ -240,6 +246,8 @@ namespace xng {
 
             int mipLevel;
 
+            Vec2i imageSize;
+
             bool flushed;
             bool committed;
 
@@ -247,12 +255,14 @@ namespace xng {
                           const rg::ColorFormat bufferFormat,
                           const size_t bufferOffset,
                           const size_t bufferSize,
-                          const int mipLevel)
+                          const int mipLevel,
+                          const Vec2i &imageSize)
                 : bufferHandle(bufferHandle),
                   bufferFormat(bufferFormat),
                   bufferOffset(bufferOffset),
                   bufferSize(bufferSize),
                   mipLevel(mipLevel),
+                  imageSize(imageSize),
                   flushed(false),
                   committed(false) {
             }
