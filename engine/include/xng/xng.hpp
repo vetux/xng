@@ -164,8 +164,6 @@
 #include "xng/shaderscript/shaderscript.hpp"
 #include "xng/shaderscript/shaderobject.hpp"
 #include "xng/shaderscript/indirectbuffers.hpp"
-#include "xng/shaderscript/macro/shaderstruct.hpp"
-#include "xng/shaderscript/macro/helpermacros.hpp"
 #include "xng/animation/pose.hpp"
 #include "xng/animation/animationchannel.hpp"
 #include "xng/async/threadpool.hpp"
