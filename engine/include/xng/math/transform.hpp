@@ -20,6 +20,7 @@
 #define XENGINE_TRANSFORM_HPP
 
 #include "xng/math/vector3.hpp"
+#include "xng/math/vector4.hpp"
 #include "xng/math/quaternion.hpp"
 #include "xng/math/matrixmath.hpp"
 
@@ -115,12 +116,75 @@ namespace xng {
             return !(*this == other);
         }
 
-        Transform &operator+=(const Transform &other) {
-            mPosition += other.mPosition;
-            mRotation = other.mRotation * mRotation;
-            mScale += other.mScale;
+        /**
+         * Explicitly moves along the object's local orientation vectors
+         */
+        void translateLocal(const Vec3f &offset) {
+            // Multiply offset by current rotation quaternion/matrix first
+            auto rOffset = mRotation.matrix() * Vec4f(offset.x, offset.y, offset.z, 0.0f);
+            mPosition += Vec3f(rOffset.x, rOffset.y, rOffset.z);
             updateModelMatrix();
-            return *this;
+        }
+
+        /**
+         * Moves strictly along the world X, Y, Z grid lines
+         */
+        void translateWorld(const Vec3f &offset) {
+            mPosition += offset;
+            updateModelMatrix();
+        }
+
+        /**
+         * Rotate around the object's own local axes (e.g. pitching up/down relative to where it looks)
+         */
+        void rotateLocal(const Quaternion &deltaRotation) {
+            // Child First: Multiply on the RIGHT Side
+            mRotation = mRotation * deltaRotation;
+            updateModelMatrix();
+        }
+
+        /**
+         * Rotate around the global, unmoving world coordinate grid axes
+         */
+        void rotateWorld(const Quaternion &deltaRotation) {
+            // World First: Multiply on the LEFT Side
+            mRotation = deltaRotation * mRotation;
+            updateModelMatrix();
+        }
+
+        /**
+         * Scale along the object's current size (Multiplicative accumulation)
+         */
+        void scaleLocal(const Vec3f &scaleMultiplier) {
+            mScale.x *= scaleMultiplier.x;
+            mScale.y *= scaleMultiplier.y;
+            mScale.z *= scaleMultiplier.z;
+            updateModelMatrix();
+        }
+
+        /**
+         * Return world transform relative to parent.
+         *
+         * @param parent
+         * @return
+         */
+        [[nodiscard]] Transform getWorldTransform(const Transform &parent) const {
+            Transform ret = Transform(mPosition, mRotation, mScale);
+
+            // 1. POSITION: Rotate and scale the child's local position by the parent,
+            // then offset it by the parent's world position.
+            Vec4f rotatedScaledPos = parent.model() * Vec4f(ret.mPosition.x, ret.mPosition.y, ret.mPosition.z, 1.0f);
+            ret.mPosition = Vec3f(rotatedScaledPos.x, rotatedScaledPos.y, rotatedScaledPos.z);
+
+            // 2. ROTATION: Accumulate rotations using quaternion multiplication order (Parent * Child)
+            ret.mRotation = parent.mRotation * ret.mRotation;
+
+            // 3. SCALE: Scales MUST be multiplied, never added!
+            ret.mScale = ret.mScale * parent.mScale;
+
+            ret.updateModelMatrix();
+
+            return ret;
         }
 
         Messageable &operator<<(const Message &message) override {

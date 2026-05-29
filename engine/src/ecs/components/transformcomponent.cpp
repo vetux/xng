@@ -20,11 +20,11 @@
 
 namespace xng {
     Transform TransformComponent::getAbsoluteTransform(const TransformComponent &component, EntityScene &scene) {
-        Transform ret = component.transform;
         if (!component.parent.empty()) {
-            ret += getAbsoluteTransform(scene.getComponent<TransformComponent>(scene.getEntityByName(component.parent)),
-                                        scene);
+            return component.transform.getWorldTransform(getAbsoluteTransform(
+                scene.getComponent<TransformComponent>(scene.getEntityByName(component.parent)),
+                scene));
         }
-        return ret;
+        return component.transform;
     }
 }
