@@ -69,7 +69,8 @@ void createCornellInstance(RenderAllocator &allocator, Resources &res, RenderDra
                                                 1,
                                                 1,
                                                 1,
-                                                Vec4f(1),
+                                                1,
+                                                false,
                                                 boxAlbedo,
                                                 {},
                                                 {},
@@ -106,13 +107,14 @@ void createCornellInstance(RenderAllocator &allocator, Resources &res, RenderDra
     brickAo->setImage(res.brickAo.get());
     brickNormal->setImage(res.brickNormal.get());
 
-    SamplingProperties brickProps(FILTER_NEAREST, FILTER_NEAREST, rg::LINEAR, WRAP_REPEAT);
+    SamplingProperties brickProps(FILTER_BICUBIC, FILTER_BICUBIC, rg::LINEAR, WRAP_REPEAT);
 
     auto brickMaterial = allocator.createMaterial({},
                                                   1,
                                                   1,
                                                   1,
-                                                  Vec4f(1),
+                                                  1,
+                                                  true,
                                                   brickAlbedo,
                                                   brickProps,
                                                   brickMetallic,
@@ -154,7 +156,8 @@ void createCornellInstance(RenderAllocator &allocator, Resources &res, RenderDra
                                                              0,
                                                              0,
                                                              0,
-                                                             Vec4f(1),
+                                                             1,
+                                                             true,
                                                              rustedIronAlbedo,
                                                              {},
                                                              rustedIronMetallic,
@@ -188,7 +191,8 @@ void createCornellInstance(RenderAllocator &allocator, Resources &res, RenderDra
                                                        1,
                                                        1,
                                                        1,
-                                                       Vec4f(1),
+                                                       1,
+                                                       true,
                                                        goldAlbedo,
                                                        {},
                                                        goldMetallic,

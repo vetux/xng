@@ -44,6 +44,7 @@ namespace xng {
          * @param _normal
          * @param normalProperties
          * @param normalIntensity
+         * @param flipNormal Whether to flip the y value of the sampled normal. This is required because some modeling software only allows baking normals in right-handed coordinate space and XNG uses left-handed coordinate space.
          */
         explicit RenderMaterial(const Id id,
                                 BufferStreamer<ShaderMaterial::CPU> &materialStream,
@@ -61,7 +62,8 @@ namespace xng {
                                 const SamplingProperties &ambientOcclusionProperties,
                                 RenderObjectHandle<RenderTexture> _normal,
                                 const SamplingProperties &normalProperties,
-                                const Vec4f &normalIntensity)
+                                const float normalIntensity,
+                                const bool flipNormal)
             : RenderObject(OBJECT_MATERIAL, id),
               materialStream(materialStream),
               albedo(std::move(_albedo)),
@@ -77,7 +79,7 @@ namespace xng {
                                                                  roughnessColor,
                                                                  ambientOcclusionColor,
                                                                  0);
-            material.normalIntensity = normalIntensity;
+            material.normalIntensity_flipNormal = Vec4f(normalIntensity, flipNormal ? 1.0f : 0.0f, 0, 0);
 
             if (albedo) {
                 const auto &handle = albedo->getHandle();

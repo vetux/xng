@@ -33,7 +33,6 @@ namespace xng {
         IRFunction
 
         //TODO: Find cause of artifacts when sampling from normal textures with BILINEAR or BICUBIC filtering.
-
         TextureArray(TEXTURE_2D_ARRAY, RGBA8, 12, textures)
 
         ivec2 level_index = textureDef.value().level_index;
@@ -42,87 +41,95 @@ namespace xng {
 
         vec2 wrappedUv;
         If(minFilter_magFilter_mipFilter_wrap.w() == WRAP_REPEAT)
-            wrappedUv = fract(inUv); // REPEAT
+            wrappedUv = fract(inUv);
         Else
             If(minFilter_magFilter_mipFilter_wrap.w() == WRAP_CLAMP_TO_EDGE)
-                wrappedUv = clamp(inUv, vec2(0.0f), vec2(1.0f)); // CLAMP
+                wrappedUv = clamp(inUv, vec2(0.0f), vec2(1.0f));
             Else
-                wrappedUv = 1.0f - abs(mod(inUv, vec2(2.0f)) - 1.0f); // MIRROR
+                wrappedUv = 1.0f - abs(mod(inUv, vec2(2.0f)) - 1.0f);
             Fi
         Fi
 
         vec2 uv = wrappedUv * atlasScale_texSize.xy();
+        vec2 imagePixelSize = atlasScale_texSize.zw();
 
-        // Actual pixel dimensions of this image within the layer
-        vec2 imagePixelSize = atlasScale_texSize.xy() * atlasScale_texSize.zw();
+        vec2 dx = partialDerivativeX(inUv);
+        vec2 dy = partialDerivativeY(inUv);
 
-        // Derivatives in texel space — use inUv not uv, before the scale bakes in
-        vec2 dx = partialDerivativeX(inUv * imagePixelSize);
-        vec2 dy = partialDerivativeY(inUv * imagePixelSize);
-        // Use min to avoid over-mipping at UV seams: one gradient vector is large at the seam
-        // (crosses the UV discontinuity) while the other is normal; min picks the normal one.
-        Float lod = 0.5f * log2(min(dot(dx, dx), dot(dy, dy)) + 1e-10f);
+        // Correct for seam discontinuities before scaling
+        // A seam-crossing derivative is ~±1.0 in UV space — round() cancels it
+        dx = dx - round(dx);
+        dy = dy - round(dy);
 
-        // Clamp so you never sample a mip level coarser than the image content
+        // Now scale to pixel space for LoD
+        dx = dx * imagePixelSize;
+        dy = dy * imagePixelSize;
+
+        Float lod = 0.5f * log2(max(dot(dx, dx), dot(dy, dy)) + 1e-10f);
+
         Float maxLod = log2(min(imagePixelSize.x(), imagePixelSize.y()));
         lod = clamp(lod, 0.0f, maxLod);
+        Float lodFloor = floor(lod);
+        Float lodCeil = min(lodFloor + 1.0f, maxLod);
+        Float lodFrac = fract(lod);
 
         Int layer = level_index.y();
         Int arrayIndex = level_index.x();
+        Int wrap = minFilter_magFilter_mipFilter_wrap.w();
 
         vec4 ret;
         If(lod <= 0.0f)
-            // Magnification
             Int magFilter = minFilter_magFilter_mipFilter_wrap.y();
             If(magFilter == FILTER_BICUBIC)
-                ret = textureBicubicArray(textures[arrayIndex], vec3(uv.x(), uv.y(), layer), imagePixelSize);
+                ret = textureBicubicArray(textures[arrayIndex], vec3(wrappedUv.x(), wrappedUv.y(), layer),
+                                          imagePixelSize, wrap);
             Else
                 If(magFilter == FILTER_BILINEAR)
-                    ret = textureBilinearArray(textures[arrayIndex], vec3(uv.x(), uv.y(), layer), imagePixelSize);
+                    ret = textureBilinearArray(textures[arrayIndex], vec3(wrappedUv.x(), wrappedUv.y(), layer),
+                                               imagePixelSize, wrap);
                 Else
                     ret = textureSampleArray(textures[arrayIndex], vec3(uv.x(), uv.y(), layer));
                 Fi
             Fi
         Else
-            // Minification
             Int minFilter = minFilter_magFilter_mipFilter_wrap.x();
             Int mipFilter = minFilter_magFilter_mipFilter_wrap.z();
-
-            Float lodFloor = floor(lod);
-            Float lodCeil = min(lodFloor + 1.0f, maxLod); // clamp s1
-            Float lodFrac = fract(lod);
 
             If(minFilter == FILTER_BICUBIC)
                 If(mipFilter == rg::NEAREST)
                     ret = textureBicubicArrayLod(textures[arrayIndex],
-                                                 vec3(uv.x(), uv.y(), layer), imagePixelSize, lodFloor);
+                                                 vec3(wrappedUv.x(), wrappedUv.y(), layer), imagePixelSize, lodFloor,
+                                                 wrap);
                 Else
                     vec4 s0 = textureBicubicArrayLod(textures[arrayIndex],
-                                                     vec3(uv.x(), uv.y(), layer), imagePixelSize, lodFloor);
+                                                     vec3(wrappedUv.x(), wrappedUv.y(), layer), imagePixelSize,
+                                                     lodFloor, wrap);
                     vec4 s1 = textureBicubicArrayLod(textures[arrayIndex],
-                                                     vec3(uv.x(), uv.y(), layer), imagePixelSize, lodCeil);
+                                                     vec3(wrappedUv.x(), wrappedUv.y(), layer), imagePixelSize, lodCeil,
+                                                     wrap);
                     ret = mix(s0, s1, lodFrac);
                 Fi
             Else
                 If(minFilter == FILTER_BILINEAR)
                     If(mipFilter == rg::NEAREST)
                         ret = textureBilinearArrayLod(textures[arrayIndex],
-                                                     vec3(uv.x(), uv.y(), layer), imagePixelSize, lodFloor);
+                                                      vec3(wrappedUv.x(), wrappedUv.y(), layer), imagePixelSize,
+                                                      lodFloor, wrap);
                     Else
                         vec4 s0 = textureBilinearArrayLod(textures[arrayIndex],
-                                                         vec3(uv.x(), uv.y(), layer), imagePixelSize, lodFloor);
+                                                          vec3(wrappedUv.x(), wrappedUv.y(), layer), imagePixelSize,
+                                                          lodFloor, wrap);
                         vec4 s1 = textureBilinearArrayLod(textures[arrayIndex],
-                                                         vec3(uv.x(), uv.y(), layer), imagePixelSize, lodCeil);
+                                                          vec3(wrappedUv.x(), wrappedUv.y(), layer), imagePixelSize,
+                                                          lodCeil, wrap);
                         ret = mix(s0, s1, lodFrac);
                     Fi
                 Else
                     If(mipFilter == rg::NEAREST)
                         ret = textureSampleArrayLod(textures[arrayIndex], vec3(uv.x(), uv.y(), layer), lodFloor);
                     Else
-                        vec4 s0 = textureSampleArrayLod(textures[arrayIndex],
-                                                        vec3(uv.x(), uv.y(), layer), lodFloor);
-                        vec4 s1 = textureSampleArrayLod(textures[arrayIndex],
-                                                        vec3(uv.x(), uv.y(), layer), lodCeil);
+                        vec4 s0 = textureSampleArrayLod(textures[arrayIndex], vec3(uv.x(), uv.y(), layer), lodFloor);
+                        vec4 s1 = textureSampleArrayLod(textures[arrayIndex], vec3(uv.x(), uv.y(), layer), lodCeil);
                         ret = mix(s0, s1, lodFrac);
                     Fi
                 Fi
@@ -182,7 +189,7 @@ namespace xng {
         //https://www.gamedeveloper.com/programming/three-normal-mapping-techniques-explained-for-the-mathematically-uninclined
         fN = normalize((model * vec4(normalize(normal), 0.0)).xyz());
         fT = normalize((model * vec4(normalize(tangent), 0.0)).xyz());
-        fB = normalize((model * vec4(cross(normalize(tangent), normalize(normal).xyz()) * 1, 0.0)).xyz());
+        fB = normalize((model * vec4(normalize(bitangent), 0.0)).xyz());
 
         fModel = model;
 
@@ -273,9 +280,15 @@ namespace xng {
 
         If(material.normal.level_index.x() >= 0)
             mat3 tbn = mat3(fT, fB, fN);
-            vec3 texNormal = texture_atlas(material.normal, fUv).xyz()
-                             * vec3(material.normalIntensity.x(), material.normalIntensity.x(), 1);
-            texNormal = tbn * normalize(texNormal * 2.0f - 1.0f);
+            vec3 texNormal = texture_atlas(material.normal, fUv).xyz();
+            texNormal = texNormal * 2.0f - 1.0f;
+            If(material.normalIntensity_flipNormal.y() != 0.0f)
+                texNormal.y() = texNormal.y() * -1.0f;
+            Fi
+            texNormal = vec3(texNormal.x() * material.normalIntensity_flipNormal.x(),
+                             texNormal.y() * material.normalIntensity_flipNormal.x(),
+                             texNormal.z());
+            texNormal = tbn * normalize(texNormal);
             oNormal = vec4(normalize(texNormal), 1);
         Fi
 

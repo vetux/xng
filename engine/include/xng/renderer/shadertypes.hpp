@@ -60,7 +60,7 @@ namespace xng {
     ShaderStruct(ShaderMaterial,
                  Vec4f, albedoColor,
                  Vec4f, metallic_roughness_ambientOcclusion,
-                 Vec4f, normalIntensity,
+                 Vec4f, normalIntensity_flipNormal,
                  ShaderTexture, normal,
                  ShaderTexture, metallic,
                  ShaderTexture, roughness,

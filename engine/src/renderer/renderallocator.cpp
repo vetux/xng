@@ -41,7 +41,8 @@ namespace xng {
                                                                        float metallic,
                                                                        float roughness,
                                                                        float ambientOcclusion,
-                                                                       const Vec4f &normalIntensity,
+                                                                       const float normalIntensity,
+                                                                       const bool flipNormal,
                                                                        RenderObjectHandle<RenderTexture> albedoTexture,
                                                                        SamplingProperties albedoProperties,
                                                                        RenderObjectHandle<RenderTexture>
@@ -72,7 +73,8 @@ namespace xng {
                                                 ambientOcclusionProperties,
                                                 std::move(normalTexture),
                                                 normalProperties,
-                                                normalIntensity);
+                                                normalIntensity,
+                                                flipNormal);
     }
 
     RenderObjectHandle<RenderSkeleton> RenderAllocator::createSkeleton(const std::vector<std::string> &boneNames) {
