@@ -43,24 +43,19 @@ namespace xng {
     }
 
     static ColliderShape getShape(const Mesh &mesh) {
-       /* if (mesh.vertexLayout != StaticModel::getVertexLayout()) {
-            throw std::runtime_error("Invalid mesh vertex layout");
+        if (mesh.positions.empty()) {
+            throw std::runtime_error("Mesh has no positions");
         }
         ColliderShape shape{};
-        assert(mesh.vertices.size() >= sizeof(float) * 2);
-        for (auto i = 0; i < mesh.vertices.size() / mesh.vertexLayout.getLayoutSize(); i++) {
-            auto offset = i * mesh.vertexLayout.getLayoutSize();
-            float posx = *reinterpret_cast<const float *>(mesh.vertices.data() + offset);
-            float posy = *reinterpret_cast<const float *>(mesh.vertices.data() + offset + sizeof(float));
-            float posz = *reinterpret_cast<const float *>(mesh.vertices.data() + offset + sizeof(float) * 2);
-            shape.vertices.emplace_back(posx,
-                                        posy,
-                                        posz);
+        for (auto &pos: mesh.positions) {
+            shape.vertices.emplace_back(pos.x,
+                                        pos.y,
+                                        pos.z);
         }
         for (auto &i: mesh.indices) {
             shape.indices.emplace_back(i);
         }
-        return shape;*/
+        return shape;
     }
 
     PhysicsSystem::PhysicsSystem(std::shared_ptr<PhysicsEngine> physicsEngine, float scale, float timeStep)
@@ -117,9 +112,9 @@ namespace xng {
                         body->setAngularFactor(pair.component.angularFactor);
                         body->setGravityScale(pair.component.gravityScale);
 
+                        colliderIndices[&body->getFixedCollider()] = 0;
                         rigidBodiesReverse[body.get()] = pair.entity;
                         rigidBodies[pair.entity] = std::move(body);
-                        colliderIndices[&body->getFixedCollider()] = 0;
                     }
                 } else if (scene.checkComponent<MeshColliderComponent>(pair.entity)) {
                     auto &colliderComponent = scene.getComponent<MeshColliderComponent>(pair.entity);
@@ -133,9 +128,9 @@ namespace xng {
                     body->setAngularFactor(pair.component.angularFactor);
                     body->setGravityScale(pair.component.gravityScale);
 
+                    colliderIndices[&body->getFixedCollider()] = 0;
                     rigidBodiesReverse[body.get()] = pair.entity;
                     rigidBodies[pair.entity] = std::move(body);
-                    colliderIndices[&body->getFixedCollider()] = 0;
                 } else {
                     auto body = world->createBody();
                     body->setRigidBodyType(pair.component.type);
