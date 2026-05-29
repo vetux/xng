@@ -76,9 +76,9 @@ workflow
 Check [BUILDING.md](BUILDING.md) for detailed building instructions.
 
 ## Notes
-### Blender FBX Export
+### Blender FBX Export > Assimp Importer
 - Set "Apply Scalings" to "FBX All""
-- Set "Forward" to "-Z Forward" and "Up" to "Y Up
+- Set "Forward" to "-Z Forward" and "Up" to "Y Up"
 - Check "Use Space Transform" to generate the coordinate space conversion transformations in the exported nodes.
 - Check "Tangent Space" in the exporter "Geometry" options to generate tangents and bitangents for the exported mesh.
 
