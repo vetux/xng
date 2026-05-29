@@ -502,7 +502,7 @@ int main(int argc, char *argv[]) {
                }
 
                stats = passScheduler->execute(graph3D);*/
-        ren.draw(surface, drawList);
+        ren.draw(surface, drawList.getResident());
     }
 
     return 0;

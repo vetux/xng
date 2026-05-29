@@ -278,6 +278,7 @@ namespace xng {
             scene.textures.emplace(pair.first, rg::Resource(pair.second));
         }
 
+        //TODO: Implement selective light buffers
         scene.pointLightBuffer = rg::Resource(buffers.pointLightBuffer);
         scene.spotLightBuffer = rg::Resource(buffers.spotLightBuffer);
         scene.directionalLightBuffer = rg::Resource(buffers.directionalLightBuffer);

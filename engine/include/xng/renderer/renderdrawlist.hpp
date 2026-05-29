@@ -49,6 +49,22 @@ namespace xng {
          * The screen space canvases are presented to the output surface in declaration order.
          */
         std::vector<RenderObjectHandle<RenderCanvas> > canvases;
+
+        RenderDrawList getResident() const {
+            RenderDrawList ret;
+            ret.camera = camera;
+            ret.config = config;
+            for (auto &model: models) {
+                if (model->isUploadComplete()) {
+                    ret.models.emplace_back(model);
+                }
+            }
+            ret.directionalLights = directionalLights;
+            ret.pointLights = pointLights;
+            ret.spotLights = spotLights;
+            ret.canvases = canvases;
+            return ret;
+        }
     };
 }
 
