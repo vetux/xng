@@ -79,7 +79,7 @@ struct Resources {
     }
 
     Resources() {
-        const auto scene = ResourceHandle<AssetScene>(Uri("file://meshes/cornell.fbx")).get();
+        const auto scene = ResourceHandle<AssetScene>(Uri("file://meshes/cornell.fbx:RootNode")).get();
         bool found = false;
         boxTransform = getTransform("Box", scene.root, found);
         found = false;
