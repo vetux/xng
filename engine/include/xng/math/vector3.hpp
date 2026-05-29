@@ -35,15 +35,15 @@ namespace xng {
         T z;
 
         Vector3()
-                : x(0), y(0), z(0) {
+            : x(0), y(0), z(0) {
         }
 
         explicit Vector3(T v)
-                : x(v), y(v), z(v) {
+            : x(v), y(v), z(v) {
         }
 
         Vector3(T x, T y, T z)
-                : x(x), y(y), z(z) {
+            : x(x), y(y), z(z) {
         }
 
         std::array<float, 3> getMemory() const {
@@ -166,6 +166,18 @@ namespace xng {
             return std::sqrt(std::pow(x, 2) + std::pow(y, 2) + std::pow(z, 2));
         }
 
+        Vector3 cross(const Vector3 &other) const {
+            return Vector3(
+                y * other.z - z * other.y,
+                z * other.x - x * other.z,
+                x * other.y - y * other.x
+            );
+        }
+
+        float dot(const Vector3 &other) const {
+            return x * other.x + y * other.y + z * other.z;
+        }
+
         static T magnitude(const Vector3<T> &vec) {
             return std::sqrt(std::pow(vec.x, 2) + std::pow(vec.y, 2) + std::pow(vec.z, 2));
         }
@@ -189,7 +201,7 @@ namespace xng {
 
 namespace std {
     template<typename T>
-    struct hash<xng::Vector3<T>> {
+    struct hash<xng::Vector3<T> > {
         std::size_t operator()(const xng::Vector3<T> &vec) const {
             size_t ret = 0;
             xng::hash_combine(ret, vec.x);
