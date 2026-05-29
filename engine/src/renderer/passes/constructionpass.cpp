@@ -32,7 +32,6 @@ namespace xng {
     static vec4 texture_atlas(Param<ShaderTexture> textureDef, Param<vec2> inUv) {
         IRFunction
 
-        //TODO: Find cause of artifacts when sampling from normal textures with BILINEAR or BICUBIC filtering.
         TextureArray(TEXTURE_2D_ARRAY, RGBA8, 12, textures)
 
         ivec2 level_index = textureDef.value().level_index;
