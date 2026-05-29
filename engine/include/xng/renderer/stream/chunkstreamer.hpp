@@ -52,6 +52,9 @@ namespace xng {
     public:
         typedef size_t Handle;
 
+        ChunkStreamer(const ChunkStreamer &other) = delete;
+        ChunkStreamer &operator=(const ChunkStreamer &other) = delete;
+
         /**
          * @param heap The heap to use for streaming
          * @param chunkSize The size of one streaming chunk.
