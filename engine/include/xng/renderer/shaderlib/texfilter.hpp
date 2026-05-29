@@ -36,6 +36,15 @@ namespace xng::shaderlib::texfilter {
                                                Param<vec3> uv,
                                                Param<vec2> size,
                                                Param<Float> lod);
+
+    XENGINE_EXPORT vec4 textureBilinearArray(Param<Texture2DArray<rg::RGBA8> > texture,
+                                             Param<vec3> uv,
+                                             Param<vec2> size);
+
+    XENGINE_EXPORT vec4 textureBilinearArrayLod(Param<Texture2DArray<rg::RGBA8> > texture,
+                                                Param<vec3> uv,
+                                                Param<vec2> size,
+                                                Param<Float> lod);
 }
 
 
