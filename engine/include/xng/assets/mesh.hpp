@@ -65,6 +65,14 @@ namespace xng {
          */
         static Mesh sphere(float radius, int latitudes, int longitudes);
 
+        /**
+         * Compute smoothed normals + tangents + bitangents for the given mesh.
+         *
+         * @param mesh
+         * @return
+         */
+        static Mesh computeSmoothNormals(const Mesh &mesh);
+
         enum Primitive : int {
             POINTS = 1,
             LINES = 2,
