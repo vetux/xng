@@ -725,4 +725,39 @@ namespace xng::rg::ShaderInstructionFactory {
         ret.operands.push_back(std::move(value));
         return ret;
     }
+
+    ShaderInstruction castBool(ShaderOperand value) {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::CastBool;
+        ret.operands.push_back(std::move(value));
+        return ret;
+    }
+
+    ShaderInstruction castInt(ShaderOperand value) {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::CastInt;
+        ret.operands.push_back(std::move(value));
+        return ret;
+    }
+
+    ShaderInstruction castUInt(ShaderOperand value) {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::CastUInt;
+        ret.operands.push_back(std::move(value));
+        return ret;
+    }
+
+    ShaderInstruction castFloat(ShaderOperand value) {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::CastFloat;
+        ret.operands.push_back(std::move(value));
+        return ret;
+    }
+
+    ShaderInstruction castDouble(ShaderOperand value) {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::CastDouble;
+        ret.operands.push_back(std::move(value));
+        return ret;
+    }
 }
