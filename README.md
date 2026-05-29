@@ -16,7 +16,7 @@ Once the project has reached a stable state there will be semantically versioned
 [xng-editor](https://github.com/vetux/xng-editor) - Editor application to simplify and accelerate the game creation
 workflow
 
-# Features
+## Features
  - High Performance Renderer using GPU Driven rendering techniques
  - Render Graph abstraction with explicit resource dependency tracking
  - Custom shader DSL for writing shaders in C++ ([ShaderScript](engine/include/xng/shaderscript))
