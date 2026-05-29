@@ -102,6 +102,7 @@
 #include "xng/renderer/objects/renderskeleton.hpp"
 #include "xng/renderer/passes/constructionpass.hpp"
 #include "xng/renderer/passes/compositingpass.hpp"
+#include "xng/renderer/passes/deferredpbrpass.hpp"
 #include "xng/renderer/shaderlib/shadowmapping.hpp"
 #include "xng/renderer/shaderlib/pbr.hpp"
 #include "xng/renderer/shaderlib/texfilter.hpp"

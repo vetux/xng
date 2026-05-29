@@ -106,7 +106,7 @@ void createCornellInstance(RenderAllocator &allocator, Resources &res, RenderDra
     brickAo->setImage(res.brickAo.get());
     brickNormal->setImage(res.brickNormal.get());
 
-    SamplingProperties brickProps(rg::LINEAR, rg::LINEAR, rg::LINEAR, rg::REPEAT);
+    SamplingProperties brickProps(FILTER_NEAREST, FILTER_NEAREST, rg::LINEAR, WRAP_REPEAT);
 
     auto brickMaterial = allocator.createMaterial({},
                                                   1,
@@ -137,7 +137,7 @@ void createCornellInstance(RenderAllocator &allocator, Resources &res, RenderDra
 
     drawList.models.emplace_back(brickModel);
 
-    auto sphereMesh = allocator.createMesh(res.sphereMesh1.get(), {});
+    auto sphereMesh = allocator.createMesh(Mesh::computeSmoothNormals(res.sphereMesh1.get()), {});
     auto sphereMesh2 = allocator.createMesh(res.sphereMesh2.get(), {});
 
     auto sphereNormal = allocator.createTexture(res.sphereNormal.get().getResolution());
@@ -163,7 +163,7 @@ void createCornellInstance(RenderAllocator &allocator, Resources &res, RenderDra
                                                              {},
                                                              {},
                                                              {},
-                                                             sphereNormal,
+                                                             {},
                                                              {});
 
     auto rustedIronSphereModel = allocator.createModel({sphereMesh},
@@ -185,9 +185,9 @@ void createCornellInstance(RenderAllocator &allocator, Resources &res, RenderDra
     goldRoughness->setImage(res.goldRoughness.get());
 
     auto goldSphereMaterial = allocator.createMaterial({},
-                                                       0,
-                                                       0,
-                                                       0,
+                                                       1,
+                                                       1,
+                                                       1,
                                                        Vec4f(1),
                                                        goldAlbedo,
                                                        {},
@@ -386,8 +386,8 @@ int main(int argc, char *argv[]) {
     auto ren = Renderer(*runtime);
 
     ren.setPasses({
-        std::make_shared<CompositingPass>(),
-        std::make_shared<ConstructionPass>(runtime->getPipelineCache())
+        std::make_shared<ConstructionPass>(runtime->getPipelineCache()),
+        std::make_shared<DeferredPBRPass>(runtime->getResourceHeap(), runtime->getPipelineCache())
     });
 
     printf("Loading Assets...\n");
