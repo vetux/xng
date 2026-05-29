@@ -127,7 +127,7 @@ namespace xng {
                                                          static_cast<float>(handle.size.x),
                                                          static_cast<float>(handle.size.y));
             } else {
-                material.roughness.minFilter_magFilter_mipFilter_wrap = Vec4i(-1);
+                material.roughness.level_index = Vec2i(-1);
             }
 
             if (ambientOcclusion) {
