@@ -27,9 +27,13 @@ using namespace xng;
 
 struct Resources {
     ResourceHandle<Mesh> boxMesh = ResourceHandle<Mesh>(Uri("file://meshes/cornell.fbx:Box"));
+    Transform boxTransform{};
     ResourceHandle<Mesh> cubeMesh = ResourceHandle<Mesh>(Uri("file://meshes/cornell.fbx:Cube"));
+    Transform cubeTransform{};
     ResourceHandle<Mesh> sphereMesh1 = ResourceHandle<Mesh>(Uri("file://meshes/cornell.fbx:Sphere.001"));
+    Transform sphereTransform1{};
     ResourceHandle<Mesh> sphereMesh2 = ResourceHandle<Mesh>(Uri("file://meshes/cornell.fbx:Sphere.002"));
+    Transform sphereTransform2{};
 
     ResourceHandle<ImageRGBA> boxAlbedoImage = ResourceHandle<ImageRGBA>(Uri("file://images/cornell_boxcolor.png"));
 
@@ -59,6 +63,32 @@ struct Resources {
         Uri("file://images/lightgold/lightgold_roughness.png"));
 
     ResourceHandle<ImageRGBA> sphereNormal = ResourceHandle<ImageRGBA>(Uri("file://images/sphere_normals.png"));
+
+    Transform getTransform(const std::string &name, const AssetScene::Node &node, bool &found) {
+        if (node.name == name) {
+            found = true;
+            return node.transform;
+        }
+        for (auto &child: node.children) {
+            auto childTransform = getTransform(name, child, found);
+            if (found) {
+                return childTransform.getWorldTransform(node.transform);
+            }
+        }
+        return node.transform;
+    }
+
+    Resources() {
+        const auto scene = ResourceHandle<AssetScene>(Uri("file://meshes/cornell.fbx")).get();
+        bool found = false;
+        boxTransform = getTransform("Box", scene.root, found);
+        found = false;
+        cubeTransform = getTransform("Cube", scene.root, found);
+        found = false;
+        sphereTransform1 = getTransform("Sphere.001", scene.root, found);
+        found = false;
+        sphereTransform2 = getTransform("Sphere.002", scene.root, found);
+    }
 };
 
 void createCornellInstance(RenderAllocator &allocator, Resources &res, RenderDrawList &drawList, Vec3f offset) {
@@ -91,7 +121,7 @@ void createCornellInstance(RenderAllocator &allocator, Resources &res, RenderDra
                                           true,
                                           true);
 
-    boxModel->setTransform(Transform(offset, Vec3f(0), Vec3f(1)));
+    boxModel->setTransform(res.boxTransform.getWorldTransform(Transform(offset, Vec3f(0), Vec3f(1))));
 
     drawList.models.emplace_back(boxModel);
 
@@ -135,7 +165,9 @@ void createCornellInstance(RenderAllocator &allocator, Resources &res, RenderDra
                                             true,
                                             true);
 
-    brickModel->setTransform(Transform(offset, Quaternion(Vec3f(0, 0, 0)), Vec3f(1)));
+    brickModel->setTransform(res.cubeTransform.getWorldTransform(
+            Transform(offset, Quaternion(Vec3f(0, 0, 0)), Vec3f(1)))
+    );
 
     drawList.models.emplace_back(brickModel);
 
@@ -176,7 +208,9 @@ void createCornellInstance(RenderAllocator &allocator, Resources &res, RenderDra
                                                        true,
                                                        true);
 
-    rustedIronSphereModel->setTransform(Transform(offset, Quaternion(Vec3f(0, 0, 0)), Vec3f(1)));
+    rustedIronSphereModel->setTransform(res.sphereTransform1.getWorldTransform(
+        Transform(offset, Quaternion(Vec3f(0, 0, 0)), Vec3f(1))
+    ));
 
     drawList.models.emplace_back(rustedIronSphereModel);
 
@@ -211,7 +245,7 @@ void createCornellInstance(RenderAllocator &allocator, Resources &res, RenderDra
                                                  true,
                                                  true);
 
-    goldSphereModel->setTransform(Transform(offset, Vec3f(0), Vec3f(1)));
+    goldSphereModel->setTransform(res.sphereTransform2.getWorldTransform(Transform(offset, Vec3f(0), Vec3f(1))));
 
     drawList.models.emplace_back(goldSphereModel);
 
@@ -279,10 +313,10 @@ void cameraController(Transform &cameraTransform, Window &window, double deltaTi
     if (mouse.getButton(MOUSE_BUTTON_RIGHT)) {
         constexpr float rotationSpeed = 90;
         auto rot = Vec3d(0, (mouse.positionDelta.x / window.getFramebufferSize().x) * rotationSpeed, 0);
-        cameraTransform.applyRotation(Quaternion(rot.convert<float>()), true);
+        cameraTransform.rotateLocal(Quaternion(rot.convert<float>()));
 
         rot = Vec3d((mouse.positionDelta.y / window.getFramebufferSize().y) * rotationSpeed, 0, 0);
-        cameraTransform.applyRotation(Quaternion(rot.convert<float>()), false);
+        cameraTransform.rotateWorld(Quaternion(rot.convert<float>()));
     }
 
     Vec3f movement{};
@@ -348,8 +382,8 @@ void lightController(Transform &lightTransform, Window &window, double deltaTime
         pos.y = -1;
     }
 
-    lightTransform.applyRotation(Quaternion(Vec3f(rot.x, 0, 0) * rotationSpeed * deltaTime), true);
-    lightTransform.applyRotation(Quaternion(Vec3f(0, rot.y, 0) * rotationSpeed * deltaTime), false);
+    lightTransform.rotateLocal(Quaternion(Vec3f(rot.x, 0, 0) * rotationSpeed * deltaTime));
+    lightTransform.rotateWorld(Quaternion(Vec3f(0, rot.y, 0) * rotationSpeed * deltaTime));
 
     lightTransform.setPosition(lightTransform.getPosition() + pos * movementSpeed * deltaTime);
 }
@@ -426,6 +460,7 @@ int main(int argc, char *argv[]) {
 
     RendererStatistics stats;
     while (!window->shouldClose()) {
+        std::cout << frameLimiter.getFramerate() << std::endl;
         frameLimiter.newFrame();
         window->update();
 
