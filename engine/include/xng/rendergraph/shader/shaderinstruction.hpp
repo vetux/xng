@@ -158,6 +158,13 @@ namespace xng::rg {
             PartialDerivativeX,
             PartialDerivativeY,
 
+            // Type Casting
+            CastBool,
+            CastInt,
+            CastUInt,
+            CastFloat,
+            CastDouble,
+
             LHS_START = DeclareVariable,
             LHS_END = VectorSwizzle,
         } code = DeclareVariable;

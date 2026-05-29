@@ -34,15 +34,15 @@ static std::string literalToString(const ShaderPrimitive &value) {
         case ShaderPrimitiveType::SCALAR:
             switch (type.component) {
                 case ShaderPrimitiveType::BOOLEAN:
-                    return boolToString(std::get<bool>(value.value));
+                    return "bool(" + boolToString(std::get<bool>(value.value)) + ")";
                 case ShaderPrimitiveType::UNSIGNED_INT:
-                    return std::to_string(std::get<unsigned int>(value.value));
+                    return "uint(" + std::to_string(std::get<unsigned int>(value.value)) + ")";
                 case ShaderPrimitiveType::SIGNED_INT:
-                    return std::to_string(std::get<int>(value.value));
+                    return "int(" + std::to_string(std::get<int>(value.value)) + ")";
                 case ShaderPrimitiveType::FLOAT:
-                    return std::to_string(std::get<float>(value.value));
+                    return "float(" + std::to_string(std::get<float>(value.value)) + ")";
                 case ShaderPrimitiveType::DOUBLE:
-                    return std::to_string(std::get<double>(value.value));
+                    return "double(" + std::to_string(std::get<double>(value.value)) + ")";
             }
             break;
         case ShaderPrimitiveType::VECTOR2:

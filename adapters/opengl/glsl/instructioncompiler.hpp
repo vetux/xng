@@ -213,6 +213,31 @@ namespace InstructionCompiler {
                                                     const Shader &source,
                                                     const std::string &functionName,
                                                     const std::string &indent);
+
+    XENGINE_EXPORT std::string compileCastBool(const ShaderInstruction &instruction,
+                                               const Shader &source,
+                                               const std::string &functionName,
+                                               const std::string &indent);
+
+    XENGINE_EXPORT std::string compileCastInt(const ShaderInstruction &instruction,
+                                              const Shader &source,
+                                              const std::string &functionName,
+                                              const std::string &indent);
+
+    XENGINE_EXPORT std::string compileCastUInt(const ShaderInstruction &instruction,
+                                               const Shader &source,
+                                               const std::string &functionName,
+                                               const std::string &indent);
+
+    XENGINE_EXPORT std::string compileCastFloat(const ShaderInstruction &instruction,
+                                                const Shader &source,
+                                                const std::string &functionName,
+                                                const std::string &indent);
+
+    XENGINE_EXPORT std::string compileCastDouble(const ShaderInstruction &instruction,
+                                                 const Shader &source,
+                                                 const std::string &functionName,
+                                                 const std::string &indent);
 }
 
 #endif //XENGINE_INSTRUCTIONCOMPILER_HPP

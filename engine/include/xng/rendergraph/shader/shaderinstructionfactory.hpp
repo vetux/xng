@@ -351,6 +351,16 @@ namespace xng::rg {
         XENGINE_EXPORT ShaderInstruction partialDerivativeX(ShaderOperand value);
 
         XENGINE_EXPORT ShaderInstruction partialDerivativeY(ShaderOperand value);
+
+        XENGINE_EXPORT ShaderInstruction castBool(ShaderOperand value);
+
+        XENGINE_EXPORT ShaderInstruction castInt(ShaderOperand value);
+
+        XENGINE_EXPORT ShaderInstruction castUInt(ShaderOperand value);
+
+        XENGINE_EXPORT ShaderInstruction castFloat(ShaderOperand value);
+
+        XENGINE_EXPORT ShaderInstruction castDouble(ShaderOperand value);
     }
 }
 

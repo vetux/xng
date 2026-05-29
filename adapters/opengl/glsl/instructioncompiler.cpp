@@ -162,6 +162,16 @@ namespace InstructionCompiler {
             case ShaderInstruction::PartialDerivativeX:
             case ShaderInstruction::PartialDerivativeY:
                 return compileCallBuiltIn(instruction, source, functionName, indent);
+            case ShaderInstruction::CastBool:
+                return compileCastBool(instruction, source, functionName, indent);
+            case ShaderInstruction::CastInt:
+                return compileCastInt(instruction, source, functionName, indent);
+            case ShaderInstruction::CastUInt:
+                return compileCastUInt(instruction, source, functionName, indent);
+            case ShaderInstruction::CastFloat:
+                return compileCastFloat(instruction, source, functionName, indent);
+            case ShaderInstruction::CastDouble:
+                return compileCastDouble(instruction, source, functionName, indent);
         }
     }
 
@@ -787,5 +797,40 @@ namespace InstructionCompiler {
         return compileOperand(instruction.operands.at(0), source, functionName)
                + "."
                + std::get<std::string>(instruction.data.at(0));
+    }
+
+    std::string compileCastBool(const ShaderInstruction &instruction,
+                                const Shader &source,
+                                const std::string &functionName,
+                                const std::string &indent) {
+        return "bool(" + compileOperand(instruction.operands.at(0), source, functionName) + ")";
+    }
+
+    std::string compileCastInt(const ShaderInstruction &instruction,
+                               const Shader &source,
+                               const std::string &functionName,
+                               const std::string &indent) {
+        return "int(" + compileOperand(instruction.operands.at(0), source, functionName) + ")";
+    }
+
+    std::string compileCastUInt(const ShaderInstruction &instruction,
+                                const Shader &source,
+                                const std::string &functionName,
+                                const std::string &indent) {
+        return "uint(" + compileOperand(instruction.operands.at(0), source, functionName) + ")";
+    }
+
+    std::string compileCastFloat(const ShaderInstruction &instruction,
+                                 const Shader &source,
+                                 const std::string &functionName,
+                                 const std::string &indent) {
+        return "float(" + compileOperand(instruction.operands.at(0), source, functionName) + ")";
+    }
+
+    std::string compileCastDouble(const ShaderInstruction &instruction,
+                                  const Shader &source,
+                                  const std::string &functionName,
+                                  const std::string &indent) {
+        return "double(" + compileOperand(instruction.operands.at(0), source, functionName) + ")";
     }
 }
