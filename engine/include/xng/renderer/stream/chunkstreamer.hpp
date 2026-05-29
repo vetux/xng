@@ -86,30 +86,28 @@ namespace xng {
                 const auto remainder = dataSize % chunkSize;
                 if (remainder > 0) {
                     for (auto i = 0; i < nChunks - 1; i++) {
-                        const auto chunkStart = data + static_cast<long>(i * chunkSize);
-                        auto chunkData = std::vector(chunkStart, chunkStart + static_cast<long>(chunkSize));
                         const auto chunkOffset = i * chunkSize;
                         uploadChunks[ret].emplace_back(UploadChunk{
-                            ret, std::move(chunkData), targetOffset + chunkOffset
+                            ret, chunkOffset, chunkSize, targetOffset + chunkOffset
                         });
                     }
-                    const auto chunkStart = data + static_cast<long>((nChunks - 1) * chunkSize);
-                    auto chunkData = std::vector(chunkStart, chunkStart + static_cast<long>(remainder));
                     const auto chunkOffset = (nChunks - 1) * chunkSize;
-                    uploadChunks[ret].emplace_back(UploadChunk{ret, std::move(chunkData), targetOffset + chunkOffset});
+                    uploadChunks[ret].emplace_back(UploadChunk{
+                        ret, chunkOffset, remainder, targetOffset + chunkOffset
+                    });
                 } else {
                     for (auto i = 0; i < nChunks; i++) {
-                        const auto chunkStart = data + static_cast<long>(i * chunkSize);
-                        auto chunkData = std::vector(chunkStart, chunkStart + static_cast<long>(chunkSize));
                         const auto chunkOffset = i * chunkSize;
                         uploadChunks[ret].emplace_back(UploadChunk{
-                            ret, std::move(chunkData), targetOffset + chunkOffset
+                            ret, chunkOffset, chunkSize, targetOffset + chunkOffset
                         });
                     }
                 }
             } else {
-                uploadChunks[ret].emplace_back(UploadChunk{ret, std::vector(data, data + dataSize), targetOffset});
+                uploadChunks[ret].emplace_back(UploadChunk{ret, 0, dataSize, targetOffset});
             }
+
+            uploadData[ret] = std::vector(data, data + dataSize);
 
             targetBuffers[ret] = targetBuffer;
 
@@ -118,6 +116,7 @@ namespace xng {
 
         void release(const Handle handle) {
             uploadChunks.erase(handle);
+            uploadData.erase(handle);
             flushedUploads.erase(handle);
             inFlightUploads.erase(handle);
             freeHandles.push_back(handle);
@@ -187,8 +186,8 @@ namespace xng {
             std::vector<UploadChunk> frameChunks;
             for (auto &handle: flushedUploads) {
                 for (auto &chunk: uploadChunks.at(handle)) {
-                    inFlightSize += chunk.data.size();
-                    frameChunks.emplace_back(std::move(chunk));
+                    inFlightSize += chunk.dataSize;
+                    frameChunks.emplace_back(chunk);
                 }
                 uploadChunks.erase(handle);
             }
@@ -202,11 +201,11 @@ namespace xng {
                     pair.second.clear();
                     for (auto &chunk: chunks) {
                         // Check if the chunk fits in budget
-                        if (inFlightSize + chunk.data.size() <= budget) {
-                            inFlightSize += chunk.data.size();
-                            frameChunks.emplace_back(std::move(chunk));
+                        if (inFlightSize + chunk.dataSize <= budget) {
+                            inFlightSize += chunk.dataSize;
+                            frameChunks.emplace_back(chunk);
                         } else {
-                            pair.second.emplace_back(std::move(chunk));
+                            pair.second.emplace_back(chunk);
                         }
                     }
                 }
@@ -218,18 +217,20 @@ namespace xng {
             // Upload Chunks
             std::vector<ChunkUpload> chunkUploads;
             for (auto &chunk: frameChunks) {
-                size_t frameChunkSize = chunk.data.size();
+                size_t frameChunkSize = chunk.dataSize;
 
                 size_t stagingOffset = 0;
                 auto stagingIndex = getStagingBuffer(frameChunkSize, stagingOffset);
                 auto &stagingBuffer = stagingBuffers.at(stagingIndex);
 
-                stagingBuffer.mapping->copyFrom(chunk.data, 0, stagingOffset, chunk.data.size());
+                auto &chunkData = uploadData.at(chunk.handle);
+
+                stagingBuffer.mapping->copyFrom(chunkData, chunk.dataOffset, stagingOffset, chunk.dataSize);
 
                 chunkUploads.emplace_back(stagingIndex,
                                           stagingOffset,
                                           chunk.chunkOffset,
-                                          chunk.data.size(),
+                                          chunk.dataSize,
                                           chunk.handle,
                                           targetBuffers.at(chunk.handle));
             }
@@ -266,7 +267,8 @@ namespace xng {
     private:
         struct UploadChunk {
             Handle handle;
-            std::vector<uint8_t> data; // Upto chunkSize data
+            size_t dataOffset;
+            size_t dataSize;
             size_t chunkOffset; // The offset into buffer
         };
 
@@ -343,6 +345,7 @@ namespace xng {
         const size_t pinnedChunks = 0;
 
         std::unordered_map<Handle, rg::HeapResource<rg::Buffer> > targetBuffers;
+        std::unordered_map<Handle, std::vector<uint8_t> > uploadData;
         std::unordered_map<Handle, std::vector<UploadChunk> > uploadChunks;
         std::unordered_set<Handle> flushedUploads;
 
