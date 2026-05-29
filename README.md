@@ -20,7 +20,7 @@ workflow
  - High Performance Renderer using GPU Driven rendering techniques
  - Render Graph abstraction with explicit resource dependency tracking
  - Custom shader DSL for writing shaders in C++ ([ShaderScript](engine/include/xng/shaderscript))
- - Asynchronous Resource Streaming for Renderer Assets
+ - Asynchronous Streaming for Renderer Objects
  - Pool based Entity Component System (ECS)
  - Cross Platform Adapter interfaces (Physics, Audio, Display, RenderGraph, etc.)
  - Resource System for loading and managing assets.
