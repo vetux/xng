@@ -21,6 +21,8 @@
 #include "xng/shaderscript/shaderscript.hpp"
 #include "xng/shaderscript/macro/helpermacros.hpp"
 
+#include "xng/renderer/samplingproperties.hpp"
+
 // TODO: Handle Texture Mip filtering in custom texture sampling.
 // TODO: Handle Texture Wrapping in custom texture sampling (Repeat mode for tiling etc)
 // TODO: Handle sRGB decode
@@ -129,7 +131,8 @@ namespace xng::shaderlib {
 
     vec4 texfilter::textureBicubicArray(Param<Texture2DArray<rg::RGBA8> > texture,
                                         Param<vec3> uv,
-                                        Param<vec2> size) {
+                                        Param<vec2> size,
+                                        Param<Int> wrapping) {
         IRFunction
 
         vec2 tc = uv.value().xy() * size - 0.5f;
@@ -138,23 +141,45 @@ namespace xng::shaderlib {
         vec4 wx = cubic(fxy.x());
         vec4 wy = cubic(fxy.y());
         Int layer = Int(uv.value().z());
+        ivec2 maxC = ivec2(Int(size.value().x()) - 1, Int(size.value().y()) - 1);
+        Int sw = Int(size.value().x());
+        Int sh = Int(size.value().y());
 
-        vec4 row0 = texelFetchArray(texture, ivec3(p.x() - 1, p.y() - 1, layer), 0) * wx.x()
-                    + texelFetchArray(texture, ivec3(p.x() + 0, p.y() - 1, layer), 0) * wx.y()
-                    + texelFetchArray(texture, ivec3(p.x() + 1, p.y() - 1, layer), 0) * wx.z()
-                    + texelFetchArray(texture, ivec3(p.x() + 2, p.y() - 1, layer), 0) * wx.w();
-        vec4 row1 = texelFetchArray(texture, ivec3(p.x() - 1, p.y() + 0, layer), 0) * wx.x()
-                    + texelFetchArray(texture, ivec3(p.x() + 0, p.y() + 0, layer), 0) * wx.y()
-                    + texelFetchArray(texture, ivec3(p.x() + 1, p.y() + 0, layer), 0) * wx.z()
-                    + texelFetchArray(texture, ivec3(p.x() + 2, p.y() + 0, layer), 0) * wx.w();
-        vec4 row2 = texelFetchArray(texture, ivec3(p.x() - 1, p.y() + 1, layer), 0) * wx.x()
-                    + texelFetchArray(texture, ivec3(p.x() + 0, p.y() + 1, layer), 0) * wx.y()
-                    + texelFetchArray(texture, ivec3(p.x() + 1, p.y() + 1, layer), 0) * wx.z()
-                    + texelFetchArray(texture, ivec3(p.x() + 2, p.y() + 1, layer), 0) * wx.w();
-        vec4 row3 = texelFetchArray(texture, ivec3(p.x() - 1, p.y() + 2, layer), 0) * wx.x()
-                    + texelFetchArray(texture, ivec3(p.x() + 0, p.y() + 2, layer), 0) * wx.y()
-                    + texelFetchArray(texture, ivec3(p.x() + 1, p.y() + 2, layer), 0) * wx.z()
-                    + texelFetchArray(texture, ivec3(p.x() + 2, p.y() + 2, layer), 0) * wx.w();
+        auto wrapX = [&](Int c) -> Int {
+            Int result;
+            If(wrapping.value() == WRAP_REPEAT)
+                result = Int(Float(c) - Float(sw) * floor(Float(c) / Float(sw)));
+            Else
+                result = clamp(c, 0, maxC.x());
+            Fi
+            return result;
+        };
+        auto wrapY = [&](Int c) -> Int {
+            Int result;
+            If(wrapping.value() == WRAP_REPEAT)
+                result = Int(Float(c) - Float(sh) * floor(Float(c) / Float(sh)));
+            Else
+                result = clamp(c, 0, maxC.y());
+            Fi
+            return result;
+        };
+
+        vec4 row0 = texelFetchArray(texture, ivec3(wrapX(p.x() - 1), wrapY(p.y() - 1), layer), 0) * wx.x()
+                    + texelFetchArray(texture, ivec3(wrapX(p.x() + 0), wrapY(p.y() - 1), layer), 0) * wx.y()
+                    + texelFetchArray(texture, ivec3(wrapX(p.x() + 1), wrapY(p.y() - 1), layer), 0) * wx.z()
+                    + texelFetchArray(texture, ivec3(wrapX(p.x() + 2), wrapY(p.y() - 1), layer), 0) * wx.w();
+        vec4 row1 = texelFetchArray(texture, ivec3(wrapX(p.x() - 1), wrapY(p.y() + 0), layer), 0) * wx.x()
+                    + texelFetchArray(texture, ivec3(wrapX(p.x() + 0), wrapY(p.y() + 0), layer), 0) * wx.y()
+                    + texelFetchArray(texture, ivec3(wrapX(p.x() + 1), wrapY(p.y() + 0), layer), 0) * wx.z()
+                    + texelFetchArray(texture, ivec3(wrapX(p.x() + 2), wrapY(p.y() + 0), layer), 0) * wx.w();
+        vec4 row2 = texelFetchArray(texture, ivec3(wrapX(p.x() - 1), wrapY(p.y() + 1), layer), 0) * wx.x()
+                    + texelFetchArray(texture, ivec3(wrapX(p.x() + 0), wrapY(p.y() + 1), layer), 0) * wx.y()
+                    + texelFetchArray(texture, ivec3(wrapX(p.x() + 1), wrapY(p.y() + 1), layer), 0) * wx.z()
+                    + texelFetchArray(texture, ivec3(wrapX(p.x() + 2), wrapY(p.y() + 1), layer), 0) * wx.w();
+        vec4 row3 = texelFetchArray(texture, ivec3(wrapX(p.x() - 1), wrapY(p.y() + 2), layer), 0) * wx.x()
+                    + texelFetchArray(texture, ivec3(wrapX(p.x() + 0), wrapY(p.y() + 2), layer), 0) * wx.y()
+                    + texelFetchArray(texture, ivec3(wrapX(p.x() + 1), wrapY(p.y() + 2), layer), 0) * wx.z()
+                    + texelFetchArray(texture, ivec3(wrapX(p.x() + 2), wrapY(p.y() + 2), layer), 0) * wx.w();
 
         IRReturn(vec4(row0 * wy.x() + row1 * wy.y() + row2 * wy.z() + row3 * wy.w()));
         IRFunctionEnd
@@ -163,34 +188,58 @@ namespace xng::shaderlib {
     vec4 texfilter::textureBicubicArrayLod(Param<Texture2DArray<rg::RGBA8> > texture,
                                            Param<vec3> uv,
                                            Param<vec2> size,
-                                           Param<Float> lod) {
+                                           Param<Float> lod,
+                                           Param<Int> wrapping) {
         IRFunction
 
-        Int ilod = Int(lod);
-        vec2 mipSize = size * pow(2.0f, lod * -1.0f); // correct size for this mip level
+        Int maxMip = Int(floor(log2(min(size.value().x(), size.value().y()))));
+        Int ilod = clamp(Int(lod), 0, maxMip);
+        vec2 mipSize = max(size.value() * pow(2.0f, lod.value() * -1.0f), vec2(1.0f));
         vec2 tc = uv.value().xy() * mipSize - 0.5f;
         ivec2 p = ivec2(Int(floor(tc.x())), Int(floor(tc.y())));
         vec2 fxy = tc - vec2(Float(p.x()), Float(p.y()));
         vec4 wx = cubic(fxy.x());
         vec4 wy = cubic(fxy.y());
         Int layer = Int(uv.value().z());
+        ivec2 maxC = ivec2(Int(mipSize.x()) - 1, Int(mipSize.y()) - 1);
+        Int sw = Int(mipSize.x());
+        Int sh = Int(mipSize.y());
 
-        vec4 row0 = texelFetchArray(texture, ivec3(p.x() - 1, p.y() - 1, layer), ilod) * wx.x()
-                    + texelFetchArray(texture, ivec3(p.x() + 0, p.y() - 1, layer), ilod) * wx.y()
-                    + texelFetchArray(texture, ivec3(p.x() + 1, p.y() - 1, layer), ilod) * wx.z()
-                    + texelFetchArray(texture, ivec3(p.x() + 2, p.y() - 1, layer), ilod) * wx.w();
-        vec4 row1 = texelFetchArray(texture, ivec3(p.x() - 1, p.y() + 0, layer), ilod) * wx.x()
-                    + texelFetchArray(texture, ivec3(p.x() + 0, p.y() + 0, layer), ilod) * wx.y()
-                    + texelFetchArray(texture, ivec3(p.x() + 1, p.y() + 0, layer), ilod) * wx.z()
-                    + texelFetchArray(texture, ivec3(p.x() + 2, p.y() + 0, layer), ilod) * wx.w();
-        vec4 row2 = texelFetchArray(texture, ivec3(p.x() - 1, p.y() + 1, layer), ilod) * wx.x()
-                    + texelFetchArray(texture, ivec3(p.x() + 0, p.y() + 1, layer), ilod) * wx.y()
-                    + texelFetchArray(texture, ivec3(p.x() + 1, p.y() + 1, layer), ilod) * wx.z()
-                    + texelFetchArray(texture, ivec3(p.x() + 2, p.y() + 1, layer), ilod) * wx.w();
-        vec4 row3 = texelFetchArray(texture, ivec3(p.x() - 1, p.y() + 2, layer), ilod) * wx.x()
-                    + texelFetchArray(texture, ivec3(p.x() + 0, p.y() + 2, layer), ilod) * wx.y()
-                    + texelFetchArray(texture, ivec3(p.x() + 1, p.y() + 2, layer), ilod) * wx.z()
-                    + texelFetchArray(texture, ivec3(p.x() + 2, p.y() + 2, layer), ilod) * wx.w();
+        auto wrapX = [&](Int c) -> Int {
+            Int result;
+            If(wrapping.value() == WRAP_REPEAT)
+                result = Int(Float(c) - Float(sw) * floor(Float(c) / Float(sw)));
+            Else
+                result = clamp(c, 0, maxC.x());
+            Fi
+            return result;
+        };
+        auto wrapY = [&](Int c) -> Int {
+            Int result;
+            If(wrapping.value() == WRAP_REPEAT)
+                result = Int(Float(c) - Float(sh) * floor(Float(c) / Float(sh)));
+            Else
+                result = clamp(c, 0, maxC.y());
+            Fi
+            return result;
+        };
+
+        vec4 row0 = texelFetchArray(texture, ivec3(wrapX(p.x() - 1), wrapY(p.y() - 1), layer), ilod) * wx.x()
+                    + texelFetchArray(texture, ivec3(wrapX(p.x() + 0), wrapY(p.y() - 1), layer), ilod) * wx.y()
+                    + texelFetchArray(texture, ivec3(wrapX(p.x() + 1), wrapY(p.y() - 1), layer), ilod) * wx.z()
+                    + texelFetchArray(texture, ivec3(wrapX(p.x() + 2), wrapY(p.y() - 1), layer), ilod) * wx.w();
+        vec4 row1 = texelFetchArray(texture, ivec3(wrapX(p.x() - 1), wrapY(p.y() + 0), layer), ilod) * wx.x()
+                    + texelFetchArray(texture, ivec3(wrapX(p.x() + 0), wrapY(p.y() + 0), layer), ilod) * wx.y()
+                    + texelFetchArray(texture, ivec3(wrapX(p.x() + 1), wrapY(p.y() + 0), layer), ilod) * wx.z()
+                    + texelFetchArray(texture, ivec3(wrapX(p.x() + 2), wrapY(p.y() + 0), layer), ilod) * wx.w();
+        vec4 row2 = texelFetchArray(texture, ivec3(wrapX(p.x() - 1), wrapY(p.y() + 1), layer), ilod) * wx.x()
+                    + texelFetchArray(texture, ivec3(wrapX(p.x() + 0), wrapY(p.y() + 1), layer), ilod) * wx.y()
+                    + texelFetchArray(texture, ivec3(wrapX(p.x() + 1), wrapY(p.y() + 1), layer), ilod) * wx.z()
+                    + texelFetchArray(texture, ivec3(wrapX(p.x() + 2), wrapY(p.y() + 1), layer), ilod) * wx.w();
+        vec4 row3 = texelFetchArray(texture, ivec3(wrapX(p.x() - 1), wrapY(p.y() + 2), layer), ilod) * wx.x()
+                    + texelFetchArray(texture, ivec3(wrapX(p.x() + 0), wrapY(p.y() + 2), layer), ilod) * wx.y()
+                    + texelFetchArray(texture, ivec3(wrapX(p.x() + 1), wrapY(p.y() + 2), layer), ilod) * wx.z()
+                    + texelFetchArray(texture, ivec3(wrapX(p.x() + 2), wrapY(p.y() + 2), layer), ilod) * wx.w();
 
         IRReturn(vec4(row0 * wy.x() + row1 * wy.y() + row2 * wy.z() + row3 * wy.w()));
         IRFunctionEnd
@@ -198,7 +247,8 @@ namespace xng::shaderlib {
 
     vec4 texfilter::textureBilinearArray(Param<Texture2DArray<rg::RGBA8> > texture,
                                          Param<vec3> uv,
-                                         Param<vec2> size) {
+                                         Param<vec2> size,
+                                         Param<Int> wrapping) {
         IRFunction
 
         vec2 tc = uv.value().xy() * size - 0.5f;
@@ -206,11 +256,32 @@ namespace xng::shaderlib {
         vec2 fxy = tc - vec2(Float(p.x()), Float(p.y()));
         Int layer = Int(uv.value().z());
         ivec2 maxC = ivec2(Int(size.value().x()) - 1, Int(size.value().y()) - 1);
+        Int sw = Int(size.value().x());
+        Int sh = Int(size.value().y());
 
-        vec4 s00 = texelFetchArray(texture, ivec3(clamp(p.x(), 0, maxC.x()), clamp(p.y(), 0, maxC.y()), layer), 0);
-        vec4 s10 = texelFetchArray(texture, ivec3(clamp(p.x() + 1, 0, maxC.x()), clamp(p.y(), 0, maxC.y()), layer), 0);
-        vec4 s01 = texelFetchArray(texture, ivec3(clamp(p.x(), 0, maxC.x()), clamp(p.y() + 1, 0, maxC.y()), layer), 0);
-        vec4 s11 = texelFetchArray(texture, ivec3(clamp(p.x() + 1, 0, maxC.x()), clamp(p.y() + 1, 0, maxC.y()), layer), 0);
+        auto wrapX = [&](Int c) -> Int {
+            Int result;
+            If(wrapping.value() == WRAP_REPEAT)
+                result = Int(Float(c) - Float(sw) * floor(Float(c) / Float(sw)));
+            Else
+                result = clamp(c, 0, maxC.x());
+            Fi
+            return result;
+        };
+        auto wrapY = [&](Int c) -> Int {
+            Int result;
+            If(wrapping.value() == WRAP_REPEAT)
+                result = Int(Float(c) - Float(sh) * floor(Float(c) / Float(sh)));
+            Else
+                result = clamp(c, 0, maxC.y());
+            Fi
+            return result;
+        };
+
+        vec4 s00 = texelFetchArray(texture, ivec3(wrapX(p.x()), wrapY(p.y()), layer), 0);
+        vec4 s10 = texelFetchArray(texture, ivec3(wrapX(p.x() + 1), wrapY(p.y()), layer), 0);
+        vec4 s01 = texelFetchArray(texture, ivec3(wrapX(p.x()), wrapY(p.y() + 1), layer), 0);
+        vec4 s11 = texelFetchArray(texture, ivec3(wrapX(p.x() + 1), wrapY(p.y() + 1), layer), 0);
 
         IRReturn(vec4(mix(mix(s00, s10, fxy.x()), mix(s01, s11, fxy.x()), fxy.y())));
         IRFunctionEnd
@@ -219,22 +290,44 @@ namespace xng::shaderlib {
     vec4 texfilter::textureBilinearArrayLod(Param<Texture2DArray<rg::RGBA8> > texture,
                                             Param<vec3> uv,
                                             Param<vec2> size,
-                                            Param<Float> lod) {
+                                            Param<Float> lod,
+                                            Param<Int> wrapping) {
         IRFunction
 
-        Int ilod = Int(lod);
-        vec2 mipSize = size * pow(2.0f, lod * -1.0f);
+        Int maxMip = Int(floor(log2(min(size.value().x(), size.value().y()))));
+        Int ilod = clamp(Int(lod), 0, maxMip);
+        vec2 mipSize = max(size.value() * pow(2.0f, lod.value() * -1.0f), vec2(1.0f));
         vec2 tc = uv.value().xy() * mipSize - 0.5f;
         ivec2 p = ivec2(Int(floor(tc.x())), Int(floor(tc.y())));
         vec2 fxy = tc - vec2(Float(p.x()), Float(p.y()));
         Int layer = Int(uv.value().z());
         ivec2 maxC = ivec2(Int(mipSize.x()) - 1, Int(mipSize.y()) - 1);
+        Int sw = Int(mipSize.x());
+        Int sh = Int(mipSize.y());
 
-        vec4 s00 = texelFetchArray(texture, ivec3(clamp(p.x(), 0, maxC.x()), clamp(p.y(), 0, maxC.y()), layer), ilod);
-        vec4 s10 = texelFetchArray(texture, ivec3(clamp(p.x() + 1, 0, maxC.x()), clamp(p.y(), 0, maxC.y()), layer), ilod);
-        vec4 s01 = texelFetchArray(texture, ivec3(clamp(p.x(), 0, maxC.x()), clamp(p.y() + 1, 0, maxC.y()), layer), ilod);
-        vec4 s11 = texelFetchArray(texture, ivec3(clamp(p.x() + 1, 0, maxC.x()), clamp(p.y() + 1, 0, maxC.y()), layer),
-                              ilod);
+        auto wrapX = [&](Int c) -> Int {
+            Int result;
+            If(wrapping.value() == WRAP_REPEAT)
+                result = Int(Float(c) - Float(sw) * floor(Float(c) / Float(sw)));
+            Else
+                result = clamp(c, 0, maxC.x());
+            Fi
+            return result;
+        };
+        auto wrapY = [&](Int c) -> Int {
+            Int result;
+            If(wrapping.value() == WRAP_REPEAT)
+                result = Int(Float(c) - Float(sh) * floor(Float(c) / Float(sh)));
+            Else
+                result = clamp(c, 0, maxC.y());
+            Fi
+            return result;
+        };
+
+        vec4 s00 = texelFetchArray(texture, ivec3(wrapX(p.x()), wrapY(p.y()), layer), ilod);
+        vec4 s10 = texelFetchArray(texture, ivec3(wrapX(p.x() + 1), wrapY(p.y()), layer), ilod);
+        vec4 s01 = texelFetchArray(texture, ivec3(wrapX(p.x()), wrapY(p.y() + 1), layer), ilod);
+        vec4 s11 = texelFetchArray(texture, ivec3(wrapX(p.x() + 1), wrapY(p.y() + 1), layer), ilod);
 
         IRReturn(vec4(mix(mix(s00, s10, fxy.x()), mix(s01, s11, fxy.x()), fxy.y())));
         IRFunctionEnd
