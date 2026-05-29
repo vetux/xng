@@ -343,9 +343,9 @@ namespace xng::shaderlib
         vec3 color = ambient + Lo;
 
         // HDR tonemapping
-        color = color / (color + vec3(1.0));
+        color = color / (color + vec3(1.0f));
         // gamma correct
-        color = pow(color, vec3(1.0 / pass.value().gamma));
+        color = pow(color, vec3(1.0f / pass.value().gamma));
 
         IRReturn(color);
         IRFunctionEnd
