@@ -394,7 +394,7 @@ namespace InstructionCompiler {
         auto coords = compileOperand(instruction.operands.at(1), source, functionName);
         auto lod = compileOperand(instruction.operands.at(2), source, functionName);
         auto sizeY = "textureSize(" + name + ", " + lod + ").y";
-        coords = "ivec2(" + coords + ".x, " + sizeY + " - " + coords + ".y)";
+        coords = "ivec2(" + coords + ".x, (" + sizeY + " - 1) - " + coords + ".y)";
         return "texelFetch("
                + name + ", "
                + coords + ", "
@@ -409,7 +409,7 @@ namespace InstructionCompiler {
         auto coords = compileOperand(instruction.operands.at(1), source, functionName);
         auto lod = compileOperand(instruction.operands.at(2), source, functionName);
         auto sizeY = "textureSize(" + name + ", " + lod + ").y";
-        coords = "ivec3(" + coords + ".x, " + sizeY + " - " + coords + ".y, " + coords + ".z)";
+        coords = "ivec3(" + coords + ".x, (" + sizeY + " - 1) - " + coords + ".y, " + coords + ".z)";
         return "texelFetch("
                + name + ", "
                + coords + ", "
@@ -424,7 +424,7 @@ namespace InstructionCompiler {
         auto coords = compileOperand(instruction.operands.at(1), source, functionName);
         auto sample = compileOperand(instruction.operands.at(2), source, functionName);
         auto sizeY = "textureSize(" + name + ").y";
-        coords = "ivec2(" + coords + ".x, " + sizeY + " - " + coords + ".y)";
+        coords = "ivec2(" + coords + ".x, (" + sizeY + " - 1) - " + coords + ".y)";
         return "texelFetch("
                + name + ", "
                + coords + ", "
@@ -439,7 +439,7 @@ namespace InstructionCompiler {
         auto coords = compileOperand(instruction.operands.at(1), source, functionName);
         auto sample = compileOperand(instruction.operands.at(2), source, functionName);
         auto sizeY = "textureSize(" + name + ").y";
-        coords = "ivec3(" + coords + ".x, " + sizeY + " - " + coords + ".y, " + coords + ".z)";
+        coords = "ivec3(" + coords + ".x, (" + sizeY + " - 1) - " + coords + ".y, " + coords + ".z)";
         return "texelFetch("
                + name + ", "
                + coords + ", "
