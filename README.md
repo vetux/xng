@@ -16,6 +16,15 @@ Once the project has reached a stable state there will be semantically versioned
 [xng-editor](https://github.com/vetux/xng-editor) - Editor application to simplify and accelerate the game creation
 workflow
 
+# Features
+ - High Performance Renderer using GPU Driven rendering techniques
+ - Render Graph abstraction with explicit resource dependency tracking
+ - Custom shader DSL for writing shaders in C++ ([ShaderScript](engine/include/xng/shaderscript))
+ - Asynchronous Resource Streaming for Renderer Assets
+ - Pool based Entity Component System (ECS)
+ - Cross Platform Adapter interfaces (Physics, Audio, Display, RenderGraph, etc.)
+ - Resource System for loading and managing assets.
+
 ## Feature Checklist for Version 0.1.0
 - Graphics
   - Render Graph
@@ -67,17 +76,16 @@ workflow
 Check [BUILDING.md](BUILDING.md) for detailed building instructions.
 
 ## Notes
-### Assimp Importer and Blender FBX Export
-When exporting rigged meshes from blender to be imported with the assimp importer platform make sure to:
-- Set the "Apply Scalings" to fbx unit scale.
-- Rotate the mesh and the rig -90 degrees in the X axis and apply the rotation.
-- Set the forward and up axis in the fbx exporter settings to Y forward and Z up to match blenders coordinate system.
-- Uncheck "Key All Bones" and "Force Start/End Keyframes"
-  - "Key All Bones" appears to do nothing at all
-  - "Force Start/End Keyframes" creates invalid keyframes inside an animation for bones which are not keyframed in the animation.
-- Run "Limit Total" in weight paint mode to ensure that there is no more than 4 bones per vertex.
+### Blender FBX Export
+Set "Apply Scalings" to "FBX All""
+Set "Forward" to "-Z Forward" and "Up" to "Y Up
+Check "Use Space Transform" to generate the coordinate space conversion transformations in the exported nodes.
+Check "Tangent Space" in the exporter "Geometry" options to generate tangents and bitangents for the exported mesh.
+For rigged meshes run "Limit Total" in weight paint mode to ensure that there is no more than 4 bones per vertex
 
-### PBR Shading
-Because I do not have or know anyone with a math degree I am dependent on tutorials and llms for the lighting calculations.
+When exporting smoothed meshes make sure that any normal maps were generated using the smoothed mesh because Normals depend on the mesh smoothing on bake.
+The engine also can calculate smoothed normals for meshes that are exported without smooth normals.
 
+### 3D Math
+Because I do not have or know anyone with a math degree I am dependent on tutorials and llms for the 3d math equations.
 I would welcome any math geniuses to help me out once the engine has reached a more stable state.
