@@ -336,7 +336,7 @@ namespace xng::assimp {
                                     const Uri &path,
                                     Archive *archive) {
         // TODO: Implement assimp IOSystem pointing to archive
-        // TODO: Automatically apply scene settings such as coordinate system and unit scale when importing, https://github.com/assimp/assimp/issues/849#issuecomment-875475292
+        // Asset exporters store the coordinate system conversions inside the node transforms. https://github.com/assimp/assimp/issues/849#issuecomment-875475292
 
         Assimp::Importer importer;
 
