@@ -77,14 +77,19 @@ Check [BUILDING.md](BUILDING.md) for detailed building instructions.
 
 ## Notes
 ### Blender FBX Export
-Set "Apply Scalings" to "FBX All""
-Set "Forward" to "-Z Forward" and "Up" to "Y Up
-Check "Use Space Transform" to generate the coordinate space conversion transformations in the exported nodes.
-Check "Tangent Space" in the exporter "Geometry" options to generate tangents and bitangents for the exported mesh.
-For rigged meshes run "Limit Total" in weight paint mode to ensure that there is no more than 4 bones per vertex
+- Set "Apply Scalings" to "FBX All""
+- Set "Forward" to "-Z Forward" and "Up" to "Y Up
+- Check "Use Space Transform" to generate the coordinate space conversion transformations in the exported nodes.
+- Check "Tangent Space" in the exporter "Geometry" options to generate tangents and bitangents for the exported mesh.
 
-When exporting smoothed meshes make sure that any normal maps were generated using the smoothed mesh because Normals depend on the mesh smoothing on bake.
-The engine also can calculate smoothed normals for meshes that are exported without smooth normals.
+For rigged meshes it is recommended to run "Limit Total" in weight paint mode to ensure that there is 
+no more than 4 bones per vertex. The mesh streamer only supports 4 bones per vertex, and in case there are more than 
+4 bones per vertex, the mesh streamer will select the 4 most influential bones based on the vertex weights.
+
+When exporting smoothed meshes make sure that any normal maps were generated using the smoothed mesh because normal maps
+depend on the mesh normals that were used on bake.
+
+The engine also can calculate smoothed vertex normals for meshes that are exported with flat vertex normals.
 
 ### 3D Math
 Because I do not have or know anyone with a math degree I am dependent on tutorials and llms for the 3d math equations.
