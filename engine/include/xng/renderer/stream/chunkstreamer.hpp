@@ -332,7 +332,8 @@ namespace xng {
 
             StagingBuffer stagingBuffer(heap, chunkSize);
 
-            assert(stagingBuffer.allocator.allocate(size, offset));
+            const auto allocated = stagingBuffer.allocator.allocate(size, offset);
+            assert(allocated);
 
             stagingBuffers.emplace_back(std::move(stagingBuffer));
 
