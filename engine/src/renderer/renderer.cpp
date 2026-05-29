@@ -39,6 +39,10 @@ namespace xng {
                                                                            rg::Buffer::CAPABILITY_STORAGE
                                                                            | rg::Buffer::CAPABILITY_TRANSFER_DST,
                                                                            rg::Buffer::MEMORY_CPU_TO_GPU));
+        configBuffer = runtime.getResourceHeap().allocateBuffer(rg::Buffer(sizeof(ShaderConfiguration::CPU),
+                                                                           rg::Buffer::CAPABILITY_STORAGE
+                                                                           | rg::Buffer::CAPABILITY_TRANSFER_DST,
+                                                                           rg::Buffer::MEMORY_CPU_TO_GPU));
     }
 
     RenderAllocator &Renderer::getAllocator() {
@@ -256,8 +260,6 @@ namespace xng {
             forwardBatches.emplace_back(currentForwardBatch);
         }
 
-        scene.cameraBuffer = rg::Resource(cameraBuffer);
-
         scene.transformBuffer = rg::Resource(buffers.transformBuffer);
         scene.materialBuffer = rg::Resource(buffers.materialBuffer);
 
@@ -279,7 +281,7 @@ namespace xng {
                                                                   rg::Buffer::CAPABILITY_STORAGE,
                                                                   rg::Buffer::MEMORY_GPU_ONLY));
 
-        //TODO: Staging buffers for camera / meshIndices
+        //TODO: Staging buffers for camera / meshIndices / config
         {
             ShaderCamera::CPU camera;
             camera.viewPosition = drawList.camera.getPosition();
@@ -288,6 +290,16 @@ namespace xng {
             const auto cameraMapping = heap.map(cameraBuffer);
             std::memcpy(cameraMapping->data(), &camera, sizeof(ShaderCamera::CPU));
         }
+        scene.cameraBuffer = rg::Resource(cameraBuffer);
+
+        {
+            ShaderConfiguration::CPU config;
+            config.gamma = drawList.config.gamma;
+            config.ibl = false;
+            const auto configMapping = heap.map(configBuffer);
+            std::memcpy(configMapping->data(), &config, sizeof(ShaderConfiguration::CPU));
+        }
+        scene.configBuffer = rg::Resource(configBuffer);
 
         meshIndicesBuffer = heap.allocateBuffer(rg::Buffer(totalDrawCount * sizeof(int),
                                                            rg::Buffer::CAPABILITY_STORAGE

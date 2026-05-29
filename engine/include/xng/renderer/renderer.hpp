@@ -70,6 +70,7 @@ namespace xng {
         rg::PipelineCache::Handle skinningPipeline;
         rg::PipelineCache::Handle scenePrepassPipeline;
 
+        rg::HeapResource<rg::Buffer> configBuffer;
         rg::HeapResource<rg::Buffer> cameraBuffer;
         rg::HeapResource<rg::Buffer> meshIndicesBuffer;
     };

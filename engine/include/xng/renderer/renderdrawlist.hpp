@@ -20,6 +20,7 @@
 #define XENGINE_RENDERVIEW_HPP
 
 #include "xng/renderer/camera.hpp"
+#include "xng/renderer/renderconfiguration.hpp"
 #include "xng/renderer/objects/rendermodel.hpp"
 #include "xng/renderer/objects/rendercanvas.hpp"
 #include "xng/renderer/objects/renderdirectionallight.hpp"
@@ -35,6 +36,7 @@ namespace xng {
      */
     struct RenderDrawList {
         Camera camera;
+        RenderConfiguration config;
 
         std::vector<RenderObjectHandle<RenderModel> > models;
 

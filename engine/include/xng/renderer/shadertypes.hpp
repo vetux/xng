@@ -99,7 +99,8 @@ namespace xng {
                  ShaderTexture, texture)
 
     ShaderStruct(ShaderConfiguration,
-                 Vec4f, gamma)
+                 float, gamma,
+                 bool, ibl)
 }
 
 #endif //XENGINE_SHADERTYPES_HPP

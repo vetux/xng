@@ -41,6 +41,9 @@ namespace xng {
             G_BUFFER_OBJECT_ID_RECEIVE_SHADOWS,
             G_BUFFER_DEPTH,
 
+            PBR_COLOR_DEFERRED,
+            PBR_COLOR_FORWARD,
+
             RESOURCE_USER = 255, // User-defined resource names should start at RESOURCE_USER
         };
 

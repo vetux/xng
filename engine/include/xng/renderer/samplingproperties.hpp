@@ -22,18 +22,29 @@
 #include "xng/rendergraph/textureproperties.hpp"
 
 namespace xng {
+    enum FilteringMethod : int {
+        FILTER_NEAREST = 0,
+        FILTER_BILINEAR,
+        FILTER_BICUBIC
+    };
+
+    enum WrappingMethod : int {
+        WRAP_CLAMP_TO_EDGE = 0,
+        WRAP_REPEAT
+    };
+
     struct SamplingProperties {
-        rg::TextureFiltering minFilter = rg::LINEAR;
-        rg::TextureFiltering magFilter = rg::LINEAR;
+        FilteringMethod minFilter = FILTER_BICUBIC;
+        FilteringMethod magFilter = FILTER_BICUBIC;
         rg::TextureFiltering mipFilter = rg::LINEAR;
-        rg::TextureWrapping wrapping = rg::CLAMP_TO_EDGE;
+        WrappingMethod wrapping = WRAP_CLAMP_TO_EDGE;
 
         SamplingProperties() = default;
 
-        SamplingProperties(const rg::TextureFiltering minFilter,
-                           const rg::TextureFiltering magFilter,
+        SamplingProperties(const FilteringMethod minFilter,
+                           const FilteringMethod magFilter,
                            const rg::TextureFiltering mipFilter,
-                           const rg::TextureWrapping wrapping)
+                           const WrappingMethod wrapping)
             : minFilter(minFilter),
               magFilter(magFilter),
               mipFilter(mipFilter),

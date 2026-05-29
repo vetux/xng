@@ -167,6 +167,11 @@ namespace xng {
          */
         rg::Resource<rg::Buffer> cameraBuffer;
 
+        /**
+         * The config buffer.
+         */
+        rg::Resource<rg::Buffer> configBuffer;
+
         //TODO: Design canvas rendering strategy
 
         /**
