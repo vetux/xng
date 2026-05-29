@@ -38,6 +38,8 @@
 struct ShaderProgram {
     GLuint programHandle{};
 
+    explicit ShaderProgram() = default;
+
     explicit ShaderProgram(const CompiledShader &pipeline) {
         auto it = pipeline.sourceCode.find(Shader::COMPUTE);
         if (it != pipeline.sourceCode.end()) {

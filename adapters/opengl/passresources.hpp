@@ -25,6 +25,8 @@
 
 namespace xng::opengl {
     struct PassResources {
+        PassResources() = default;
+
         PassResources(ResourceScope stack, ResourceScope heap)
             : stack(std::move(stack)), heap(std::move(heap)) {
         }

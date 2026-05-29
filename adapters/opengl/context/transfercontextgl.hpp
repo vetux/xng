@@ -24,6 +24,7 @@
 #include "heapgl.hpp"
 #include "passresources.hpp"
 #include "resource/framebuffer.hpp"
+#include "resource/shaderprogram.hpp"
 
 namespace xng::opengl {
     class TransferContextGL final : public rg::TransferContext {
@@ -152,11 +153,45 @@ namespace xng::opengl {
             }
         }
 
-        explicit TransferContextGL(const PassResources &resources)
-            : resources(resources) {
+        explicit TransferContextGL(const PassResources &res)
+            : TransferContextGL() {
+            resources = res;
+        }
+
+        TransferContextGL() {
+            constexpr auto flipShaderSource = R"(#version 430 core
+            layout(local_size_x = 64, local_size_y = 1) in;
+
+            layout(std430, binding = 0) readonly  buffer Src { uint srcData[]; };
+            layout(std430, binding = 1) writeonly buffer Dst { uint dstData[]; };
+
+            uniform uint uRowUints;   // rowSize / 4
+            uniform uint uHeight;     // number of rows
+            uniform uint uSrcBase;    // bufferOffset / 4
+
+            void main() {
+                uint col = gl_GlobalInvocationID.x;
+                uint row = gl_GlobalInvocationID.y;
+                if (col >= uRowUints || row >= uHeight) return;
+
+                uint srcRow = uHeight - 1u - row;
+                dstData[row * uRowUints + col] = srcData[uSrcBase + srcRow * uRowUints + col];
+            })";
+            flipShader = ShaderProgram();
+            flipShader.buildShader(flipShaderSource);
+
+            flipRowUintsLoc = glGetUniformLocation(flipShader.programHandle, "uRowUints");
+            flipHeightLoc = glGetUniformLocation(flipShader.programHandle, "uHeight");
+            flipSrcBaseLoc = glGetUniformLocation(flipShader.programHandle, "uSrcBase");
+
+            oglCheckError();
         }
 
         ~TransferContextGL() override = default;
+
+        void setResources(const PassResources &res) {
+            resources = res;
+        }
 
         void copyBuffer(const Resource<Buffer> &target,
                         const Resource<Buffer> &source,
@@ -178,12 +213,18 @@ namespace xng::opengl {
             const auto writeBuffer = resources.getBuffer(target).handle;
 
             glBindBuffer(GL_COPY_READ_BUFFER, readBuffer);
+            oglCheckError();
+
             glBindBuffer(GL_COPY_WRITE_BUFFER, writeBuffer);
+            oglCheckError();
+
             glCopyBufferSubData(GL_COPY_READ_BUFFER,
                                 GL_COPY_WRITE_BUFFER,
                                 static_cast<GLintptr>(sourceOffset),
                                 static_cast<GLintptr>(targetOffset),
                                 static_cast<GLsizeiptr>(count));
+            oglCheckError();
+
             glBindBuffer(GL_COPY_READ_BUFFER, 0);
             glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
 
@@ -254,22 +295,11 @@ namespace xng::opengl {
 
             const BufferGL unpackCopy(Buffer(textureOffset.dimensions.x * textureOffset.dimensions.y * pixelSize,
                                              Buffer::CAPABILITY_TRANSFER_SRC,
-                                             Buffer::MEMORY_CPU_TO_GPU));
-
-            const auto *bufferPtr = buf.map();
-            auto *unpackPtr = unpackCopy.map();
+                                             Buffer::MEMORY_GPU_ONLY));
 
             const auto rowSize = textureOffset.dimensions.x * pixelSize;
 
-            // Invert the rows because opengl requires bottom-up texture data
-            for (auto row = 0; row < textureOffset.dimensions.y; ++row) {
-                const auto dstOffset = row * rowSize;
-                const auto srcOffset = bufferOffset + ((textureOffset.dimensions.y - row - 1) * rowSize);
-                memcpy(unpackPtr + dstOffset, bufferPtr + srcOffset, rowSize);
-            }
-
-            buf.unmap();
-            unpackCopy.unmap();
+            flipRowsGL(buf.handle, unpackCopy.handle, rowSize, textureOffset.dimensions.y, bufferOffset);
 
             GLenum pixelFormat;
             GLenum dataType;
@@ -365,7 +395,7 @@ namespace xng::opengl {
             // Temporary pack PBO
             const BufferGL packCopy(Buffer(dataSize,
                                            Buffer::CAPABILITY_TRANSFER_DST,
-                                           Buffer::MEMORY_GPU_TO_CPU));
+                                           Buffer::MEMORY_GPU_ONLY));
 
             glBindBuffer(GL_PIXEL_PACK_BUFFER, packCopy.handle);
 
@@ -405,18 +435,7 @@ namespace xng::opengl {
 
             glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 
-            // Invert rows and copy into the destination buffer
-            const auto *packPtr = packCopy.map();
-            auto *bufferPtr = buf.map();
-
-            for (auto row = 0; row < rect.dimensions.y; ++row) {
-                const auto srcOffset = row * rowSize;
-                const auto dstOffset = bufferOffset + ((rect.dimensions.y - row - 1) * rowSize);
-                memcpy(bufferPtr + dstOffset, packPtr + srcOffset, rowSize);
-            }
-
-            packCopy.unmap();
-            buf.unmap();
+            flipRowsGL(packCopy.handle, buf.handle, rowSize, textureOffset.dimensions.y, bufferOffset);
 
             oglCheckError();
 
@@ -664,10 +683,46 @@ namespace xng::opengl {
             return ret;
         }
 
-        const PassResources &resources;
+        void flipRowsGL(const GLuint srcBuffer,
+                        const GLuint dstBuffer,
+                        const size_t rowSizeBytes,
+                        const size_t height,
+                        const size_t srcOffsetBytes) const {
+            assert(rowSizeBytes % 4 == 0 && srcOffsetBytes % 4 == 0);
+
+            const auto rowUints = static_cast<GLuint>(rowSizeBytes / 4);
+            const auto h = static_cast<GLuint>(height);
+            const auto srcBase = static_cast<GLuint>(srcOffsetBytes / 4);
+
+            glUseProgram(flipShader.programHandle);
+            glUniform1ui(flipRowUintsLoc, rowUints);
+            glUniform1ui(flipHeightLoc, h);
+            glUniform1ui(flipSrcBaseLoc, srcBase);
+
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, srcBuffer);
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, dstBuffer);
+
+            glDispatchCompute((rowUints + 63u) / 64u, h, 1);
+
+            // dst is consumed next as the unpack PBO
+            glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_PIXEL_BUFFER_BARRIER_BIT);
+
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, 0);
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, 0);
+            glUseProgram(0);
+
+            oglCheckError();
+        }
+
+        PassResources resources;
 
         Framebuffer blitSrcFb;
         Framebuffer blitDstFb;
+
+        ShaderProgram flipShader;
+        GLint flipRowUintsLoc;
+        GLint flipHeightLoc;
+        GLint flipSrcBaseLoc;
     };
 }
 

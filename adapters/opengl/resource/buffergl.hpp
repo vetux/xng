@@ -48,44 +48,33 @@ namespace xng::opengl {
             glGenBuffers(1, &handle);
             glBindBuffer(target, handle);
 
-            // Because the transfer context must be able to map any buffer because of
-            // the row inversion in copyBufferToTexture / copyTextureToBuffer all buffers must have mapping bits set.
-            glBufferStorage(target,
-                            static_cast<GLsizeiptr>(desc.size),
-                            nullptr,
-                            GL_MAP_READ_BIT
-                            | GL_MAP_WRITE_BIT
-                            | GL_MAP_PERSISTENT_BIT
-                            | GL_MAP_COHERENT_BIT
-                            | GL_DYNAMIC_STORAGE_BIT);
-            /*
-                        switch (desc.memoryType) {
-                            case Buffer::MEMORY_GPU_ONLY:
-                                glBufferStorage(target,
-                                                static_cast<GLsizeiptr>(desc.size),
-                                                nullptr,
-                                                GL_DYNAMIC_STORAGE_BIT);
-                                break;
-                            case Buffer::MEMORY_CPU_TO_GPU:
-                                glBufferStorage(target,
-                                                static_cast<GLsizeiptr>(desc.size),
-                                                nullptr,
-                                                GL_MAP_WRITE_BIT
-                                                | GL_MAP_PERSISTENT_BIT
-                                                | GL_MAP_COHERENT_BIT
-                                                | GL_DYNAMIC_STORAGE_BIT);
-                                break;
-                            case Buffer::MEMORY_GPU_TO_CPU:
-                                glBufferStorage(target,
-                                                static_cast<GLsizeiptr>(desc.size),
-                                                nullptr,
-                                                GL_MAP_READ_BIT
-                                                | GL_MAP_PERSISTENT_BIT
-                                                | GL_MAP_COHERENT_BIT
-                                                | GL_DYNAMIC_STORAGE_BIT);
-                                break;
-                        }
-            */
+            switch (desc.memoryType) {
+                case Buffer::MEMORY_GPU_ONLY:
+                    glBufferStorage(target,
+                                    static_cast<GLsizeiptr>(desc.size),
+                                    nullptr,
+                                    GL_DYNAMIC_STORAGE_BIT);
+                    break;
+                case Buffer::MEMORY_CPU_TO_GPU:
+                    glBufferStorage(target,
+                                    static_cast<GLsizeiptr>(desc.size),
+                                    nullptr,
+                                    GL_MAP_WRITE_BIT
+                                    | GL_MAP_PERSISTENT_BIT
+                                    | GL_MAP_COHERENT_BIT
+                                    | GL_DYNAMIC_STORAGE_BIT);
+                    break;
+                case Buffer::MEMORY_GPU_TO_CPU:
+                    glBufferStorage(target,
+                                    static_cast<GLsizeiptr>(desc.size),
+                                    nullptr,
+                                    GL_MAP_READ_BIT
+                                    | GL_MAP_PERSISTENT_BIT
+                                    | GL_MAP_COHERENT_BIT
+                                    | GL_DYNAMIC_STORAGE_BIT);
+                    break;
+            }
+
             glBindBuffer(target, 0);
 
             oglCheckError();
@@ -101,12 +90,14 @@ namespace xng::opengl {
 
             glBindBuffer(target, handle);
 
-            GLenum access = GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT | GL_MAP_WRITE_BIT | GL_MAP_READ_BIT;
-            /* if (desc.memoryType == Buffer::MEMORY_GPU_TO_CPU) {
-                 access |= GL_MAP_READ_BIT;
-             } else if (desc.memoryType == Buffer::MEMORY_CPU_TO_GPU) {
-                 access |= GL_MAP_WRITE_BIT;
-             }*/
+            GLenum access = 0;
+            if (desc.memoryType == Buffer::MEMORY_GPU_TO_CPU) {
+                access |= GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+            } else if (desc.memoryType == Buffer::MEMORY_CPU_TO_GPU) {
+                access |= GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+            } else {
+                throw std::runtime_error("Cannot map GPU_ONLY buffer");
+            }
 
             const auto ret = glMapBufferRange(target,
                                               0,

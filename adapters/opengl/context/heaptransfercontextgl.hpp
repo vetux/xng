@@ -887,6 +887,8 @@ namespace xng::opengl {
             auto &windowGl = down_cast<WindowGl &>(*heapWindow);
             windowGl.bindContext();
 
+            TransferContextGL context;
+
             while (true) {
                 std::vector<Command> batch;
                 ResourceScope ctxResources;
@@ -902,9 +904,7 @@ namespace xng::opengl {
                     }
                 }
 
-                PassResources res({}, ctxResources);
-
-                TransferContextGL context(res);
+                context.setResources(PassResources({}, ctxResources));
 
                 // Regions accumulated since the last SyncCmd (or batch start).
                 std::unordered_map<ResourceId::Handle, std::vector<BufferRegion> > pendingBuffers;
