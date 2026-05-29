@@ -24,7 +24,7 @@
 namespace xng {
     inline ShaderScript::ShaderObject pi() {
         return {
-            3.1415926535897932384
+            3.1415926535897932384f
         };
     }
 }
