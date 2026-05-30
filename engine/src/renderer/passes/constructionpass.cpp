@@ -162,9 +162,6 @@ namespace xng {
         OutputFlat(Int, fObjectID)
         OutputFlat(Int, fReceiveShadows)
 
-        //TODO: Nested buffer struct type definitions
-        ShaderTexture _tex;
-
         DynamicBuffer(ShaderTransform, transforms)
         DynamicBuffer(ShaderMaterial, materials)
         DynamicBuffer(ShaderDrawMesh, drawBuffer)
@@ -230,9 +227,6 @@ namespace xng {
         Output(vec4, oRoughnessMetallicAO)
         Output(vec4, oAlbedo)
         Output(ivec4, oObjectShadows)
-
-        //TODO: Nested buffer struct type definitions
-        ShaderTexture _tex;
 
         DynamicBuffer(ShaderTransform, transforms)
         DynamicBuffer(ShaderMaterial, materials)
