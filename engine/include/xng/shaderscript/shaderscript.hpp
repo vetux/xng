@@ -643,22 +643,23 @@ namespace xng::ShaderScript {
 
     template<typename T>
     struct DynamicBufferWrapper {
-        ShaderObject object;
+        ShaderObject buffer;
 
-        explicit DynamicBufferWrapper(ShaderObject &&buffer) : object(buffer) {
-            ShaderScope::get().addTypeDefinition(T::getShaderStructDef());
+        explicit DynamicBufferWrapper(ShaderObject &&buffer) : buffer(buffer) {
+            // By instantiating the struct type here, all type definitions are registered with the shader scope recursively.
+            T def_type;
         }
 
         T operator[](const Int &index) {
-            return object[index];
+            return buffer[index];
         }
 
         T operator[](const int index) {
-            return object[Int(index)];
+            return buffer[Int(index)];
         }
 
         ShaderObject length() {
-            return object.length();
+            return buffer.length();
         }
     };
 
@@ -671,21 +672,21 @@ namespace xng::ShaderScript {
      */
     template<auto VALUE_TYPE, auto VALUE_COMPONENT, auto VALUE_COUNT>
     struct DynamicBufferWrapper<ShaderDataObject<VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT> > {
-        ShaderObject object;
+        ShaderObject buffer;
 
-        explicit DynamicBufferWrapper(ShaderObject &&buffer) : object(buffer) {
+        explicit DynamicBufferWrapper(ShaderObject &&buffer) : buffer(buffer) {
         }
 
         ShaderObject operator[](const Int &index) {
-            return object[index];
+            return buffer[index];
         }
 
         ShaderObject operator[](const int index) {
-            return object[Int(index)];
+            return buffer[Int(index)];
         }
 
         ShaderObject length() {
-            return object.length();
+            return buffer.length();
         }
     };
 }
