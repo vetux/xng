@@ -44,14 +44,10 @@ namespace xng {
      * which incurs some gpu side overhead in return for reduced binding overhead (One bind per level per frame)
      * and custom filtering solutions which may not be available in the hardware samplers (Bicubic etc.).
      *
-     * Alternatively, textures could be stored in giant TEXTURE_2D atlas textures.
-     * This would allow the streamer to optimize cache locality and the amount of wasted texture memory by controlling
-     * the layout of the tiles and allows setting separate color formats per texture, which also reduces wasted texture memory.
-     * (This appears to be the approach Unreal is using in their Virtual Texturing system)
+     * Array textures have a hardware limit on the number of layers. (256 on OpenGLES / Vulkan, 2,048 on OpenGL 4.x)
+     * Textures have a hardware limit on the maximum dimensions. (2048x2048 on OpenGLES 3.x, 4096x4096 on 1.1 Vulkan)
      *
-     * Array textures have a hardware limit on the number of layers. (256 on OpenGLES, 2,048 on 4.x OpenGL / Vulkan)
-     *
-     * TODO: Implement hybrid texture streaming technique using 2D atlasing inside array textures.
+     * TODO: Implement hybrid texture streaming technique using 2D atlasing + tiling inside array textures.
      */
     class TextureStreamer {
     public:
