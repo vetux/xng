@@ -22,124 +22,13 @@
 #include "xng/shaderscript/macro/helpermacros.hpp"
 
 #include "xng/renderer/shadertypes.hpp"
-#include "xng/renderer/shaderlib/texfilter.hpp"
+#include "xng/renderer/shaderlib/textureatlas.hpp"
 
 using namespace xng::rg;
 using namespace xng::ShaderScript;
-using namespace xng::shaderlib::texfilter;
+using namespace xng::shaderlib::textureatlas;
 
 namespace xng {
-    static vec4 texture_atlas(Param<ShaderTexture> textureDef, Param<vec2> inUv) {
-        IRFunction
-
-        TextureArray(TEXTURE_2D_ARRAY, RGBA8, 12, textures)
-
-        ivec2 level_index = textureDef.value().level_index;
-        vec4 atlasScale_texSize = textureDef.value().scale_texSize;
-        ivec4 minFilter_magFilter_mipFilter_wrap = textureDef.value().minFilter_magFilter_mipFilter_wrap;
-
-        vec2 wrappedUv;
-        If(minFilter_magFilter_mipFilter_wrap.w() == WRAP_REPEAT)
-            wrappedUv = fract(inUv);
-        Else
-            If(minFilter_magFilter_mipFilter_wrap.w() == WRAP_CLAMP_TO_EDGE)
-                wrappedUv = clamp(inUv, vec2(0.0f), vec2(1.0f));
-            Else
-                wrappedUv = 1.0f - abs(mod(inUv, vec2(2.0f)) - 1.0f);
-            Fi
-        Fi
-
-        vec2 uv = wrappedUv * atlasScale_texSize.xy();
-        vec2 imagePixelSize = atlasScale_texSize.zw();
-
-        vec2 dx = partialDerivativeX(inUv);
-        vec2 dy = partialDerivativeY(inUv);
-
-        // Correct for seam discontinuities before scaling
-        // A seam-crossing derivative is ~±1.0 in UV space — round() cancels it
-        dx = dx - round(dx);
-        dy = dy - round(dy);
-
-        // Now scale to pixel space for LoD
-        dx = dx * imagePixelSize;
-        dy = dy * imagePixelSize;
-
-        Float lod = 0.5f * log2(max(dot(dx, dx), dot(dy, dy)) + 1e-10f);
-
-        Float maxLod = log2(min(imagePixelSize.x(), imagePixelSize.y()));
-        lod = clamp(lod, 0.0f, maxLod);
-        Float lodFloor = floor(lod);
-        Float lodCeil = min(lodFloor + 1.0f, maxLod);
-        Float lodFrac = fract(lod);
-
-        Int layer = level_index.y();
-        Int arrayIndex = level_index.x();
-        Int wrap = minFilter_magFilter_mipFilter_wrap.w();
-
-        vec4 ret;
-        If(lod <= 0.0f)
-            Int magFilter = minFilter_magFilter_mipFilter_wrap.y();
-            If(magFilter == FILTER_BICUBIC)
-                ret = textureBicubicArray(textures[arrayIndex], vec3(wrappedUv.x(), wrappedUv.y(), layer),
-                                          imagePixelSize, wrap);
-            Else
-                If(magFilter == FILTER_BILINEAR)
-                    ret = textureBilinearArray(textures[arrayIndex], vec3(wrappedUv.x(), wrappedUv.y(), layer),
-                                               imagePixelSize, wrap);
-                Else
-                    ret = textureSampleArray(textures[arrayIndex], vec3(uv.x(), uv.y(), layer));
-                Fi
-            Fi
-        Else
-            Int minFilter = minFilter_magFilter_mipFilter_wrap.x();
-            Int mipFilter = minFilter_magFilter_mipFilter_wrap.z();
-
-            If(minFilter == FILTER_BICUBIC)
-                If(mipFilter == rg::NEAREST)
-                    ret = textureBicubicArrayLod(textures[arrayIndex],
-                                                 vec3(wrappedUv.x(), wrappedUv.y(), layer), imagePixelSize, lodFloor,
-                                                 wrap);
-                Else
-                    vec4 s0 = textureBicubicArrayLod(textures[arrayIndex],
-                                                     vec3(wrappedUv.x(), wrappedUv.y(), layer), imagePixelSize,
-                                                     lodFloor, wrap);
-                    vec4 s1 = textureBicubicArrayLod(textures[arrayIndex],
-                                                     vec3(wrappedUv.x(), wrappedUv.y(), layer), imagePixelSize, lodCeil,
-                                                     wrap);
-                    ret = mix(s0, s1, lodFrac);
-                Fi
-            Else
-                If(minFilter == FILTER_BILINEAR)
-                    If(mipFilter == rg::NEAREST)
-                        ret = textureBilinearArrayLod(textures[arrayIndex],
-                                                      vec3(wrappedUv.x(), wrappedUv.y(), layer), imagePixelSize,
-                                                      lodFloor, wrap);
-                    Else
-                        vec4 s0 = textureBilinearArrayLod(textures[arrayIndex],
-                                                          vec3(wrappedUv.x(), wrappedUv.y(), layer), imagePixelSize,
-                                                          lodFloor, wrap);
-                        vec4 s1 = textureBilinearArrayLod(textures[arrayIndex],
-                                                          vec3(wrappedUv.x(), wrappedUv.y(), layer), imagePixelSize,
-                                                          lodCeil, wrap);
-                        ret = mix(s0, s1, lodFrac);
-                    Fi
-                Else
-                    If(mipFilter == rg::NEAREST)
-                        ret = textureSampleArrayLod(textures[arrayIndex], vec3(uv.x(), uv.y(), layer), lodFloor);
-                    Else
-                        vec4 s0 = textureSampleArrayLod(textures[arrayIndex], vec3(uv.x(), uv.y(), layer), lodFloor);
-                        vec4 s1 = textureSampleArrayLod(textures[arrayIndex], vec3(uv.x(), uv.y(), layer), lodCeil);
-                        ret = mix(s0, s1, lodFrac);
-                    Fi
-                Fi
-            Fi
-        Fi
-
-        IRReturn(ret);
-
-        IRFunctionEnd
-    }
-
     Shader ConstructionPass::compileVertexShader() {
         BeginShader(Shader::VERTEX)
 
@@ -241,7 +130,15 @@ namespace xng {
         If(material.albedo.level_index.x() < 0)
             oAlbedo = material.albedoColor;
         Else
-            oAlbedo = texture_atlas(material.albedo, fUv);
+            oAlbedo = sample_atlas(textures[material.albedo.level_index.x()],
+                                   fUv,
+                                   material.albedo.level_index.y(),
+                                   material.albedo.scale_texSize.xy(),
+                                   material.albedo.scale_texSize.zw(),
+                                   material.albedo.minFilter_magFilter_mipFilter_wrap.x(),
+                                   material.albedo.minFilter_magFilter_mipFilter_wrap.y(),
+                                   material.albedo.minFilter_magFilter_mipFilter_wrap.z(),
+                                   material.albedo.minFilter_magFilter_mipFilter_wrap.w());
         Fi
 
         oRoughnessMetallicAO = vec4(0.0f, 0.0f, 0.0f, 1.0f);
@@ -250,21 +147,46 @@ namespace xng {
         If(material.roughness.level_index.x() < 0)
             oRoughnessMetallicAO.x() = material.metallic_roughness_ambientOcclusion.y();
         Else
-            oRoughnessMetallicAO.x() = texture_atlas(material.roughness, fUv).x();
+            oRoughnessMetallicAO.x() = sample_atlas(textures[material.roughness.level_index.x()],
+                                                    fUv,
+                                                    material.roughness.level_index.y(),
+                                                    material.roughness.scale_texSize.xy(),
+                                                    material.roughness.scale_texSize.zw(),
+                                                    material.roughness.minFilter_magFilter_mipFilter_wrap.x(),
+                                                    material.roughness.minFilter_magFilter_mipFilter_wrap.y(),
+                                                    material.roughness.minFilter_magFilter_mipFilter_wrap.z(),
+                                                    material.roughness.minFilter_magFilter_mipFilter_wrap.w()).x();
         Fi
 
         // Metallic
         If(material.metallic.level_index.x() < 0)
             oRoughnessMetallicAO.y() = material.metallic_roughness_ambientOcclusion.x();
         Else
-            oRoughnessMetallicAO.y() = texture_atlas(material.metallic, fUv).x();
+            oRoughnessMetallicAO.y() = sample_atlas(textures[material.metallic.level_index.x()],
+                                                    fUv,
+                                                    material.metallic.level_index.y(),
+                                                    material.metallic.scale_texSize.xy(),
+                                                    material.metallic.scale_texSize.zw(),
+                                                    material.metallic.minFilter_magFilter_mipFilter_wrap.x(),
+                                                    material.metallic.minFilter_magFilter_mipFilter_wrap.y(),
+                                                    material.metallic.minFilter_magFilter_mipFilter_wrap.z(),
+                                                    material.metallic.minFilter_magFilter_mipFilter_wrap.w()).x();
         Fi
 
         // Ambient Occlusion
         If(material.ambientOcclusion.level_index.x() < 0)
             oRoughnessMetallicAO.z() = material.metallic_roughness_ambientOcclusion.z();
         Else
-            oRoughnessMetallicAO.z() = texture_atlas(material.ambientOcclusion, fUv).x();
+            oRoughnessMetallicAO.z() = sample_atlas(textures[material.ambientOcclusion.level_index.x()],
+                                                    fUv,
+                                                    material.ambientOcclusion.level_index.y(),
+                                                    material.ambientOcclusion.scale_texSize.xy(),
+                                                    material.ambientOcclusion.scale_texSize.zw(),
+                                                    material.ambientOcclusion.minFilter_magFilter_mipFilter_wrap.x(),
+                                                    material.ambientOcclusion.minFilter_magFilter_mipFilter_wrap.y(),
+                                                    material.ambientOcclusion.minFilter_magFilter_mipFilter_wrap.z(),
+                                                    material.ambientOcclusion.minFilter_magFilter_mipFilter_wrap.w())
+                    .x();
         Fi
 
         mat3 normalMatrix = mat3(transpose(inverse(fModel)));
@@ -273,7 +195,15 @@ namespace xng {
 
         If(material.normal.level_index.x() >= 0)
             mat3 tbn = mat3(fT, fB, fN);
-            vec3 texNormal = texture_atlas(material.normal, fUv).xyz();
+            vec3 texNormal = sample_atlas(textures[material.normal.level_index.x()],
+                                          fUv,
+                                          material.normal.level_index.y(),
+                                          material.normal.scale_texSize.xy(),
+                                          material.normal.scale_texSize.zw(),
+                                          material.normal.minFilter_magFilter_mipFilter_wrap.x(),
+                                          material.normal.minFilter_magFilter_mipFilter_wrap.y(),
+                                          material.normal.minFilter_magFilter_mipFilter_wrap.z(),
+                                          material.normal.minFilter_magFilter_mipFilter_wrap.w()).xyz();
             texNormal = texNormal * 2.0f - 1.0f;
             If(material.normalIntensity_flipNormal.y() != 0.0f)
                 texNormal.y() = texNormal.y() * -1.0f;
