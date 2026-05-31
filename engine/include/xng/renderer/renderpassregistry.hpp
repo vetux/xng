@@ -28,7 +28,7 @@
 
 namespace xng {
     /**
-     * Contains transient resources to be shared between passes.
+     * Contains resources to be shared between passes.
      */
     class RenderPassRegistry {
     public:
@@ -81,4 +81,5 @@ namespace xng {
         std::unordered_map<ResourceName, std::variant<rg::Resource<rg::Texture>, rg::Resource<rg::Buffer>>> resources;
     };
 }
+
 #endif //XENGINE_RENDERPASSREGISTRY_HPP

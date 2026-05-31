@@ -172,14 +172,21 @@ namespace xng {
          */
         rg::Resource<rg::Buffer> configBuffer;
 
-        //TODO: Design canvas rendering strategy
-
         /**
-         * The paint buffer indexed by the canvas model buffer.
+         * The draw calls for drawing a normalized quad / cube from the vertex buffers / index buffer.
          */
-        rg::Resource<rg::Buffer> paintBuffer;
+        rg::DrawCall normalizedQuadDrawCall;
+        rg::DrawCall normalizedCubeDrawCall;
 
-        std::vector<RenderObjectHandle<RenderCanvas> > canvases;
+        struct PaintDrawBatch {
+            rg::Resource<rg::Texture> texture; // If unassigned render to screen / compositing layer
+            std::vector<rg::DrawCall> drawCalls;
+            rg::Resource<rg::Buffer> drawBuffer; // Indexed via multi draw GetDrawID
+        };
+
+        std::vector<PaintDrawBatch> paintDrawList;
+
+        rg::Resource<rg::Buffer> paintBuffer;
     };
 }
 

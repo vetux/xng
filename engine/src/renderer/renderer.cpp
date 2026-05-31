@@ -311,8 +311,8 @@ namespace xng {
         }
 
         scene.drawBuffer = graphBuilder.allocateBuffer(rg::Buffer(totalDrawCount * sizeof(ShaderDrawMesh::CPU),
-                                                          rg::Buffer::CAPABILITY_STORAGE,
-                                                          rg::Buffer::MEMORY_GPU_ONLY));
+                                                                  rg::Buffer::CAPABILITY_STORAGE,
+                                                                  rg::Buffer::MEMORY_GPU_ONLY));
 
         meshIndicesBuffer = heap.allocateBuffer(rg::Buffer(totalDrawCount * sizeof(int),
                                                            rg::Buffer::CAPABILITY_STORAGE

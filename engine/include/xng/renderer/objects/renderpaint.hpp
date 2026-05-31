@@ -39,23 +39,31 @@ namespace xng {
          *
          * @param id
          * @param paintStream
+         * @param meshStream
          * @param position
+         * @param size
          * @param color
          */
         RenderPaint(const Id id,
                     BufferStreamer<ShaderCanvasPaint::CPU> &paintStream,
+                    MeshStreamer &meshStream,
                     Vec2f position,
+                    float size,
                     const ColorRGBA &color)
             : RenderObject(OBJECT_PAINT, id),
               type(PAINT_POINT),
               paintStream(paintStream),
               slot(paintStream.create()),
+              meshStream(meshStream),
               dstRect(std::move(position), {}),
               color(color) {
             const auto colorF = color.divide();
             ShaderCanvasPaint::CPU paint{};
             paint.color = colorF;
             paintStream.upload(slot, paint);
+            meshHandle = meshStream.getNormalizedQuad();
+            modelMatrix = MatrixMath::scale(Vec3f(size, size, 1))
+                          * MatrixMath::translate(Vec3f(position.x, position.y, 0));
         }
 
         /**
@@ -63,7 +71,7 @@ namespace xng {
          *
          * @param id
          * @param paintStream
-         * @param _meshStreamer
+         * @param meshStream
          * @param _start
          * @param _end
          * @param color
@@ -72,7 +80,7 @@ namespace xng {
          */
         RenderPaint(const Id id,
                     BufferStreamer<ShaderCanvasPaint::CPU> &paintStream,
-                    MeshStreamer &_meshStreamer,
+                    MeshStreamer &meshStream,
                     Vec2f _start,
                     Vec2f _end,
                     const ColorRGBA &color,
@@ -82,7 +90,7 @@ namespace xng {
               type(PAINT_LINE),
               paintStream(paintStream),
               slot(paintStream.create()),
-              meshStreamer(&_meshStreamer),
+              meshStream(meshStream),
               dstRect(std::move(_start), std::move(_end)),
               center(std::move(center)),
               rotation(rotation),
@@ -92,7 +100,8 @@ namespace xng {
             mesh.positions.emplace_back(dstRect.position.x, dstRect.position.y, 1);
             mesh.positions.emplace_back(dstRect.dimensions.x, dstRect.dimensions.y, 1);
             mesh.positions.emplace_back(dstRect.dimensions.x, dstRect.dimensions.y, 1);
-            lineMeshHandle = meshStreamer->create(mesh, {});
+            meshHandle = meshStream.create(mesh);
+            modelMatrix = MatrixMath::identity();
 
             const auto colorF = color.divide();
             ShaderCanvasPaint::CPU paint{};
@@ -105,29 +114,36 @@ namespace xng {
          *
          * @param id
          * @param paintStream
-         * @param dstRect
+         * @param meshStream
+         * @param _dstRect
          * @param color
-         * @param center
+         * @param _center
          * @param rotation
          */
         RenderPaint(const Id id,
                     BufferStreamer<ShaderCanvasPaint::CPU> &paintStream,
-                    Rectf dstRect,
+                    MeshStreamer &meshStream,
+                    Rectf _dstRect,
                     const ColorRGBA &color,
-                    Vec2f center = {},
+                    Vec2f _center = {},
                     const float rotation = 0)
             : RenderObject(OBJECT_PAINT, id),
               type(PAINT_RECTANGLE),
               paintStream(paintStream),
               slot(paintStream.create()),
-              dstRect(std::move(dstRect)),
-              center(std::move(center)),
+              meshStream(meshStream),
+              dstRect(std::move(_dstRect)),
+              center(std::move(_center)),
               rotation(rotation),
               color(color) {
             const auto colorF = color.divide();
             ShaderCanvasPaint::CPU paint{};
             paint.color = colorF;
             paintStream.upload(slot, paint);
+            meshHandle = meshStream.getNormalizedQuad();
+            modelMatrix = MatrixMath::translate(Vec3f(dstRect.position.x, dstRect.position.y, 0))
+                          * MatrixMath::rotate(Vec3f(0, 0, rotation))
+                          * MatrixMath::scale(Vec3f(dstRect.dimensions.x, dstRect.dimensions.y, 1));
         }
 
         /**
@@ -135,10 +151,12 @@ namespace xng {
          *
          * @param id
          * @param paintStream
+         * @param meshStream
          * @param _srcRect
          * @param _dstRect
          * @param _texture
          * @param filter
+         * @param wrap
          * @param mix
          * @param alpha_mix
          * @param mixColor
@@ -147,10 +165,12 @@ namespace xng {
          */
         RenderPaint(const Id id,
                     BufferStreamer<ShaderCanvasPaint::CPU> &paintStream,
+                    MeshStreamer &meshStream,
                     Rectf _srcRect,
                     Rectf _dstRect,
                     RenderObjectHandle<RenderTexture> _texture,
-                    const rg::TextureFiltering filter,
+                    const FilteringMethod filter,
+                    const WrappingMethod wrap,
                     const float mix = 0,
                     const float alpha_mix = 0,
                     const ColorRGBA &mixColor = {},
@@ -160,6 +180,7 @@ namespace xng {
               type(PAINT_TEXTURE),
               paintStream(paintStream),
               slot(paintStream.create()),
+              meshStream(meshStream),
               srcRect(std::move(_srcRect)),
               dstRect(std::move(_dstRect)),
               center(center),
@@ -167,6 +188,7 @@ namespace xng {
               color(mixColor),
               texture(std::move(_texture)),
               filter(filter),
+              wrap(wrap),
               mix(mix),
               alpha_mix(alpha_mix) {
             const auto colorF = color.divide();
@@ -180,8 +202,10 @@ namespace xng {
             paint.uvOffset_uvScale = Vec4f(uvOffset.x, uvOffset.y, uvScale.x, uvScale.y);
 
             paint.texture.level_index = Vec2i(texture->getHandle().level, texture->getHandle().slot);
-            paint.texture.minFilter_magFilter_mipFilter_wrap = Vec4i(rg::NEAREST, filter, rg::NEAREST,
-                                                                     rg::CLAMP_TO_EDGE);
+            paint.texture.minFilter_magFilter_mipFilter_wrap = Vec4i(FILTER_NEAREST,
+                                                                     filter,
+                                                                     rg::NEAREST,
+                                                                     wrap);
 
             const auto scale = texture->getHandle().getScale();
             paint.texture.scale_texSize = Vec4f(scale.x,
@@ -190,6 +214,18 @@ namespace xng {
                                                 texture->getHandle().size.y);
 
             paintStream.upload(slot, paint);
+
+            meshHandle = meshStream.getNormalizedQuad();
+            modelMatrix = MatrixMath::translate(Vec3f(dstRect.position.x, dstRect.position.y, 0))
+                          * MatrixMath::rotate(Vec3f(0, 0, rotation))
+                          * MatrixMath::scale(Vec3f(dstRect.dimensions.x, dstRect.dimensions.y, 1));
+        }
+
+        ~RenderPaint() override {
+            paintStream.destroy(slot);
+            if (type == PAINT_LINE) {
+                meshStream.destroy(meshHandle);
+            }
         }
 
         [[nodiscard]] Type getPaintType() const {
@@ -237,7 +273,7 @@ namespace xng {
         }
 
         bool isUploadComplete() override {
-            if (meshStreamer && !meshStreamer->isUploadComplete(lineMeshHandle)) {
+            if (!meshStream.isUploadComplete(meshHandle)) {
                 return false;
             }
             if (texture && !texture->isUploadComplete()) {
@@ -247,9 +283,7 @@ namespace xng {
         }
 
         void flush() override {
-            if (meshStreamer) {
-                meshStreamer->flush(lineMeshHandle);
-            }
+            meshStream.flush(meshHandle);
             if (texture) {
                 texture->flush();
             }
@@ -262,8 +296,10 @@ namespace xng {
         BufferStreamer<ShaderCanvasPaint::CPU> &paintStream;
         BufferStreamer<ShaderCanvasPaint::CPU>::Slot slot;
 
-        MeshStreamer *meshStreamer = nullptr;
-        MeshStreamer::Handle lineMeshHandle{};
+        MeshStreamer &meshStream;
+        MeshStreamer::Handle meshHandle{};
+
+        Mat4f modelMatrix;
 
         Rectf srcRect{};
         Rectf dstRect{};
@@ -274,7 +310,8 @@ namespace xng {
         ColorRGBA color{};
 
         RenderObjectHandle<RenderTexture> texture{};
-        bool filter{};
+        FilteringMethod filter{};
+        WrappingMethod wrap{};
         float mix{};
         float alpha_mix{};
     };

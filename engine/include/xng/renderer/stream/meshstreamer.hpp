@@ -62,7 +62,7 @@ namespace xng {
             int skinBaseVertex{}; // The offset applied to each vertex for indexing into the skinned buffers.
         };
 
-        explicit MeshStreamer(rg::Heap &heap, ChunkStreamer &chunkStreamer)
+        MeshStreamer(rg::Heap &heap, ChunkStreamer &chunkStreamer)
             : indexBuffer(StreamBuffer(heap, chunkStreamer, rg::Buffer::CAPABILITY_INDEX)),
               skinnedBindPosBuffer(StreamBuffer(heap, chunkStreamer, rg::Buffer::CAPABILITY_STORAGE)),
               skinnedBoneIndicesBuffer(StreamBuffer(heap, chunkStreamer, rg::Buffer::CAPABILITY_STORAGE)),
@@ -77,6 +77,10 @@ namespace xng {
                 vertexBuffers.emplace(attr, std::move(StreamBuffer(heap, chunkStreamer, caps)));
             }
             skinnedBufferAlloc = RangeAllocator();
+            normalizedQuad = create(Mesh::normalizedQuad());
+            normalizedCube = create(Mesh::normalizedCube());
+            flush(normalizedQuad);
+            flush(normalizedCube);
         }
 
         /**
@@ -88,7 +92,7 @@ namespace xng {
          * @param boneIndices The indices of the bones
          * @return The allocation handle
          */
-        Handle create(const Mesh &mesh, const std::unordered_map<std::string, unsigned int> &boneIndices) {
+        Handle create(const Mesh &mesh, const std::unordered_map<std::string, unsigned int> &boneIndices = {}) {
             Handle ret;
             if (!freeHandles.empty()) {
                 ret = freeHandles.back();
@@ -364,6 +368,14 @@ namespace xng {
             return skinnedBoneWeightsBuffer.getBuffer();
         }
 
+        Handle getNormalizedQuad() const {
+            return normalizedQuad;
+        }
+
+        Handle getNormalizedCube() const {
+            return normalizedCube;
+        }
+
     private:
         static std::vector<uint8_t> getBytes(const VertexAttribute attr, const Mesh &mesh) {
             VertexBuilder builder;
@@ -450,6 +462,9 @@ namespace xng {
         std::vector<Handle> freeHandles;
 
         std::unordered_map<Handle, Allocation> allocations;
+
+        Handle normalizedQuad;
+        Handle normalizedCube;
     };
 }
 

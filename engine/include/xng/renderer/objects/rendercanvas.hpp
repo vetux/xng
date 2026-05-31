@@ -23,6 +23,7 @@
 
 #include "xng/renderer/objects/rendermesh.hpp"
 #include "xng/renderer/objects/renderpaint.hpp"
+#include "xng/renderer/objects/rendertexture.hpp"
 #include "xng/renderer/renderobject.hpp"
 #include "xng/renderer/camera.hpp"
 
