@@ -71,14 +71,15 @@ namespace xng::shaderlib::virtualtexture {
      * tileOffset = tileMapOffsets[textureID + mip]
      * atlasTileIndex = tileMap[tileOffset + imageTileIndex]
      *
+     * atlasTileSize = tileSize + 2*tileBorder
+     * tilesPerLayer = (atlasSize / atlasTileSize)^2.
+     *
      * layer = atlasTileIndex / tilesPerLayer
      * localAtlasTileIndex = atlasTileIndex - layer * tilesPerLayer
      *
      * -- Tile Borders --
      *
      * Each tile has an additional border which contains the neighboring virtual tile data to allow hardware linear / anisotropic filtering to work.
-     *
-     * atlasTileSize = tileSize + 2*tileBorder
      *
      * The borders must be sized to at least (maxAnisotropy / 2).
      *
