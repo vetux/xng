@@ -69,6 +69,8 @@ namespace xng::shaderlib::virtualtexture {
      * Each tile has an additional border which contains the neighboring virtual tile data to allow hardware
      * linear / anisotropic filtering to work.
      *
+     * The borders must be sized to at least (maxAnisotropy / 2).
+     *
      * For WRAP_REPEAT the borders of the tiles at image boundaries contain the repeated image texels
      * For WRAP_CLAMP_EDGE the borders of the tiles at image boundaries contain copies of the edge texels.
      *
