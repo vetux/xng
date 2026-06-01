@@ -545,6 +545,13 @@ namespace xng::rg::ShaderInstructionFactory {
         return ret;
     }
 
+    ShaderInstruction exp2(ShaderOperand value) {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::Exp2;
+        ret.operands.push_back(std::move(value));
+        return ret;
+    }
+
     ShaderInstruction log(ShaderOperand value) {
         ShaderInstruction ret;
         ret.code = ShaderInstruction::Log;

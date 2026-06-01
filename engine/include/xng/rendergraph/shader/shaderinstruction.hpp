@@ -133,6 +133,7 @@ namespace xng::rg {
             Atan2,
             Pow,
             Exp,
+            Exp2,
             Log,
             Log2,
             Sqrt,

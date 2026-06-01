@@ -620,6 +620,8 @@ namespace InstructionCompiler {
                        + compileOperand(instruction.operands.at(1), source, functionName) + ")";
             case ShaderInstruction::Exp:
                 return "exp(" + compileOperand(instruction.operands.at(0), source, functionName) + ")";
+            case ShaderInstruction::Exp2:
+                return "exp2(" + compileOperand(instruction.operands.at(0), source, functionName) + ")";
             case ShaderInstruction::Log:
                 return "log(" + compileOperand(instruction.operands.at(0), source, functionName) + ")";
             case ShaderInstruction::Log2:

@@ -316,6 +316,8 @@ namespace xng::rg {
 
         XENGINE_EXPORT ShaderInstruction exp(ShaderOperand value);
 
+        XENGINE_EXPORT ShaderInstruction exp2(ShaderOperand value);
+
         XENGINE_EXPORT ShaderInstruction log(ShaderOperand value);
 
         XENGINE_EXPORT ShaderInstruction log2(ShaderOperand value);

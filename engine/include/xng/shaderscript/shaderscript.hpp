@@ -540,6 +540,10 @@ namespace xng::ShaderScript {
         return ShaderObject(rg::ShaderInstructionFactory::exp(value.operand));
     }
 
+    inline ShaderObject exp2(const ShaderObject &value) {
+        return ShaderObject(rg::ShaderInstructionFactory::exp2(value.operand));
+    }
+
     inline ShaderObject log(const ShaderObject &value) {
         return ShaderObject(rg::ShaderInstructionFactory::log(value.operand));
     }
