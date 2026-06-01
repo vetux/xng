@@ -53,21 +53,32 @@ namespace xng::shaderlib::virtualtexture {
     /**
      * Sample the virtual texture using nearest-filtering.
      *
-     * tileOffset = tileMapOffsets[textureID + mip]
-     *
-     * The tile map contains the atlas tile indices for each mip map with the rows laid out linearly.
-     *
+     * The tile map contains the atlas tile indices for each mip map with the rows laid out linearly like so:
      * [x = 0, y = 0][x = 1,  y = 0]...
      *
      * The atlas tile indices point to a tile across layers by using the same linear row interpretation.
      *
-     * The tile is selected by simply dividing by the number of tiles in a single atlas layer and using the remainder
+     * The atlas tile is selected by simply dividing by the number of tiles in a single atlas layer and using the remainder
      * to index into the tiles of the layer to get the target tile.
      *
-     * atlasTileSize = tileSize + 2*tileBorder
+     * The full equation becomes:
      *
-     * Each tile has an additional border which contains the neighboring virtual tile data to allow hardware
-     * linear / anisotropic filtering to work.
+     * tileX = texelX / tileSize
+     * tileY = texelY / tileSize
+     * tilesPerRow = ceil(imageWidth / tileSize)
+     * imageTileIndex = tileY * tilesPerRow + tileX
+     *
+     * tileOffset = tileMapOffsets[textureID + mip]
+     * atlasTileIndex = tileMap[tileOffset + imageTileIndex]
+     *
+     * layer = atlasTileIndex / tilesPerLayer
+     * localAtlasTileIndex = atlasTileIndex - layer * tilesPerLayer
+     *
+     * -- Tile Borders --
+     *
+     * Each tile has an additional border which contains the neighboring virtual tile data to allow hardware linear / anisotropic filtering to work.
+     *
+     * atlasTileSize = tileSize + 2*tileBorder
      *
      * The borders must be sized to at least (maxAnisotropy / 2).
      *
