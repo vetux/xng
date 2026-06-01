@@ -22,6 +22,8 @@
 #include "xng/shaderscript/shaderscript.hpp"
 
 namespace xng::shaderlib::virtualtexture {
+    //TODO: Readback of sampled tiles + Priority / Visibility based texture streaming
+
     using namespace ShaderScript;
 
     XENGINE_EXPORT ivec3 getAtlasTexel(Param<UInt> textureID,
