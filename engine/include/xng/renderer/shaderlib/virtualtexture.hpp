@@ -63,9 +63,9 @@ namespace xng::shaderlib::virtualtexture {
      *
      * The full equation becomes:
      *
-     * tileX = texelX / tileSize
-     * tileY = texelY / tileSize
-     * tilesPerRow = ceil(imageWidth / tileSize)
+     * tileX = mipTexelX / tileSize
+     * tileY = mipTexelY / tileSize
+     * tilesPerRow = ceil(imageMipWidth / tileSize)
      * imageTileIndex = tileY * tilesPerRow + tileX
      *
      * tileOffset = tileMapOffsets[textureID + mip]
