@@ -446,6 +446,30 @@ namespace InstructionCompiler {
                + sample + ")";
     }
 
+    std::string compileTextureGrad(const ShaderInstruction &instruction,
+                                   const Shader &source,
+                                   const std::string &functionName,
+                                   const std::string &indent) {
+        auto name = compileOperand(instruction.operands.at(0), source, functionName);
+        auto coords = compileOperand(instruction.operands.at(1), source, functionName);
+        coords = "vec2(" + coords + ".x, 1 - " + coords + ".y)";
+        auto dPdx = compileOperand(instruction.operands.at(2), source, functionName);
+        auto dPdy = compileOperand(instruction.operands.at(3), source, functionName);
+        return "textureGrad(" + name + ", " + coords + ", " + dPdx + ", " + dPdy + ")";
+    }
+
+    std::string compileTextureGradArray(const ShaderInstruction &instruction,
+                                        const Shader &source,
+                                        const std::string &functionName,
+                                        const std::string &indent) {
+        auto name = compileOperand(instruction.operands.at(0), source, functionName);
+        auto coords = compileOperand(instruction.operands.at(1), source, functionName);
+        coords = "vec2(" + coords + ".x, 1 - " + coords + ".y)";
+        auto dPdx = compileOperand(instruction.operands.at(2), source, functionName);
+        auto dPdy = compileOperand(instruction.operands.at(3), source, functionName);
+        return "textureGrad(" + name + ", " + coords + ", " + dPdx + ", " + dPdy + ")";
+    }
+
     std::string compileTextureSize(const ShaderInstruction &instruction,
                                    const Shader &source,
                                    const std::string &functionName,

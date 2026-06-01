@@ -480,6 +480,26 @@ namespace xng::ShaderScript {
             bias.operand));
     }
 
+    inline ShaderObject textureGrad(const ShaderObject &texture,
+                                    const ShaderObject &coords,
+                                    const ShaderObject &dPdx,
+                                    const ShaderObject &dPdy) {
+        return ShaderObject(rg::ShaderInstructionFactory::textureGrad(texture.operand,
+                                                                      coords.operand,
+                                                                      dPdx.operand,
+                                                                      dPdy.operand));
+    }
+
+    inline ShaderObject textureGradArray(const ShaderObject &texture,
+                                         const ShaderObject &coords,
+                                         const ShaderObject &dPdx,
+                                         const ShaderObject &dPdy) {
+        return ShaderObject(rg::ShaderInstructionFactory::textureGradArray(texture.operand,
+                                                                           coords.operand,
+                                                                           dPdx.operand,
+                                                                           dPdy.operand));
+    }
+
     inline ShaderObject abs(const ShaderObject &value) {
         return ShaderObject(rg::ShaderInstructionFactory::abs(value.operand));
     }

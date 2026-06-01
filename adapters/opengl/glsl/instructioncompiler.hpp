@@ -129,6 +129,16 @@ namespace InstructionCompiler {
                                                           const std::string &functionName,
                                                           const std::string &indent);
 
+    XENGINE_EXPORT std::string compileTextureGrad(const ShaderInstruction &instruction,
+                                                  const Shader &source,
+                                                  const std::string &functionName,
+                                                  const std::string &indent);
+
+    XENGINE_EXPORT std::string compileTextureGradArray(const ShaderInstruction &instruction,
+                                                       const Shader &source,
+                                                       const std::string &functionName,
+                                                       const std::string &indent);
+
     XENGINE_EXPORT std::string compileTextureSize(const ShaderInstruction &instruction,
                                                   const Shader &source,
                                                   const std::string &functionName,

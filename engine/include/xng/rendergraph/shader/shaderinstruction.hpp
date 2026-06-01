@@ -102,6 +102,9 @@ namespace xng::rg {
             TextureFetchMS,
             TextureFetchMSArray,
 
+            TextureGrad,
+            TextureGradArray,
+
             TextureSize,
             BufferSize,
 

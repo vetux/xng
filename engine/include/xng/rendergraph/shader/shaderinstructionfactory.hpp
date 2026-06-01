@@ -240,6 +240,34 @@ namespace xng::rg {
                                                                    ShaderOperand coordinate,
                                                                    ShaderOperand lod = {});
 
+        /**
+         * Perform a texture lookup with explicit gradients
+         *
+         * @param texture
+         * @param coordinate Specifies the 2d texture coordinates at which texture will be sampled.
+         * @param dPdx Specifies the partial derivative of P with respect to window x.
+         * @param dPdy Specifies the partial derivative of P with respect to window y.
+         * @return
+         */
+        XENGINE_EXPORT ShaderInstruction textureGrad(ShaderOperand texture,
+                                                     ShaderOperand coordinate,
+                                                     ShaderOperand dPdx,
+                                                     ShaderOperand dPdy);
+
+        /**
+         * Perform a texture lookup with explicit gradients
+         *
+         * @param texture
+         * @param coordinate Specifies the 3d texture coordinates at which texture will be sampled.
+         * @param dPdx Specifies the partial derivative of P with respect to window x.
+         * @param dPdy Specifies the partial derivative of P with respect to window y.
+         * @return
+         */
+        XENGINE_EXPORT ShaderInstruction textureGradArray(ShaderOperand texture,
+                                                          ShaderOperand coordinate,
+                                                          ShaderOperand dPdx,
+                                                          ShaderOperand dPdy);
+
         XENGINE_EXPORT ShaderInstruction textureSize(ShaderOperand texture, ShaderOperand lod = {});
 
         XENGINE_EXPORT ShaderInstruction bufferSize(ShaderOperand buffer);

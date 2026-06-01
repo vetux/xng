@@ -336,6 +336,32 @@ namespace xng::rg::ShaderInstructionFactory {
         return ret;
     }
 
+    ShaderInstruction textureGrad(ShaderOperand texture,
+                                  ShaderOperand coordinate,
+                                  ShaderOperand dPdx,
+                                  ShaderOperand dPdy) {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::TextureGrad;
+        ret.operands.push_back(std::move(texture));
+        ret.operands.push_back(std::move(coordinate));
+        ret.operands.push_back(std::move(dPdx));
+        ret.operands.push_back(std::move(dPdy));
+        return ret;
+    }
+
+    ShaderInstruction textureGradArray(ShaderOperand texture,
+                                       ShaderOperand coordinate,
+                                       ShaderOperand dPdx,
+                                       ShaderOperand dPdy) {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::TextureGradArray;
+        ret.operands.push_back(std::move(texture));
+        ret.operands.push_back(std::move(coordinate));
+        ret.operands.push_back(std::move(dPdx));
+        ret.operands.push_back(std::move(dPdy));
+        return ret;
+    }
+
     ShaderInstruction textureSize(ShaderOperand texture, ShaderOperand lod) {
         ShaderInstruction ret;
         ret.code = ShaderInstruction::TextureSize;
