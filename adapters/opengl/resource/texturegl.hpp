@@ -244,6 +244,8 @@ namespace xng::opengl {
                 }
             }
 
+            glTexParameterf(textureType, GL_TEXTURE_MAX_ANISOTROPY, desc.maxAnisotropy);
+
             glBindTexture(textureType, 0);
 
             oglDebugEndGroup();
