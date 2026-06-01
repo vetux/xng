@@ -115,6 +115,8 @@ namespace xng::rg {
 
         std::variant<Vec4f, Vec4i, Vec4u> borderColor = Vec4f(0);
 
+        float maxAnisotropy = 8.0f;
+
         explicit Texture(const Capability capabilities = CAPABILITY_NONE,
                          Vec2i size = {1, 1},
                          const TextureType texture_type = TEXTURE_2D,
@@ -127,7 +129,8 @@ namespace xng::rg {
                          const unsigned int mip_levels = 1,
                          const TextureFiltering mip_map_filter = NEAREST,
                          const size_t array_layers = 0,
-                         std::variant<Vec4f, Vec4i, Vec4u> border_color = Vec4f(0))
+                         std::variant<Vec4f, Vec4i, Vec4u> border_color = Vec4f(0),
+                         const float max_anisotropy = 8.0f)
             : capabilities(capabilities),
               size(std::move(size)),
               textureType(texture_type),
@@ -140,7 +143,8 @@ namespace xng::rg {
               mipLevels(mip_levels),
               mipMode(mip_map_filter),
               arrayLayers(array_layers),
-              borderColor(std::move(border_color)) {
+              borderColor(std::move(border_color)),
+              maxAnisotropy(max_anisotropy) {
         }
 
         bool operator==(const Texture &other) const {
