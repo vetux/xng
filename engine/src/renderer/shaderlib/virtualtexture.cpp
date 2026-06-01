@@ -113,21 +113,6 @@ namespace xng::shaderlib::virtualtexture {
         IRFunctionEnd
     }
 
-    /**
-     * Sample the virtual texture using nearest-filtering.
-     *
-     * @param textureID The ID of the texture / Base Index into tile map offsets. tileOffset = tileMapOffsets[textureID + mip]
-     * @param uv The uv in virtual texture space.
-     * @param wrap The wrapping mode to use.
-     * @param imageSize The size of the virtual image.
-     * @param atlasSize The texel count of one dimension in the rectangular atlas texture.
-     * @param tileSize The texel count of one dimension of the rectangular tiles.
-     * @param tileBorder The texel count of the border on one side. (atlasTileSize = tileSize + 2*tileBorder)
-     * @param tileMapOffsets The dynamic buffer containing the tile map offsets.
-     * @param tileMap The dynamic buffer containing the tile maps.
-     * @param sampler The array texture containing the tiles.
-     * @return
-     */
     vec4 sample_nearest(Param<UInt> textureID,
                         Param<vec2> uv,
                         Param<Int> wrap,
@@ -146,40 +131,25 @@ namespace xng::shaderlib::virtualtexture {
         vec2 dy = partialDerivativeY(uv) * vec2(imageSize);
         Float mip = clamp(floor(0.5f * log2(max(dot(dx, dx), dot(dy, dy)))), 0.0f, maxMip);
 
-        vec2 mipSize = max(vec2(1.0f), vec2(imageSize) / pow(2.0f, mip));
+        vec2 mipSize = max(vec2(1.0f), vec2(imageSize) / exp2(mip));
 
         ivec3 atlasUV = getAtlasTexel(textureID,
-                                     uv,
-                                     Int(mip),
-                                     wrap,
-                                     imageSize,
-                                     mipSize,
-                                     atlasSize,
-                                     tileSize,
-                                     tileBorder,
-                                     tileMapOffsets,
-                                     tileMap);
+                                      uv,
+                                      Int(mip),
+                                      wrap,
+                                      imageSize,
+                                      mipSize,
+                                      atlasSize,
+                                      tileSize,
+                                      tileBorder,
+                                      tileMapOffsets,
+                                      tileMap);
 
         IRReturn(vec4(texelFetchArray(sampler, atlasUV.xy(), atlasUV.z())));
 
         IRFunctionEnd
     }
 
-    /**
-     * Sample the virtual texture using hardware bilinear filtering.
-     *
-     * @param textureID
-     * @param uv
-     * @param wrap
-     * @param imageSize
-     * @param atlasSize
-     * @param tileSize
-     * @param tileBorder
-     * @param tileMapOffsets
-     * @param tileMap
-     * @param sampler
-     * @return
-     */
     vec4 sample_bilinear(Param<UInt> textureID,
                          Param<vec2> uv,
                          Param<Int> wrap,
@@ -198,7 +168,7 @@ namespace xng::shaderlib::virtualtexture {
         vec2 dy = partialDerivativeY(uv) * vec2(imageSize);
         Float mip = clamp(floor(0.5f * log2(max(dot(dx, dx), dot(dy, dy)))), 0.0f, maxMip);
 
-        vec2 mipSize = max(vec2(1.0f), vec2(imageSize) / pow(2.0f, mip));
+        vec2 mipSize = max(vec2(1.0f), vec2(imageSize) / exp2(mip));
 
         vec3 atlasUV = getAtlasUV(textureID,
                                   uv,
@@ -220,23 +190,48 @@ namespace xng::shaderlib::virtualtexture {
         IRFunctionEnd
     }
 
-    /**
-     * Sample the virtual texture using bicubic filtering.
-     *
-     * 16-tap bicubic (Catmull-Rom) approximated with 4 hardware bilinear samples
-     *
-     * @param textureID
-     * @param uv
-     * @param wrap
-     * @param imageSize
-     * @param atlasSize
-     * @param tileSize
-     * @param tileBorder
-     * @param tileMapOffsets
-     * @param tileMap
-     * @param sampler
-     * @return
-     */
+    vec4 sample_trilinear(Param<UInt> textureID,
+                          Param<vec2> uv,
+                          Param<Int> wrap,
+                          Param<ivec2> imageSize,
+                          Param<UInt> atlasSize,
+                          Param<UInt> tileSize,
+                          Param<UInt> tileBorder,
+                          DynamicBufferWrapper<UInt> &tileMapOffsets,
+                          DynamicBufferWrapper<UInt> &tileMap,
+                          ShaderObject &sampler) {
+        IRFunction
+
+        Float maxMip = log2(Float(min(imageSize.value().x(), imageSize.value().y())));
+
+        vec2 dx = partialDerivativeX(uv) * vec2(imageSize);
+        vec2 dy = partialDerivativeY(uv) * vec2(imageSize);
+        Float lod = 0.5f * log2(max(dot(dx, dx), dot(dy, dy)));
+        Float mip0 = clamp(floor(lod), 0.0f, maxMip);
+        Float mip1 = clamp(mip0 + 1.0f, 0.0f, maxMip);
+        Float blend = fract(lod);
+
+        vec2 mipSize0 = max(vec2(1.0f), vec2(imageSize) / exp2(mip0));
+        vec2 mipSize1 = max(vec2(1.0f), vec2(imageSize) / exp2(mip1));
+
+        vec3 atlasUV0 = getAtlasUV(textureID, uv, Int(mip0), wrap, imageSize, mipSize0,
+                                   atlasSize, tileSize, tileBorder, tileMapOffsets, tileMap);
+        vec3 atlasUV1 = getAtlasUV(textureID, uv, Int(mip1), wrap, imageSize, mipSize1,
+                                   atlasSize, tileSize, tileBorder, tileMapOffsets, tileMap);
+
+        vec2 adx0 = partialDerivativeX(uv) * mipSize0 / Float(atlasSize);
+        vec2 ady0 = partialDerivativeY(uv) * mipSize0 / Float(atlasSize);
+        vec2 adx1 = partialDerivativeX(uv) * mipSize1 / Float(atlasSize);
+        vec2 ady1 = partialDerivativeY(uv) * mipSize1 / Float(atlasSize);
+
+        vec4 s0 = vec4(textureGradArray(sampler, atlasUV0, adx0, ady0));
+        vec4 s1 = vec4(textureGradArray(sampler, atlasUV1, adx1, ady1));
+
+        IRReturn(vec4(mix(s0, s1, blend)));
+
+        IRFunctionEnd
+    }
+
     vec4 sample_bicubic(Param<UInt> textureID,
                         Param<vec2> uv,
                         Param<Int> wrap,
@@ -253,7 +248,7 @@ namespace xng::shaderlib::virtualtexture {
         vec2 dx = partialDerivativeX(uv) * vec2(imageSize);
         vec2 dy = partialDerivativeY(uv) * vec2(imageSize);
         Float mip = clamp(floor(0.5f * log2(max(dot(dx, dx), dot(dy, dy)))), 0.0f, maxMip);
-        vec2 mipSize = max(vec2(1.0f), vec2(imageSize) / pow(2.0f, mip));
+        vec2 mipSize = max(vec2(1.0f), vec2(imageSize) / exp2(mip));
 
         // texel position
         vec2 texel_f = fract(uv) * mipSize;
@@ -307,6 +302,80 @@ namespace xng::shaderlib::virtualtexture {
                      + g1.x() * g1.y() * s11;
 
         IRReturn(color);
+
+        IRFunctionEnd
+    }
+
+    vec4 sample_bicubic_trilinear(Param<UInt> textureID,
+                                  Param<vec2> uv,
+                                  Param<Int> wrap,
+                                  Param<ivec2> imageSize,
+                                  Param<UInt> atlasSize,
+                                  Param<UInt> tileSize,
+                                  Param<UInt> tileBorder,
+                                  DynamicBufferWrapper<UInt> &tileMapOffsets,
+                                  DynamicBufferWrapper<UInt> &tileMap,
+                                  ShaderObject &sampler) {
+        IRFunction
+
+        Float maxMip = log2(Float(min(imageSize.value().x(), imageSize.value().y())));
+        vec2 dx = partialDerivativeX(uv) * vec2(imageSize);
+        vec2 dy = partialDerivativeY(uv) * vec2(imageSize);
+        Float lod = 0.5f * log2(max(dot(dx, dx), dot(dy, dy)));
+        Float mip0 = clamp(floor(lod), 0.0f, maxMip);
+        Float mip1 = clamp(mip0 + 1.0f, 0.0f, maxMip);
+        Float blend = fract(lod);
+
+        vec2 mipSize0 = max(vec2(1.0f), vec2(imageSize) / exp2(mip0));
+        vec2 mipSize1 = max(vec2(1.0f), vec2(imageSize) / exp2(mip1));
+
+        // catmull-rom sample for one mip level
+        auto sampleBicubic = [&](Float mip, vec2 mipSize) -> vec4 {
+            vec2 texel_f = fract(uv) * mipSize;
+            vec2 tc = floor(texel_f - 0.5f) + 0.5f;
+            vec2 f = texel_f - tc;
+
+            vec2 f2 = f * f;
+            vec2 f3 = f2 * f;
+            vec2 w0 = -0.5f * f3 + f2 - 0.5f * f;
+            vec2 w1 = 1.5f * f3 - 2.5f * f2 + 1.0f;
+            vec2 w2 = -1.5f * f3 + 2.0f * f2 + 0.5f * f;
+            vec2 w3 = 0.5f * f3 - 0.5f * f2;
+
+            vec2 g0 = w0 + w1;
+            vec2 g1 = w2 + w3;
+            vec2 h0 = -1.0f + w1 / g0;
+            vec2 h1 = 1.0f + w3 / g1;
+
+            vec2 uv00 = (tc + vec2(h0.x(), h0.y())) / mipSize;
+            vec2 uv10 = (tc + vec2(h1.x(), h0.y())) / mipSize;
+            vec2 uv01 = (tc + vec2(h0.x(), h1.y())) / mipSize;
+            vec2 uv11 = (tc + vec2(h1.x(), h1.y())) / mipSize;
+
+            vec2 adx = partialDerivativeX(uv) * mipSize / Float(atlasSize);
+            vec2 ady = partialDerivativeY(uv) * mipSize / Float(atlasSize);
+
+            vec3 a00 = getAtlasUV(textureID, uv00, Int(mip), wrap, imageSize, mipSize, atlasSize, tileSize, tileBorder,
+                                  tileMapOffsets, tileMap);
+            vec3 a10 = getAtlasUV(textureID, uv10, Int(mip), wrap, imageSize, mipSize, atlasSize, tileSize, tileBorder,
+                                  tileMapOffsets, tileMap);
+            vec3 a01 = getAtlasUV(textureID, uv01, Int(mip), wrap, imageSize, mipSize, atlasSize, tileSize, tileBorder,
+                                  tileMapOffsets, tileMap);
+            vec3 a11 = getAtlasUV(textureID, uv11, Int(mip), wrap, imageSize, mipSize, atlasSize, tileSize, tileBorder,
+                                  tileMapOffsets, tileMap);
+
+            vec4 s00 = vec4(textureGradArray(sampler, a00, adx, ady));
+            vec4 s10 = vec4(textureGradArray(sampler, a10, adx, ady));
+            vec4 s01 = vec4(textureGradArray(sampler, a01, adx, ady));
+            vec4 s11 = vec4(textureGradArray(sampler, a11, adx, ady));
+
+            return g0.x() * g0.y() * s00
+                   + g1.x() * g0.y() * s10
+                   + g0.x() * g1.y() * s01
+                   + g1.x() * g1.y() * s11;
+        };
+
+        IRReturn(vec4(mix(sampleBicubic(mip0, mipSize0), sampleBicubic(mip1, mipSize1), blend)));
 
         IRFunctionEnd
     }
