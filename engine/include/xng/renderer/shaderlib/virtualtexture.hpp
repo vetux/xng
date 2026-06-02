@@ -60,6 +60,8 @@ namespace xng::shaderlib::virtualtexture {
      *
      * -- Residency Map --
      * The residency map contains the lowest mip level currently resident per tile per mip 0 of each texture.
+     * This means the streamer must guarantee that the full mip chain from maxMip to residentMip is kept allocated per tile.
+     *
      * It uses the same linear row interpretation as the tile map.
      *
      * It is indexed via textureID like so:
