@@ -46,6 +46,9 @@ std::string compileFunction(const std::string &functionName,
         }
         paramCount++;
         if (std::holds_alternative<ShaderDataType>(param.type)) {
+            if (param.isOut) {
+                ret += "out ";
+            }
             auto arg = std::get<ShaderDataType>(param.type);
             if (std::holds_alternative<ShaderPrimitiveType>(arg.value)) {
                 ret += getTypeName(std::get<ShaderPrimitiveType>(arg.value)) + " " + param.name;

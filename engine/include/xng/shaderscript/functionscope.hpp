@@ -25,24 +25,22 @@
 #include "xng/shaderscript/blockscope.hpp"
 #include "xng/shaderscript/shaderobject.hpp"
 
-namespace xng::ShaderScript
-{
-    class XENGINE_EXPORT IRBaseParam
-    {
+namespace xng::ShaderScript {
+    class XENGINE_EXPORT IRBaseParam {
     public:
-        static const std::vector<rg::ShaderFunction::Argument>& getArguments() { return getArgumentsStorage(); }
+        static const std::vector<rg::ShaderFunction::Argument> &getArguments() { return getArgumentsStorage(); }
 
         static std::vector<rg::ShaderOperand> getArgumentValues() { return getArgumentValuesStorage(); }
 
-        static void clear()
-        {
+        static void clear() {
             getArgumentValuesStorage().clear();
             getArgumentsStorage().clear();
         }
 
     protected:
-        static std::vector<rg::ShaderOperand>& getArgumentValuesStorage();
-        static std::vector<rg::ShaderFunction::Argument>& getArgumentsStorage();
+        static std::vector<rg::ShaderOperand> &getArgumentValuesStorage();
+
+        static std::vector<rg::ShaderFunction::Argument> &getArgumentsStorage();
     };
 
     /**
@@ -58,59 +56,87 @@ namespace xng::ShaderScript
      *
      * @tparam T
      */
-    template <typename T>
-    class Param : public IRBaseParam
-    {
+    template<typename T>
+    class Param : public IRBaseParam {
     public:
-        Param(Param &other)
-        {
+        Param(Param &other) {
             const auto argName = "arg" + std::to_string(getArgumentsStorage().size());
             val = std::make_unique<T>(rg::ShaderOperand::argument(argName));
-            getArgumentsStorage().emplace_back(rg::ShaderFunction::Argument(T::TYPE, argName));
+            getArgumentsStorage().emplace_back(rg::ShaderFunction::Argument(T::TYPE, argName, false));
             getArgumentValuesStorage().emplace_back(other.value().operand);
         }
 
-        Param(ShaderObject argumentValue)
-        {
+        Param(ShaderObject argumentValue) {
             const auto argName = "arg" + std::to_string(getArgumentsStorage().size());
             val = std::make_unique<T>(rg::ShaderOperand::argument(argName));
-            getArgumentsStorage().emplace_back(rg::ShaderFunction::Argument(T::TYPE, argName));
+            getArgumentsStorage().emplace_back(rg::ShaderFunction::Argument(T::TYPE, argName, false));
             getArgumentValuesStorage().emplace_back(argumentValue.operand);
         }
 
-        Param(T argumentValue)
-        {
+        Param(T argumentValue) {
             const auto argName = "arg" + std::to_string(getArgumentsStorage().size());
             val = std::make_unique<T>(rg::ShaderOperand::argument(argName));
-            getArgumentsStorage().emplace_back(rg::ShaderFunction::Argument(T::TYPE, argName));
+            getArgumentsStorage().emplace_back(rg::ShaderFunction::Argument(T::TYPE, argName, false));
             getArgumentValuesStorage().emplace_back(static_cast<ShaderObject>(argumentValue).operand);
         }
 
-        T& value()
-        {
+        T &value() {
             return *val;
         }
 
-        explicit operator const ShaderObject&() const { return *val; }
+        explicit operator const ShaderObject &() const { return *val; }
 
-        operator const T&() const { return *val; }
+        operator const T &() const { return *val; }
 
     private:
         std::unique_ptr<T> val;
     };
 
-    class XENGINE_EXPORT FunctionScope
-    {
+    template<typename T>
+    class ParamOut : public IRBaseParam {
     public:
-        struct Context
-        {
-            std::vector<BlockScope*> stack;
-            BlockScope* current;
+        ParamOut(ParamOut &other) {
+            const auto argName = "arg" + std::to_string(getArgumentsStorage().size());
+            val = std::make_unique<T>(rg::ShaderOperand::argument(argName));
+            getArgumentsStorage().emplace_back(rg::ShaderFunction::Argument(T::TYPE, argName, true));
+            getArgumentValuesStorage().emplace_back(other.value().operand);
+        }
+
+        ParamOut(ShaderObject argumentValue) {
+            const auto argName = "arg" + std::to_string(getArgumentsStorage().size());
+            val = std::make_unique<T>(rg::ShaderOperand::argument(argName));
+            getArgumentsStorage().emplace_back(rg::ShaderFunction::Argument(T::TYPE, argName, true));
+            getArgumentValuesStorage().emplace_back(argumentValue.operand);
+        }
+
+        ParamOut(T argumentValue) {
+            const auto argName = "arg" + std::to_string(getArgumentsStorage().size());
+            val = std::make_unique<T>(rg::ShaderOperand::argument(argName));
+            getArgumentsStorage().emplace_back(rg::ShaderFunction::Argument(T::TYPE, argName, true));
+            getArgumentValuesStorage().emplace_back(static_cast<ShaderObject>(argumentValue).operand);
+        }
+
+        T &value() {
+            return *val;
+        }
+
+        explicit operator const ShaderObject &() const { return *val; }
+
+        operator const T &() const { return *val; }
+
+    private:
+        std::unique_ptr<T> val;
+    };
+
+    class XENGINE_EXPORT FunctionScope {
+    public:
+        struct Context {
+            std::vector<BlockScope *> stack;
+            BlockScope *current;
         };
 
         explicit FunctionScope(std::string name)
-            : name(std::move(name))
-        {
+            : name(std::move(name)) {
             // Save current block scope state for nested ShaderFunctionScopes
             Context c = {BlockScope::getStack(), BlockScope::getCurrent()};
             getStack().push_back(c);
@@ -123,8 +149,7 @@ namespace xng::ShaderScript
             IRBaseParam::clear();
         }
 
-        ~FunctionScope()
-        {
+        ~FunctionScope() {
             assert(BlockScope::getStack().empty());
 
             block = nullptr;
@@ -136,41 +161,33 @@ namespace xng::ShaderScript
             BlockScope::getCurrent() = c.current;
         }
 
-        template <typename T>
-        T addArgument(const std::string& name)
-        {
-            if (returnType.has_value())
-            {
+        template<typename T>
+        T addArgument(const std::string &name) {
+            if (returnType.has_value()) {
                 throw std::runtime_error("Attempted to modify function with existing return value");
             }
             arguments.emplace_back(rg::ShaderFunction::Argument(T::TYPE, name));
             return T(rg::ShaderOperand::argument(name));
         }
 
-        template <typename T>
-        void setReturnType(const T&)
-        {
-            if (returnType.has_value())
-            {
-                if (returnType.value() != T::TYPE)
-                {
+        template<typename T>
+        void setReturnType(const T &) {
+            if (returnType.has_value()) {
+                if (returnType.value() != T::TYPE) {
                     throw std::runtime_error("Attempted to change return type");
                 }
-            }
-            else
-            {
+            } else {
                 returnType = T::TYPE;
             }
         }
 
-        rg::ShaderFunction build()
-        {
+        rg::ShaderFunction build() {
             if (returnType.has_value())
                 return {name, arguments, block->buildInstructionStream(), returnType.value()};
             return {name, arguments, block->buildInstructionStream()};
         }
 
-        const std::vector<rg::ShaderOperand>& getArgumentValues() { return argumentValues; }
+        const std::vector<rg::ShaderOperand> &getArgumentValues() { return argumentValues; }
 
     private:
         std::string name{};
@@ -182,7 +199,7 @@ namespace xng::ShaderScript
 
         std::unique_ptr<BlockScope> block;
 
-        static std::vector<Context>& getStack();
+        static std::vector<Context> &getStack();
     };
 }
 

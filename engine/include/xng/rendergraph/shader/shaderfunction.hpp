@@ -35,16 +35,16 @@ namespace xng::rg {
         struct Argument {
             std::string name;
             std::variant<ShaderDataType, ShaderTexture> type;
+            bool isOut;
 
             Argument() = default;
 
-            Argument(const std::variant<ShaderDataType, ShaderTexture> &type, std::string name)
-                : name(std::move(name)), type(type) {
+            Argument(const std::variant<ShaderDataType, ShaderTexture> &type, std::string name, const bool isOut)
+                : name(std::move(name)), type(type), isOut(isOut) {
             }
 
-            bool operator==(const Argument &other) const
-            {
-                return name == other.name && type == other.type;
+            bool operator==(const Argument &other) const {
+                return name == other.name && type == other.type && isOut == other.isOut;
             }
         };
 
