@@ -113,7 +113,7 @@ namespace xng::shaderlib::virtualtexture {
     /**
      * Perform readback of the sampled tiles.
      *
-     * The "taps" argument holds the number of sampled tiles while readbackA / readbackB holds the up to 8 tapped tiles.
+     * The returned value holds the number of tapped tiles, while readbackA / readbackB contain the atlas slot/s of the sampled tiles.
      *
      * @param textureID
      * @param uv
