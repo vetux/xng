@@ -70,7 +70,7 @@ namespace xng::shaderlib::virtualtexture {
      * tileY = mip0TexelY / tileSize
      * tilesPerRow = ceil(mip0Width / tileSize)
      * mip0TileIndex = tileY * tilesPerRow + tileX
-     * highestMipResident = residencyMap[textureID + mip0TileIndex]
+     * lowestMipResident = residencyMap[textureID + mip0TileIndex]
      *
      * -- Tile Borders --
      * Each tile in the atlas texture has an additional border which contains the neighboring virtual tile
