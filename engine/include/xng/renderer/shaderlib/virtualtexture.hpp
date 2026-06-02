@@ -29,6 +29,13 @@ namespace xng::shaderlib::virtualtexture {
     // of a function with the passed arguments is created all other invocations trying to pass different buffers / textures
     // would use the inlined buffer / texture from the first invocation.
 
+    //TODO: Find solution for residency / readback buffer handling.
+
+    // When storing resident mips at mip0 for non power of 2 tile count the shader cannot reliably
+    // check if the texel sampled at uv is actually resident because the tiles dont map cleanly into subtiles.
+    // In the readback buffer when storing the accessed mip tile the streamer cannot reconstruct the exact required
+    // lower mip tile because the tiles dont map cleanly into parent tiles.
+
     using namespace ShaderScript;
 
     /**
