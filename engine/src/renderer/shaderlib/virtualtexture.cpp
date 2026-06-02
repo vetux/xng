@@ -21,23 +21,14 @@
 #include "xng/renderer/samplingproperties.hpp"
 
 namespace xng::shaderlib::virtualtexture {
-    UInt getAtlasSlot(Param<UInt> textureID,
-                      Param<vec2> wrapped,
-                      Param<Int> mip,
-                      Param<vec2> mipSize,
-                      Param<UInt> tileSize,
-                      DynamicBufferWrapper<UInt> &tileMapOffsets,
-                      DynamicBufferWrapper<UInt> &tileMap) {
+    UInt getTileIndex(Param<vec2> wrapped, Param<vec2> mipSize, Param<UInt> tileSize) {
         IRFunction
 
         ivec2 texel = ivec2(wrapped * mipSize);
-
         uvec2 tile = uvec2(texel) / tileSize;
-        uvec2 tiles = (mipSize + tileSize - 1) / tileSize;
+        uvec2 tiles = (uvec2(mipSize) + tileSize - 1) / tileSize;
 
-        UInt tileMapBaseOffset = tileMapOffsets[textureID + mip];
-
-        IRReturn(UInt(tileMap[tileMapBaseOffset + tile.y() * tiles.x() + tile.x()]));
+        IRReturn(UInt(tile.y() * tiles.x() + tile.x()));
 
         IRFunctionEnd
     }
@@ -56,7 +47,7 @@ namespace xng::shaderlib::virtualtexture {
         ivec2 texel = ivec2(wrapped * mipSize);
 
         uvec2 tile = uvec2(texel) / tileSize;
-        uvec2 tiles = (mipSize + tileSize - 1) / tileSize;
+        uvec2 tiles = (uvec2(mipSize) + tileSize - 1) / tileSize;
 
         UInt tileMapBaseOffset = tileMapOffsets[textureID + mip];
         UInt slot = tileMap[tileMapBaseOffset + tile.y() * tiles.x() + tile.x()];
@@ -94,7 +85,7 @@ namespace xng::shaderlib::virtualtexture {
 
         vec2 texel = wrapped * mipSize;
         uvec2 tile = uvec2(texel) / tileSize;
-        uvec2 tiles = (mipSize + tileSize - 1) / tileSize;
+        uvec2 tiles = (uvec2(mipSize) + tileSize - 1) / tileSize;
 
         UInt tileMapBaseOffset = tileMapOffsets[textureID + mip];
         UInt slot = tileMap[tileMapBaseOffset + tile.y() * tiles.x() + tile.x()];
@@ -126,7 +117,7 @@ namespace xng::shaderlib::virtualtexture {
         ivec2 mip0Texel = ivec2(wrapped * imageSize);
 
         uvec2 mip0tile = uvec2(mip0Texel) / tileSize;
-        uvec2 mip0tiles = (imageSize + tileSize - 1) / tileSize;
+        uvec2 mip0tiles = (uvec2(imageSize) + tileSize - 1) / tileSize;
 
         IRReturn(Float(residencyMap[textureID + mip0tile.y() * mip0tiles.x() + mip0tile.x()]));
 
@@ -177,6 +168,18 @@ namespace xng::shaderlib::virtualtexture {
         Float lod = getLod(uv, imageSize);
 
         IRReturn(Float( clamp(floor(lod), minMip, maxMip)));
+
+        IRFunctionEnd
+    }
+
+    Float getMip(Param<vec2> uv, Param<ivec2> imageSize) {
+        IRFunction
+
+        Float maxMip = log2(Float(min(imageSize.value().x(), imageSize.value().y())));
+
+        Float lod = getLod(uv, imageSize);
+
+        IRReturn(Float( clamp(floor(lod), 0.0f, maxMip)));
 
         IRFunctionEnd
     }
@@ -260,150 +263,6 @@ namespace xng::shaderlib::virtualtexture {
                         IRReturn(
                             sample_nearest_linear(textureID, uv, wrap, imageSize, atlasSize, tileSize, tileBorder,
                                 tileMapOffsets,tileMap, residencyMap, sampler));
-                    Fi
-                Fi
-            Fi
-        Fi
-
-        IRFunctionEnd
-    }
-
-    UInt readback_sample(Param<UInt> textureID,
-                         Param<vec2> uv,
-                         Param<Int> wrap,
-                         Param<Int> minFilter,
-                         Param<Int> magFilter,
-                         Param<Int> mipFilter,
-                         Param<ivec2> imageSize,
-                         Param<UInt> tileSize,
-                         ParamOut<uvec4> readbackA,
-                         ParamOut<uvec4> readbackB,
-                         DynamicBufferWrapper<UInt> &tileMapOffsets,
-                         DynamicBufferWrapper<UInt> &tileMap,
-                         DynamicBufferWrapper<UInt> &residencyMap) {
-        IRFunction
-
-        Float lod = getLod(uv, imageSize);
-
-        If(lod <= 0.0f)
-            If(magFilter == FILTER_BICUBIC)
-                IRReturn(
-                    readback_sample_bicubic(textureID,
-                        uv,
-                        wrap,
-                        imageSize,
-                        tileSize,
-                        readbackA.value(),
-                        readbackB.value(),
-                        tileMapOffsets,
-                        tileMap,
-                        residencyMap));
-            Else
-                If(magFilter == FILTER_BILINEAR)
-                    IRReturn(
-                        readback_sample_bilinear(textureID,
-                            uv,
-                            wrap,
-                            imageSize,
-                            tileSize,
-                            readbackA.value(),
-                            readbackB.value(),
-                            tileMapOffsets,
-                            tileMap,
-                            residencyMap));
-                Else
-                    IRReturn(
-                        readback_sample_nearest(textureID,
-                            uv,
-                            wrap,
-                            imageSize,
-                            tileSize,
-                            readbackA.value(),
-                            readbackB.value(),
-                            tileMapOffsets,
-                            tileMap,
-                            residencyMap));
-                Fi
-            Fi
-        Else
-            If(minFilter == FILTER_BICUBIC)
-                If(mipFilter == rg::NEAREST)
-                    IRReturn(
-                        readback_sample_bicubic(textureID,
-                            uv,
-                            wrap,
-                            imageSize,
-                            tileSize,
-                            readbackA.value(),
-                            readbackB.value(),
-                            tileMapOffsets,
-                            tileMap,
-                            residencyMap));
-                Else
-                    IRReturn(
-                        readback_sample_bicubic_trilinear(textureID,
-                            uv,
-                            wrap,
-                            imageSize,
-                            tileSize,
-                            readbackA.value(),
-                            readbackB.value(),
-                            tileMapOffsets,
-                            tileMap,
-                            residencyMap));
-                Fi
-            Else
-                If(minFilter == FILTER_BILINEAR)
-                    If(mipFilter == rg::NEAREST)
-                        IRReturn(
-                            readback_sample_bilinear(textureID,
-                                uv,
-                                wrap,
-                                imageSize,
-                                tileSize,
-                                readbackA.value(),
-                                readbackB.value(),
-                                tileMapOffsets,
-                                tileMap,
-                                residencyMap));
-                    Else
-                        IRReturn(
-                            readback_sample_trilinear(textureID,
-                                uv,
-                                wrap,
-                                imageSize,
-                                tileSize,
-                                readbackA.value(),
-                                readbackB.value(),
-                                tileMapOffsets,
-                                tileMap,
-                                residencyMap));
-                    Fi
-                Else
-                    If(mipFilter == rg::NEAREST)
-                        IRReturn(
-                            readback_sample_nearest(textureID,
-                                uv,
-                                wrap,
-                                imageSize,
-                                tileSize,
-                                readbackA.value(),
-                                readbackB.value(),
-                                tileMapOffsets,
-                                tileMap,
-                                residencyMap))
-                    Else
-                        IRReturn(
-                            readback_sample_nearest_linear(textureID,
-                                uv,
-                                wrap,
-                                imageSize,
-                                tileSize,
-                                readbackA.value(),
-                                readbackB.value(),
-                                tileMapOffsets,
-                                tileMap,
-                                residencyMap));
                     Fi
                 Fi
             Fi
@@ -808,238 +667,255 @@ namespace xng::shaderlib::virtualtexture {
         IRFunctionEnd
     }
 
-    UInt readback_sample_nearest(Param<UInt> textureID,
-                                 Param<vec2> uv,
-                                 Param<Int> wrap,
-                                 Param<ivec2> imageSize,
-                                 Param<UInt> tileSize,
-                                 ParamOut<uvec4> readbackA,
-                                 ParamOut<uvec4> readbackB,
-                                 DynamicBufferWrapper<UInt> &tileMapOffsets,
-                                 DynamicBufferWrapper<UInt> &tileMap,
-                                 DynamicBufferWrapper<UInt> &residencyMap) {
+
+    UInt readback_sample(Param<vec2> uv,
+                         Param<Int> wrap,
+                         Param<Int> minFilter,
+                         Param<Int> magFilter,
+                         Param<Int> mipFilter,
+                         Param<ivec2> imageSize,
+                         Param<UInt> tileSize,
+                         ParamOut<uvec2> readback0,
+                         ParamOut<uvec2> readback1) {
         IRFunction
-        vec2 wrapped = wrapUV(uv, wrap);
-        Float mip = getMip(textureID, uv, wrapped, imageSize, tileSize, residencyMap);
-        vec2 mipSize = max(vec2(1.0f), vec2(imageSize) / exp2(mip));
 
-        readbackA.value().x() = getAtlasSlot(textureID, wrapped, Int(mip), mipSize, tileSize, tileMapOffsets, tileMap);
+        Float lod = getLod(uv, imageSize);
 
-        IRReturn(UInt(1));
+        If(lod <= 0.0f)
+            If(magFilter == FILTER_BICUBIC)
+                IRReturn(
+                    readback_sample_bicubic(uv,
+                        wrap,
+                        imageSize,
+                        tileSize,
+                        readback0.value()));
+            Else
+                If(magFilter == FILTER_BILINEAR)
+                    IRReturn(
+                        readback_sample_bilinear(uv,
+                            wrap,
+                            imageSize,
+                            tileSize,
+                            readback0.value()));
+                Else
+                    IRReturn(
+                        readback_sample_nearest(uv,
+                            wrap,
+                            imageSize,
+                            tileSize,
+                            readback0.value()));
+                Fi
+            Fi
+        Else
+            If(minFilter == FILTER_BICUBIC)
+                If(mipFilter == rg::NEAREST)
+                    IRReturn(
+                        readback_sample_bicubic(uv,
+                            wrap,
+                            imageSize,
+                            tileSize,
+                            readback0.value()));
+                Else
+                    IRReturn(
+                        readback_sample_bicubic_trilinear(uv,
+                            wrap,
+                            imageSize,
+                            tileSize,
+                            readback0.value(),
+                            readback1.value()));
+                Fi
+            Else
+                If(minFilter == FILTER_BILINEAR)
+                    If(mipFilter == rg::NEAREST)
+                        IRReturn(
+                            readback_sample_bilinear(uv,
+                                wrap,
+                                imageSize,
+                                tileSize,
+                                readback0.value()));
+                    Else
+                        IRReturn(
+                            readback_sample_trilinear(uv,
+                                wrap,
+                                imageSize,
+                                tileSize,
+                                readback0.value(),
+                                readback1.value()));
+                    Fi
+                Else
+                    If(mipFilter == rg::NEAREST)
+                        IRReturn(
+                            readback_sample_nearest(uv,
+                                wrap,
+                                imageSize,
+                                tileSize,
+                                readback0.value()))
+                    Else
+                        IRReturn(
+                            readback_sample_nearest_linear(uv,
+                                wrap,
+                                imageSize,
+                                tileSize,
+                                readback0.value(),
+                                readback1.value()));
+                    Fi
+                Fi
+            Fi
+        Fi
+
         IRFunctionEnd
     }
 
-    UInt readback_sample_nearest_linear(Param<UInt> textureID,
-                                        Param<vec2> uv,
+    UInt readback_sample_nearest(Param<vec2> uv,
+                                 Param<Int> wrap,
+                                 Param<ivec2> imageSize,
+                                 Param<UInt> tileSize,
+                                 ParamOut<uvec2> readback0) {
+        IRFunction
+
+        vec2 wrapped = wrapUV(uv, wrap);
+        Float mip = getMip(uv, imageSize);
+        vec2 mipSize = max(vec2(1.0f), vec2(imageSize) / exp2(mip));
+
+        readback0.value().x() = UInt(mip);
+        readback0.value().y() = getTileIndex(wrapped, mipSize, tileSize);
+
+        IRReturn(UInt(1));
+
+        IRFunctionEnd
+    }
+
+    UInt readback_sample_nearest_linear(Param<vec2> uv,
                                         Param<Int> wrap,
                                         Param<ivec2> imageSize,
                                         Param<UInt> tileSize,
-                                        ParamOut<uvec4> readbackA,
-                                        ParamOut<uvec4> readbackB,
-                                        DynamicBufferWrapper<UInt> &tileMapOffsets,
-                                        DynamicBufferWrapper<UInt> &tileMap,
-                                        DynamicBufferWrapper<UInt> &residencyMap) {
+                                        ParamOut<uvec2> readback0,
+                                        ParamOut<uvec2> readback1) {
         IRFunction
 
         vec2 wrapped = wrapUV(uv, wrap);
 
-        Float minMip = getResidentMip(textureID, wrapped, imageSize, tileSize, residencyMap);
         Float maxMip = log2(Float(min(imageSize.value().x(), imageSize.value().y())));
 
         Float lod = getLod(uv, imageSize);
-        Float clampedLod = clamp(lod, Float(minMip), maxMip);
+        Float clampedLod = clamp(lod, Float(0.0f), maxMip);
 
         Float mip0 = floor(clampedLod);
         Float mip1 = min(mip0 + 1.0f, maxMip);
-        Float blend = fract(clampedLod);
 
         vec2 mipSize0 = max(vec2(1.0f), vec2(imageSize) / exp2(mip0));
         vec2 mipSize1 = max(vec2(1.0f), vec2(imageSize) / exp2(mip1));
 
-        readbackA.value().x() = getAtlasSlot(textureID, wrapped, Int(mip0), mipSize0, tileSize, tileMapOffsets,
-                                             tileMap);
-        readbackB.value().x() = getAtlasSlot(textureID, wrapped, Int(mip1), mipSize1, tileSize, tileMapOffsets,
-                                             tileMap);
+        readback0.value().x() = UInt(mip0);
+        readback0.value().y() = getTileIndex(wrapped, mipSize0, tileSize);
+
+        readback1.value().x() = UInt(mip1);
+        readback1.value().y() = getTileIndex(wrapped, mipSize1, tileSize);
 
         IRReturn(UInt(2));
 
         IRFunctionEnd
     }
 
-    UInt readback_sample_bilinear(Param<UInt> textureID,
-                                  Param<vec2> uv,
+    UInt readback_sample_bilinear(Param<vec2> uv,
                                   Param<Int> wrap,
                                   Param<ivec2> imageSize,
                                   Param<UInt> tileSize,
-                                  ParamOut<uvec4> readbackA,
-                                  ParamOut<uvec4> readbackB,
-                                  DynamicBufferWrapper<UInt> &tileMapOffsets,
-                                  DynamicBufferWrapper<UInt> &tileMap,
-                                  DynamicBufferWrapper<UInt> &residencyMap) {
+                                  ParamOut<uvec2> readback0) {
         IRFunction
 
         vec2 wrapped = wrapUV(uv, wrap);
-        Float mip = getMip(textureID, uv, wrapped, imageSize, tileSize, residencyMap);
+        Float mip = getMip(uv, imageSize);
         vec2 mipSize = max(vec2(1.0f), vec2(imageSize) / exp2(mip));
 
-        readbackA.value().x() = getAtlasSlot(textureID, wrapped, Int(mip), mipSize, tileSize, tileMapOffsets, tileMap);
+        readback0.value().x() = UInt(mip);
+        readback0.value().y() = getTileIndex(wrapped, mipSize, tileSize);
 
         IRReturn(UInt(1));
 
         IRFunctionEnd
     }
 
-    UInt readback_sample_trilinear(Param<UInt> textureID,
-                                   Param<vec2> uv,
+    UInt readback_sample_trilinear(Param<vec2> uv,
                                    Param<Int> wrap,
                                    Param<ivec2> imageSize,
                                    Param<UInt> tileSize,
-                                   ParamOut<uvec4> readbackA,
-                                   ParamOut<uvec4> readbackB,
-                                   DynamicBufferWrapper<UInt> &tileMapOffsets,
-                                   DynamicBufferWrapper<UInt> &tileMap,
-                                   DynamicBufferWrapper<UInt> &residencyMap) {
+                                   ParamOut<uvec2> readback0,
+                                   ParamOut<uvec2> readback1) {
         IRFunction
 
         vec2 wrapped = wrapUV(uv, wrap);
 
-        Float minMip = getResidentMip(textureID, wrapped, imageSize, tileSize, residencyMap);
         Float maxMip = log2(Float(min(imageSize.value().x(), imageSize.value().y())));
 
         Float lod = getLod(uv, imageSize);
-        Float clampedLod = clamp(lod, Float(minMip), maxMip);
+        Float clampedLod = clamp(lod, Float(0.0f), maxMip);
 
         Float mip0 = floor(clampedLod);
         Float mip1 = min(mip0 + 1.0f, maxMip);
-        Float blend = fract(clampedLod);
 
         vec2 mipSize0 = max(vec2(1.0f), vec2(imageSize) / exp2(mip0));
         vec2 mipSize1 = max(vec2(1.0f), vec2(imageSize) / exp2(mip1));
 
-        readbackA.value().x() = getAtlasSlot(textureID, wrapped, Int(mip0), mipSize0, tileSize, tileMapOffsets,
-                                             tileMap);
-        readbackB.value().x() = getAtlasSlot(textureID, wrapped, Int(mip1), mipSize1, tileSize, tileMapOffsets,
-                                             tileMap);
+        readback0.value().x() = UInt(mip0);
+        readback0.value().y() = getTileIndex(wrapped, mipSize0, tileSize);
+
+        readback1.value().x() = UInt(mip1);
+        readback1.value().y() = getTileIndex(wrapped, mipSize1, tileSize);
 
         IRReturn(UInt(2));
 
         IRFunctionEnd
     }
 
-    UInt readback_sample_bicubic(Param<UInt> textureID,
-                                 Param<vec2> uv,
+    UInt readback_sample_bicubic(Param<vec2> uv,
                                  Param<Int> wrap,
                                  Param<ivec2> imageSize,
                                  Param<UInt> tileSize,
-                                 ParamOut<uvec4> readbackA,
-                                 ParamOut<uvec4> readbackB,
-                                 DynamicBufferWrapper<UInt> &tileMapOffsets,
-                                 DynamicBufferWrapper<UInt> &tileMap,
-                                 DynamicBufferWrapper<UInt> &residencyMap) {
+                                 ParamOut<uvec2> readback0) {
         IRFunction
 
         vec2 wrapped = wrapUV(uv, wrap);
-
-        Float mip = getMip(textureID, uv, wrapped, imageSize, tileSize, residencyMap);
+        Float mip = getMip(uv, imageSize);
 
         vec2 mipSize = max(vec2(1.0f), vec2(imageSize) / exp2(mip));
 
-        // texel position
-        vec2 texel_f = wrapped * mipSize;
-        vec2 tc = floor(texel_f - 0.5f) + 0.5f;
-        vec2 f = texel_f - tc;
+        readback0.value().x() = UInt(mip);
+        readback0.value().y() = getTileIndex(wrapped, mipSize, tileSize);
 
-        // catmull-rom weights
-        vec2 f2 = f * f;
-        vec2 f3 = f2 * f;
-        vec2 w0 = -0.5f * f3 + f2 - 0.5f * f;
-        vec2 w1 = 1.5f * f3 - 2.5f * f2 + 1.0f;
-        vec2 w2 = -1.5f * f3 + 2.0f * f2 + 0.5f * f;
-        vec2 w3 = 0.5f * f3 - 0.5f * f2;
-
-        // merge into 2 bilinear weights per axis
-        vec2 g0 = w0 + w1;
-        vec2 g1 = w2 + w3;
-
-        // bilinear sample offsets in texel space
-        vec2 h0 = -1.0f + w1 / g0;
-        vec2 h1 = 1.0f + w3 / g1;
-
-        // convert offsets to UV space
-        vec2 uv00 = wrapUV((tc + vec2(h0.x(), h0.y())) / mipSize, wrap);
-        vec2 uv10 = wrapUV((tc + vec2(h1.x(), h0.y())) / mipSize, wrap);
-        vec2 uv01 = wrapUV((tc + vec2(h0.x(), h1.y())) / mipSize, wrap);
-        vec2 uv11 = wrapUV((tc + vec2(h1.x(), h1.y())) / mipSize, wrap);
-
-        readbackA.value().x() = getAtlasSlot(textureID, uv00, Int(mip), mipSize, tileSize, tileMapOffsets, tileMap);
-        readbackA.value().y() = getAtlasSlot(textureID, uv10, Int(mip), mipSize, tileSize, tileMapOffsets, tileMap);
-        readbackA.value().z() = getAtlasSlot(textureID, uv01, Int(mip), mipSize, tileSize, tileMapOffsets, tileMap);
-        readbackA.value().w() = getAtlasSlot(textureID, uv11, Int(mip), mipSize, tileSize, tileMapOffsets, tileMap);
-
-        IRReturn(UInt(4));
+        IRReturn(UInt(1));
 
         IRFunctionEnd
     }
 
-    UInt readback_sample_bicubic_trilinear(Param<UInt> textureID,
-                                           Param<vec2> uv,
+    UInt readback_sample_bicubic_trilinear(Param<vec2> uv,
                                            Param<Int> wrap,
                                            Param<ivec2> imageSize,
                                            Param<UInt> tileSize,
-                                           ParamOut<uvec4> readbackA,
-                                           ParamOut<uvec4> readbackB,
-                                           DynamicBufferWrapper<UInt> &tileMapOffsets,
-                                           DynamicBufferWrapper<UInt> &tileMap,
-                                           DynamicBufferWrapper<UInt> &residencyMap) {
+                                           ParamOut<uvec2> readback0,
+                                           ParamOut<uvec2> readback1) {
         IRFunction
 
         vec2 wrapped = wrapUV(uv, wrap);
 
-        Float minMip = getResidentMip(textureID, wrapped, imageSize, tileSize, residencyMap);
         Float maxMip = log2(Float(min(imageSize.value().x(), imageSize.value().y())));
 
         Float lod = getLod(uv, imageSize);
-        Float clampedLod = clamp(lod, Float(minMip), maxMip);
+        Float clampedLod = clamp(lod, Float(0.0f), maxMip);
 
         Float mip0 = floor(clampedLod);
         Float mip1 = min(mip0 + 1.0f, maxMip);
-        Float blend = fract(clampedLod);
 
         vec2 mipSize0 = max(vec2(1.0f), vec2(imageSize) / exp2(mip0));
         vec2 mipSize1 = max(vec2(1.0f), vec2(imageSize) / exp2(mip1));
 
-        auto readbackBicubic = [&](Float mip, vec2 mipSize, uvec4 &readback) {
-            vec2 texel_f = wrapped * mipSize;
-            vec2 tc = floor(texel_f - 0.5f) + 0.5f;
-            vec2 f = texel_f - tc;
+        readback0.value().x() = UInt(mip0);
+        readback0.value().y() = getTileIndex(wrapped, mipSize0, tileSize);
 
-            vec2 f2 = f * f;
-            vec2 f3 = f2 * f;
-            vec2 w0 = -0.5f * f3 + f2 - 0.5f * f;
-            vec2 w1 = 1.5f * f3 - 2.5f * f2 + 1.0f;
-            vec2 w2 = -1.5f * f3 + 2.0f * f2 + 0.5f * f;
-            vec2 w3 = 0.5f * f3 - 0.5f * f2;
+        readback1.value().x() = UInt(mip1);
+        readback1.value().y() = getTileIndex(wrapped, mipSize1, tileSize);
 
-            vec2 g0 = w0 + w1;
-            vec2 g1 = w2 + w3;
-            vec2 h0 = -1.0f + w1 / g0;
-            vec2 h1 = 1.0f + w3 / g1;
-
-            vec2 uv00 = wrapUV((tc + vec2(h0.x(), h0.y())) / mipSize, wrap);
-            vec2 uv10 = wrapUV((tc + vec2(h1.x(), h0.y())) / mipSize, wrap);
-            vec2 uv01 = wrapUV((tc + vec2(h0.x(), h1.y())) / mipSize, wrap);
-            vec2 uv11 = wrapUV((tc + vec2(h1.x(), h1.y())) / mipSize, wrap);
-
-            readback.x() = getAtlasSlot(textureID, uv00, Int(mip), mipSize, tileSize, tileMapOffsets, tileMap);
-            readback.y() = getAtlasSlot(textureID, uv10, Int(mip), mipSize, tileSize, tileMapOffsets, tileMap);
-            readback.z() = getAtlasSlot(textureID, uv01, Int(mip), mipSize, tileSize, tileMapOffsets, tileMap);
-            readback.w() = getAtlasSlot(textureID, uv11, Int(mip), mipSize, tileSize, tileMapOffsets, tileMap);
-        };
-
-        readbackBicubic(mip0, mipSize0, readbackA.value());
-        readbackBicubic(mip1, mipSize1, readbackB.value());
-
-        IRReturn(UInt(8));
+        IRReturn(UInt(2));
 
         IRFunctionEnd
     }

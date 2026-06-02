@@ -112,40 +112,6 @@ namespace xng::shaderlib::virtualtexture {
                                DynamicBufferWrapper<UInt> &residencyMap,
                                ShaderObject &sampler);
 
-    /**
-     * Perform readback of the sampled tiles.
-     *
-     * The returned value holds the number of tapped tiles, while readbackA / readbackB contain the atlas slot/s of the sampled tiles.
-     *
-     * @param textureID
-     * @param uv
-     * @param wrap
-     * @param minFilter
-     * @param magFilter
-     * @param mipFilter
-     * @param imageSize
-     * @param tileSize
-     * @param readbackA The sampled atlas tile slots
-     * @param readbackB The sampled atlas tile slots
-     * @param tileMapOffsets
-     * @param tileMap
-     * @param residencyMap
-     * @return The number of taps
-     */
-    XENGINE_EXPORT UInt readback_sample(Param<UInt> textureID,
-                                        Param<vec2> uv,
-                                        Param<Int> wrap,
-                                        Param<Int> minFilter,
-                                        Param<Int> magFilter,
-                                        Param<Int> mipFilter,
-                                        Param<ivec2> imageSize,
-                                        Param<UInt> tileSize,
-                                        ParamOut<uvec4> readbackA,
-                                        ParamOut<uvec4> readbackB,
-                                        DynamicBufferWrapper<UInt> &tileMapOffsets,
-                                        DynamicBufferWrapper<UInt> &tileMap,
-                                        DynamicBufferWrapper<UInt> &residencyMap);
-
     XENGINE_EXPORT vec4 sample_nearest(Param<UInt> textureID,
                                        Param<vec2> uv,
                                        Param<Int> wrap,
@@ -218,71 +184,75 @@ namespace xng::shaderlib::virtualtexture {
                                                  DynamicBufferWrapper<UInt> &residencyMap,
                                                  ShaderObject &sampler);
 
-    XENGINE_EXPORT UInt readback_sample_nearest(Param<UInt> textureID,
-                                                Param<vec2> uv,
+
+    /**
+     * Perform readback of the sampled tiles.
+     *
+     * The returned value holds the number of tapped tiles.
+     *
+     * For each tapped tile readbackX stores:
+     *
+     * {.x = mipLevel, .y = mipTileIndex}
+     *
+     * @param uv
+     * @param wrap
+     * @param minFilter
+     * @param magFilter
+     * @param mipFilter
+     * @param imageSize
+     * @param tileSize
+     * @param readback0
+     * @param readback1
+     * @return The number of taps
+     */
+    XENGINE_EXPORT UInt readback_sample(Param<vec2> uv,
+                                        Param<Int> wrap,
+                                        Param<Int> minFilter,
+                                        Param<Int> magFilter,
+                                        Param<Int> mipFilter,
+                                        Param<ivec2> imageSize,
+                                        Param<UInt> tileSize,
+                                        ParamOut<uvec2> readback0,
+                                        ParamOut<uvec2> readback1);
+
+    XENGINE_EXPORT UInt readback_sample_nearest(Param<vec2> uv,
                                                 Param<Int> wrap,
                                                 Param<ivec2> imageSize,
                                                 Param<UInt> tileSize,
-                                                ParamOut<uvec4> readbackA,
-                                                ParamOut<uvec4> readbackB,
-                                                DynamicBufferWrapper<UInt> &tileMapOffsets,
-                                                DynamicBufferWrapper<UInt> &tileMap,
-                                                DynamicBufferWrapper<UInt> &residencyMap);
+                                                ParamOut<uvec2> readback);
 
-    XENGINE_EXPORT UInt readback_sample_nearest_linear(Param<UInt> textureID,
-                                                       Param<vec2> uv,
+    XENGINE_EXPORT UInt readback_sample_nearest_linear(Param<vec2> uv,
                                                        Param<Int> wrap,
                                                        Param<ivec2> imageSize,
                                                        Param<UInt> tileSize,
-                                                       ParamOut<uvec4> readbackA,
-                                                       ParamOut<uvec4> readbackB,
-                                                       DynamicBufferWrapper<UInt> &tileMapOffsets,
-                                                       DynamicBufferWrapper<UInt> &tileMap,
-                                                       DynamicBufferWrapper<UInt> &residencyMap);
+                                                       ParamOut<uvec2> readback0,
+                                                       ParamOut<uvec2> readback1);
 
-    XENGINE_EXPORT UInt readback_sample_bilinear(Param<UInt> textureID,
-                                                 Param<vec2> uv,
+    XENGINE_EXPORT UInt readback_sample_bilinear(Param<vec2> uv,
                                                  Param<Int> wrap,
                                                  Param<ivec2> imageSize,
                                                  Param<UInt> tileSize,
-                                                 ParamOut<uvec4> readbackA,
-                                                 ParamOut<uvec4> readbackB,
-                                                 DynamicBufferWrapper<UInt> &tileMapOffsets,
-                                                 DynamicBufferWrapper<UInt> &tileMap,
-                                                 DynamicBufferWrapper<UInt> &residencyMap);
+                                                 ParamOut<uvec2> readback);
 
-    XENGINE_EXPORT UInt readback_sample_trilinear(Param<UInt> textureID,
-                                                  Param<vec2> uv,
+    XENGINE_EXPORT UInt readback_sample_trilinear(Param<vec2> uv,
                                                   Param<Int> wrap,
                                                   Param<ivec2> imageSize,
                                                   Param<UInt> tileSize,
-                                                  ParamOut<uvec4> readbackA,
-                                                  ParamOut<uvec4> readbackB,
-                                                  DynamicBufferWrapper<UInt> &tileMapOffsets,
-                                                  DynamicBufferWrapper<UInt> &tileMap,
-                                                  DynamicBufferWrapper<UInt> &residencyMap);
+                                                  ParamOut<uvec2> readback0,
+                                                  ParamOut<uvec2> readback1);
 
-    XENGINE_EXPORT UInt readback_sample_bicubic(Param<UInt> textureID,
-                                                Param<vec2> uv,
+    XENGINE_EXPORT UInt readback_sample_bicubic(Param<vec2> uv,
                                                 Param<Int> wrap,
                                                 Param<ivec2> imageSize,
                                                 Param<UInt> tileSize,
-                                                ParamOut<uvec4> readbackA,
-                                                ParamOut<uvec4> readbackB,
-                                                DynamicBufferWrapper<UInt> &tileMapOffsets,
-                                                DynamicBufferWrapper<UInt> &tileMap,
-                                                DynamicBufferWrapper<UInt> &residencyMap);
+                                                ParamOut<uvec2> readback0);
 
-    XENGINE_EXPORT UInt readback_sample_bicubic_trilinear(Param<UInt> textureID,
-                                                          Param<vec2> uv,
+    XENGINE_EXPORT UInt readback_sample_bicubic_trilinear(Param<vec2> uv,
                                                           Param<Int> wrap,
                                                           Param<ivec2> imageSize,
                                                           Param<UInt> tileSize,
-                                                          ParamOut<uvec4> readbackA,
-                                                          ParamOut<uvec4> readbackB,
-                                                          DynamicBufferWrapper<UInt> &tileMapOffsets,
-                                                          DynamicBufferWrapper<UInt> &tileMap,
-                                                          DynamicBufferWrapper<UInt> &residencyMap);
+                                                          ParamOut<uvec2> readback0,
+                                                          ParamOut<uvec2> readback1);
 }
 
 #endif //XENGINE_VIRTUALTEXTURE_HPP
