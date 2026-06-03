@@ -146,16 +146,11 @@ namespace xng::shaderlib::virtualtexture {
         IRFunctionEnd
     }
 
-    Float getMaxMip(Param<UInt> w, Param<UInt> h) {
-        IRFunction
-        IRReturn(Float(floor(log2(Float(max(w, h))))));
-        IRFunctionEnd
-    }
-
     Float getMip(Param<UInt> textureID,
                  Param<vec2> uv,
                  Param<vec2> wrappedUV,
                  Param<ivec2> imageSize,
+                 Param<UInt> imageMaxMip,
                  Param<UInt> tileSize,
                  DynamicBufferWrapper<UInt> &residencyMap) {
         IRFunction
@@ -166,7 +161,7 @@ namespace xng::shaderlib::virtualtexture {
                                       tileSize,
                                       residencyMap);
 
-        Float maxMip = getMaxMip(imageSize.value().x(), imageSize.value().y());
+        Float maxMip = Float(imageMaxMip);
 
         Float lod = getLod(uv, imageSize);
 
@@ -175,10 +170,10 @@ namespace xng::shaderlib::virtualtexture {
         IRFunctionEnd
     }
 
-    Float getMip(Param<vec2> uv, Param<ivec2> imageSize) {
+    Float getMip(Param<vec2> uv, Param<ivec2> imageSize, Param<UInt> imageMaxMip) {
         IRFunction
 
-        Float maxMip = getMaxMip(imageSize.value().x(), imageSize.value().y());
+        Float maxMip = Float(imageMaxMip);
 
         Float lod = getLod(uv, imageSize);
 
@@ -208,6 +203,7 @@ namespace xng::shaderlib::virtualtexture {
                 Param<Int> magFilter,
                 Param<Int> mipFilter,
                 Param<ivec2> imageSize,
+                Param<UInt> imageMaxMip,
                 Param<UInt> atlasSize,
                 Param<UInt> tileSize,
                 Param<UInt> tileBorder,
@@ -222,50 +218,139 @@ namespace xng::shaderlib::virtualtexture {
         If(lod <= 0.0f)
             If(magFilter == FILTER_BICUBIC)
                 IRReturn(
-                    sample_bicubic(textureID, uv, wrap, imageSize, atlasSize, tileSize, tileBorder, tileMapOffsets,
-                        tileMap, residencyMap, sampler));
+                    sample_bicubic(textureID,
+                        uv,
+                        wrap,
+                        imageSize,
+                        imageMaxMip,
+                        atlasSize,
+                        tileSize,
+                        tileBorder,
+                        tileMapOffsets,
+                        tileMap,
+                        residencyMap,
+                        sampler));
             Else
                 If(magFilter == FILTER_BILINEAR)
                     IRReturn(
-                        sample_bilinear(textureID, uv, wrap, imageSize, atlasSize, tileSize, tileBorder, tileMapOffsets,
-                            tileMap, residencyMap, sampler));
+                        sample_bilinear(textureID,
+                            uv,
+                            wrap,
+                            imageSize,
+                            imageMaxMip,
+                            atlasSize,
+                            tileSize,
+                            tileBorder,
+                            tileMapOffsets,
+                            tileMap,
+                            residencyMap,
+                            sampler));
                 Else
                     IRReturn(
-                        sample_nearest(textureID, uv, wrap, imageSize, atlasSize, tileSize, tileBorder, tileMapOffsets,
-                            tileMap, residencyMap, sampler));
+                        sample_nearest(textureID,
+                            uv,
+                            wrap,
+                            imageSize,
+                            imageMaxMip,
+                            atlasSize,
+                            tileSize,
+                            tileBorder,
+                            tileMapOffsets,
+                            tileMap,
+                            residencyMap,
+                            sampler));
                 Fi
             Fi
         Else
             If(minFilter == FILTER_BICUBIC)
                 If(mipFilter == rg::NEAREST)
                     IRReturn(
-                        sample_bicubic(textureID, uv, wrap, imageSize, atlasSize, tileSize, tileBorder, tileMapOffsets,
-                            tileMap, residencyMap, sampler));
+                        sample_bicubic(textureID,
+                            uv,
+                            wrap,
+                            imageSize,
+                            imageMaxMip,
+                            atlasSize,
+                            tileSize,
+                            tileBorder,
+                            tileMapOffsets,
+                            tileMap,
+                            residencyMap,
+                            sampler));
                 Else
                     IRReturn(
-                        sample_bicubic_trilinear(textureID, uv, wrap, imageSize, atlasSize, tileSize, tileBorder,
-                            tileMapOffsets,tileMap, residencyMap, sampler));
+                        sample_bicubic_trilinear(textureID,
+                            uv,
+                            wrap,
+                            imageSize,
+                            imageMaxMip,
+                            atlasSize,
+                            tileSize,
+                            tileBorder,
+                            tileMapOffsets,
+                            tileMap,
+                            residencyMap,
+                            sampler));
                 Fi
             Else
                 If(minFilter == FILTER_BILINEAR)
                     If(mipFilter == rg::NEAREST)
                         IRReturn(
-                            sample_bilinear(textureID, uv, wrap, imageSize, atlasSize, tileSize, tileBorder,
-                                tileMapOffsets,tileMap, residencyMap, sampler));
+                            sample_bilinear(textureID,
+                                uv,
+                                wrap,
+                                imageSize,
+                                imageMaxMip,
+                                atlasSize,
+                                tileSize,
+                                tileBorder,
+                                tileMapOffsets,
+                                tileMap,
+                                residencyMap,
+                                sampler));
                     Else
                         IRReturn(
-                            sample_trilinear(textureID, uv, wrap, imageSize, atlasSize, tileSize, tileBorder,
-                                tileMapOffsets,tileMap, residencyMap, sampler));
+                            sample_trilinear(textureID,
+                                uv,
+                                wrap,
+                                imageSize,
+                                imageMaxMip,
+                                atlasSize,
+                                tileSize,
+                                tileBorder,
+                                tileMapOffsets,
+                                tileMap,
+                                residencyMap,
+                                sampler));
                     Fi
                 Else
                     If(mipFilter == rg::NEAREST)
                         IRReturn(
-                            sample_nearest(textureID, uv, wrap, imageSize, atlasSize, tileSize, tileBorder,
-                                tileMapOffsets,tileMap,residencyMap,sampler))
+                            sample_nearest(textureID,
+                                uv,
+                                wrap,
+                                imageSize,
+                                imageMaxMip,
+                                atlasSize,
+                                tileSize,
+                                tileBorder,
+                                tileMapOffsets,
+                                tileMap,
+                                residencyMap,sampler))
                     Else
                         IRReturn(
-                            sample_nearest_linear(textureID, uv, wrap, imageSize, atlasSize, tileSize, tileBorder,
-                                tileMapOffsets,tileMap, residencyMap, sampler));
+                            sample_nearest_linear(textureID,
+                                uv,
+                                wrap,
+                                imageSize,
+                                imageMaxMip,
+                                atlasSize,
+                                tileSize,
+                                tileBorder,
+                                tileMapOffsets,
+                                tileMap,
+                                residencyMap,
+                                sampler));
                     Fi
                 Fi
             Fi
@@ -278,6 +363,7 @@ namespace xng::shaderlib::virtualtexture {
                         Param<vec2> uv,
                         Param<Int> wrap,
                         Param<ivec2> imageSize,
+                        Param<UInt> imageMaxMip,
                         Param<UInt> atlasSize,
                         Param<UInt> tileSize,
                         Param<UInt> tileBorder,
@@ -289,7 +375,7 @@ namespace xng::shaderlib::virtualtexture {
 
         vec2 wrapped = wrapUV(uv, wrap);
 
-        Float mip = getMip(textureID, uv, wrapped, imageSize, tileSize, residencyMap);
+        Float mip = getMip(textureID, uv, wrapped, imageSize, imageMaxMip, tileSize, residencyMap);
 
         vec2 mipSize = max(vec2(1.0f), vec2(imageSize) / exp2(mip));
 
@@ -312,6 +398,7 @@ namespace xng::shaderlib::virtualtexture {
                                Param<vec2> uv,
                                Param<Int> wrap,
                                Param<ivec2> imageSize,
+                               Param<UInt> imageMaxMip,
                                Param<UInt> atlasSize,
                                Param<UInt> tileSize,
                                Param<UInt> tileBorder,
@@ -324,7 +411,7 @@ namespace xng::shaderlib::virtualtexture {
         vec2 wrapped = wrapUV(uv, wrap);
 
         Float minMip = getResidentMip(textureID, wrapped, imageSize, tileSize, residencyMap);
-        Float maxMip = getMaxMip(imageSize.value().x(), imageSize.value().y());
+        Float maxMip = Float(imageMaxMip);
 
         Float lod = getLod(uv, imageSize);
         Float clampedLod = clamp(lod, Float(minMip), maxMip);
@@ -367,6 +454,7 @@ namespace xng::shaderlib::virtualtexture {
                          Param<vec2> uv,
                          Param<Int> wrap,
                          Param<ivec2> imageSize,
+                         Param<UInt> imageMaxMip,
                          Param<UInt> atlasSize,
                          Param<UInt> tileSize,
                          Param<UInt> tileBorder,
@@ -378,7 +466,7 @@ namespace xng::shaderlib::virtualtexture {
 
         vec2 wrapped = wrapUV(uv, wrap);
 
-        Float mip = getMip(textureID, uv, wrapped, imageSize, tileSize, residencyMap);
+        Float mip = getMip(textureID, uv, wrapped, imageSize, imageMaxMip, tileSize, residencyMap);
 
         vec2 mipSize = max(vec2(1.0f), vec2(imageSize) / exp2(mip));
 
@@ -404,6 +492,7 @@ namespace xng::shaderlib::virtualtexture {
                           Param<vec2> uv,
                           Param<Int> wrap,
                           Param<ivec2> imageSize,
+                          Param<UInt> imageMaxMip,
                           Param<UInt> atlasSize,
                           Param<UInt> tileSize,
                           Param<UInt> tileBorder,
@@ -416,7 +505,7 @@ namespace xng::shaderlib::virtualtexture {
         vec2 wrapped = wrapUV(uv, wrap);
 
         Float minMip = getResidentMip(textureID, wrapped, imageSize, tileSize, residencyMap);
-        Float maxMip = getMaxMip(imageSize.value().x(), imageSize.value().y());
+        Float maxMip = Float(imageMaxMip);
 
         Float lod = getLod(uv, imageSize);
         Float clampedLod = clamp(lod, Float(minMip), maxMip);
@@ -464,6 +553,7 @@ namespace xng::shaderlib::virtualtexture {
                         Param<vec2> uv,
                         Param<Int> wrap,
                         Param<ivec2> imageSize,
+                        Param<UInt> imageMaxMip,
                         Param<UInt> atlasSize,
                         Param<UInt> tileSize,
                         Param<UInt> tileBorder,
@@ -475,7 +565,7 @@ namespace xng::shaderlib::virtualtexture {
 
         vec2 wrapped = wrapUV(uv, wrap);
 
-        Float mip = getMip(textureID, uv, wrapped, imageSize, tileSize, residencyMap);
+        Float mip = getMip(textureID, uv, wrapped, imageSize, imageMaxMip, tileSize, residencyMap);
 
         vec2 mipSize = max(vec2(1.0f), vec2(imageSize) / exp2(mip));
 
@@ -567,6 +657,7 @@ namespace xng::shaderlib::virtualtexture {
                                   Param<vec2> uv,
                                   Param<Int> wrap,
                                   Param<ivec2> imageSize,
+                                  Param<UInt> imageMaxMip,
                                   Param<UInt> atlasSize,
                                   Param<UInt> tileSize,
                                   Param<UInt> tileBorder,
@@ -579,7 +670,7 @@ namespace xng::shaderlib::virtualtexture {
         vec2 wrapped = wrapUV(uv, wrap);
 
         Float minMip = getResidentMip(textureID, wrapped, imageSize, tileSize, residencyMap);
-        Float maxMip = getMaxMip(imageSize.value().x(), imageSize.value().y());
+        Float maxMip = Float(imageMaxMip);
 
         Float lod = getLod(uv, imageSize);
         Float clampedLod = clamp(lod, Float(minMip), maxMip);
@@ -677,6 +768,7 @@ namespace xng::shaderlib::virtualtexture {
                          Param<Int> magFilter,
                          Param<Int> mipFilter,
                          Param<ivec2> imageSize,
+                         Param<UInt> imageMaxMip,
                          Param<UInt> tileSize,
                          ParamOut<uvec2> readback0,
                          ParamOut<uvec2> readback1) {
@@ -690,6 +782,7 @@ namespace xng::shaderlib::virtualtexture {
                     readback_sample_bicubic(uv,
                         wrap,
                         imageSize,
+                        imageMaxMip,
                         tileSize,
                         readback0.value()));
             Else
@@ -698,6 +791,7 @@ namespace xng::shaderlib::virtualtexture {
                         readback_sample_bilinear(uv,
                             wrap,
                             imageSize,
+                            imageMaxMip,
                             tileSize,
                             readback0.value()));
                 Else
@@ -705,6 +799,7 @@ namespace xng::shaderlib::virtualtexture {
                         readback_sample_nearest(uv,
                             wrap,
                             imageSize,
+                            imageMaxMip,
                             tileSize,
                             readback0.value()));
                 Fi
@@ -716,6 +811,7 @@ namespace xng::shaderlib::virtualtexture {
                         readback_sample_bicubic(uv,
                             wrap,
                             imageSize,
+                            imageMaxMip,
                             tileSize,
                             readback0.value()));
                 Else
@@ -723,6 +819,7 @@ namespace xng::shaderlib::virtualtexture {
                         readback_sample_bicubic_trilinear(uv,
                             wrap,
                             imageSize,
+                            imageMaxMip,
                             tileSize,
                             readback0.value(),
                             readback1.value()));
@@ -734,6 +831,7 @@ namespace xng::shaderlib::virtualtexture {
                             readback_sample_bilinear(uv,
                                 wrap,
                                 imageSize,
+                                imageMaxMip,
                                 tileSize,
                                 readback0.value()));
                     Else
@@ -741,6 +839,7 @@ namespace xng::shaderlib::virtualtexture {
                             readback_sample_trilinear(uv,
                                 wrap,
                                 imageSize,
+                                imageMaxMip,
                                 tileSize,
                                 readback0.value(),
                                 readback1.value()));
@@ -751,6 +850,7 @@ namespace xng::shaderlib::virtualtexture {
                             readback_sample_nearest(uv,
                                 wrap,
                                 imageSize,
+                                imageMaxMip,
                                 tileSize,
                                 readback0.value()))
                     Else
@@ -758,6 +858,7 @@ namespace xng::shaderlib::virtualtexture {
                             readback_sample_nearest_linear(uv,
                                 wrap,
                                 imageSize,
+                                imageMaxMip,
                                 tileSize,
                                 readback0.value(),
                                 readback1.value()));
@@ -772,12 +873,13 @@ namespace xng::shaderlib::virtualtexture {
     UInt readback_sample_nearest(Param<vec2> uv,
                                  Param<Int> wrap,
                                  Param<ivec2> imageSize,
+                                 Param<UInt> imageMaxMip,
                                  Param<UInt> tileSize,
                                  ParamOut<uvec2> readback0) {
         IRFunction
 
         vec2 wrapped = wrapUV(uv, wrap);
-        Float mip = getMip(uv, imageSize);
+        Float mip = getMip(uv, imageSize, imageMaxMip);
         vec2 mipSize = max(vec2(1.0f), vec2(imageSize) / exp2(mip));
 
         readback0.value().x() = UInt(mip);
@@ -791,6 +893,7 @@ namespace xng::shaderlib::virtualtexture {
     UInt readback_sample_nearest_linear(Param<vec2> uv,
                                         Param<Int> wrap,
                                         Param<ivec2> imageSize,
+                                        Param<UInt> imageMaxMip,
                                         Param<UInt> tileSize,
                                         ParamOut<uvec2> readback0,
                                         ParamOut<uvec2> readback1) {
@@ -798,7 +901,7 @@ namespace xng::shaderlib::virtualtexture {
 
         vec2 wrapped = wrapUV(uv, wrap);
 
-        Float maxMip = getMaxMip(imageSize.value().x(), imageSize.value().y());
+        Float maxMip = Float(imageMaxMip);
 
         Float lod = getLod(uv, imageSize);
         Float clampedLod = clamp(lod, Float(0.0f), maxMip);
@@ -823,12 +926,13 @@ namespace xng::shaderlib::virtualtexture {
     UInt readback_sample_bilinear(Param<vec2> uv,
                                   Param<Int> wrap,
                                   Param<ivec2> imageSize,
+                                  Param<UInt> imageMaxMip,
                                   Param<UInt> tileSize,
                                   ParamOut<uvec2> readback0) {
         IRFunction
 
         vec2 wrapped = wrapUV(uv, wrap);
-        Float mip = getMip(uv, imageSize);
+        Float mip = getMip(uv, imageSize, imageMaxMip);
         vec2 mipSize = max(vec2(1.0f), vec2(imageSize) / exp2(mip));
 
         readback0.value().x() = UInt(mip);
@@ -842,6 +946,7 @@ namespace xng::shaderlib::virtualtexture {
     UInt readback_sample_trilinear(Param<vec2> uv,
                                    Param<Int> wrap,
                                    Param<ivec2> imageSize,
+                                   Param<UInt> imageMaxMip,
                                    Param<UInt> tileSize,
                                    ParamOut<uvec2> readback0,
                                    ParamOut<uvec2> readback1) {
@@ -849,7 +954,7 @@ namespace xng::shaderlib::virtualtexture {
 
         vec2 wrapped = wrapUV(uv, wrap);
 
-        Float maxMip = getMaxMip(imageSize.value().x(), imageSize.value().y());
+        Float maxMip = Float(imageMaxMip);
 
         Float lod = getLod(uv, imageSize);
         Float clampedLod = clamp(lod, Float(0.0f), maxMip);
@@ -874,12 +979,13 @@ namespace xng::shaderlib::virtualtexture {
     UInt readback_sample_bicubic(Param<vec2> uv,
                                  Param<Int> wrap,
                                  Param<ivec2> imageSize,
+                                 Param<UInt> imageMaxMip,
                                  Param<UInt> tileSize,
                                  ParamOut<uvec2> readback0) {
         IRFunction
 
         vec2 wrapped = wrapUV(uv, wrap);
-        Float mip = getMip(uv, imageSize);
+        Float mip = getMip(uv, imageSize, imageMaxMip);
 
         vec2 mipSize = max(vec2(1.0f), vec2(imageSize) / exp2(mip));
 
@@ -894,6 +1000,7 @@ namespace xng::shaderlib::virtualtexture {
     UInt readback_sample_bicubic_trilinear(Param<vec2> uv,
                                            Param<Int> wrap,
                                            Param<ivec2> imageSize,
+                                           Param<UInt> imageMaxMip,
                                            Param<UInt> tileSize,
                                            ParamOut<uvec2> readback0,
                                            ParamOut<uvec2> readback1) {
@@ -901,7 +1008,7 @@ namespace xng::shaderlib::virtualtexture {
 
         vec2 wrapped = wrapUV(uv, wrap);
 
-        Float maxMip = getMaxMip(imageSize.value().x(), imageSize.value().y());
+        Float maxMip = Float(imageMaxMip);
 
         Float lod = getLod(uv, imageSize);
         Float clampedLod = clamp(lod, Float(0.0f), maxMip);

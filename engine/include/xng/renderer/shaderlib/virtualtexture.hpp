@@ -29,12 +29,13 @@ namespace xng::shaderlib::virtualtexture {
     // of a function with the passed arguments is created all other invocations trying to pass different buffers / textures
     // would use the inlined buffer / texture from the first invocation.
 
-    //TODO: Find solution for residency / readback buffer handling.
+    // When textures have non power of 2 tile count in any dimension the residency / readback still works out.
 
-    // When storing resident mips at mip0 for non power of 2 tile count the shader cannot reliably
-    // check if the texel sampled at uv is actually resident because the tiles dont map cleanly into subtiles.
-    // In the readback buffer when storing the accessed mip tile the streamer cannot reconstruct the exact required
-    // lower mip tile because the tiles dont map cleanly into parent tiles.
+    // For residency, we store at the finest level the resident mips per tile, and higher mips are always at least half coverage
+    // of the finest level, and any tile in the finest mip level is already the finest granularity possible.
+
+    // For readback we store the mip tile index directly so the cpu can always reconstruct the covering mip 0 tiles
+    // and write per mip0 tile the highest resident mip. Each higher mip tile can cover multiple mip0 tiles.
 
     using namespace ShaderScript;
 
@@ -95,6 +96,7 @@ namespace xng::shaderlib::virtualtexture {
      * @param magFilter
      * @param mipFilter
      * @param imageSize The size of the virtual image.
+     * @param imageMaxMip The index of the maximum mip allocated for this image.
      * @param atlasSize The texel count of one dimension in the rectangular atlas texture.
      * @param tileSize The texel count of one dimension of the rectangular tiles.
      * @param tileBorder The texel count of the border on one side.
@@ -111,6 +113,7 @@ namespace xng::shaderlib::virtualtexture {
                                Param<Int> magFilter,
                                Param<Int> mipFilter,
                                Param<ivec2> imageSize,
+                               Param<UInt> imageMaxMip,
                                Param<UInt> atlasSize,
                                Param<UInt> tileSize,
                                Param<UInt> tileBorder,
@@ -123,6 +126,7 @@ namespace xng::shaderlib::virtualtexture {
                                        Param<vec2> uv,
                                        Param<Int> wrap,
                                        Param<ivec2> imageSize,
+                                       Param<UInt> imageMaxMip,
                                        Param<UInt> atlasSize,
                                        Param<UInt> tileSize,
                                        Param<UInt> tileBorder,
@@ -135,6 +139,7 @@ namespace xng::shaderlib::virtualtexture {
                                               Param<vec2> uv,
                                               Param<Int> wrap,
                                               Param<ivec2> imageSize,
+                                              Param<UInt> imageMaxMip,
                                               Param<UInt> atlasSize,
                                               Param<UInt> tileSize,
                                               Param<UInt> tileBorder,
@@ -147,6 +152,7 @@ namespace xng::shaderlib::virtualtexture {
                                         Param<vec2> uv,
                                         Param<Int> wrap,
                                         Param<ivec2> imageSize,
+                                        Param<UInt> imageMaxMip,
                                         Param<UInt> atlasSize,
                                         Param<UInt> tileSize,
                                         Param<UInt> tileBorder,
@@ -159,6 +165,7 @@ namespace xng::shaderlib::virtualtexture {
                                          Param<vec2> uv,
                                          Param<Int> wrap,
                                          Param<ivec2> imageSize,
+                                         Param<UInt> imageMaxMip,
                                          Param<UInt> atlasSize,
                                          Param<UInt> tileSize,
                                          Param<UInt> tileBorder,
@@ -171,6 +178,7 @@ namespace xng::shaderlib::virtualtexture {
                                        Param<vec2> uv,
                                        Param<Int> wrap,
                                        Param<ivec2> imageSize,
+                                       Param<UInt> imageMaxMip,
                                        Param<UInt> atlasSize,
                                        Param<UInt> tileSize,
                                        Param<UInt> tileBorder,
@@ -183,6 +191,7 @@ namespace xng::shaderlib::virtualtexture {
                                                  Param<vec2> uv,
                                                  Param<Int> wrap,
                                                  Param<ivec2> imageSize,
+                                                 Param<UInt> imageMaxMip,
                                                  Param<UInt> atlasSize,
                                                  Param<UInt> tileSize,
                                                  Param<UInt> tileBorder,
@@ -207,6 +216,7 @@ namespace xng::shaderlib::virtualtexture {
      * @param magFilter
      * @param mipFilter
      * @param imageSize
+     * @param imageMaxMip
      * @param tileSize
      * @param readback0
      * @param readback1
@@ -218,6 +228,7 @@ namespace xng::shaderlib::virtualtexture {
                                         Param<Int> magFilter,
                                         Param<Int> mipFilter,
                                         Param<ivec2> imageSize,
+                                        Param<UInt> imageMaxMip,
                                         Param<UInt> tileSize,
                                         ParamOut<uvec2> readback0,
                                         ParamOut<uvec2> readback1);
@@ -225,12 +236,14 @@ namespace xng::shaderlib::virtualtexture {
     XENGINE_EXPORT UInt readback_sample_nearest(Param<vec2> uv,
                                                 Param<Int> wrap,
                                                 Param<ivec2> imageSize,
+                                                Param<UInt> imageMaxMip,
                                                 Param<UInt> tileSize,
                                                 ParamOut<uvec2> readback);
 
     XENGINE_EXPORT UInt readback_sample_nearest_linear(Param<vec2> uv,
                                                        Param<Int> wrap,
                                                        Param<ivec2> imageSize,
+                                                       Param<UInt> imageMaxMip,
                                                        Param<UInt> tileSize,
                                                        ParamOut<uvec2> readback0,
                                                        ParamOut<uvec2> readback1);
@@ -238,12 +251,14 @@ namespace xng::shaderlib::virtualtexture {
     XENGINE_EXPORT UInt readback_sample_bilinear(Param<vec2> uv,
                                                  Param<Int> wrap,
                                                  Param<ivec2> imageSize,
+                                                 Param<UInt> imageMaxMip,
                                                  Param<UInt> tileSize,
                                                  ParamOut<uvec2> readback);
 
     XENGINE_EXPORT UInt readback_sample_trilinear(Param<vec2> uv,
                                                   Param<Int> wrap,
                                                   Param<ivec2> imageSize,
+                                                  Param<UInt> imageMaxMip,
                                                   Param<UInt> tileSize,
                                                   ParamOut<uvec2> readback0,
                                                   ParamOut<uvec2> readback1);
@@ -251,12 +266,14 @@ namespace xng::shaderlib::virtualtexture {
     XENGINE_EXPORT UInt readback_sample_bicubic(Param<vec2> uv,
                                                 Param<Int> wrap,
                                                 Param<ivec2> imageSize,
+                                                Param<UInt> imageMaxMip,
                                                 Param<UInt> tileSize,
                                                 ParamOut<uvec2> readback0);
 
     XENGINE_EXPORT UInt readback_sample_bicubic_trilinear(Param<vec2> uv,
                                                           Param<Int> wrap,
                                                           Param<ivec2> imageSize,
+                                                          Param<UInt> imageMaxMip,
                                                           Param<UInt> tileSize,
                                                           ParamOut<uvec2> readback0,
                                                           ParamOut<uvec2> readback1);
