@@ -46,6 +46,8 @@ namespace xng::opengl {
         std::unordered_map<Texture, std::vector<std::shared_ptr<TextureGL> >, TextureHash> cachedTextures{};
 
         Framebuffer framebuffer;
+
+        std::unordered_set<ColorFormat> supportedColorFormats;
     };
 
     static Vec2i bindAttachments(Framebuffer &framebuffer,
@@ -302,6 +304,19 @@ namespace xng::opengl {
         data->vendor = std::string(reinterpret_cast<const char *>(glGetString(GL_VENDOR)));
         data->renderer = std::string(reinterpret_cast<const char *>(glGetString(GL_RENDERER)));
         data->version = std::string(reinterpret_cast<const char *>(glGetString(GL_VERSION)));
+
+        for (auto format = COLOR_FORMAT_BEGIN; format != COLOR_FORMAT_COMPRESSED_START; format = static_cast<rg::ColorFormat>(format + 1)) {
+            data->supportedColorFormats.insert(format);
+        }
+
+        data->supportedColorFormats.insert(RGBA_BC7);
+        data->supportedColorFormats.insert(RGBA_BC7_SRGB);
+        data->supportedColorFormats.insert(RGB_BC6H_SFLOAT);
+        data->supportedColorFormats.insert(RGB_BC6H_UFLOAT);
+        data->supportedColorFormats.insert(RG_BC5_SNORM);
+        data->supportedColorFormats.insert(RG_BC5_UNORM);
+        data->supportedColorFormats.insert(R_BC4_SNORM);
+        data->supportedColorFormats.insert(R_BC4_UNORM);
     }
 
     Runtime::~Runtime() = default;
@@ -316,6 +331,10 @@ namespace xng::opengl {
 
     rg::PipelineCache &Runtime::getPipelineCache() {
         return data->pipelineCache;
+    }
+
+    std::unordered_set<rg::ColorFormat> Runtime::getSupportedColorFormats() {
+        return data->supportedColorFormats;
     }
 
     std::unique_ptr<Semaphore> Runtime::execute(const rg::Graph &graph) {

@@ -47,7 +47,7 @@ namespace xng::rg {
      */
     enum ColorFormat : int {
         // Normalized Color Format (0-255 unsigned integer stored -> sampled as normalized float 0.0-1.0)
-        R8,
+        R8 = 0,
         RG8,
         RGB8,
         RGBA8,
@@ -116,6 +116,58 @@ namespace xng::rg {
         // Combined depth / stencil format
         DEPTH24_STENCIL8, // depth: 24bit unsigned integer (normalized), stencil: 8bit unsigned integer
         DEPTH32F_STENCIL8, // depth: 32bit IEEE float, stencil: 8bit unsigned integer
+
+        // Compressed Formats, Support must be queried through Runtime::getSupportedFormats
+        // Compressed Textures cannot be modified via attachments or blit operations.
+        // Users must supply already compressed data in the matching format in TransferContext::copyBufferToTexture
+
+        // Block Compression, Mostly supported on desktop not on mobile.
+
+        // Modern Block Compression
+        RGBA_BC7,
+        RGBA_BC7_SRGB,
+
+        RGB_BC6H_SFLOAT,
+        RGB_BC6H_UFLOAT,
+
+        RG_BC5_SNORM,
+        RG_BC5_UNORM,
+
+        R_BC4_SNORM,
+        R_BC4_UNORM,
+
+        // Legacy Block Compression
+        RGBA_BC3,
+        RGBA_BC3_SRGB,
+
+        RGBA_BC2,
+        RGBA_BC2_SRGB,
+
+        RGBA_BC1,
+        RGBA_BC1_SRGB,
+
+        RGB_BC1,
+        RGB_BC1_SRGB,
+
+        // Adaptive Scalable Texture Compression, Mostly supported on mobile on desktop support is sparse (Software emulation)
+        RGBA_ASTC_4x4,
+        RGBA_ASTC_6x6,
+        RGBA_ASTC_8x8,
+        RGBA_ASTC_12x12,
+
+        RGBA_ASTC_4x4_SFLOAT,
+        RGBA_ASTC_6x6_SFLOAT,
+        RGBA_ASTC_8x8_SFLOAT,
+        RGBA_ASTC_12x12_SFLOAT,
+
+        RGBA_ASTC_4x4_SRGB,
+        RGBA_ASTC_6x6_SRGB,
+        RGBA_ASTC_8x8_SRGB,
+        RGBA_ASTC_12x12_SRGB,
+
+        COLOR_FORMAT_BEGIN = R8,
+        COLOR_FORMAT_END = RGBA_ASTC_12x12_SRGB,
+        COLOR_FORMAT_COMPRESSED_START = RGBA_BC7,
     };
 
     enum TextureWrapping : int {

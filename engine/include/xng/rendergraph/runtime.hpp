@@ -64,6 +64,13 @@ namespace xng::rg {
         virtual PipelineCache &getPipelineCache() = 0;
 
         /**
+         * In practice all color formats except the compressed formats should be supported across all runtime implementations.
+         *
+         * @return The list of supported color formats.
+         */
+        virtual std::unordered_set<ColorFormat> getSupportedColorFormats() = 0;
+
+        /**
          * Execute a single graph.
          *
          * Passes run in parallel where possible, and executions may overlap.

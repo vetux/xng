@@ -20,6 +20,7 @@
 #define XENGINE_OGLDEBUG_HPP
 
 #include <string>
+#include <stdexcept>
 
 #include "glad/glad.h"
 

@@ -338,8 +338,24 @@ static GLint convert(const ColorFormat format) {
             return GL_DEPTH24_STENCIL8;
         case DEPTH32F_STENCIL8:
             return GL_DEPTH32F_STENCIL8;
+        case RGBA_BC7:
+            return GL_COMPRESSED_RGBA_BPTC_UNORM;
+        case RGBA_BC7_SRGB:
+            return GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM;
+        case RGB_BC6H_SFLOAT:
+            return GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT;
+        case RGB_BC6H_UFLOAT:
+            return GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT;
+        case RG_BC5_SNORM:
+            return GL_COMPRESSED_SIGNED_RG_RGTC2;
+        case RG_BC5_UNORM:
+            return GL_COMPRESSED_RG_RGTC2;
+        case R_BC4_SNORM:
+            return GL_COMPRESSED_SIGNED_RED_RGTC1;
+        case R_BC4_UNORM:
+            return GL_COMPRESSED_RED_RGTC1;
         default:
-            throw std::runtime_error("Unrecognized color format");
+            throw std::runtime_error("Unsupported color format");
     }
 }
 

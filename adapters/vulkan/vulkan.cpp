@@ -189,6 +189,10 @@ namespace xng::vulkan {
         throw std::runtime_error("Not Implemented");
     }
 
+    std::unordered_set<rg::ColorFormat> Runtime::getSupportedColorFormats() {
+        throw std::runtime_error("Not Implemented");
+    }
+
     std::unique_ptr<rg::Semaphore> Runtime::execute(const rg::Graph &graph) {
         throw std::runtime_error("Not Implemented");
     }
