@@ -19,6 +19,8 @@
 #ifndef XENGINE_HEAPTRANSFER_HPP
 #define XENGINE_HEAPTRANSFER_HPP
 
+#include <cstddef>
+
 namespace xng::rg {
     class Semaphore {
     public:
