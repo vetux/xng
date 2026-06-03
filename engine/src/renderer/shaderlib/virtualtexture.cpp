@@ -141,11 +141,14 @@ namespace xng::shaderlib::virtualtexture {
 
         Float lod = 0.5f * log2(max(dot(dx, dx), dot(dy, dy)) + 1e-10f);
 
-        Float maxLod = log2(min(imageSize.value().x(), imageSize.value().y()));
-        lod = clamp(lod, 0.0f, maxLod);
+        IRReturn(lod); // raw, unclamped — callers clamp via getMaxMip
 
-        IRReturn(lod);
+        IRFunctionEnd
+    }
 
+    Float getMaxMip(Param<UInt> w, Param<UInt> h) {
+        IRFunction
+        IRReturn(Float(floor(log2(Float(max(w, h))))));
         IRFunctionEnd
     }
 
@@ -163,7 +166,7 @@ namespace xng::shaderlib::virtualtexture {
                                       tileSize,
                                       residencyMap);
 
-        Float maxMip = log2(Float(min(imageSize.value().x(), imageSize.value().y())));
+        Float maxMip = getMaxMip(imageSize.value().x(), imageSize.value().y());
 
         Float lod = getLod(uv, imageSize);
 
@@ -175,7 +178,7 @@ namespace xng::shaderlib::virtualtexture {
     Float getMip(Param<vec2> uv, Param<ivec2> imageSize) {
         IRFunction
 
-        Float maxMip = log2(Float(min(imageSize.value().x(), imageSize.value().y())));
+        Float maxMip = getMaxMip(imageSize.value().x(), imageSize.value().y());
 
         Float lod = getLod(uv, imageSize);
 
@@ -321,7 +324,7 @@ namespace xng::shaderlib::virtualtexture {
         vec2 wrapped = wrapUV(uv, wrap);
 
         Float minMip = getResidentMip(textureID, wrapped, imageSize, tileSize, residencyMap);
-        Float maxMip = log2(Float(min(imageSize.value().x(), imageSize.value().y())));
+        Float maxMip = getMaxMip(imageSize.value().x(), imageSize.value().y());
 
         Float lod = getLod(uv, imageSize);
         Float clampedLod = clamp(lod, Float(minMip), maxMip);
@@ -413,7 +416,7 @@ namespace xng::shaderlib::virtualtexture {
         vec2 wrapped = wrapUV(uv, wrap);
 
         Float minMip = getResidentMip(textureID, wrapped, imageSize, tileSize, residencyMap);
-        Float maxMip = log2(Float(min(imageSize.value().x(), imageSize.value().y())));
+        Float maxMip = getMaxMip(imageSize.value().x(), imageSize.value().y());
 
         Float lod = getLod(uv, imageSize);
         Float clampedLod = clamp(lod, Float(minMip), maxMip);
@@ -576,7 +579,7 @@ namespace xng::shaderlib::virtualtexture {
         vec2 wrapped = wrapUV(uv, wrap);
 
         Float minMip = getResidentMip(textureID, wrapped, imageSize, tileSize, residencyMap);
-        Float maxMip = log2(Float(min(imageSize.value().x(), imageSize.value().y())));
+        Float maxMip = getMaxMip(imageSize.value().x(), imageSize.value().y());
 
         Float lod = getLod(uv, imageSize);
         Float clampedLod = clamp(lod, Float(minMip), maxMip);
@@ -795,7 +798,7 @@ namespace xng::shaderlib::virtualtexture {
 
         vec2 wrapped = wrapUV(uv, wrap);
 
-        Float maxMip = log2(Float(min(imageSize.value().x(), imageSize.value().y())));
+        Float maxMip = getMaxMip(imageSize.value().x(), imageSize.value().y());
 
         Float lod = getLod(uv, imageSize);
         Float clampedLod = clamp(lod, Float(0.0f), maxMip);
@@ -846,7 +849,7 @@ namespace xng::shaderlib::virtualtexture {
 
         vec2 wrapped = wrapUV(uv, wrap);
 
-        Float maxMip = log2(Float(min(imageSize.value().x(), imageSize.value().y())));
+        Float maxMip = getMaxMip(imageSize.value().x(), imageSize.value().y());
 
         Float lod = getLod(uv, imageSize);
         Float clampedLod = clamp(lod, Float(0.0f), maxMip);
@@ -898,7 +901,7 @@ namespace xng::shaderlib::virtualtexture {
 
         vec2 wrapped = wrapUV(uv, wrap);
 
-        Float maxMip = log2(Float(min(imageSize.value().x(), imageSize.value().y())));
+        Float maxMip = getMaxMip(imageSize.value().x(), imageSize.value().y());
 
         Float lod = getLod(uv, imageSize);
         Float clampedLod = clamp(lod, Float(0.0f), maxMip);
