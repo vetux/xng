@@ -47,6 +47,7 @@ namespace xng {
      * by copying into fixed size (chunkSize) staging buffers and from staging buffers to the target buffer.
      *
      * TODO: Implement ChunkStreamer upload priorities
+     * TODO: Replace pinnedChunks with a single fixed size staging buffer + chunk sized dynamically allocated overflow buffers
      */
     class ChunkStreamer {
     public:
