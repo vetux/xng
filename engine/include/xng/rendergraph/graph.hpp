@@ -32,10 +32,10 @@ namespace xng::rg {
      *
      * Only heap-resources can be shared between graphs.
      *
-     * The runtime handles synchronization internally.
+     * The runtime handles synchronization internally by inserting barriers between passes.
      *
-     * Write-After-Write and Write-After-Read hazards to the same resource region inside a single pass are deemed undefined behavior.
-     * Write-After-Write and Write-After-Read hazards to the same resource region from two separate passes execute in pass declaration order.
+     * Write-After-Write, Write-After-Read and Read-After-Write hazards to the same resource region inside a single pass are deemed undefined behavior.
+     * Write-After-Write, Write-After-Read and Read-After-Write hazards to the same resource region from two separate passes execute in pass declaration order.
      *
      * A resource "region" in this context represents either a range of bytes in a buffer or a texture subresource.
      *
