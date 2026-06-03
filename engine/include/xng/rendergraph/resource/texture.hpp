@@ -163,7 +163,7 @@ namespace xng::rg {
                    && capabilities == other.capabilities;
         }
 
-        [[nodiscard]] Vec2i getMipLevelSize(const unsigned int mipLevel) const {
+        static Vec2i getMipLevelSize(const Vec2i &size, const unsigned int mipLevel) {
             return {std::max(1, size.x >> mipLevel), std::max(1, size.y >> mipLevel)};
         }
 
