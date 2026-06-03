@@ -118,7 +118,7 @@ namespace xng::rg {
         DEPTH32F_STENCIL8, // depth: 32bit IEEE float, stencil: 8bit unsigned integer
 
         // Compressed Formats, Support must be queried through Runtime::getSupportedFormats
-        // Compressed Textures cannot be modified via attachments or blit operations.
+        // Compressed Textures are immutable.
         // Users must supply already compressed data in the matching format in TransferContext::copyBufferToTexture
 
         // Block Compression, Mostly supported on desktop not on mobile.
