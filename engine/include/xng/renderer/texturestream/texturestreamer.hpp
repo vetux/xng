@@ -19,6 +19,7 @@
 #ifndef XENGINE_TEXTURESTREAMER_HPP
 #define XENGINE_TEXTURESTREAMER_HPP
 
+#include "tilestreamer.hpp"
 #include "xng/assets/image.hpp"
 #include "xng/math/vector2.hpp"
 
@@ -28,14 +29,46 @@
 #include "xng/renderer/stream/streambuffer.hpp"
 #include "xng/renderer/stream/streamtexture.hpp"
 
+#include "xng/renderer/texturestream/tilemap.hpp"
+#include "xng/renderer/texturestream/textureatlas.hpp"
+#include "xng/renderer/texturestream/tileloader.hpp"
+
 namespace xng {
     /**
-     * The TextureStreamer manages TileStreamers for each render texture in the scene.
+     * The TextureStreamer manages TileStreamers for each texture in the scene.
      * It samples from the readback buffer to determine which tiles to stream in via the TileStreamers.
      */
     class TextureStreamer {
     public:
+        TileMap::TextureID create(std::unique_ptr<TileLoader> tileLoader) {
+            auto id = tileMap.create(tileLoader->getSize(), tileLoader->getMipLevels());
+            tileStreamers.emplace(id, TileStreamer(heap, atlas, tileMap, id, std::move(tileLoader)));
+            return id;
+        }
 
+        void destroy(const TileMap::TextureID textureID) {
+            tileMap.destroy(textureID);
+            tileStreamers.erase(textureID);
+        }
+
+        std::vector<rg::TransferPass> commit(rg::GraphBuilder &graph) {
+            std::vector<rg::TransferPass> ret;
+            for (auto &pair: tileStreamers) {
+                auto passes = pair.second.commit(graph);
+                ret.insert(ret.end(), passes.begin(), passes.end());
+            }
+            auto passes = tileMap.commit(graph);
+            ret.insert(ret.end(), passes.begin(), passes.end());
+            passes = atlas.commit(graph);
+            ret.insert(ret.end(), passes.begin(), passes.end());
+            return ret;
+        }
+
+    private:
+        rg::Heap &heap;
+        TextureAtlas atlas;
+        TileMap tileMap;
+        std::unordered_map<TileMap::TextureID, TileStreamer> tileStreamers;
     };
 }
 

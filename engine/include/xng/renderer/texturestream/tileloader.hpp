@@ -39,15 +39,15 @@ namespace xng {
         /**
          * @return The size of mip level 0.
          */
-        virtual const Vec2i &getSize() = 0;
+        virtual const Vec2u &getSize() = 0;
 
         /**
          * Each mip level size must be rg::Texture::getMipLevelSize(getSize(), mipN).
          * There must not be more than rg::Texture::calculateMipLevels(getSize()) mip levels.
          *
-         * @return The maximum allocated mip index
+         * @return The number of consecutive mip levels present for this image.
          */
-        virtual unsigned int getMaxMip() = 0;
+        virtual unsigned int getMipLevels() = 0;
 
         /**
          * @return The wrapping method to use for this image.
@@ -61,7 +61,7 @@ namespace xng {
          * @param tile
          * @return The tile texels including the atlas border.
          */
-        virtual std::vector<uint8_t> getTile(int mipLevel, Vec2i tile) = 0;
+        virtual std::vector<uint8_t> getTile(int mipLevel, const Vec2u &tile) = 0;
     };
 }
 

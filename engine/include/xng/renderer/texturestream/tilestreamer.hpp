@@ -24,12 +24,45 @@
 
 #include "xng/math/vector2.hpp"
 
+#include "xng/rendergraph/heap.hpp"
+#include "xng/rendergraph/builder/graphbuilder.hpp"
+
+#include "xng/renderer/texturestream/textureatlas.hpp"
+#include "xng/renderer/texturestream/tilemap.hpp"
+#include "xng/renderer/texturestream/tileloader.hpp"
+
 namespace xng {
     /**
      * Per logical texture there is one TileStreamer that handles loading tiles via TileLoader asynchronously
      * and uploads the tiles to the atlas texture on the render thread and updates the residency buffer.
      */
     class TileStreamer {
+    public:
+        TileStreamer(rg::Heap &heap,
+                     TextureAtlas &atlas,
+                     TileMap &tileMap,
+                     TileMap::TextureID textureID,
+                     std::unique_ptr<TileLoader> tileLoader);
+
+        ~TileStreamer();
+
+        TileStreamer(const TileStreamer &) = delete;
+
+        TileStreamer &operator=(const TileStreamer &) = delete;
+
+        TileStreamer(TileStreamer &&) = default;
+
+        TileStreamer &operator=(TileStreamer &&) = default;
+
+        void loadTile(const Vec2u &tile, unsigned int mip);
+
+        void evictTile(const Vec2u &tile, unsigned int mip);
+
+        std::vector<rg::TransferPass> commit(rg::GraphBuilder &graph);
+
+    private:
+        [[nodiscard]] unsigned int getTileIndex(unsigned int x, unsigned int y) const;
+
         struct Tile {
             bool resident;
         };
@@ -40,9 +73,6 @@ namespace xng {
             std::vector<Tile> tiles;
         };
 
-        [[nodiscard]] unsigned int getTileIndex(unsigned int x, unsigned int y) const;
-
-    private:
         Vec2u tileSize;
         std::vector<Mip> mips;
     };
