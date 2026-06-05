@@ -64,7 +64,7 @@ namespace xng::opengl {
             HeapResource<Buffer> buffer{};
             Texture::SubResource textureSubResource{};
             size_t bufferOffset{};
-            Recti textureOffset{};
+            Rectu textureOffset{};
             ColorFormat bufferFormat{};
         };
 
@@ -73,7 +73,7 @@ namespace xng::opengl {
             HeapResource<Texture> texture{};
             Texture::SubResource textureSubResource{};
             size_t bufferOffset{};
-            Recti textureOffset{};
+            Rectu textureOffset{};
             ColorFormat bufferFormat{};
         };
 
@@ -88,8 +88,8 @@ namespace xng::opengl {
             HeapResource<Texture> dst;
             Texture::SubResource srcTarget;
             Texture::SubResource dstTarget;
-            Recti srcRect;
-            Recti dstRect;
+            Rectu srcRect;
+            Rectu dstRect;
             TextureFiltering filtering;
         };
 
@@ -207,7 +207,7 @@ namespace xng::opengl {
                                  const Resource<Buffer> &buffer,
                                  const Texture::SubResource textureSubResource,
                                  const size_t bufferOffset,
-                                 const Recti &textureOffset,
+                                 const Rectu &textureOffset,
                                  const ColorFormat bufferFormat) override {
             if (!texture.isAssigned() || !buffer.isAssigned()) { throw std::runtime_error("Unassigned resource"); }
             std::lock_guard lock(mutex);
@@ -226,7 +226,7 @@ namespace xng::opengl {
                                  const Resource<Texture> &texture,
                                  const Texture::SubResource textureSubResource,
                                  const size_t bufferOffset,
-                                 const Recti &textureOffset,
+                                 const Rectu &textureOffset,
                                  const ColorFormat bufferFormat) override {
             if (!texture.isAssigned() || !buffer.isAssigned()) { throw std::runtime_error("Unassigned resource"); }
             std::lock_guard lock(mutex);
@@ -258,8 +258,8 @@ namespace xng::opengl {
                          const Resource<Texture> &dst,
                          const Texture::SubResource &srcTarget,
                          const Texture::SubResource &dstTarget,
-                         const Recti &srcRect,
-                         const Recti &dstRect,
+                         const Rectu &srcRect,
+                         const Rectu &dstRect,
                          const TextureFiltering &filtering) override {
             if (!src.isAssigned() || !dst.isAssigned()) { throw std::runtime_error("Unassigned resource"); }
             std::lock_guard lock(mutex);

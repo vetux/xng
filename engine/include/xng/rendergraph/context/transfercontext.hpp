@@ -41,9 +41,9 @@ namespace xng::rg {
         struct TextureCopyRegion {
             Texture::SubResource src;
             Texture::SubResource dst;
-            Vec2i srcOffset;
-            Vec2i dstOffset;
-            Vec2i size;
+            Vec2u srcOffset;
+            Vec2u dstOffset;
+            Vec2u size;
             size_t depth = 1; // For Array textures the number of layers to copy, For cube maps the number of faces
         };
 
@@ -100,7 +100,7 @@ namespace xng::rg {
                                          const Resource<Buffer> &buffer,
                                          Texture::SubResource textureSubResource,
                                          size_t bufferOffset,
-                                         const Recti &textureOffset,
+                                         const Rectu &textureOffset,
                                          ColorFormat bufferFormat) = 0;
 
         /**
@@ -126,7 +126,7 @@ namespace xng::rg {
                                          const Resource<Texture> &texture,
                                          Texture::SubResource textureSubResource,
                                          size_t bufferOffset,
-                                         const Recti &textureOffset,
+                                         const Rectu &textureOffset,
                                          ColorFormat bufferFormat) = 0;
 
         /**
@@ -159,8 +159,8 @@ namespace xng::rg {
                                  const Resource<Texture> &dst,
                                  const Texture::SubResource &srcTarget,
                                  const Texture::SubResource &dstTarget,
-                                 const Recti& srcRect,
-                                 const Recti& dstRect,
+                                 const Rectu& srcRect,
+                                 const Rectu& dstRect,
                                  const TextureFiltering &filtering) = 0;
 
         /**

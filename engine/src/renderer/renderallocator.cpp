@@ -33,7 +33,7 @@ namespace xng {
           textureStream(heap, chunkStreamer) {
     }
 
-    RenderObjectHandle<RenderTexture> RenderAllocator::createTexture(const Vec2i &resolution) {
+    RenderObjectHandle<RenderTexture> RenderAllocator::createTexture(const Vec2u &resolution) {
         return std::make_shared<RenderTexture>(allocateId(), textureStream, resolution);
     }
 

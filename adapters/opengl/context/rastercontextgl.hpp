@@ -449,17 +449,17 @@ namespace xng::opengl {
             oglDebugEndGroup();
         }
 
-        void setViewport(const Vec2i viewportOffset, const Vec2i viewportSize) override {
+        void setViewport(const Vec2i viewportOffset, const Vec2u viewportSize) override {
             if (!boundPipeline.has_value()) {
                 throw std::runtime_error("Must bind pipeline before setting viewport.");
             }
 
             oglDebugStartGroup("RasterContextGL::setViewport");
 
-            glViewport(viewportOffset.x,
-                       frameBufferHeight - (viewportOffset.y + viewportSize.y),
-                       viewportSize.x,
-                       viewportSize.y);
+            glViewport(static_cast<GLint>(viewportOffset.x),
+                       static_cast<GLint>(frameBufferHeight - (viewportOffset.y + viewportSize.y)),
+                       static_cast<GLsizei>(viewportSize.x),
+                       static_cast<GLsizei>(viewportSize.y));
             oglCheckError();
 
             oglDebugEndGroup();

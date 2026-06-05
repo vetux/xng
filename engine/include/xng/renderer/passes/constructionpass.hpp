@@ -46,7 +46,7 @@ namespace xng {
                 };
             }
 
-            explicit GBuffer(rg::GraphBuilder &graph, Vec2i _resolution)
+            explicit GBuffer(rg::GraphBuilder &graph, Vec2u _resolution)
                 : resolution(std::move(_resolution)) {
                 auto desc = rg::Texture();
                 desc.size = resolution;
@@ -77,7 +77,7 @@ namespace xng {
                 registry.set(RenderPassRegistry::G_BUFFER_DEPTH, depthStencil);
             }
 
-            Vec2i resolution;
+            Vec2u resolution;
 
             rg::Resource<rg::Texture> position;
             rg::Resource<rg::Texture> normal;

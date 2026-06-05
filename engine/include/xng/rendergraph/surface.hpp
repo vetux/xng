@@ -45,7 +45,7 @@ namespace xng::rg {
          *
          * @return The current dimensions of the surface (Swap chain images).
          */
-        virtual Vec2i getDimensions() = 0;
+        virtual Vec2u getDimensions() = 0;
     };
 }
 

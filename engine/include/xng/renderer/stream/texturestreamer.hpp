@@ -51,7 +51,7 @@ namespace xng {
      */
     class TextureStreamer {
     public:
-        static Vec2i getTextureResolutionLevelSize(const TextureResolution level) {
+        static Vec2u getTextureResolutionLevelSize(const TextureResolution level) {
             switch (level) {
                 case RESOLUTION_8x8: return {8, 8};
                 case RESOLUTION_16x16: return {16, 16};
@@ -73,7 +73,7 @@ namespace xng {
         struct Handle {
             StreamTexture::Slot slot{};
             TextureResolution level{};
-            Vec2i size; // The original texture size
+            Vec2u size; // The original texture size
 
             bool operator==(const Handle &other) const {
                 return slot == other.slot && level == other.level && size == other.size;
@@ -100,7 +100,7 @@ namespace xng {
             }
         }
 
-        Handle create(const Vec2i &imageSize) {
+        Handle create(const Vec2u &imageSize) {
             const auto level = getClosestMatchingResolutionLevel(imageSize);
             return {textures.at(level).create(), level, imageSize};
         }
@@ -140,7 +140,7 @@ namespace xng {
         }
 
     private:
-        static TextureResolution getClosestMatchingResolutionLevel(const Vec2i &size) {
+        static TextureResolution getClosestMatchingResolutionLevel(const Vec2u &size) {
             for (auto res = RESOLUTION_BEGIN; res <= RESOLUTION_END; res = static_cast<TextureResolution>(res + 1)) {
                 const auto resSize = getTextureResolutionLevelSize(res);
                 if (size.x <= resSize.x && size.y <= resSize.y) {

@@ -26,7 +26,7 @@ namespace xng {
     // TODO: Design texture mip level streaming user interface
     class RenderTexture final : public RenderObject {
     public:
-        explicit RenderTexture(const Id id, TextureStreamer &textureStreamer, const Vec2i &resolution)
+        explicit RenderTexture(const Id id, TextureStreamer &textureStreamer, const Vec2u &resolution)
             : RenderObject(OBJECT_TEXTURE, id), textureStreamer(textureStreamer) {
             textureHandle = textureStreamer.create(resolution);
         }

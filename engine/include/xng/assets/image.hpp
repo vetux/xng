@@ -53,19 +53,19 @@ namespace xng {
             : buffer() {
         }
 
-        Image(const int width, const int height, std::vector<T> &&buffer)
+        Image(const unsigned int width, const unsigned int height, std::vector<T> &&buffer)
             : resolution(width, height), buffer(std::move(buffer)) {
         }
 
-        Image(const int width, const int height, const std::vector<T> &buffer)
+        Image(const unsigned int width, const unsigned int height, const std::vector<T> &buffer)
             : resolution(width, height), buffer(buffer) {
         }
 
-        Image(const int width, const int height)
+        Image(const unsigned int width, const unsigned int height)
             : resolution(width, height), buffer(width * height) {
         }
 
-        explicit Image(const Vec2i &resolution, ColorRGBA color = ColorRGBA::black())
+        explicit Image(const Vec2u &resolution, ColorRGBA color = ColorRGBA::black())
             : resolution(resolution), buffer(resolution.x * resolution.y, color) {
         }
 
@@ -95,35 +95,35 @@ namespace xng {
             return !empty();
         }
 
-        Vec2i getResolution() const { return resolution; }
+        Vec2u getResolution() const { return resolution; }
 
         const std::vector<T> &getBuffer() const { return buffer; }
 
         std::vector<T> &getBuffer() { return buffer; }
 
-        int getWidth() const { return resolution.x; }
+        unsigned int getWidth() const { return resolution.x; }
 
-        int getHeight() const { return resolution.y; }
+        unsigned int getHeight() const { return resolution.y; }
 
         bool empty() const { return buffer.empty(); }
 
-        const T &getPixel(const int x, const int y) const {
+        const T &getPixel(const unsigned int x, const unsigned int y) const {
             return buffer[scanLine(y) + x];
         }
 
-        void setPixel(const int x, const int y, T color) {
+        void setPixel(const unsigned int x, const unsigned int y, T color) {
             buffer[scanLine(y) + x] = color;
         }
 
-        int scanLine(const int y) const {
+        int scanLine(const unsigned int y) const {
             return y * resolution.x;
         }
 
         void copyRow(const Image &source,
-                     const int srcRow,
-                     const int srcColumn,
-                     const int dstRow,
-                     const int dstColumn,
+                     const unsigned int srcRow,
+                     const unsigned int srcColumn,
+                     const unsigned int dstRow,
+                     const unsigned int dstColumn,
                      const size_t count) {
             if (source.resolution.y <= srcRow
                 || source.resolution.x <= srcColumn
@@ -143,7 +143,7 @@ namespace xng {
                       buffer.begin() + dstOffset);
         }
 
-        void copyRows(const Image &source, int srcRow, int dstRow, size_t count) {
+        void copyRows(const Image &source, const unsigned int srcRow, const unsigned int dstRow, const size_t count) {
             if (resolution != source.resolution
                 || source.resolution.y <= srcRow
                 || source.resolution.y < srcRow + count
@@ -168,7 +168,7 @@ namespace xng {
             copyRows(source, 0, 0, resolution.y);
         }
 
-        void blit(const Vec2i &targetPosition, const Image &source) {
+        void blit(const Vec2u &targetPosition, const Image &source) {
             if (targetPosition.x < 0
                 || targetPosition.y < 0
                 || targetPosition.x + source.getWidth() > resolution.x
@@ -181,7 +181,7 @@ namespace xng {
             }
         }
 
-        Image slice(const Recti &rect) const {
+        Image slice(const Rectu &rect) const {
             Image ret = Image(rect.dimensions.x, rect.dimensions.y);
             for (int x = rect.position.x; x < rect.position.x + rect.dimensions.x; x++) {
                 for (int y = rect.position.y; y < rect.position.y + rect.dimensions.y; y++) {
@@ -210,7 +210,7 @@ namespace xng {
         }
 
     protected:
-        Vec2i resolution;
+        Vec2u resolution;
         std::vector<T> buffer;
     };
 

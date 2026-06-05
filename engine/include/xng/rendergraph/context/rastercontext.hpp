@@ -113,7 +113,7 @@ namespace xng::rg {
          * @param viewportOffset The upper left corner of the viewport.
          * @param viewportSize The width / height of the viewport.
          */
-        virtual void setViewport(Vec2i viewportOffset, Vec2i viewportSize) = 0;
+        virtual void setViewport(Vec2i viewportOffset, Vec2u viewportSize) = 0;
 
         /**
          * Update the stencil reference value in the pipeline.

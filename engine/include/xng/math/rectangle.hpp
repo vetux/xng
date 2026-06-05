@@ -115,6 +115,9 @@ namespace xng {
 
     typedef Rectangle<float> Rectf;
     typedef Rectangle<int> Recti;
+    typedef Rectangle<unsigned int> Rectu;
+    typedef Rectangle<long> Rectl;
+    typedef Rectangle<unsigned long> Rectul;
 }
 
 #endif // RECTANGLE_HPP

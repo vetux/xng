@@ -66,7 +66,7 @@ namespace xng {
          */
         explicit RenderAllocator(rg::Heap &heap, size_t streamingBudget);
 
-        RenderObjectHandle<RenderTexture> createTexture(const Vec2i &resolution);
+        RenderObjectHandle<RenderTexture> createTexture(const Vec2u &resolution);
 
         RenderObjectHandle<RenderMaterial> createMaterial(const ColorRGBA &albedo,
                                                           float metallic,

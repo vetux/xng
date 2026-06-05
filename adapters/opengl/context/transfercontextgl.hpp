@@ -246,12 +246,12 @@ namespace xng::opengl {
             const auto dstTexture = resources.getTexture(target);
 
             for (auto &region: regions) {
-                const Vec2i srcMipSize = source.getDescription().getMipLevelSize(region.src.mipLevel);
-                const Vec2i dstMipSize = target.getDescription().getMipLevelSize(region.dst.mipLevel);
+                const Vec2u srcMipSize = source.getDescription().getMipLevelSize(region.src.mipLevel);
+                const Vec2u dstMipSize = target.getDescription().getMipLevelSize(region.dst.mipLevel);
 
-                const auto srcRect = getCorrectedTextureRect(Recti(region.srcOffset, region.size),
+                const auto srcRect = getCorrectedTextureRect(Rectu(region.srcOffset, region.size),
                                                              srcMipSize);
-                const auto dstRect = getCorrectedTextureRect(Recti(region.dstOffset, region.size),
+                const auto dstRect = getCorrectedTextureRect(Rectu(region.dstOffset, region.size),
                                                              dstMipSize);
 
                 glCopyImageSubData(srcTexture.handle,
@@ -280,7 +280,7 @@ namespace xng::opengl {
                                  const Resource<Buffer> &buffer,
                                  const Texture::SubResource textureSubResource,
                                  const size_t bufferOffset,
-                                 const Recti &textureOffset,
+                                 const Rectu &textureOffset,
                                  const ColorFormat bufferFormat) override {
             if (!texture.isAssigned() || !buffer.isAssigned()) {
                 throw std::runtime_error("Unassigned resource");
@@ -373,7 +373,7 @@ namespace xng::opengl {
                                  const Resource<Texture> &texture,
                                  const Texture::SubResource textureSubResource,
                                  const size_t bufferOffset,
-                                 const Recti &textureOffset,
+                                 const Rectu &textureOffset,
                                  const ColorFormat bufferFormat) override {
             if (!texture.isAssigned() || !buffer.isAssigned()) {
                 throw std::runtime_error("Unassigned resource");
@@ -457,8 +457,8 @@ namespace xng::opengl {
                          const Resource<Texture> &dst,
                          const Texture::SubResource &srcTarget,
                          const Texture::SubResource &dstTarget,
-                         const Recti &srcRect,
-                         const Recti &dstRect,
+                         const Rectu &srcRect,
+                         const Rectu &dstRect,
                          const TextureFiltering &filtering) override {
             if (!src.isAssigned() || !dst.isAssigned()) {
                 throw std::runtime_error("Unassigned resource");
@@ -677,8 +677,8 @@ namespace xng::opengl {
         }
 
     private:
-        static Recti getCorrectedTextureRect(const Recti &region, const Vec2i &textureSize) {
-            auto ret = region;
+        static Recti getCorrectedTextureRect(const Rectu &region, const Vec2u &textureSize) {
+            auto ret = region.convert<int>();
             ret.position.y = textureSize.y - ret.position.y - ret.dimensions.y;
             return ret;
         }

@@ -97,7 +97,7 @@ namespace xng::rg {
 
         Capability capabilities = CAPABILITY_NONE;
 
-        Vec2i size = {1, 1};
+        Vec2u size = {1, 1};
         TextureType textureType = TEXTURE_2D;
         ColorFormat format = RGBA8;
 
@@ -118,7 +118,7 @@ namespace xng::rg {
         float maxAnisotropy = 8.0f;
 
         explicit Texture(const Capability capabilities = CAPABILITY_NONE,
-                         Vec2i size = {1, 1},
+                         Vec2u size = {1, 1},
                          const TextureType texture_type = TEXTURE_2D,
                          const ColorFormat format = RGBA8,
                          const TextureWrapping wrapping = CLAMP_TO_BORDER,
@@ -163,15 +163,15 @@ namespace xng::rg {
                    && capabilities == other.capabilities;
         }
 
-        Vec2i getMipLevelSize(const unsigned int mipLevel) const {
+        Vec2u getMipLevelSize(const unsigned int mipLevel) const {
             return getMipLevelSize(size, mipLevel);
         }
 
-        static Vec2i getMipLevelSize(const Vec2i &size, const unsigned int mipLevel) {
-            return {std::max(1, size.x >> mipLevel), std::max(1, size.y >> mipLevel)};
+        static Vec2u getMipLevelSize(const Vec2u &size, const unsigned int mipLevel) {
+            return {std::max(1u, size.x >> mipLevel), std::max(1u, size.y >> mipLevel)};
         }
 
-        static unsigned int calculateMipLevels(const Vec2i &size) {
+        static unsigned int calculateMipLevels(const Vec2u &size) {
             const auto maxDimension = std::max(size.x, size.y);
             return static_cast<int>(std::floor(std::log2(maxDimension))) + 1;
         }

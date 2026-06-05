@@ -50,7 +50,7 @@ namespace xng::opengl {
         std::unordered_set<ColorFormat> supportedColorFormats;
     };
 
-    static Vec2i bindAttachments(Framebuffer &framebuffer,
+    static Vec2u bindAttachments(Framebuffer &framebuffer,
                                  const rg::RasterPass &pass,
                                  const PassResources &passResources) {
         oglDebugStartGroup("Runtime::bindAttachments");
@@ -59,7 +59,7 @@ namespace xng::opengl {
 
         std::vector<GLenum> drawBuffers;
 
-        Vec2i ret(0);
+        Vec2u ret(0);
         for (auto i = 0; i < pass.colorAttachments.size(); ++i) {
             auto &attachment = pass.colorAttachments.at(i);
 

@@ -73,20 +73,20 @@ namespace xng {
 
         virtual Vec2i getWindowPosition() = 0;
 
-        virtual void setWindowSize(Vec2i size) = 0;
+        virtual void setWindowSize(Vec2u size) = 0;
 
-        virtual Vec2i getWindowSize() = 0;
+        virtual Vec2u getWindowSize() = 0;
 
-        virtual void setWindowSizeLimit(Vec2i sizeMin, Vec2i sizeMax) = 0;
+        virtual void setWindowSizeLimit(Vec2u sizeMin, Vec2u sizeMax) = 0;
 
-        virtual void setWindowAspectRatio(Vec2i ratio) = 0;
+        virtual void setWindowAspectRatio(Vec2u ratio) = 0;
 
         /**
          * The returned size can randomly asynchronously change.
          *
          * @return The current framebuffer size.
          */
-        virtual Vec2i getFramebufferSize() = 0;
+        virtual Vec2u getFramebufferSize() = 0;
 
         virtual Vec4i getFrameSize() = 0;
 
@@ -98,7 +98,7 @@ namespace xng {
 
         virtual std::unique_ptr<Monitor> getMonitor() = 0;
 
-        virtual void setMonitor(Monitor &monitor, Recti rect, int refreshRate) = 0;
+        virtual void setMonitor(Monitor &monitor, Rectu rect, int refreshRate) = 0;
 
         virtual void setWindowed() = 0;
 
@@ -112,7 +112,7 @@ namespace xng {
 
         virtual void setWindowFocusOnShow(bool focusOnShow) = 0;
 
-        virtual void setMouseCursorImage(const Vec2i &size, const std::vector<uint8_t> &data) = 0;
+        virtual void setMouseCursorImage(const Vec2u &size, const std::vector<uint8_t> &data) = 0;
 
         virtual void clearMouseCursorImage() = 0;
 

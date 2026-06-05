@@ -205,7 +205,7 @@ namespace xng {
                                                             stableBuffer,
                                                             rg::Texture::SubResource(upload.mipLevel, slot, {}),
                                                             upload.bufferOffset,
-                                                            Recti({}, upload.imageSize),
+                                                            Rectu({}, upload.imageSize),
                                                             upload.bufferFormat);
                                     ctx.generateMipMaps(texture);
                                 });
@@ -246,7 +246,7 @@ namespace xng {
 
             int mipLevel;
 
-            Vec2i imageSize;
+            Vec2u imageSize;
 
             bool flushed;
             bool committed;
@@ -256,7 +256,7 @@ namespace xng {
                           const size_t bufferOffset,
                           const size_t bufferSize,
                           const int mipLevel,
-                          const Vec2i &imageSize)
+                          const Vec2u &imageSize)
                 : bufferHandle(bufferHandle),
                   bufferFormat(bufferFormat),
                   bufferOffset(bufferOffset),

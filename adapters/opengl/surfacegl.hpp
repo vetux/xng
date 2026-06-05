@@ -42,7 +42,7 @@ namespace xng::opengl {
 
         ~SurfaceGL() override = default;
 
-        Vec2i getDimensions() override {
+        Vec2u getDimensions() override {
             return backBufferColor->desc.size;
         }
 

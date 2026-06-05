@@ -75,15 +75,15 @@ namespace xng::glfw {
 
         Vec2i getWindowPosition() override;
 
-        void setWindowSize(Vec2i size) override;
+        void setWindowSize(Vec2u size) override;
 
-        Vec2i getWindowSize() override;
+        Vec2u getWindowSize() override;
 
-        void setWindowSizeLimit(Vec2i sizeMin, Vec2i sizeMax) override;
+        void setWindowSizeLimit(Vec2u sizeMin, Vec2u sizeMax) override;
 
-        void setWindowAspectRatio(Vec2i ratio) override;
+        void setWindowAspectRatio(Vec2u ratio) override;
 
-        Vec2i getFramebufferSize() override;
+        Vec2u getFramebufferSize() override;
 
         Vec4i getFrameSize() override;
 
@@ -95,7 +95,7 @@ namespace xng::glfw {
 
         std::unique_ptr<Monitor> getMonitor() override;
 
-        void setMonitor(Monitor &monitor, Recti rect, int refreshRate) override;
+        void setMonitor(Monitor &monitor, Rectu rect, int refreshRate) override;
 
         void setWindowed() override;
 
@@ -131,7 +131,7 @@ namespace xng::glfw {
 
         void removeListener(WindowListener &listener) override;
 
-        void setMouseCursorImage(const Vec2i &size, const std::vector<uint8_t> &data) override;
+        void setMouseCursorImage(const Vec2u &size, const std::vector<uint8_t> &data) override;
 
         void clearMouseCursorImage() override;
 

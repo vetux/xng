@@ -64,7 +64,7 @@ namespace xng::opengl {
         }
 
     private:
-        static GLsizei safeMipLevels(const unsigned int requested, const Vec2i &size) {
+        static GLsizei safeMipLevels(const unsigned int requested, const Vec2u &size) {
             const GLsizei maxLevels = static_cast<GLsizei>(std::floor(std::log2(std::max(size.x, size.y)))) + 1;
             return std::min(static_cast<GLsizei>(requested), maxLevels);
         }

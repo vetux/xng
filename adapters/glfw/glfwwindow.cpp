@@ -307,28 +307,28 @@ namespace xng::glfw {
         return {x, y};
     }
 
-    void GLFWWindow::setWindowSize(const Vec2i size) {
+    void GLFWWindow::setWindowSize(const Vec2u size) {
         glfwSetWindowSize(wndH, size.x, size.y);
     }
 
-    Vec2i GLFWWindow::getWindowSize() {
+    Vec2u GLFWWindow::getWindowSize() {
         int x, y;
         glfwGetWindowSize(wndH, &x, &y);
-        return {x, y};
+        return Vec2u(x, y);
     }
 
-    void GLFWWindow::setWindowSizeLimit(const Vec2i sizeMin, const Vec2i sizeMax) {
+    void GLFWWindow::setWindowSizeLimit(const Vec2u sizeMin, const Vec2u sizeMax) {
         glfwSetWindowSizeLimits(wndH, sizeMin.x, sizeMin.y, sizeMax.x, sizeMax.y);
     }
 
-    void GLFWWindow::setWindowAspectRatio(const Vec2i ratio) {
+    void GLFWWindow::setWindowAspectRatio(const Vec2u ratio) {
         glfwSetWindowAspectRatio(wndH, ratio.x, ratio.y);
     }
 
-    Vec2i GLFWWindow::getFramebufferSize() {
+    Vec2u GLFWWindow::getFramebufferSize() {
         int x, y;
         glfwGetFramebufferSize(wndH, &x, &y);
-        return {x, y};
+        return Vec2u(x, y);
     }
 
     Vec4i GLFWWindow::getFrameSize() {
@@ -356,7 +356,7 @@ namespace xng::glfw {
         return std::make_unique<MonitorGLFW>(glfwGetWindowMonitor(wndH));
     }
 
-    void GLFWWindow::setMonitor(Monitor &monitor, const Recti rect, const int refreshRate) {
+    void GLFWWindow::setMonitor(Monitor &monitor, const Rectu rect, const int refreshRate) {
         const auto &mon = down_cast<MonitorGLFW &>(monitor);
         glfwSetWindowMonitor(wndH,
                              mon.monH,
@@ -406,7 +406,7 @@ namespace xng::glfw {
     }
 
     //TODO: Implement cursor image change
-    void GLFWWindow::setMouseCursorImage(const Vec2i &size, const std::vector<uint8_t> &data) {
+    void GLFWWindow::setMouseCursorImage(const Vec2u &size, const std::vector<uint8_t> &data) {
         throw std::runtime_error("Not implemented");
     }
 
