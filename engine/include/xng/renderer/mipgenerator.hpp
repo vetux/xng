@@ -38,9 +38,11 @@ namespace xng {
          * Generate the mip images for the given image using hardware blit.
          *
          * @param image The mip level 0 image.
+         * @param mipLevels
          * @return The mip images for level 1 to level max.
          */
-        [[nodiscard]] std::unordered_map<int, ImageRGBA> generate(const ImageRGBA &image) const {
+        [[nodiscard]] std::unordered_map<int, ImageRGBA> generate(const ImageRGBA &image,
+                                                                  const unsigned int mipLevels) const {
             const auto texture = heap.allocateTexture(rg::Texture(rg::Texture::CAPABILITY_TRANSFER_SRC
                                                                   | rg::Texture::CAPABILITY_TRANSFER_DST,
                                                                   image.getResolution()));
@@ -70,10 +72,8 @@ namespace xng {
                 })
             );
 
-            const int requiredMips = static_cast<int>(rg::Texture::calculateMipLevels(image.getResolution()));
-
-            std::unordered_map<int, std::pair<rg::HeapResource<rg::Texture>, rg::HeapResource<rg::Buffer> > > blits;
-            for (int mip = 1; mip < requiredMips; mip++) {
+            std::unordered_map<unsigned int, std::pair<rg::HeapResource<rg::Texture>, rg::HeapResource<rg::Buffer> > > blits;
+            for (int mip = 1; mip < mipLevels; mip++) {
                 const auto mipSize = rg::Texture::getMipLevelSize(texture.getDescription().size, mip);
                 const auto mipTexture = heap.allocateTexture(rg::Texture(rg::Texture::CAPABILITY_TRANSFER_DST,
                                                                          mipSize));
@@ -89,8 +89,8 @@ namespace xng {
                                         mipTexture,
                                         rg::Texture::SubResource(),
                                         rg::Texture::SubResource(),
-                                        Recti({}, texture.getDescription().size),
-                                        Recti({}, mipTexture.getDescription().size),
+                                        Rectu({}, texture.getDescription().size),
+                                        Rectu({}, mipTexture.getDescription().size),
                                         rg::LINEAR);
                     }));
                 passes.emplace_back(rg::TransferPassBuilder("MipGenerator::Download")
@@ -101,7 +101,7 @@ namespace xng {
                                                 mipTexture,
                                                 {},
                                                 0,
-                                                Recti({}, mipTexture.getDescription().size),
+                                                Rectu({}, mipTexture.getDescription().size),
                                                 rg::RGBA8);
                     }));
                 blits[mip] = {mipTexture, mipBuffer};
@@ -113,7 +113,7 @@ namespace xng {
             }
 
             std::unordered_map<int, ImageRGBA> ret;
-            for (auto &pair : blits) {
+            for (auto &pair: blits) {
                 ImageRGBA mipImage(pair.second.first.getDescription().size);
                 {
                     const auto mipMapping = heap.map(pair.second.second);
