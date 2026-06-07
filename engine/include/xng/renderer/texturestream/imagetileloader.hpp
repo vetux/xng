@@ -146,6 +146,10 @@ namespace xng {
             if (size.x <= tileBorder * 2 || size.y <= tileBorder * 2) {
                 throw std::runtime_error("Image must be at least tileBorder * 2 size.");
             }
+            if (size.x > std::numeric_limits<int>::max()
+                || size.y > std::numeric_limits<int>::max()) {
+                throw std::runtime_error("Image resolution must fit in int");
+            }
             const auto mipImages = MipGenerator(heap).generate(image, mipLevels);
             mips.emplace_back(generateTiles(image, tileSize, tileBorder, wrapping));
             for (auto &pair: mipImages) {
