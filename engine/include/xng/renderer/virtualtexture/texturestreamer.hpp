@@ -29,9 +29,9 @@
 #include "xng/renderer/stream/streambuffer.hpp"
 #include "xng/renderer/stream/streamtexture.hpp"
 
-#include "xng/renderer/texturestream/tilemap.hpp"
-#include "xng/renderer/texturestream/textureatlas.hpp"
-#include "xng/renderer/texturestream/tileloader.hpp"
+#include "xng/renderer/virtualtexture/tilemap.hpp"
+#include "xng/renderer/virtualtexture/textureatlas.hpp"
+#include "xng/renderer/virtualtexture/tileloader.hpp"
 
 namespace xng {
     /**

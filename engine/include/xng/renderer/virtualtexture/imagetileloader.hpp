@@ -19,7 +19,7 @@
 #ifndef XENGINE_IMAGETILELOADER_HPP
 #define XENGINE_IMAGETILELOADER_HPP
 
-#include "xng/renderer/texturestream/tileloader.hpp"
+#include "xng/renderer/virtualtexture/tileloader.hpp"
 
 #include "xng/assets/image.hpp"
 
