@@ -41,7 +41,7 @@ namespace xng {
          * @param mipLevels
          * @return The mip images for level 1 to level max.
          */
-        [[nodiscard]] std::unordered_map<int, ImageRGBA> generate(const ImageRGBA &image,
+        [[nodiscard]] std::unordered_map<unsigned int, ImageRGBA> generate(const ImageRGBA &image,
                                                                   const unsigned int mipLevels) const {
             const auto texture = heap.allocateTexture(rg::Texture(rg::Texture::CAPABILITY_TRANSFER_SRC
                                                                   | rg::Texture::CAPABILITY_TRANSFER_DST,
@@ -67,7 +67,7 @@ namespace xng {
                                             buffer,
                                             {},
                                             0,
-                                            Recti({}, texture.getDescription().size),
+                                            Rectu({}, texture.getDescription().size),
                                             rg::RGBA8);
                 })
             );
@@ -112,7 +112,7 @@ namespace xng {
                 throw std::runtime_error("Failed to generate mip levels");
             }
 
-            std::unordered_map<int, ImageRGBA> ret;
+            std::unordered_map<unsigned int, ImageRGBA> ret;
             for (auto &pair: blits) {
                 ImageRGBA mipImage(pair.second.first.getDescription().size);
                 {
