@@ -54,19 +54,77 @@ namespace xng {
                                         const unsigned int tileSize,
                                         const unsigned int tileBorder,
                                         const WrappingMethod wrapping) {
-            TiledImage ret(Vec2u(ceildiv(image.getResolution().x, tileSize),
-                                 ceildiv(image.getResolution().y, tileSize)));
+            const auto &imageRes = image.getResolution();
+            TiledImage ret(Vec2u(ceildiv(imageRes.x, tileSize),
+                                 ceildiv(imageRes.y, tileSize)));
             const auto atlasTileSize = tileSize + tileBorder * 2;
             for (auto tileX = 0u; tileX < ret.tileCount.x; tileX++) {
                 for (auto tileY = 0u; tileY < ret.tileCount.y; tileY++) {
-                    const auto tileDim = Vec2u(std::min(tileSize, image.getResolution().x - tileX * tileSize),
-                                               std::min(tileSize, image.getResolution().y - tileY * tileSize));
+                    const auto tilePos = Vec2u(tileX * tileSize, tileY * tileSize);
+                    auto tileDim = Vec2u(tileSize, tileSize);
+                    if (tilePos.x + tileDim.x > imageRes.x) {
+                        tileDim.x = imageRes.x - tilePos.x;
+                    }
+                    if (tilePos.y + tileDim.y > imageRes.y) {
+                        tileDim.y = imageRes.y - tilePos.y;
+                    }
+
+                    ImageRGBA tile = image.slice(Rectu(tilePos, tileDim));
+
                     ImageRGBA atlasTile(atlasTileSize, atlasTileSize);
-                    ImageRGBA tile = image.slice(Rectu({tileX * tileSize, tileY * tileSize},
-                                                       tileDim));
                     atlasTile.blit(Vec2u(tileBorder, tileBorder), tile);
 
-                    // Blit borders...
+                    // Blit Left Border Edge
+                    for (auto x = 0; x < tileBorder; x++) {
+                        for (auto y = 0; y < tileDim.y + 2 * tileBorder; y++) {
+                            const auto srcPos = Vec2i(static_cast<int>(tilePos.x) - (static_cast<int>(tileBorder) - x),
+                                                      static_cast<int>(tilePos.y) + y - static_cast<int>(tileBorder));
+                            copyTexel(image,
+                                      atlasTile,
+                                      srcPos,
+                                      Vec2u(x, y),
+                                      wrapping);
+                        }
+                    }
+
+                    // Blit Right Border Edge
+                    for (auto x = 0; x < tileBorder; x++) {
+                        for (auto y = 0; y < tileDim.y + 2 * tileBorder; y++) {
+                            const auto srcPos = Vec2i(static_cast<int>(tilePos.x + tileDim.x) + x,
+                                                      static_cast<int>(tilePos.y) + y - static_cast<int>(tileBorder));
+                            copyTexel(image,
+                                      atlasTile,
+                                      srcPos,
+                                      Vec2u((tileBorder + tileDim.x) + x, y),
+                                      wrapping);
+                        }
+                    }
+
+                    // Blit Top Border Edge
+                    for (auto y = 0; y < tileBorder; y++) {
+                        for (auto x = 0; x < tileDim.x; x++) {
+                            const auto srcPos = Vec2i(static_cast<int>(tilePos.x) + x,
+                                                      static_cast<int>(tilePos.y) - (static_cast<int>(tileBorder) - y));
+                            copyTexel(image,
+                                      atlasTile,
+                                      srcPos,
+                                      Vec2u(x + tileBorder, y),
+                                      wrapping);
+                        }
+                    }
+
+                    // Blit Bottom Border Edge
+                    for (auto y = 0; y < tileBorder; y++) {
+                        for (auto x = 0; x < tileDim.x; x++) {
+                            const auto srcPos = Vec2i(static_cast<int>(tilePos.x) + x,
+                                                      static_cast<int>(tilePos.y + tileDim.y) + y);
+                            copyTexel(image,
+                                      atlasTile,
+                                      srcPos,
+                                      Vec2u(x + tileBorder, (tileBorder + tileDim.y) + y),
+                                      wrapping);
+                        }
+                    }
 
                     auto bytes = std::vector<uint8_t>(atlasTile.getBuffer().size() * sizeof(ColorRGBA));
                     std::memcpy(bytes.data(), atlasTile.getBuffer().data(), bytes.size());
@@ -85,7 +143,11 @@ namespace xng {
             : size(image.getResolution()),
               mipLevels(mipLevels),
               wrapping(wrapping) {
+            if (size.x <= tileBorder * 2 || size.y <= tileBorder * 2) {
+                throw std::runtime_error("Image must be at least tileBorder * 2 size.");
+            }
             const auto mipImages = MipGenerator(heap).generate(image, mipLevels);
+            mips.emplace_back(generateTiles(image, tileSize, tileBorder, wrapping));
             for (auto &pair: mipImages) {
                 mips.emplace_back(generateTiles(pair.second, tileSize, tileBorder, wrapping));
             }
@@ -105,11 +167,52 @@ namespace xng {
             return wrapping;
         }
 
-        std::vector<uint8_t> getTile(const int mipLevel, const Vec2u &tile) override {
+        std::vector<uint8_t> getTile(const unsigned int mipLevel, const Vec2u &tile) override {
             return mips.at(mipLevel).getTile(tile);
         }
 
     private:
+        static void copyTexel(const ImageRGBA &source,
+                              ImageRGBA &target,
+                              const Vec2i &sourcePos,
+                              const Vec2u &targetPos,
+                              const WrappingMethod wrapping) {
+            Vec2u pos;
+            if (sourcePos.x < 0) {
+                if (wrapping == WRAP_REPEAT) {
+                    pos.x = source.getResolution().x + sourcePos.x;
+                } else {
+                    pos.x = 0;
+                }
+            } else if (sourcePos.x >= source.getResolution().x) {
+                if (wrapping == WRAP_REPEAT) {
+                    pos.x = sourcePos.x - source.getResolution().x;
+                } else {
+                    pos.x = source.getResolution().x - 1;
+                }
+            } else {
+                pos.x = sourcePos.x;
+            }
+
+            if (sourcePos.y < 0) {
+                if (wrapping == WRAP_REPEAT) {
+                    pos.y = source.getResolution().y + sourcePos.y;
+                } else {
+                    pos.y = 0;
+                }
+            } else if (sourcePos.y >= source.getResolution().y) {
+                if (wrapping == WRAP_REPEAT) {
+                    pos.y = sourcePos.y - source.getResolution().y;
+                } else {
+                    pos.y = source.getResolution().y - 1;
+                }
+            } else {
+                pos.y = sourcePos.y;
+            }
+
+            target.setPixel(targetPos.x, targetPos.y, source.getPixel(pos.x, pos.y));
+        }
+
         static constexpr unsigned int ceildiv(const unsigned int a, const unsigned int b) {
             return (a + b - 1) / b;
         }

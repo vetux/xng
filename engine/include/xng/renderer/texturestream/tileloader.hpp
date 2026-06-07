@@ -61,7 +61,7 @@ namespace xng {
          * @param tile
          * @return The tile texels including the atlas border.
          */
-        virtual std::vector<uint8_t> getTile(int mipLevel, const Vec2u &tile) = 0;
+        virtual std::vector<uint8_t> getTile(unsigned int mipLevel, const Vec2u &tile) = 0;
     };
 }
 
