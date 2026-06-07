@@ -28,6 +28,8 @@
 namespace xng {
     /**
      * For the given image the image tile loader will generate the mips, split them into tiles and generate correct tile borders.
+     *
+     * In Production the editor will precook the tiles and load from disk with a separate TileLoader implementation.
      */
     class ImageTileLoader final : public TileLoader {
     public:
