@@ -159,8 +159,18 @@ namespace xng::rg {
             FaceForward,
             Transpose,
             Inverse,
+
             PartialDerivativeX,
             PartialDerivativeY,
+
+            AtomicAdd,
+            AtomicMin,
+            AtomicMax,
+            AtomicAnd,
+            AtomicOr,
+            AtomicXor,
+            AtomicExchange,
+            AtomicCompareSwap,
 
             // Type Casting
             CastBool,

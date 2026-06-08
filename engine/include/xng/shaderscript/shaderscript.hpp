@@ -662,6 +662,42 @@ namespace xng::ShaderScript {
         return ShaderObject(rg::ShaderInstructionFactory::partialDerivativeY(value.operand));
     }
 
+    inline ShaderObject atomicAdd(const ShaderObject &mem, const ShaderObject &data) {
+        return ShaderObject(rg::ShaderInstructionFactory::atomicAdd(mem.operand, data.operand));
+    }
+
+    inline ShaderObject atomicMin(const ShaderObject &mem, const ShaderObject &data) {
+        return ShaderObject(rg::ShaderInstructionFactory::atomicMin(mem.operand, data.operand));
+    }
+
+    inline ShaderObject atomicMax(const ShaderObject &mem, const ShaderObject &data) {
+        return ShaderObject(rg::ShaderInstructionFactory::atomicMax(mem.operand, data.operand));
+    }
+
+    inline ShaderObject atomicAnd(const ShaderObject &mem, const ShaderObject &data) {
+        return ShaderObject(rg::ShaderInstructionFactory::atomicAnd(mem.operand, data.operand));
+    }
+
+    inline ShaderObject atomicOr(const ShaderObject &mem, const ShaderObject &data) {
+        return ShaderObject(rg::ShaderInstructionFactory::atomicOr(mem.operand, data.operand));
+    }
+
+    inline ShaderObject atomicXor(const ShaderObject &mem, const ShaderObject &data) {
+        return ShaderObject(rg::ShaderInstructionFactory::atomicXor(mem.operand, data.operand));
+    }
+
+    inline ShaderObject atomicExchange(const ShaderObject &mem, const ShaderObject &data) {
+        return ShaderObject(rg::ShaderInstructionFactory::atomicExchange(mem.operand, data.operand));
+    }
+
+    inline ShaderObject atomicCompareSwap(const ShaderObject &mem,
+                                          const ShaderObject &compare,
+                                          const ShaderObject &data) {
+        return ShaderObject(rg::ShaderInstructionFactory::atomicCompareSwap(mem.operand,
+                                                                            compare.operand,
+                                                                            data.operand));
+    }
+
     template<typename T>
     struct DynamicBufferWrapper;
 

@@ -382,6 +382,22 @@ namespace xng::rg {
 
         XENGINE_EXPORT ShaderInstruction partialDerivativeY(ShaderOperand value);
 
+        XENGINE_EXPORT ShaderInstruction atomicAdd(ShaderOperand mem, ShaderOperand data);
+
+        XENGINE_EXPORT ShaderInstruction atomicMin(ShaderOperand mem, ShaderOperand data);
+
+        XENGINE_EXPORT ShaderInstruction atomicMax(ShaderOperand mem, ShaderOperand data);
+
+        XENGINE_EXPORT ShaderInstruction atomicAnd(ShaderOperand mem, ShaderOperand data);
+
+        XENGINE_EXPORT ShaderInstruction atomicOr(ShaderOperand mem, ShaderOperand data);
+
+        XENGINE_EXPORT ShaderInstruction atomicXor(ShaderOperand mem, ShaderOperand data);
+
+        XENGINE_EXPORT ShaderInstruction atomicExchange(ShaderOperand mem, ShaderOperand data);
+
+        XENGINE_EXPORT ShaderInstruction atomicCompareSwap(ShaderOperand mem, ShaderOperand compare, ShaderOperand data);
+
         XENGINE_EXPORT ShaderInstruction castBool(ShaderOperand value);
 
         XENGINE_EXPORT ShaderInstruction castInt(ShaderOperand value);

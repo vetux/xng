@@ -759,6 +759,71 @@ namespace xng::rg::ShaderInstructionFactory {
         return ret;
     }
 
+    ShaderInstruction atomicAdd(ShaderOperand mem, ShaderOperand data) {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::AtomicAdd;
+        ret.operands.push_back(std::move(mem));
+        ret.operands.push_back(std::move(data));
+        return ret;
+    }
+
+    ShaderInstruction atomicMin(ShaderOperand mem, ShaderOperand data) {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::AtomicMin;
+        ret.operands.push_back(std::move(mem));
+        ret.operands.push_back(std::move(data));
+        return ret;
+    }
+
+    ShaderInstruction atomicMax(ShaderOperand mem, ShaderOperand data) {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::AtomicMax;
+        ret.operands.push_back(std::move(mem));
+        ret.operands.push_back(std::move(data));
+        return ret;
+    }
+
+    ShaderInstruction atomicAnd(ShaderOperand mem, ShaderOperand data) {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::AtomicAnd;
+        ret.operands.push_back(std::move(mem));
+        ret.operands.push_back(std::move(data));
+        return ret;
+    }
+
+    ShaderInstruction atomicOr(ShaderOperand mem, ShaderOperand data) {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::AtomicOr;
+        ret.operands.push_back(std::move(mem));
+        ret.operands.push_back(std::move(data));
+        return ret;
+    }
+
+    ShaderInstruction atomicXor(ShaderOperand mem, ShaderOperand data) {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::AtomicXor;
+        ret.operands.push_back(std::move(mem));
+        ret.operands.push_back(std::move(data));
+        return ret;
+    }
+
+    ShaderInstruction atomicExchange(ShaderOperand mem, ShaderOperand data) {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::AtomicExchange;
+        ret.operands.push_back(std::move(mem));
+        ret.operands.push_back(std::move(data));
+        return ret;
+    }
+
+    ShaderInstruction atomicCompareSwap(ShaderOperand mem, ShaderOperand compare, ShaderOperand data) {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::AtomicCompareSwap;
+        ret.operands.push_back(std::move(mem));
+        ret.operands.push_back(std::move(compare));
+        ret.operands.push_back(std::move(data));
+        return ret;
+    }
+
     ShaderInstruction castBool(ShaderOperand value) {
         ShaderInstruction ret;
         ret.code = ShaderInstruction::CastBool;

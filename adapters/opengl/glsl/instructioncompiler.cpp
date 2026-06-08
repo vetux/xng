@@ -694,6 +694,56 @@ namespace InstructionCompiler {
                 return "dFdx(" + compileOperand(instruction.operands.at(0), source, functionName) + ")";
             case ShaderInstruction::PartialDerivativeY:
                 return "dFdy(" + compileOperand(instruction.operands.at(0), source, functionName) + ")";
+            case ShaderInstruction::AtomicAdd:
+                return "atomicAdd("
+                       + compileOperand(instruction.operands.at(0), source, functionName)
+                       + ", "
+                       + compileOperand(instruction.operands.at(1), source, functionName)
+                       + ")";
+            case ShaderInstruction::AtomicMin:
+                return "atomicMin("
+                       + compileOperand(instruction.operands.at(0), source, functionName)
+                       + ", "
+                       + compileOperand(instruction.operands.at(1), source, functionName)
+                       + ")";
+            case ShaderInstruction::AtomicMax:
+                return "atomicMax("
+                       + compileOperand(instruction.operands.at(0), source, functionName)
+                       + ", "
+                       + compileOperand(instruction.operands.at(1), source, functionName)
+                       + ")";
+            case ShaderInstruction::AtomicAnd:
+                return "atomicAnd("
+                       + compileOperand(instruction.operands.at(0), source, functionName)
+                       + ", "
+                       + compileOperand(instruction.operands.at(1), source, functionName)
+                       + ")";
+            case ShaderInstruction::AtomicOr:
+                return "atomicOr("
+                       + compileOperand(instruction.operands.at(0), source, functionName)
+                       + ", "
+                       + compileOperand(instruction.operands.at(1), source, functionName)
+                       + ")";
+            case ShaderInstruction::AtomicXor:
+                return "atomicXor("
+                       + compileOperand(instruction.operands.at(0), source, functionName)
+                       + ", "
+                       + compileOperand(instruction.operands.at(1), source, functionName)
+                       + ")";
+            case ShaderInstruction::AtomicExchange:
+                return "atomicExchange("
+                       + compileOperand(instruction.operands.at(0), source, functionName)
+                       + ", "
+                       + compileOperand(instruction.operands.at(1), source, functionName)
+                       + ")";
+            case ShaderInstruction::AtomicCompareSwap:
+                return "atomicCompSwap("
+                       + compileOperand(instruction.operands.at(0), source, functionName)
+                       + ", "
+                       + compileOperand(instruction.operands.at(1), source, functionName)
+                       + ", "
+                       + compileOperand(instruction.operands.at(2), source, functionName)
+                       + ")";
         }
     }
 
