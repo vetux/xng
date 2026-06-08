@@ -72,13 +72,15 @@ namespace xng::shaderlib::virtualtexture {
      *
      * It uses the same linear row interpretation as the tile map.
      *
-     * It is indexed via textureID like so:
+     * It is indexed via residencyMapOffsets like so:
      *
      * tileX = mip0TexelX / tileSize
      * tileY = mip0TexelY / tileSize
      * tilesPerRow = ceil(mip0Width / tileSize)
      * mip0TileIndex = tileY * tilesPerRow + tileX
-     * lowestMipResident = residencyMap[textureID + mip0TileIndex]
+     *
+     * tileOffset = residencyMapOffsets[textureID]
+     * lowestMipResident = residencyMap[tileOffset + mip0TileIndex]
      *
      * -- Tile Borders --
      * Each tile in the atlas texture has an additional border which contains the neighboring virtual tile
@@ -102,6 +104,7 @@ namespace xng::shaderlib::virtualtexture {
      * @param tileBorder The texel count of the border on one side.
      * @param tileMapOffsets The dynamic buffer containing the tile map offsets.
      * @param tileMap The dynamic buffer containing the tile maps.
+     * @param residencyMapOffsets The offsets into residencyMap indexed by textureID
      * @param residencyMap The residency map
      * @param sampler The array texture containing the tiles.
      * @return
@@ -119,6 +122,7 @@ namespace xng::shaderlib::virtualtexture {
                                Param<UInt> tileBorder,
                                DynamicBufferWrapper<UInt> &tileMapOffsets,
                                DynamicBufferWrapper<UInt> &tileMap,
+                               DynamicBufferWrapper<UInt> &residencyMapOffsets,
                                DynamicBufferWrapper<UInt> &residencyMap,
                                ShaderObject &sampler);
 
@@ -132,6 +136,7 @@ namespace xng::shaderlib::virtualtexture {
                                        Param<UInt> tileBorder,
                                        DynamicBufferWrapper<UInt> &tileMapOffsets,
                                        DynamicBufferWrapper<UInt> &tileMap,
+                                       DynamicBufferWrapper<UInt> &residencyMapOffsets,
                                        DynamicBufferWrapper<UInt> &residencyMap,
                                        ShaderObject &sampler);
 
@@ -145,6 +150,7 @@ namespace xng::shaderlib::virtualtexture {
                                               Param<UInt> tileBorder,
                                               DynamicBufferWrapper<UInt> &tileMapOffsets,
                                               DynamicBufferWrapper<UInt> &tileMap,
+                                              DynamicBufferWrapper<UInt> &residencyMapOffsets,
                                               DynamicBufferWrapper<UInt> &residencyMap,
                                               ShaderObject &sampler);
 
@@ -158,6 +164,7 @@ namespace xng::shaderlib::virtualtexture {
                                         Param<UInt> tileBorder,
                                         DynamicBufferWrapper<UInt> &tileMapOffsets,
                                         DynamicBufferWrapper<UInt> &tileMap,
+                                        DynamicBufferWrapper<UInt> &residencyMapOffsets,
                                         DynamicBufferWrapper<UInt> &residencyMap,
                                         ShaderObject &sampler);
 
@@ -171,6 +178,7 @@ namespace xng::shaderlib::virtualtexture {
                                          Param<UInt> tileBorder,
                                          DynamicBufferWrapper<UInt> &tileMapOffsets,
                                          DynamicBufferWrapper<UInt> &tileMap,
+                                         DynamicBufferWrapper<UInt> &residencyMapOffsets,
                                          DynamicBufferWrapper<UInt> &residencyMap,
                                          ShaderObject &sampler);
 
@@ -184,6 +192,7 @@ namespace xng::shaderlib::virtualtexture {
                                        Param<UInt> tileBorder,
                                        DynamicBufferWrapper<UInt> &tileMapOffsets,
                                        DynamicBufferWrapper<UInt> &tileMap,
+                                       DynamicBufferWrapper<UInt> &residencyMapOffsets,
                                        DynamicBufferWrapper<UInt> &residencyMap,
                                        ShaderObject &sampler);
 
@@ -197,6 +206,7 @@ namespace xng::shaderlib::virtualtexture {
                                                  Param<UInt> tileBorder,
                                                  DynamicBufferWrapper<UInt> &tileMapOffsets,
                                                  DynamicBufferWrapper<UInt> &tileMap,
+                                                 DynamicBufferWrapper<UInt> &residencyMapOffsets,
                                                  DynamicBufferWrapper<UInt> &residencyMap,
                                                  ShaderObject &sampler);
 
@@ -206,10 +216,10 @@ namespace xng::shaderlib::virtualtexture {
      *
      * The returned value holds the number of tapped tiles.
      *
-     * For each tapped tile readbackX stores:
+     * The readback buffer is in the same format and size as the tileMap buffer,
+     * but it stores the number of taps for each virtual tile instead of the atlas tile index.
      *
-     * {.x = mipLevel, .y = mipTileIndex}
-     *
+     * @param textureID
      * @param uv
      * @param wrap
      * @param minFilter
@@ -218,11 +228,12 @@ namespace xng::shaderlib::virtualtexture {
      * @param imageSize
      * @param imageMaxMip
      * @param tileSize
-     * @param readback0
-     * @param readback1
+     * @param readbackOffsets
+     * @param readback
      * @return The number of taps
      */
-    XENGINE_EXPORT UInt readback_sample(Param<vec2> uv,
+    XENGINE_EXPORT UInt readback_sample(Param<UInt> textureID,
+                                        Param<vec2> uv,
                                         Param<Int> wrap,
                                         Param<Int> minFilter,
                                         Param<Int> magFilter,
@@ -230,53 +241,62 @@ namespace xng::shaderlib::virtualtexture {
                                         Param<ivec2> imageSize,
                                         Param<UInt> imageMaxMip,
                                         Param<UInt> tileSize,
-                                        ParamOut<uvec2> readback0,
-                                        ParamOut<uvec2> readback1);
+                                        DynamicBufferWrapper<UInt> &readbackOffsets,
+                                        DynamicBufferWrapper<UInt> &readback);
 
-    XENGINE_EXPORT UInt readback_sample_nearest(Param<vec2> uv,
+    XENGINE_EXPORT UInt readback_sample_nearest(Param<UInt> textureID,
+                                                Param<vec2> uv,
                                                 Param<Int> wrap,
                                                 Param<ivec2> imageSize,
                                                 Param<UInt> imageMaxMip,
                                                 Param<UInt> tileSize,
-                                                ParamOut<uvec2> readback);
+                                                DynamicBufferWrapper<UInt> &readbackOffsets,
+                                                DynamicBufferWrapper<UInt> &readback);
 
-    XENGINE_EXPORT UInt readback_sample_nearest_linear(Param<vec2> uv,
+    XENGINE_EXPORT UInt readback_sample_nearest_linear(Param<UInt> textureID,
+                                                       Param<vec2> uv,
                                                        Param<Int> wrap,
                                                        Param<ivec2> imageSize,
                                                        Param<UInt> imageMaxMip,
                                                        Param<UInt> tileSize,
-                                                       ParamOut<uvec2> readback0,
-                                                       ParamOut<uvec2> readback1);
+                                                       DynamicBufferWrapper<UInt> &readbackOffsets,
+                                                       DynamicBufferWrapper<UInt> &readback);
 
-    XENGINE_EXPORT UInt readback_sample_bilinear(Param<vec2> uv,
+    XENGINE_EXPORT UInt readback_sample_bilinear(Param<UInt> textureID,
+                                                 Param<vec2> uv,
                                                  Param<Int> wrap,
                                                  Param<ivec2> imageSize,
                                                  Param<UInt> imageMaxMip,
                                                  Param<UInt> tileSize,
-                                                 ParamOut<uvec2> readback);
+                                                 DynamicBufferWrapper<UInt> &readbackOffsets,
+                                                 DynamicBufferWrapper<UInt> &readback);
 
-    XENGINE_EXPORT UInt readback_sample_trilinear(Param<vec2> uv,
+    XENGINE_EXPORT UInt readback_sample_trilinear(Param<UInt> textureID,
+                                                  Param<vec2> uv,
                                                   Param<Int> wrap,
                                                   Param<ivec2> imageSize,
                                                   Param<UInt> imageMaxMip,
                                                   Param<UInt> tileSize,
-                                                  ParamOut<uvec2> readback0,
-                                                  ParamOut<uvec2> readback1);
+                                                  DynamicBufferWrapper<UInt> &readbackOffsets,
+                                                  DynamicBufferWrapper<UInt> &readback);
 
-    XENGINE_EXPORT UInt readback_sample_bicubic(Param<vec2> uv,
+    XENGINE_EXPORT UInt readback_sample_bicubic(Param<UInt> textureID,
+                                                Param<vec2> uv,
                                                 Param<Int> wrap,
                                                 Param<ivec2> imageSize,
                                                 Param<UInt> imageMaxMip,
                                                 Param<UInt> tileSize,
-                                                ParamOut<uvec2> readback0);
+                                                DynamicBufferWrapper<UInt> &readbackOffsets,
+                                                DynamicBufferWrapper<UInt> &readback);
 
-    XENGINE_EXPORT UInt readback_sample_bicubic_trilinear(Param<vec2> uv,
+    XENGINE_EXPORT UInt readback_sample_bicubic_trilinear(Param<UInt> textureID,
+                                                          Param<vec2> uv,
                                                           Param<Int> wrap,
                                                           Param<ivec2> imageSize,
                                                           Param<UInt> imageMaxMip,
                                                           Param<UInt> tileSize,
-                                                          ParamOut<uvec2> readback0,
-                                                          ParamOut<uvec2> readback1);
+                                                          DynamicBufferWrapper<UInt> &readbackOffsets,
+                                                          DynamicBufferWrapper<UInt> &readback);
 }
 
 #endif //XENGINE_VIRTUALTEXTURE_HPP
