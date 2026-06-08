@@ -25,6 +25,7 @@
 #include "xng/rendergraph/pipelinecache.hpp"
 #include "xng/rendergraph/graph.hpp"
 #include "xng/rendergraph/semaphore.hpp"
+#include "xng/rendergraph/textureformatlimits.hpp"
 
 /**
  * The Render Graph namespace.
@@ -69,6 +70,13 @@ namespace xng::rg {
          * @return The list of supported color formats.
          */
         virtual std::unordered_set<ColorFormat> getSupportedColorFormats() = 0;
+
+        /**
+         * @return The limits for the given type / colorFormat / capabilities combination.
+         */
+        virtual TextureFormatLimits getTextureFormatLimits(TextureType type,
+                                                           ColorFormat colorFormat,
+                                                           Texture::Capability capabilities) = 0;
 
         /**
          * Execute a single graph.

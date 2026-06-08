@@ -193,6 +193,12 @@ namespace xng::vulkan {
         throw std::runtime_error("Not Implemented");
     }
 
+    rg::TextureFormatLimits Runtime::getTextureFormatLimits(rg::TextureType type,
+                                                            rg::ColorFormat colorFormat,
+                                                            rg::Texture::Capability capabilities) {
+        throw std::runtime_error("Not Implemented");
+    }
+
     std::unique_ptr<rg::Semaphore> Runtime::execute(const rg::Graph &graph) {
         throw std::runtime_error("Not Implemented");
     }

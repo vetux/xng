@@ -301,11 +301,13 @@ namespace xng::opengl {
         auto wnd = env.createWindow("XNG_HeapContext", Vec2i(1, 1), wndAttr);
         down_cast<WindowGl &>(*wnd).unbindContext();
         data->heap = std::make_unique<HeapGL>(std::move(wnd));
+
         data->vendor = std::string(reinterpret_cast<const char *>(glGetString(GL_VENDOR)));
         data->renderer = std::string(reinterpret_cast<const char *>(glGetString(GL_RENDERER)));
         data->version = std::string(reinterpret_cast<const char *>(glGetString(GL_VERSION)));
 
-        for (auto format = COLOR_FORMAT_BEGIN; format != COLOR_FORMAT_COMPRESSED_START; format = static_cast<rg::ColorFormat>(format + 1)) {
+        for (auto format = COLOR_FORMAT_BEGIN; format != COLOR_FORMAT_COMPRESSED_START;
+             format = static_cast<rg::ColorFormat>(format + 1)) {
             data->supportedColorFormats.insert(format);
         }
 
@@ -335,6 +337,13 @@ namespace xng::opengl {
 
     std::unordered_set<rg::ColorFormat> Runtime::getSupportedColorFormats() {
         return data->supportedColorFormats;
+    }
+
+    rg::TextureFormatLimits Runtime::getTextureFormatLimits(rg::TextureType type,
+                                                            rg::ColorFormat colorFormat,
+                                                            rg::Texture::Capability capabilities) {
+        // In GL the GL_TEXTURE_PROXY path for getting format limits is unreliable; therefore, we will return the guaranteed minimum from the 4.6 spec.
+        return TextureFormatLimits(Vec2u(16384, 16384), 15, 2048);
     }
 
     std::unique_ptr<Semaphore> Runtime::execute(const rg::Graph &graph) {

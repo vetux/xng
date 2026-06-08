@@ -36,6 +36,10 @@ namespace xng::vulkan {
 
         std::unordered_set<rg::ColorFormat> getSupportedColorFormats() override;
 
+        rg::TextureFormatLimits getTextureFormatLimits(rg::TextureType type,
+                                                       rg::ColorFormat colorFormat,
+                                                       rg::Texture::Capability capabilities) override;
+
         std::unique_ptr<rg::Semaphore> execute(const rg::Graph &graph) override;
 
         std::unique_ptr<rg::Semaphore> execute(const std::vector<rg::Graph> &graphs) override;
