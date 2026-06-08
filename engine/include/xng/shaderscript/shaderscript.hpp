@@ -737,8 +737,12 @@ namespace xng::ShaderScript {
         explicit DynamicBufferWrapper(ShaderObject &&buffer) : buffer(buffer) {
         }
 
-        ShaderObject operator[](const Int &index) {
+        ShaderObject operator[](const ShaderObject &index) {
             return buffer[index];
+        }
+
+        ShaderObject operator[](const unsigned int index) {
+            return buffer[UInt(index)];
         }
 
         ShaderObject operator[](const int index) {
