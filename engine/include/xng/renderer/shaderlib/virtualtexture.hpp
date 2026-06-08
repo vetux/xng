@@ -230,7 +230,6 @@ namespace xng::shaderlib::virtualtexture {
                                                  DynamicBufferWrapper<UInt> &residencyMap,
                                                  ShaderObject &sampler);
 
-
     /**
      * Perform readback of the sampled tiles.
      *
