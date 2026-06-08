@@ -129,16 +129,36 @@ namespace xng::shaderlib::virtualtexture {
         IRFunctionEnd
     }
 
-    Float getLod(Param<vec2> dxA, Param<vec2> dyA, Param<ivec2> imageSize) {
+    Float getLod(Param<vec2> dxA, Param<vec2> dyA, Param<ivec2> imageSize, Param<Float> maxAnisotropy) {
         IRFunction
 
-        // Now scale to pixel space for LoD
+        // dxA/dyA are already seam-corrected by the caller. Scale to texel space.
         vec2 dx = dxA * imageSize;
         vec2 dy = dyA * imageSize;
 
-        Float lod = 0.5f * log2(max(dot(dx, dx), dot(dy, dy)) + 1e-10f);
+        // Footprint ellipse axes = eigenvalues of J^T J = [[A,B],[B,C]] (squared axis lengths).
+        Float A = dot(dx, dx);
+        Float C = dot(dy, dy);
+        Float B = dot(dx, dy);
 
-        IRReturn(lod); // raw, unclamped — callers clamp via getMaxMip
+        Float halfSum  = 0.5f * (A + C);
+        Float halfDiff = 0.5f * (A - C);
+
+        // discriminant is a sum of squares -> always >= 0, sqrt is safe without a guard
+        Float root = sqrt(halfDiff * halfDiff + B * B);
+
+        Float majorSq = halfSum + root;             // >= 0 structurally (halfSum >= 0, root >= 0)
+        Float minorSq = max(halfSum - root, 0.0f);  // can dip < 0 from fp when det ~ 0 -> clamp
+
+        // + epsilon only guards the exact-zero case; negligible on any real footprint
+        Float majorLod = 0.5f * log2(majorSq + 1e-20f);
+        Float minorLod = 0.5f * log2(minorSq + 1e-20f);
+
+        // clamp maxAnisotropy to [1, +inf): 1 => isotropic (lod == majorLod), and guards log2(<=0)
+        Float logAniso = log2(max(maxAnisotropy, 1.0f));
+
+        // ratio = major/minor <= maxAnisotropy  <=>  minorLod >= majorLod - log2(maxAnisotropy)
+        IRReturn(Float(max(minorLod, majorLod - logAniso)));
 
         IRFunctionEnd
     }
@@ -150,6 +170,7 @@ namespace xng::shaderlib::virtualtexture {
                  Param<ivec2> imageSize,
                  Param<UInt> imageMaxMip,
                  Param<UInt> tileSize,
+                 Param<Float> maxAnisotropy,
                  DynamicBufferWrapper<UInt> &residencyMapOffsets,
                  DynamicBufferWrapper<UInt> &residencyMap) {
         IRFunction
@@ -163,19 +184,20 @@ namespace xng::shaderlib::virtualtexture {
 
         Float maxMip = Float(imageMaxMip);
 
-        Float lod = getLod(dx, dy, imageSize);
+        Float lod = getLod(dx, dy, imageSize, maxAnisotropy);
 
         IRReturn(Float( clamp(floor(lod), minMip, maxMip)));
 
         IRFunctionEnd
     }
 
-    Float getMip(Param<vec2> dx, Param<vec2> dy, Param<ivec2> imageSize, Param<UInt> imageMaxMip) {
+    Float getMip(Param<vec2> dx, Param<vec2> dy, Param<ivec2> imageSize, Param<UInt> imageMaxMip,
+                 Param<Float> maxAnisotropy) {
         IRFunction
 
         Float maxMip = Float(imageMaxMip);
 
-        Float lod = getLod(dx, dy, imageSize);
+        Float lod = getLod(dx, dy, imageSize, maxAnisotropy);
 
         IRReturn(Float( clamp(floor(lod), 0.0f, maxMip)));
 
@@ -207,6 +229,7 @@ namespace xng::shaderlib::virtualtexture {
                 Param<UInt> atlasSize,
                 Param<UInt> tileSize,
                 Param<UInt> tileBorder,
+                Param<Float> maxAnisotropy,
                 DynamicBufferWrapper<UInt> &tileMapOffsets,
                 DynamicBufferWrapper<UInt> &tileMap,
                 DynamicBufferWrapper<UInt> &residencyMapOffsets,
@@ -222,7 +245,7 @@ namespace xng::shaderlib::virtualtexture {
         dx = dx - round(dx);
         dy = dy - round(dy);
 
-        Float lod = getLod(dx, dy, imageSize);
+        Float lod = getLod(dx, dy, imageSize, maxAnisotropy);
 
         If(lod <= 0.0f)
             If(magFilter == FILTER_BICUBIC)
@@ -235,6 +258,7 @@ namespace xng::shaderlib::virtualtexture {
                         atlasSize,
                         tileSize,
                         tileBorder,
+                        maxAnisotropy,
                         dx,
                         dy,
                         tileMapOffsets,
@@ -253,6 +277,7 @@ namespace xng::shaderlib::virtualtexture {
                             atlasSize,
                             tileSize,
                             tileBorder,
+                            maxAnisotropy,
                             dx,
                             dy,
                             tileMapOffsets,
@@ -270,6 +295,7 @@ namespace xng::shaderlib::virtualtexture {
                             atlasSize,
                             tileSize,
                             tileBorder,
+                            maxAnisotropy,
                             dx,
                             dy,
                             tileMapOffsets,
@@ -291,6 +317,7 @@ namespace xng::shaderlib::virtualtexture {
                             atlasSize,
                             tileSize,
                             tileBorder,
+                            maxAnisotropy,
                             dx,
                             dy,
                             tileMapOffsets,
@@ -308,6 +335,7 @@ namespace xng::shaderlib::virtualtexture {
                             atlasSize,
                             tileSize,
                             tileBorder,
+                            maxAnisotropy,
                             dx,
                             dy,
                             tileMapOffsets,
@@ -328,6 +356,7 @@ namespace xng::shaderlib::virtualtexture {
                                 atlasSize,
                                 tileSize,
                                 tileBorder,
+                                maxAnisotropy,
                                 dx,
                                 dy,
                                 tileMapOffsets,
@@ -345,6 +374,7 @@ namespace xng::shaderlib::virtualtexture {
                                 atlasSize,
                                 tileSize,
                                 tileBorder,
+                                maxAnisotropy,
                                 dx,
                                 dy,
                                 tileMapOffsets,
@@ -364,6 +394,7 @@ namespace xng::shaderlib::virtualtexture {
                                 atlasSize,
                                 tileSize,
                                 tileBorder,
+                                maxAnisotropy,
                                 dx,
                                 dy,
                                 tileMapOffsets,
@@ -381,6 +412,7 @@ namespace xng::shaderlib::virtualtexture {
                                 atlasSize,
                                 tileSize,
                                 tileBorder,
+                                maxAnisotropy,
                                 dx,
                                 dy,
                                 tileMapOffsets,
@@ -404,6 +436,7 @@ namespace xng::shaderlib::virtualtexture {
                         Param<UInt> atlasSize,
                         Param<UInt> tileSize,
                         Param<UInt> tileBorder,
+                        Param<Float> maxAnisotropy,
                         Param<vec2> dx,
                         Param<vec2> dy,
                         DynamicBufferWrapper<UInt> &tileMapOffsets,
@@ -422,6 +455,7 @@ namespace xng::shaderlib::virtualtexture {
                            imageSize,
                            imageMaxMip,
                            tileSize,
+                           maxAnisotropy,
                            residencyMapOffsets,
                            residencyMap);
 
@@ -450,6 +484,7 @@ namespace xng::shaderlib::virtualtexture {
                                Param<UInt> atlasSize,
                                Param<UInt> tileSize,
                                Param<UInt> tileBorder,
+                               Param<Float> maxAnisotropy,
                                Param<vec2> dx,
                                Param<vec2> dy,
                                DynamicBufferWrapper<UInt> &tileMapOffsets,
@@ -464,7 +499,7 @@ namespace xng::shaderlib::virtualtexture {
         Float minMip = getResidentMip(textureID, wrapped, imageSize, tileSize, residencyMapOffsets, residencyMap);
         Float maxMip = Float(imageMaxMip);
 
-        Float lod = getLod(dx, dy, imageSize);
+        Float lod = getLod(dx, dy, imageSize, maxAnisotropy);
         Float clampedLod = clamp(lod, Float(minMip), maxMip);
 
         Float mip0 = floor(clampedLod);
@@ -509,6 +544,7 @@ namespace xng::shaderlib::virtualtexture {
                          Param<UInt> atlasSize,
                          Param<UInt> tileSize,
                          Param<UInt> tileBorder,
+                         Param<Float> maxAnisotropy,
                          Param<vec2> dx,
                          Param<vec2> dy,
                          DynamicBufferWrapper<UInt> &tileMapOffsets,
@@ -527,6 +563,7 @@ namespace xng::shaderlib::virtualtexture {
                            imageSize,
                            imageMaxMip,
                            tileSize,
+                           maxAnisotropy,
                            residencyMapOffsets,
                            residencyMap);
 
@@ -558,6 +595,7 @@ namespace xng::shaderlib::virtualtexture {
                           Param<UInt> atlasSize,
                           Param<UInt> tileSize,
                           Param<UInt> tileBorder,
+                          Param<Float> maxAnisotropy,
                           Param<vec2> dx,
                           Param<vec2> dy,
                           DynamicBufferWrapper<UInt> &tileMapOffsets,
@@ -572,7 +610,7 @@ namespace xng::shaderlib::virtualtexture {
         Float minMip = getResidentMip(textureID, wrapped, imageSize, tileSize, residencyMapOffsets, residencyMap);
         Float maxMip = Float(imageMaxMip);
 
-        Float lod = getLod(dx, dy, imageSize);
+        Float lod = getLod(dx, dy, imageSize, maxAnisotropy);
         Float clampedLod = clamp(lod, Float(minMip), maxMip);
 
         Float mip0 = floor(clampedLod);
@@ -622,6 +660,7 @@ namespace xng::shaderlib::virtualtexture {
                         Param<UInt> atlasSize,
                         Param<UInt> tileSize,
                         Param<UInt> tileBorder,
+                        Param<Float> maxAnisotropy,
                         Param<vec2> dx,
                         Param<vec2> dy,
                         DynamicBufferWrapper<UInt> &tileMapOffsets,
@@ -640,6 +679,7 @@ namespace xng::shaderlib::virtualtexture {
                            imageSize,
                            imageMaxMip,
                            tileSize,
+                           maxAnisotropy,
                            residencyMapOffsets,
                            residencyMap);
 
@@ -737,6 +777,7 @@ namespace xng::shaderlib::virtualtexture {
                                   Param<UInt> atlasSize,
                                   Param<UInt> tileSize,
                                   Param<UInt> tileBorder,
+                                  Param<Float> maxAnisotropy,
                                   Param<vec2> dx,
                                   Param<vec2> dy,
                                   DynamicBufferWrapper<UInt> &tileMapOffsets,
@@ -751,7 +792,7 @@ namespace xng::shaderlib::virtualtexture {
         Float minMip = getResidentMip(textureID, wrapped, imageSize, tileSize, residencyMapOffsets, residencyMap);
         Float maxMip = Float(imageMaxMip);
 
-        Float lod = getLod(dx, dy, imageSize);
+        Float lod = getLod(dx, dy, imageSize, maxAnisotropy);
         Float clampedLod = clamp(lod, Float(minMip), maxMip);
 
         Float mip0 = floor(clampedLod);
@@ -850,6 +891,7 @@ namespace xng::shaderlib::virtualtexture {
                          Param<ivec2> imageSize,
                          Param<UInt> imageMaxMip,
                          Param<UInt> tileSize,
+                         Param<Float> maxAnisotropy,
                          DynamicBufferWrapper<UInt> &readbackOffsets,
                          DynamicBufferWrapper<UInt> &readback) {
         IRFunction
@@ -862,7 +904,7 @@ namespace xng::shaderlib::virtualtexture {
         dx = dx - round(dx);
         dy = dy - round(dy);
 
-        Float lod = getLod(dx, dy, imageSize);
+        Float lod = getLod(dx, dy, imageSize, maxAnisotropy);
 
         If(lod <= 0.0f)
             If(magFilter == FILTER_BICUBIC)
@@ -873,6 +915,7 @@ namespace xng::shaderlib::virtualtexture {
                         imageSize,
                         imageMaxMip,
                         tileSize,
+                        maxAnisotropy,
                         dx,
                         dy,
                         readbackOffsets,
@@ -886,6 +929,7 @@ namespace xng::shaderlib::virtualtexture {
                             imageSize,
                             imageMaxMip,
                             tileSize,
+                            maxAnisotropy,
                             dx,
                             dy,
                             readbackOffsets,
@@ -898,6 +942,7 @@ namespace xng::shaderlib::virtualtexture {
                             imageSize,
                             imageMaxMip,
                             tileSize,
+                            maxAnisotropy,
                             dx,
                             dy,
                             readbackOffsets,
@@ -914,6 +959,7 @@ namespace xng::shaderlib::virtualtexture {
                             imageSize,
                             imageMaxMip,
                             tileSize,
+                            maxAnisotropy,
                             dx,
                             dy,
                             readbackOffsets,
@@ -926,6 +972,7 @@ namespace xng::shaderlib::virtualtexture {
                             imageSize,
                             imageMaxMip,
                             tileSize,
+                            maxAnisotropy,
                             dx,
                             dy,
                             readbackOffsets,
@@ -941,6 +988,7 @@ namespace xng::shaderlib::virtualtexture {
                                 imageSize,
                                 imageMaxMip,
                                 tileSize,
+                                maxAnisotropy,
                                 dx,
                                 dy,
                                 readbackOffsets,
@@ -953,6 +1001,7 @@ namespace xng::shaderlib::virtualtexture {
                                 imageSize,
                                 imageMaxMip,
                                 tileSize,
+                                maxAnisotropy,
                                 dx,
                                 dy,
                                 readbackOffsets,
@@ -967,6 +1016,7 @@ namespace xng::shaderlib::virtualtexture {
                                 imageSize,
                                 imageMaxMip,
                                 tileSize,
+                                maxAnisotropy,
                                 dx,
                                 dy,
                                 readbackOffsets,
@@ -979,6 +1029,7 @@ namespace xng::shaderlib::virtualtexture {
                                 imageSize,
                                 imageMaxMip,
                                 tileSize,
+                                maxAnisotropy,
                                 dx,
                                 dy,
                                 readbackOffsets,
@@ -997,6 +1048,7 @@ namespace xng::shaderlib::virtualtexture {
                                  Param<ivec2> imageSize,
                                  Param<UInt> imageMaxMip,
                                  Param<UInt> tileSize,
+                                 Param<Float> maxAnisotropy,
                                  Param<vec2> dx,
                                  Param<vec2> dy,
                                  DynamicBufferWrapper<UInt> &readbackOffsets,
@@ -1005,7 +1057,7 @@ namespace xng::shaderlib::virtualtexture {
 
         vec2 wrapped = wrapUV(uv, wrap);
 
-        Float mip = getMip(dx, dy, imageSize, imageMaxMip);
+        Float mip = getMip(dx, dy, imageSize, imageMaxMip, maxAnisotropy);
         vec2 mipSize = max(vec2(1.0f), vec2(imageSize) / exp2(mip));
 
         UInt tileIndex = getTileIndex(wrapped, mipSize, tileSize);
@@ -1024,6 +1076,7 @@ namespace xng::shaderlib::virtualtexture {
                                         Param<ivec2> imageSize,
                                         Param<UInt> imageMaxMip,
                                         Param<UInt> tileSize,
+                                        Param<Float> maxAnisotropy,
                                         Param<vec2> dx,
                                         Param<vec2> dy,
                                         DynamicBufferWrapper<UInt> &readbackOffsets,
@@ -1034,7 +1087,7 @@ namespace xng::shaderlib::virtualtexture {
 
         Float maxMip = Float(imageMaxMip);
 
-        Float lod = getLod(dx, dy, imageSize);
+        Float lod = getLod(dx, dy, imageSize, maxAnisotropy);
         Float clampedLod = clamp(lod, Float(0.0f), maxMip);
 
         Float mip0 = floor(clampedLod);
@@ -1063,6 +1116,7 @@ namespace xng::shaderlib::virtualtexture {
                                   Param<ivec2> imageSize,
                                   Param<UInt> imageMaxMip,
                                   Param<UInt> tileSize,
+                                  Param<Float> maxAnisotropy,
                                   Param<vec2> dx,
                                   Param<vec2> dy,
                                   DynamicBufferWrapper<UInt> &readbackOffsets,
@@ -1070,7 +1124,7 @@ namespace xng::shaderlib::virtualtexture {
         IRFunction
 
         vec2 wrapped = wrapUV(uv, wrap);
-        Float mip = getMip(dx, dy, imageSize, imageMaxMip);
+        Float mip = getMip(dx, dy, imageSize, imageMaxMip, maxAnisotropy);
         vec2 mipSize = max(vec2(1.0f), vec2(imageSize) / exp2(mip));
 
         UInt tileIndex = getTileIndex(wrapped, mipSize, tileSize);
@@ -1089,6 +1143,7 @@ namespace xng::shaderlib::virtualtexture {
                                    Param<ivec2> imageSize,
                                    Param<UInt> imageMaxMip,
                                    Param<UInt> tileSize,
+                                   Param<Float> maxAnisotropy,
                                    Param<vec2> dx,
                                    Param<vec2> dy,
                                    DynamicBufferWrapper<UInt> &readbackOffsets,
@@ -1099,7 +1154,7 @@ namespace xng::shaderlib::virtualtexture {
 
         Float maxMip = Float(imageMaxMip);
 
-        Float lod = getLod(dx, dy, imageSize);
+        Float lod = getLod(dx, dy, imageSize, maxAnisotropy);
         Float clampedLod = clamp(lod, Float(0.0f), maxMip);
 
         Float mip0 = floor(clampedLod);
@@ -1128,6 +1183,7 @@ namespace xng::shaderlib::virtualtexture {
                                  Param<ivec2> imageSize,
                                  Param<UInt> imageMaxMip,
                                  Param<UInt> tileSize,
+                                 Param<Float> maxAnisotropy,
                                  Param<vec2> dx,
                                  Param<vec2> dy,
                                  DynamicBufferWrapper<UInt> &readbackOffsets,
@@ -1135,7 +1191,7 @@ namespace xng::shaderlib::virtualtexture {
         IRFunction
 
         vec2 wrapped = wrapUV(uv, wrap);
-        Float mip = getMip(dx, dy, imageSize, imageMaxMip);
+        Float mip = getMip(dx, dy, imageSize, imageMaxMip, maxAnisotropy);
 
         vec2 mipSize = max(vec2(1.0f), vec2(imageSize) / exp2(mip));
 
@@ -1155,6 +1211,7 @@ namespace xng::shaderlib::virtualtexture {
                                            Param<ivec2> imageSize,
                                            Param<UInt> imageMaxMip,
                                            Param<UInt> tileSize,
+                                           Param<Float> maxAnisotropy,
                                            Param<vec2> dx,
                                            Param<vec2> dy,
                                            DynamicBufferWrapper<UInt> &readbackOffsets,
@@ -1165,7 +1222,7 @@ namespace xng::shaderlib::virtualtexture {
 
         Float maxMip = Float(imageMaxMip);
 
-        Float lod = getLod(dx, dy, imageSize);
+        Float lod = getLod(dx, dy, imageSize, maxAnisotropy);
         Float clampedLod = clamp(lod, Float(0.0f), maxMip);
 
         Float mip0 = floor(clampedLod);
