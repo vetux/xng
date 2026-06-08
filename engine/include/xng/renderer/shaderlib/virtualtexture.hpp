@@ -134,6 +134,8 @@ namespace xng::shaderlib::virtualtexture {
                                        Param<UInt> atlasSize,
                                        Param<UInt> tileSize,
                                        Param<UInt> tileBorder,
+                                       Param<vec2> dx,
+                                       Param<vec2> dy,
                                        DynamicBufferWrapper<UInt> &tileMapOffsets,
                                        DynamicBufferWrapper<UInt> &tileMap,
                                        DynamicBufferWrapper<UInt> &residencyMapOffsets,
@@ -148,6 +150,8 @@ namespace xng::shaderlib::virtualtexture {
                                               Param<UInt> atlasSize,
                                               Param<UInt> tileSize,
                                               Param<UInt> tileBorder,
+                                              Param<vec2> dx,
+                                              Param<vec2> dy,
                                               DynamicBufferWrapper<UInt> &tileMapOffsets,
                                               DynamicBufferWrapper<UInt> &tileMap,
                                               DynamicBufferWrapper<UInt> &residencyMapOffsets,
@@ -162,6 +166,8 @@ namespace xng::shaderlib::virtualtexture {
                                         Param<UInt> atlasSize,
                                         Param<UInt> tileSize,
                                         Param<UInt> tileBorder,
+                                        Param<vec2> dx,
+                                        Param<vec2> dy,
                                         DynamicBufferWrapper<UInt> &tileMapOffsets,
                                         DynamicBufferWrapper<UInt> &tileMap,
                                         DynamicBufferWrapper<UInt> &residencyMapOffsets,
@@ -176,6 +182,8 @@ namespace xng::shaderlib::virtualtexture {
                                          Param<UInt> atlasSize,
                                          Param<UInt> tileSize,
                                          Param<UInt> tileBorder,
+                                         Param<vec2> dx,
+                                         Param<vec2> dy,
                                          DynamicBufferWrapper<UInt> &tileMapOffsets,
                                          DynamicBufferWrapper<UInt> &tileMap,
                                          DynamicBufferWrapper<UInt> &residencyMapOffsets,
@@ -190,6 +198,8 @@ namespace xng::shaderlib::virtualtexture {
                                        Param<UInt> atlasSize,
                                        Param<UInt> tileSize,
                                        Param<UInt> tileBorder,
+                                       Param<vec2> dx,
+                                       Param<vec2> dy,
                                        DynamicBufferWrapper<UInt> &tileMapOffsets,
                                        DynamicBufferWrapper<UInt> &tileMap,
                                        DynamicBufferWrapper<UInt> &residencyMapOffsets,
@@ -204,6 +214,8 @@ namespace xng::shaderlib::virtualtexture {
                                                  Param<UInt> atlasSize,
                                                  Param<UInt> tileSize,
                                                  Param<UInt> tileBorder,
+                                                 Param<vec2> dx,
+                                                 Param<vec2> dy,
                                                  DynamicBufferWrapper<UInt> &tileMapOffsets,
                                                  DynamicBufferWrapper<UInt> &tileMap,
                                                  DynamicBufferWrapper<UInt> &residencyMapOffsets,
@@ -250,6 +262,8 @@ namespace xng::shaderlib::virtualtexture {
                                                 Param<ivec2> imageSize,
                                                 Param<UInt> imageMaxMip,
                                                 Param<UInt> tileSize,
+                                                Param<vec2> dx,
+                                                Param<vec2> dy,
                                                 DynamicBufferWrapper<UInt> &readbackOffsets,
                                                 DynamicBufferWrapper<UInt> &readback);
 
@@ -259,6 +273,8 @@ namespace xng::shaderlib::virtualtexture {
                                                        Param<ivec2> imageSize,
                                                        Param<UInt> imageMaxMip,
                                                        Param<UInt> tileSize,
+                                                       Param<vec2> dx,
+                                                       Param<vec2> dy,
                                                        DynamicBufferWrapper<UInt> &readbackOffsets,
                                                        DynamicBufferWrapper<UInt> &readback);
 
@@ -268,6 +284,8 @@ namespace xng::shaderlib::virtualtexture {
                                                  Param<ivec2> imageSize,
                                                  Param<UInt> imageMaxMip,
                                                  Param<UInt> tileSize,
+                                                 Param<vec2> dx,
+                                                 Param<vec2> dy,
                                                  DynamicBufferWrapper<UInt> &readbackOffsets,
                                                  DynamicBufferWrapper<UInt> &readback);
 
@@ -277,6 +295,8 @@ namespace xng::shaderlib::virtualtexture {
                                                   Param<ivec2> imageSize,
                                                   Param<UInt> imageMaxMip,
                                                   Param<UInt> tileSize,
+                                                  Param<vec2> dx,
+                                                  Param<vec2> dy,
                                                   DynamicBufferWrapper<UInt> &readbackOffsets,
                                                   DynamicBufferWrapper<UInt> &readback);
 
@@ -286,6 +306,8 @@ namespace xng::shaderlib::virtualtexture {
                                                 Param<ivec2> imageSize,
                                                 Param<UInt> imageMaxMip,
                                                 Param<UInt> tileSize,
+                                                Param<vec2> dx,
+                                                Param<vec2> dy,
                                                 DynamicBufferWrapper<UInt> &readbackOffsets,
                                                 DynamicBufferWrapper<UInt> &readback);
 
@@ -295,6 +317,8 @@ namespace xng::shaderlib::virtualtexture {
                                                           Param<ivec2> imageSize,
                                                           Param<UInt> imageMaxMip,
                                                           Param<UInt> tileSize,
+                                                          Param<vec2> dx,
+                                                          Param<vec2> dy,
                                                           DynamicBufferWrapper<UInt> &readbackOffsets,
                                                           DynamicBufferWrapper<UInt> &readback);
 }
