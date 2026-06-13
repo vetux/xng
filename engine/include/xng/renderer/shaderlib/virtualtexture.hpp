@@ -40,7 +40,7 @@ namespace xng::shaderlib::virtualtexture {
     using namespace ShaderScript;
 
     /**
-     * Sample the virtual texture using nearest-filtering.
+     * Sample the virtual texture.
      *
      * The tile map contains the atlas tile indices for each mip map with the rows laid out linearly like so:
      * [x = 0, y = 0][x = 1,  y = 0]...
