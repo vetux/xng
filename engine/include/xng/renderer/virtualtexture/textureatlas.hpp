@@ -19,6 +19,8 @@
 #ifndef XENGINE_TEXTUREATLAS_HPP
 #define XENGINE_TEXTUREATLAS_HPP
 
+#include "xng/rendergraph/runtime.hpp"
+
 namespace xng {
     class TextureAtlas {
     public:
@@ -26,12 +28,16 @@ namespace xng {
 
         typedef unsigned int UploadHandle;
 
-        TextureAtlas() = default;
-
-        std::vector<Slot> getSlots(const unsigned int slotCount) {
+        explicit TextureAtlas(rg::Runtime &runtime,
+                              const unsigned int tileSize,
+                              const unsigned int tileBorder)
+            : runtime(runtime), tileSize(tileSize), tileBorder(tileBorder) {
         }
 
-        void freeSlots(const std::vector<Slot> &slots) {
+        Slot create() {
+        }
+
+        void destroy(Slot slot) {
         }
 
         UploadHandle upload(Slot slot, std::vector<uint8_t> texels) {
@@ -48,6 +54,18 @@ namespace xng {
 
         std::vector<rg::TransferPass> commit(rg::GraphBuilder &graph) {
         }
+
+        rg::HeapResource<rg::Texture> getTexture() const {
+            return texture;
+        }
+
+    private:
+        rg::Runtime &runtime;
+
+        unsigned int tileSize;
+        unsigned int tileBorder;
+
+        rg::HeapResource<rg::Texture> texture;
     };
 }
 #endif //XENGINE_TEXTUREATLAS_HPP

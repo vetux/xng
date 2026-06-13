@@ -20,10 +20,10 @@
 #define XENGINE_IMAGETILELOADER_HPP
 
 #include "xng/renderer/virtualtexture/tileloader.hpp"
+#include "xng/renderer/virtualtexture/tilestreamer.hpp"
+#include "xng/renderer/mipgenerator.hpp"
 
 #include "xng/assets/image.hpp"
-
-#include "xng/renderer/mipgenerator.hpp"
 
 namespace xng {
     /**
@@ -57,8 +57,7 @@ namespace xng {
                                         const unsigned int tileBorder,
                                         const WrappingMethod wrapping) {
             const auto &imageRes = image.getResolution();
-            TiledImage ret(Vec2u(ceildiv(imageRes.x, tileSize),
-                                 ceildiv(imageRes.y, tileSize)));
+            TiledImage ret(TileStreamer::getTiles(imageRes, tileSize));
             const auto atlasTileSize = tileSize + tileBorder * 2;
             for (auto tileX = 0u; tileX < ret.tileCount.x; tileX++) {
                 for (auto tileY = 0u; tileY < ret.tileCount.y; tileY++) {
@@ -217,10 +216,6 @@ namespace xng {
             }
 
             target.setPixel(targetPos.x, targetPos.y, source.getPixel(pos.x, pos.y));
-        }
-
-        static constexpr unsigned int ceildiv(const unsigned int a, const unsigned int b) {
-            return (a + b - 1) / b;
         }
 
         Vec2u size;
