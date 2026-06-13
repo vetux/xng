@@ -168,6 +168,9 @@ namespace xng::rg {
         }
 
         static Vec2u getMipLevelSize(const Vec2u &size, const unsigned int mipLevel) {
+            if (mipLevel == 0) {
+                return size;
+            }
             return {std::max(1u, size.x >> mipLevel), std::max(1u, size.y >> mipLevel)};
         }
 
