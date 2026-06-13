@@ -50,6 +50,8 @@ namespace xng {
 
         bool wait(long ms);
 
+        [[nodiscard]] bool isDone() const { return workDone; }
+
         /**
          * @return Nullptr if no exception was caught while work was invoked or a copy of an exception caught while work was invoked.
          */
