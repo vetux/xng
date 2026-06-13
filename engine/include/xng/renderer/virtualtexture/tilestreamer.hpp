@@ -109,7 +109,7 @@ namespace xng {
 
         TileStreamer(TileStreamer &&) = default;
 
-        TileStreamer &operator=(TileStreamer &&) = default;
+        TileStreamer &operator=(TileStreamer &&) = delete;
 
         TextureID create(const std::shared_ptr<TileLoader> &tileLoader) {
             const auto imageSize = tileLoader->getSize();
