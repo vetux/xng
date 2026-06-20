@@ -149,7 +149,11 @@ namespace xng {
                             ctx.copyBuffer(buffer, staleBuffer, 0, 0, staleBuffer.getDescription().size);
                             ctx.copyBuffer(backBuffer, staleBackBuffer, 0, 0, staleBackBuffer.getDescription().size);
                         });
-                ret.emplace_back(pass);
+
+                //TODO: Find clean performant solution to resize.
+                if (!heap.transfer({pass})->wait(timeOut)) {
+                    throw std::runtime_error("Failed to resize stream buffer");
+                }
 
                 for (auto &upload: pendingUploads) {
                     chunkStreamer.setTargetBuffer(upload.first, backBuffer);
@@ -201,6 +205,8 @@ namespace xng {
         }
 
     private:
+        static constexpr size_t timeOut = 10'000'000'000ULL;
+
         struct PendingUpload {
             size_t offset;
             size_t size;
