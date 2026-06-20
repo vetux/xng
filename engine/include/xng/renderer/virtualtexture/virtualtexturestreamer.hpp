@@ -27,7 +27,6 @@
 #include "xng/rendergraph/resource/texture.hpp"
 
 #include "xng/renderer/stream/streambuffer.hpp"
-#include "xng/renderer/stream/streamtexture.hpp"
 
 #include "xng/renderer/virtualtexture/textureatlas.hpp"
 #include "xng/renderer/virtualtexture/tileloader.hpp"
@@ -43,9 +42,10 @@ namespace xng {
         explicit VirtualTextureStreamer(rg::Runtime &runtime,
                                         ChunkStreamer &chunkStreamer,
                                         const unsigned int tileSize,
-                                        const unsigned int tileBorder)
+                                        const unsigned int tileBorder,
+                                        const float maxAnisotropy)
             : runtime(runtime),
-              atlas(runtime, tileSize, tileBorder),
+              atlas(runtime, chunkStreamer, tileSize, tileBorder, maxAnisotropy),
               tileStreamer(runtime.getResourceHeap(), chunkStreamer, atlas, ThreadPool::getPool(), tileSize) {
         }
 
@@ -103,10 +103,21 @@ namespace xng {
             return atlas.getTexture();
         }
 
+        float getMaxAnisotropy() const {
+            return maxAnisotropy;
+        }
+
+        void setMaxAnisotropy() {
+            //TODO: Reallocate / copy resources on max anisotropy change
+            throw std::runtime_error("Not implemented");
+        }
+
     private:
         rg::Runtime &runtime;
         TextureAtlas atlas;
         TileStreamer tileStreamer;
+
+        float maxAnisotropy = 8.0f;
     };
 }
 

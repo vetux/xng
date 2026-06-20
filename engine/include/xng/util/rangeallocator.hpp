@@ -126,6 +126,10 @@ namespace xng {
             }
         }
 
+        [[nodiscard]] size_t getSize() const {
+            return rangeCount;
+        }
+
     private:
         bool getFreeRange(const size_t count, size_t &out) const {
             for (auto &pair: freeRanges) {

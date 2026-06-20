@@ -243,7 +243,7 @@ namespace xng {
             for (auto &pendingUpload: pendingUploads[tex]) {
                 if (!pendingUpload.flushed) {
                     if (pendingUpload.startedUpload) {
-                        if (!atlas.isUploadComplete(pendingUpload.uploadHandle)) {
+                        if (!atlas.isUploadComplete(pendingUpload.atlasSlot)) {
                             return false;
                         }
                     } else {
@@ -264,11 +264,9 @@ namespace xng {
                         if (!pendingUpload.startedUpload) {
                             pendingUpload.tileTask->join();
                             pendingUpload.startedUpload = true;
-                            pendingUpload.atlasSlot = atlas.create();
-                            pendingUpload.uploadHandle = atlas.upload(pendingUpload.atlasSlot,
-                                                                      std::move(*pendingUpload.tileData));
+                            pendingUpload.atlasSlot = atlas.create(*pendingUpload.tileData);
                         }
-                        atlas.flush(pendingUpload.uploadHandle);
+                        atlas.flush(pendingUpload.atlasSlot);
                         auto &state = textureStates.at(pair.first).at(pendingUpload.mip);
                         state.setResident(pendingUpload.tile, true);
                         state.setAtlasSlot(pendingUpload.tile, pendingUpload.atlasSlot);
@@ -277,7 +275,7 @@ namespace xng {
                     }
 
                     if (pendingUpload.startedUpload) {
-                        if (atlas.isUploadComplete(pendingUpload.uploadHandle)) {
+                        if (atlas.isUploadComplete(pendingUpload.atlasSlot)) {
                             auto &state = textureStates.at(pair.first).at(pendingUpload.mip);
                             state.setResident(pendingUpload.tile, true);
                             state.setAtlasSlot(pendingUpload.tile, pendingUpload.atlasSlot);
@@ -286,9 +284,7 @@ namespace xng {
                         }
                     } else if (pendingUpload.tileTask->isDone()) {
                         pendingUpload.startedUpload = true;
-                        pendingUpload.atlasSlot = atlas.create();
-                        pendingUpload.uploadHandle = atlas.upload(pendingUpload.atlasSlot,
-                                                                  std::move(*pendingUpload.tileData));
+                        pendingUpload.atlasSlot = atlas.create(*pendingUpload.tileData);
                     }
                     framePendingUploads[pair.first].emplace_back(std::move(pendingUpload));
                 }
@@ -421,8 +417,6 @@ namespace xng {
             TextureAtlas::Slot atlasSlot = {};
 
             bool startedUpload = false;
-            TextureAtlas::UploadHandle uploadHandle{};
-
             bool flushed = false;
 
             PendingUpload() = default;
