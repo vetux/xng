@@ -26,7 +26,7 @@ namespace xng {
         return *this;
     }
 
-    void Task::start() {
+    void Task::execute() {
         try {
             work();
         } catch (...) {
