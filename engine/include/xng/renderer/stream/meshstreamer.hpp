@@ -51,6 +51,8 @@ namespace xng {
      */
     class MeshStreamer {
     public:
+        //TODO: Find bug causing corrupted mesh data for last uploaded mesh (Most likely a synchronization bug in the heap and/or ChunkStreamer -> StreamBuffer Chain)
+
         typedef size_t Handle;
 
         struct Allocation {
