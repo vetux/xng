@@ -103,7 +103,7 @@ namespace xng {
                     unusedTaskIndices.emplace_back(index);
 
                     taskLock.unlock();
-                    task->start();
+                    task->execute();
                     taskLock.lock();
                 }
                 taskVar.wait(taskLock, [this] {

@@ -44,7 +44,7 @@ namespace xng {
 
         Task &operator=(const Task &other);
 
-        void start();
+        void execute();
 
         const std::exception_ptr &join();
 
