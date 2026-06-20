@@ -43,6 +43,7 @@ namespace xng {
             const auto limits = runtime.getTextureFormatLimits(rg::TEXTURE_2D,
                                                                rg::RGBA8,
                                                                rg::Texture::CAPABILITY_SAMPLED |
+                                                               rg::Texture::CAPABILITY_TRANSFER_SRC |
                                                                rg::Texture::CAPABILITY_TRANSFER_DST);
 
             const auto remainder = Vec2u(limits.maxExtent.x % atlasTileSize, limits.maxExtent.y % atlasTileSize);
@@ -52,7 +53,9 @@ namespace xng {
             tilesPerLayer = atlasTiles.x * atlasTiles.y;
 
             rg::Texture desc;
-            desc.capabilities = rg::Texture::CAPABILITY_SAMPLED | rg::Texture::CAPABILITY_TRANSFER_DST;
+            desc.capabilities = rg::Texture::CAPABILITY_SAMPLED
+                                | rg::Texture::CAPABILITY_TRANSFER_SRC
+                                | rg::Texture::CAPABILITY_TRANSFER_DST;
             desc.size = textureSize;
             desc.textureType = rg::TEXTURE_2D_ARRAY;
             desc.format = rg::RGBA8;
@@ -127,14 +130,16 @@ namespace xng {
 
                 auto passes = pair.second.buffer.commit(graph);
                 ret.insert(ret.end(), passes.begin(), passes.end());
+
                 if (pair.second.buffer.isUploadComplete(pair.second.handle)) {
                     const auto &upload = pair.second;
                     ret.emplace_back(rg::TransferPassBuilder("TextureAtlas/Copy")
                         .read(upload.buffer.getBuffer(), 0, upload.buffer.getBuffer().getDescription().size)
                         .write(texture, rg::TextureBinding::Range(0, 1, upload.offset.z, 1))
                         .execute([this, &upload](rg::TransferContext &ctx) {
-                            ctx.copyBufferToTexture(texture, upload.buffer.getBuffer(),
-                                                    rg::Texture::SubResource(upload.offset.z),
+                            ctx.copyBufferToTexture(texture,
+                                                    upload.buffer.getBuffer(),
+                                                    rg::Texture::SubResource(0, upload.offset.z, rg::FACE_UNDEFINED),
                                                     0,
                                                     Rectu(Vec2u(upload.offset.x, upload.offset.y),
                                                           Vec2u(atlasTileSize, atlasTileSize)),

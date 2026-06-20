@@ -60,18 +60,28 @@ namespace xng {
         void readback() {
             //TODO: Implement readback
             //TODO: Tile streaming limiting based on available VRAM
+            //TODO: Redesign broken sync flow.
 
-            // Upload all coarsest mip tiles for testing.
+            // Upload up to mips from coarsest mip tiles for testing.
+
+            static bool uploaded = false;
+            if (uploaded) return;
+            uploaded = true;
+
+            const int mips = 4;
             for (auto &pair: tileStreamer.getTextureStates()) {
-                auto &state = pair.second.back();
-                for (auto x = 0u; x < state.tileCount.x; x++) {
-                    for (auto y = 0u; y < state.tileCount.y; y++) {
-                        if (!state.isResident({x, y})) {
-                            tileStreamer.loadTile(pair.first, pair.second.size() - 1, {x, y});
+                auto mipSub = std::clamp(mips, 0, static_cast<int>(pair.second.size()));
+                for (auto i = pair.second.size() - mipSub; i < pair.second.size(); i++) {
+                    auto &state = pair.second.at(i);
+                    for (auto x = 0u; x < state.tileCount.x; x++) {
+                        for (auto y = 0u; y < state.tileCount.y; y++) {
+                            if (!state.isResident({x, y})) {
+                                tileStreamer.loadTile(pair.first, i, {x, y});
+                            }
                         }
                     }
                 }
-                tileStreamer.flush(pair.first);
+                tileStreamer.flush(pair.first, pair.second.size() - 1);
             }
         }
 

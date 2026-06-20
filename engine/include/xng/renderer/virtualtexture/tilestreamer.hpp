@@ -233,9 +233,10 @@ namespace xng {
             }
         }
 
-        void flush(const TextureID tex) {
+        void flush(const TextureID tex, const unsigned int mip) {
             for (auto &pendingUpload: pendingUploads[tex]) {
-                pendingUpload.flushed = true;
+                if (pendingUpload.mip == mip)
+                    pendingUpload.flushed = true;
             }
         }
 
