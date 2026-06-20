@@ -119,6 +119,8 @@ namespace xng {
          * @return The handle to the buffer.
          */
         std::vector<rg::TransferPass> commit(rg::GraphBuilder &graph) {
+            std::vector<rg::TransferPass> ret;
+
             // On Resize the chunk streamer might have chunks in flight writing to the stale buffer
             // The copy of staleBackBuffer -> new backBuffer synchronizes the in flight chunks
             // By setting a new target buffer on the chunk streamer the ChunkStreamer::commit then
@@ -147,7 +149,7 @@ namespace xng {
                             ctx.copyBuffer(buffer, staleBuffer, 0, 0, staleBuffer.getDescription().size);
                             ctx.copyBuffer(backBuffer, staleBackBuffer, 0, 0, staleBackBuffer.getDescription().size);
                         });
-                graph.addPass(pass);
+                ret.emplace_back(pass);
 
                 for (auto &upload: pendingUploads) {
                     chunkStreamer.setTargetBuffer(upload.first, backBuffer);
@@ -169,7 +171,6 @@ namespace xng {
             // Perform copies of the finished uploads in the heap context.
             // This means subsequent RasterPasses stall only on the ownership transfer of the buffer after the copy is finished
             // while in the copy pass the queue synchronizes on the range granular copies from staging -> backBuffer -> buffer
-            std::vector<rg::TransferPass> ret;
             if (!frameUploads.empty()) {
                 auto builder = rg::TransferPassBuilder("StreamBuffer/Copy");
                 for (auto &upload: frameUploads) {

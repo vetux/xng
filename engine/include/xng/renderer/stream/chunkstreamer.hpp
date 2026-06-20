@@ -174,10 +174,14 @@ namespace xng {
                 auto pendingCopy = stagingBuffer.pendingTransfers;
                 for (auto &transfer: pendingCopy) {
                     if (transfer.first->isSignaled()) {
-                        stagingBuffer.allocator.free(transfer.second.offset, transfer.second.size);
+                        for (auto &chunk: transfer.second) {
+                            stagingBuffer.allocator.free(chunk.offset, chunk.size);
+                        }
                         stagingBuffer.pendingTransfers.erase(transfer.first);
                     } else {
-                        inFlightSize += transfer.second.size;
+                        for (auto &chunk: transfer.second) {
+                            inFlightSize += chunk.size;
+                        }
                     }
                 }
                 if (!stagingBuffer.pendingTransfers.empty()
@@ -262,8 +266,7 @@ namespace xng {
             auto transferHandle = std::shared_ptr(std::move(heap.transfer(passes)));
 
             for (auto &upload: chunkUploads) {
-                stagingBuffers.at(upload.stagingIndex).pendingTransfers.emplace(transferHandle,
-                    ChunkTransfer(upload.stagingOffset, upload.chunkSize));
+                stagingBuffers.at(upload.stagingIndex).pendingTransfers[transferHandle].emplace_back(upload.stagingOffset, upload.chunkSize);
                 inFlightUploads[upload.handle].insert(transferHandle);
             }
         }
@@ -288,7 +291,7 @@ namespace xng {
         struct StagingBuffer {
             rg::HeapResource<rg::Buffer> buffer;
             std::unique_ptr<rg::HeapMapping> mapping;
-            std::unordered_map<std::shared_ptr<rg::Semaphore>, ChunkTransfer> pendingTransfers;
+            std::unordered_map<std::shared_ptr<rg::Semaphore>, std::vector<ChunkTransfer>> pendingTransfers;
 
             RangeAllocator allocator;
 
