@@ -774,6 +774,7 @@ namespace xng::opengl {
                     glDeleteSync(sync->fence);
                     sync->fence = nullptr;
                     sync->done = true;
+                    sync->cv.notify_all();
                 } else {
                     pending = true;
                 }
@@ -820,6 +821,7 @@ namespace xng::opengl {
                     glDeleteSync(sync->fence);
                     sync->fence = nullptr;
                     sync->done = true;
+                    sync->cv.notify_all();
                 } else {
                     pending = true;
                 }
