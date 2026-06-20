@@ -29,6 +29,7 @@
 namespace xng::opengl {
     struct HeapTransferSync {
         std::mutex mutex;
+        std::condition_variable cv;
         GLsync fence = nullptr;
         bool done = false;
     };
@@ -46,11 +47,18 @@ namespace xng::opengl {
 
         bool wait(const size_t timeOut) override {
             if (!sync) return true;
-            std::lock_guard lock(sync->mutex);
             if (sync->done) return true;
-            if (!sync->fence) return false;
+
+            {
+                std::unique_lock lock(sync->mutex);
+                sync->cv.wait(lock, [this] { return sync->fence != nullptr || sync->done; });
+            }
+
+            if (sync->done) return true;
+
             const auto result = glClientWaitSync(sync->fence, GL_SYNC_FLUSH_COMMANDS_BIT, timeOut);
             if (result == GL_ALREADY_SIGNALED || result == GL_CONDITION_SATISFIED) {
+                std::lock_guard lock(sync->mutex);
                 glDeleteSync(sync->fence);
                 sync->fence = nullptr;
                 sync->done = true;

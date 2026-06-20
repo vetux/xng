@@ -918,6 +918,7 @@ namespace xng::opengl {
                             std::lock_guard lock(syncCmd->sync->mutex);
                             syncCmd->sync->fence = fence;
                         }
+                        syncCmd->sync->cv.notify_all();
                         {
                             std::lock_guard lock(syncMutex);
                             for (auto &[h, regions]: pendingBuffers) {
@@ -946,7 +947,11 @@ namespace xng::opengl {
                 // Any regions after the last SyncCmd (or no SyncCmd) still need a GPU fence for blockUntilIdle.
                 if (!pendingBuffers.empty() || !pendingTextures.empty()) {
                     auto fallback = std::make_shared<HeapTransferSync>();
-                    fallback->fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+                    {
+                        std::lock_guard lock(fallback->mutex);
+                        fallback->fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+                    }
+                    fallback->cv.notify_all();
                     glFlush();
                     std::lock_guard lock(syncMutex);
                     for (auto &[h, regions]: pendingBuffers) {
