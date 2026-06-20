@@ -278,7 +278,7 @@ RenderDrawList createDrawList(RenderAllocator &allocator) {
         mesh.transform.setScale(Vec3f(0.05f));
         scene.skinnedModels.push_back(mesh);
     */
-    const int rows = 2;
+    const int rows = 4;
     const int columns = rows;
     const float spacing = 1.5f;
     for (int x = 0; x < columns; x++) {
