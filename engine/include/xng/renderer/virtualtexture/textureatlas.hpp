@@ -132,7 +132,7 @@ namespace xng {
                     ret.emplace_back(rg::TransferPassBuilder("TextureAtlas/Copy")
                         .read(upload.buffer.getBuffer(), 0, upload.buffer.getBuffer().getDescription().size)
                         .write(texture, rg::TextureBinding::Range(0, 1, upload.offset.z, 1))
-                        .execute([this, upload](rg::TransferContext &ctx) {
+                        .execute([this, &upload](rg::TransferContext &ctx) {
                             ctx.copyBufferToTexture(texture, upload.buffer.getBuffer(),
                                                     rg::Texture::SubResource(upload.offset.z),
                                                     0,
