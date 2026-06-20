@@ -19,8 +19,8 @@
 #include "xng/renderer/renderallocator.hpp"
 
 namespace xng {
-    RenderAllocator::RenderAllocator(rg::Heap &heap, const size_t streamingBudget)
-        : heap(heap),
+    RenderAllocator::RenderAllocator(rg::Runtime &runtime, const size_t streamingBudget)
+        : heap(runtime.getResourceHeap()),
           chunkStreamer(heap, 256 * 1024, streamingBudget / (256 * 1024)),
           shaderMeshStream(heap, chunkStreamer),
           transformStream(heap, chunkStreamer),
@@ -30,11 +30,16 @@ namespace xng {
           spotLightStream(heap, chunkStreamer),
           directionalLightStream(heap, chunkStreamer),
           meshStream(heap, chunkStreamer),
-          textureStream(heap, chunkStreamer) {
+          textureStream(runtime, chunkStreamer, 256, 9, 16.0f) {
     }
 
-    RenderObjectHandle<RenderTexture> RenderAllocator::createTexture(const Vec2u &resolution) {
-        return std::make_shared<RenderTexture>(allocateId(), textureStream, resolution);
+    RenderObjectHandle<RenderTexture> RenderAllocator::createTexture(const std::shared_ptr<TileLoader> &tileLoader) {
+        return std::make_shared<RenderTexture>(allocateId(), textureStream, tileLoader);
+    }
+
+    RenderObjectHandle<RenderTexture> RenderAllocator::createTexture(const ImageRGBA &image,
+                                                                     const WrappingMethod wrapping) {
+        return std::make_shared<RenderTexture>(allocateId(), textureStream, heap, image, wrapping);
     }
 
     RenderObjectHandle<RenderMaterial> RenderAllocator::createMaterial(const ColorRGBA &albedo,
@@ -116,10 +121,12 @@ namespace xng {
     }
 
     RenderObjectHandle<RenderPaint> RenderAllocator::createPaint() {
+        throw std::runtime_error("Not implemented");
         return nullptr;
     }
 
     RenderObjectHandle<RenderCanvas> RenderAllocator::createCanvas() {
+        throw std::runtime_error("Not implemented");
         return nullptr;
     }
 
@@ -132,6 +139,7 @@ namespace xng {
     }
 
     [[nodiscard]] RenderAllocator::Buffers RenderAllocator::commit(rg::GraphBuilder &graph) {
+        textureStream.readback();
         std::vector<rg::TransferPass> streamPasses;
         concatPasses(shaderMeshStream.commit(graph), streamPasses);
         concatPasses(transformStream.commit(graph), streamPasses);
@@ -156,7 +164,15 @@ namespace xng {
             meshStream.getSkinnedBindPosBuffer(),
             meshStream.getSkinnedBoneIndicesBuffer(),
             meshStream.getSkinnedBoneWeightsBuffer(),
-            textureStream.getTextures()
+            textureStream.getAtlasTexture(),
+            textureStream.getTileMapBuffer(),
+            textureStream.getTileMapOffsetsBuffer(),
+            textureStream.getResidencyMapBuffer(),
+            textureStream.getResidencyMapOffsetsBuffer(),
+            textureStream.getAtlasTexture().getDescription().size.x,
+            textureStream.getTileSize(),
+            textureStream.getTileBorder(),
+            textureStream.getMaxAnisotropy()
         };
     }
 }

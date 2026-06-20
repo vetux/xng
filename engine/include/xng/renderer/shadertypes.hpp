@@ -53,9 +53,8 @@ namespace xng {
                  Mat4f, shadowProjectionMatrix)
 
     ShaderStruct(ShaderTexture,
-                 Vec2i, level_index,
-                 Vec4i, minFilter_magFilter_mipFilter_wrap,
-                 Vec4f, scale_texSize)
+                 Vec4i, textureSize_textureID_maxMip,
+                 Vec4i, minFilter_magFilter_mipFilter_wrap)
 
     ShaderStruct(ShaderMaterial,
                  Vec4f, albedoColor,

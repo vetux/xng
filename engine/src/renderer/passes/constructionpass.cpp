@@ -22,11 +22,11 @@
 #include "xng/shaderscript/macro/helpermacros.hpp"
 
 #include "xng/renderer/shadertypes.hpp"
-#include "xng/renderer/shaderlib/textureatlas.hpp"
+#include "xng/renderer/shaderlib/virtualtexture.hpp"
 
 using namespace xng::rg;
 using namespace xng::ShaderScript;
-using namespace xng::shaderlib::textureatlas;
+using namespace xng::shaderlib::virtualtexture;
 
 namespace xng {
     Shader ConstructionPass::compileVertexShader() {
@@ -55,7 +55,16 @@ namespace xng {
         DynamicBuffer(ShaderMaterial, materials)
         DynamicBuffer(ShaderDrawMesh, drawBuffer)
 
-        TextureArray(TEXTURE_2D_ARRAY, RGBA8, 12, textures)
+        Texture(TEXTURE_2D_ARRAY, RGBA8, atlasTexture)
+        DynamicBuffer(UInt, tileMap)
+        DynamicBuffer(UInt, tileMapOffsets)
+        DynamicBuffer(UInt, residencyMap)
+        DynamicBuffer(UInt, residencyMapOffsets)
+
+        Parameter(UInt, atlasSize)
+        Parameter(UInt, tileSize)
+        Parameter(UInt, tileBorder)
+        Parameter(Float, maxAnisotropy)
 
         UInt modelIndex = getBaseInstance() + getDrawID() + getInstanceID();
 
@@ -121,89 +130,139 @@ namespace xng {
         DynamicBuffer(ShaderMaterial, materials)
         DynamicBuffer(ShaderDrawMesh, drawBuffer)
 
-        TextureArray(TEXTURE_2D_ARRAY, RGBA8, 12, textures)
+        Texture(TEXTURE_2D_ARRAY, RGBA8, atlasTexture)
+        DynamicBuffer(UInt, tileMap)
+        DynamicBuffer(UInt, tileMapOffsets)
+        DynamicBuffer(UInt, residencyMap)
+        DynamicBuffer(UInt, residencyMapOffsets)
+
+        Parameter(UInt, atlasSize)
+        Parameter(UInt, tileSize)
+        Parameter(UInt, tileBorder)
+        Parameter(Float, maxAnisotropy)
 
         ShaderMaterial material = materials[fMaterialIndex];
 
         oPosition = vec4(fPos, 1);
 
-        If(material.albedo.level_index.x() < 0)
+        // Albedo
+        If(material.albedo.textureSize_textureID_maxMip.z() < 0)
             oAlbedo = material.albedoColor;
         Else
-            oAlbedo = sample_atlas(textures[material.albedo.level_index.x()],
-                                   fUv,
-                                   material.albedo.level_index.y(),
-                                   material.albedo.scale_texSize.xy(),
-                                   material.albedo.scale_texSize.zw(),
-                                   material.albedo.minFilter_magFilter_mipFilter_wrap.x(),
-                                   material.albedo.minFilter_magFilter_mipFilter_wrap.y(),
-                                   material.albedo.minFilter_magFilter_mipFilter_wrap.z(),
-                                   material.albedo.minFilter_magFilter_mipFilter_wrap.w());
+            oAlbedo = sample_virtual(material.albedo.textureSize_textureID_maxMip.z(),
+                             fUv,
+                             material.albedo.minFilter_magFilter_mipFilter_wrap.w(),
+                             material.albedo.minFilter_magFilter_mipFilter_wrap.x(),
+                             material.albedo.minFilter_magFilter_mipFilter_wrap.y(),
+                             material.albedo.minFilter_magFilter_mipFilter_wrap.z(),
+                             material.albedo.textureSize_textureID_maxMip.xy(),
+                             material.albedo.textureSize_textureID_maxMip.w(),
+                             atlasSize,
+                             tileSize,
+                             tileBorder,
+                             maxAnisotropy,
+                             tileMapOffsets,
+                             tileMap,
+                             residencyMapOffsets,
+                             residencyMap,
+                             atlasTexture);
         Fi
 
         oRoughnessMetallicAO = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
         // Roughness
-        If(material.roughness.level_index.x() < 0)
+        If(material.roughness.textureSize_textureID_maxMip.z() < 0)
             oRoughnessMetallicAO.x() = material.metallic_roughness_ambientOcclusion.y();
         Else
-            oRoughnessMetallicAO.x() = sample_atlas(textures[material.roughness.level_index.x()],
-                                                    fUv,
-                                                    material.roughness.level_index.y(),
-                                                    material.roughness.scale_texSize.xy(),
-                                                    material.roughness.scale_texSize.zw(),
-                                                    material.roughness.minFilter_magFilter_mipFilter_wrap.x(),
-                                                    material.roughness.minFilter_magFilter_mipFilter_wrap.y(),
-                                                    material.roughness.minFilter_magFilter_mipFilter_wrap.z(),
-                                                    material.roughness.minFilter_magFilter_mipFilter_wrap.w()).x();
+            oRoughnessMetallicAO.x() = sample_virtual(material.roughness.textureSize_textureID_maxMip.z(),
+                                              fUv,
+                                              material.roughness.minFilter_magFilter_mipFilter_wrap.w(),
+                                              material.roughness.minFilter_magFilter_mipFilter_wrap.x(),
+                                              material.roughness.minFilter_magFilter_mipFilter_wrap.y(),
+                                              material.roughness.minFilter_magFilter_mipFilter_wrap.z(),
+                                              material.roughness.textureSize_textureID_maxMip.xy(),
+                                              material.roughness.textureSize_textureID_maxMip.w(),
+                                              atlasSize,
+                                              tileSize,
+                                              tileBorder,
+                                              maxAnisotropy,
+                                              tileMapOffsets,
+                                              tileMap,
+                                              residencyMapOffsets,
+                                              residencyMap,
+                                              atlasTexture).x();
         Fi
 
         // Metallic
-        If(material.metallic.level_index.x() < 0)
+        If(material.metallic.textureSize_textureID_maxMip.z() < 0)
             oRoughnessMetallicAO.y() = material.metallic_roughness_ambientOcclusion.x();
         Else
-            oRoughnessMetallicAO.y() = sample_atlas(textures[material.metallic.level_index.x()],
-                                                    fUv,
-                                                    material.metallic.level_index.y(),
-                                                    material.metallic.scale_texSize.xy(),
-                                                    material.metallic.scale_texSize.zw(),
-                                                    material.metallic.minFilter_magFilter_mipFilter_wrap.x(),
-                                                    material.metallic.minFilter_magFilter_mipFilter_wrap.y(),
-                                                    material.metallic.minFilter_magFilter_mipFilter_wrap.z(),
-                                                    material.metallic.minFilter_magFilter_mipFilter_wrap.w()).x();
+            oRoughnessMetallicAO.y() = sample_virtual(material.metallic.textureSize_textureID_maxMip.z(),
+                                          fUv,
+                                          material.metallic.minFilter_magFilter_mipFilter_wrap.w(),
+                                          material.metallic.minFilter_magFilter_mipFilter_wrap.x(),
+                                          material.metallic.minFilter_magFilter_mipFilter_wrap.y(),
+                                          material.metallic.minFilter_magFilter_mipFilter_wrap.z(),
+                                          material.metallic.textureSize_textureID_maxMip.xy(),
+                                          material.metallic.textureSize_textureID_maxMip.w(),
+                                          atlasSize,
+                                          tileSize,
+                                          tileBorder,
+                                          maxAnisotropy,
+                                          tileMapOffsets,
+                                          tileMap,
+                                          residencyMapOffsets,
+                                          residencyMap,
+                                          atlasTexture).x();
         Fi
 
         // Ambient Occlusion
-        If(material.ambientOcclusion.level_index.x() < 0)
+        If(material.ambientOcclusion.textureSize_textureID_maxMip.z() < 0)
             oRoughnessMetallicAO.z() = material.metallic_roughness_ambientOcclusion.z();
         Else
-            oRoughnessMetallicAO.z() = sample_atlas(textures[material.ambientOcclusion.level_index.x()],
-                                                    fUv,
-                                                    material.ambientOcclusion.level_index.y(),
-                                                    material.ambientOcclusion.scale_texSize.xy(),
-                                                    material.ambientOcclusion.scale_texSize.zw(),
-                                                    material.ambientOcclusion.minFilter_magFilter_mipFilter_wrap.x(),
-                                                    material.ambientOcclusion.minFilter_magFilter_mipFilter_wrap.y(),
-                                                    material.ambientOcclusion.minFilter_magFilter_mipFilter_wrap.z(),
-                                                    material.ambientOcclusion.minFilter_magFilter_mipFilter_wrap.w())
-                    .x();
+            oRoughnessMetallicAO.z() = sample_virtual(material.ambientOcclusion.textureSize_textureID_maxMip.z(),
+                                          fUv,
+                                          material.ambientOcclusion.minFilter_magFilter_mipFilter_wrap.w(),
+                                          material.ambientOcclusion.minFilter_magFilter_mipFilter_wrap.x(),
+                                          material.ambientOcclusion.minFilter_magFilter_mipFilter_wrap.y(),
+                                          material.ambientOcclusion.minFilter_magFilter_mipFilter_wrap.z(),
+                                          material.ambientOcclusion.textureSize_textureID_maxMip.xy(),
+                                          material.ambientOcclusion.textureSize_textureID_maxMip.w(),
+                                          atlasSize,
+                                          tileSize,
+                                          tileBorder,
+                                          maxAnisotropy,
+                                          tileMapOffsets,
+                                          tileMap,
+                                          residencyMapOffsets,
+                                          residencyMap,
+                                          atlasTexture).x();
         Fi
 
+        // Normals
         mat3 normalMatrix = mat3(transpose(inverse(fModel)));
         oNormal = vec4(normalize(normalMatrix * fNorm), 1);
         oTangent = vec4(normalize(normalMatrix * fTan), 1);
 
-        If(material.normal.level_index.x() >= 0)
+        If(material.normal.textureSize_textureID_maxMip.z() >= 0)
             mat3 tbn = mat3(fT, fB, fN);
-            vec3 texNormal = sample_atlas(textures[material.normal.level_index.x()],
-                                          fUv,
-                                          material.normal.level_index.y(),
-                                          material.normal.scale_texSize.xy(),
-                                          material.normal.scale_texSize.zw(),
-                                          material.normal.minFilter_magFilter_mipFilter_wrap.x(),
-                                          material.normal.minFilter_magFilter_mipFilter_wrap.y(),
-                                          material.normal.minFilter_magFilter_mipFilter_wrap.z(),
-                                          material.normal.minFilter_magFilter_mipFilter_wrap.w()).xyz();
+            vec3 texNormal = sample_virtual(material.normal.textureSize_textureID_maxMip.z(),
+                                    fUv,
+                                    material.normal.minFilter_magFilter_mipFilter_wrap.w(),
+                                    material.normal.minFilter_magFilter_mipFilter_wrap.x(),
+                                    material.normal.minFilter_magFilter_mipFilter_wrap.y(),
+                                    material.normal.minFilter_magFilter_mipFilter_wrap.z(),
+                                    material.normal.textureSize_textureID_maxMip.xy(),
+                                    material.normal.textureSize_textureID_maxMip.w(),
+                                    atlasSize,
+                                    tileSize,
+                                    tileBorder,
+                                    maxAnisotropy,
+                                    tileMapOffsets,
+                                    tileMap,
+                                    residencyMapOffsets,
+                                    residencyMap,
+                                    atlasTexture).xyz();
             texNormal = texNormal * 2.0f - 1.0f;
             If(material.normalIntensity_flipNormal.y() != 0.0f)
                 texNormal.y() = texNormal.y() * -1.0f;

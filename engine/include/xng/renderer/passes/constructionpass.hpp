@@ -165,18 +165,21 @@ namespace xng {
                     builder.indexRead(scene.indexBuffer, access.offset, access.size);
                 }
 
-                for (auto &pair: batch.textureAccesses) {
-                    for (auto &access: pair.second) {
-                        builder.textureSampledRead(scene.textures.at(pair.first),
-                                                   {rg::Shader::FRAGMENT},
-                                                   rg::TextureBinding::Range(0,
-                                                                             scene.textures.at(pair.first).
-                                                                             getDescription().
-                                                                             mipLevels,
-                                                                             access,
-                                                                             1));
-                    }
+                for (auto &layer: batch.textureAccesses) {
+                    builder.textureSampledRead(scene.textureAtlas,
+                                               {rg::Shader::FRAGMENT},
+                                               rg::TextureBinding::Range(0,
+                                                                         scene.textureAtlas.
+                                                                         getDescription().
+                                                                         mipLevels,
+                                                                         layer,
+                                                                         1));
                 }
+
+                builder.storageRead(scene.tileMapBuffer, {rg::Shader::FRAGMENT});
+                builder.storageRead(scene.tileMapOffsetsBuffer, {rg::Shader::FRAGMENT});
+                builder.storageRead(scene.residencyMapBuffer, {rg::Shader::FRAGMENT});
+                builder.storageRead(scene.residencyMapOffsetsBuffer, {rg::Shader::FRAGMENT});
             }
 
             if (totalDrawCount <= 0) {
@@ -219,14 +222,16 @@ namespace xng {
                                       0,
                                       scene.materialBuffer.getDescription().size);
 
-                // Bind Textures
-                std::vector<rg::TextureBinding> textureBindings;
-                for (auto res = RESOLUTION_BEGIN;
-                     res <= RESOLUTION_END;
-                     res = static_cast<TextureResolution>(res + 1)) {
-                    textureBindings.emplace_back(rg::Resource(scene.textures.at(res)));
-                }
-                cmd.bindTexture("textures", textureBindings);
+                cmd.bindTexture("atlasTexture", {rg::TextureBinding(scene.textureAtlas)});
+                cmd.bindStorageBuffer("tileMap", scene.tileMapBuffer, 0, 0);
+                cmd.bindStorageBuffer("tileMapOffsets", scene.tileMapOffsetsBuffer, 0, 0);
+                cmd.bindStorageBuffer("residencyMap", scene.residencyMapBuffer, 0, 0);
+                cmd.bindStorageBuffer("residencyMapOffsets", scene.residencyMapOffsetsBuffer, 0, 0);
+
+                cmd.setShaderParameter("atlasSize", rg::ShaderPrimitive(scene.atlasSize));
+                cmd.setShaderParameter("tileSize", rg::ShaderPrimitive(scene.tileSize));
+                cmd.setShaderParameter("tileBorder", rg::ShaderPrimitive(scene.tileBorder));
+                cmd.setShaderParameter("maxAnisotropy", rg::ShaderPrimitive(scene.maxAnisotropy));
 
                 for (auto &batch: scene.drawList) {
                     if (batch.renderPath != RENDER_PATH_DEFERRED) {

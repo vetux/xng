@@ -32,7 +32,7 @@ namespace xng {
                        const rg::Shader &skinningShader,
                        const rg::Shader &scenePrepassShader)
         : runtime(runtime),
-          allocator(runtime.getResourceHeap(), streamingBudget),
+          allocator(runtime, streamingBudget),
           skinningPipeline(createPipeline(runtime.getPipelineCache(), skinningShader)),
           scenePrepassPipeline(createPipeline(runtime.getPipelineCache(), scenePrepassShader)) {
         cameraBuffer = runtime.getResourceHeap().allocateBuffer(rg::Buffer(sizeof(ShaderCamera::CPU),
@@ -180,7 +180,7 @@ namespace xng {
         std::unordered_map<VertexAttribute, std::vector<RenderScene::BufferAccessRange> > vertexBufferAccesses;
         std::vector<RenderScene::BufferAccessRange> indexBufferAccesses;
 
-        std::unordered_map<TextureResolution, std::vector<size_t> > textureAccesses;
+        std::vector<size_t> textureAccesses;
     };
 
     rg::ComputePass Renderer::recordScenePrePass(rg::GraphBuilder &graphBuilder,
@@ -238,25 +238,9 @@ namespace xng {
                 model->getMaterial()->getSlot() * sizeof(ShaderMaterial::CPU),
                 sizeof(ShaderMaterial::CPU)
             });
-            if (model->getMaterial()->getAlbedo()) {
-                const auto &handle = model->getMaterial()->getAlbedo()->getHandle();
-                batch.textureAccesses[handle.level].emplace_back(handle.slot);
-            }
-            if (model->getMaterial()->getMetallic()) {
-                const auto &handle = model->getMaterial()->getMetallic()->getHandle();
-                batch.textureAccesses[handle.level].emplace_back(handle.slot);
-            }
-            if (model->getMaterial()->getRoughness()) {
-                const auto &handle = model->getMaterial()->getRoughness()->getHandle();
-                batch.textureAccesses[handle.level].emplace_back(handle.slot);
-            }
-            if (model->getMaterial()->getAmbientOcclusion()) {
-                const auto &handle = model->getMaterial()->getAmbientOcclusion()->getHandle();
-                batch.textureAccesses[handle.level].emplace_back(handle.slot);
-            }
-            if (model->getMaterial()->getNormal()) {
-                const auto &handle = model->getMaterial()->getNormal()->getHandle();
-                batch.textureAccesses[handle.level].emplace_back(handle.slot);
+            for (auto i = 0; i < buffers.atlasTexture.getDescription().arrayLayers; i++) {
+                // TODO: Granular texture access declaration
+                batch.textureAccesses.emplace_back(i);
             }
             totalDrawCount += model->getShaderMeshSlots().size();
         }
@@ -274,9 +258,16 @@ namespace xng {
 
         scene.indexBuffer = rg::Resource(buffers.indexBuffer);
 
-        for (auto &pair: buffers.textures) {
-            scene.textures.emplace(pair.first, rg::Resource(pair.second));
-        }
+        scene.textureAtlas = rg::Resource(buffers.atlasTexture);
+        scene.tileMapBuffer = rg::Resource(buffers.tileMapBuffer);
+        scene.tileMapOffsetsBuffer = rg::Resource(buffers.tileMapOffsetsBuffer);
+        scene.residencyMapBuffer = rg::Resource(buffers.residencyMapBuffer);
+        scene.residencyMapOffsetsBuffer = rg::Resource(buffers.residencyMapOffsetsBuffer);
+
+        scene.atlasSize = buffers.atlasSize;
+        scene.tileSize = buffers.tileSize;
+        scene.tileBorder = buffers.tileBorder;
+        scene.maxAnisotropy = buffers.maxAnisotropy;
 
         //TODO: Implement selective light buffers
         scene.pointLightBuffer = rg::Resource(buffers.pointLightBuffer);

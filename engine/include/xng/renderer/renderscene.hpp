@@ -94,7 +94,7 @@ namespace xng {
             std::unordered_map<VertexAttribute, std::vector<BufferAccessRange> > vertexBufferAccesses;
             std::vector<BufferAccessRange> indexBufferAccesses;
 
-            std::unordered_map<TextureResolution, std::vector<size_t> > textureAccesses;
+            std::vector<size_t> textureAccesses;
 
             Batch(const size_t batchSize,
                   const size_t stride,
@@ -109,7 +109,7 @@ namespace xng {
                   std::vector<BufferAccessRange> materialBufferAccesses,
                   std::unordered_map<VertexAttribute, std::vector<BufferAccessRange> > vertexBufferAccesses,
                   std::vector<BufferAccessRange> indexBufferAccesses,
-                  std::unordered_map<TextureResolution, std::vector<size_t> > textureAccesses)
+                  std::vector<size_t> textureAccesses)
                 : batchSize(batchSize),
                   stride(stride),
                   indirectBuffer(indirectBuffer),
@@ -153,7 +153,20 @@ namespace xng {
         /**
          * The texture arrays containing all textures.
          */
-        std::unordered_map<TextureResolution, rg::Resource<rg::Texture> > textures;
+        rg::Resource<rg::Texture> textureAtlas;
+
+        /**
+         * The virtual texture mapping buffers.
+         */
+        rg::Resource<rg::Buffer> tileMapBuffer;
+        rg::Resource<rg::Buffer> tileMapOffsetsBuffer;
+        rg::Resource<rg::Buffer> residencyMapBuffer;
+        rg::Resource<rg::Buffer> residencyMapOffsetsBuffer;
+
+        unsigned int atlasSize;
+        unsigned int tileSize;
+        unsigned int tileBorder;
+        float maxAnisotropy;
 
         /**
          * The light buffers.

@@ -92,8 +92,7 @@ struct Resources {
 };
 
 void createCornellInstance(RenderAllocator &allocator, Resources &res, RenderDrawList &drawList, Vec3f offset) {
-    auto boxAlbedo = allocator.createTexture(res.boxAlbedoImage.get().getResolution());
-    boxAlbedo->setImage(res.boxAlbedoImage.get());
+    auto boxAlbedo = allocator.createTexture(res.boxAlbedoImage.get(), WRAP_CLAMP_TO_EDGE);
 
     auto boxMaterial = allocator.createMaterial({},
                                                 1,
@@ -125,17 +124,11 @@ void createCornellInstance(RenderAllocator &allocator, Resources &res, RenderDra
 
     drawList.models.emplace_back(boxModel);
 
-    auto brickAlbedo = allocator.createTexture(res.brickAlbedo.get().getResolution());
-    auto brickMetallic = allocator.createTexture(res.brickMetallic.get().getResolution());
-    auto brickRoughness = allocator.createTexture(res.brickRoughness.get().getResolution());
-    auto brickAo = allocator.createTexture(res.brickAo.get().getResolution());
-    auto brickNormal = allocator.createTexture(res.brickNormal.get().getResolution());
-
-    brickAlbedo->setImage(res.brickAlbedo.get());
-    brickMetallic->setImage(res.brickMetallic.get());
-    brickRoughness->setImage(res.brickRoughness.get());
-    brickAo->setImage(res.brickAo.get());
-    brickNormal->setImage(res.brickNormal.get());
+    auto brickAlbedo = allocator.createTexture(res.brickAlbedo.get(), WRAP_CLAMP_TO_EDGE);
+    auto brickMetallic = allocator.createTexture(res.brickMetallic.get(), WRAP_CLAMP_TO_EDGE);
+    auto brickRoughness = allocator.createTexture(res.brickRoughness.get(), WRAP_CLAMP_TO_EDGE);
+    auto brickAo = allocator.createTexture(res.brickAo.get(), WRAP_CLAMP_TO_EDGE);
+    auto brickNormal = allocator.createTexture(res.brickNormal.get(), WRAP_CLAMP_TO_EDGE);
 
     SamplingProperties brickProps(FILTER_BICUBIC, FILTER_BICUBIC, rg::LINEAR, WRAP_REPEAT);
 
@@ -174,15 +167,11 @@ void createCornellInstance(RenderAllocator &allocator, Resources &res, RenderDra
     auto sphereMesh = allocator.createMesh(Mesh::computeSmoothNormals(res.sphereMesh1.get()), {});
     auto sphereMesh2 = allocator.createMesh(res.sphereMesh2.get(), {});
 
-    auto sphereNormal = allocator.createTexture(res.sphereNormal.get().getResolution());
-    sphereNormal->setImage(res.sphereNormal.get());
+    auto sphereNormal = allocator.createTexture(res.sphereNormal.get(), WRAP_CLAMP_TO_EDGE);
 
-    auto rustedIronAlbedo = allocator.createTexture(res.rustedIronAlbedo.get().getResolution());
-    auto rustedIronMetallic = allocator.createTexture(res.rustedIronMetallic.get().getResolution());
-    auto rustedIronRoughness = allocator.createTexture(res.rustedIronRoughness.get().getResolution());
-    rustedIronAlbedo->setImage(res.rustedIronAlbedo.get());
-    rustedIronMetallic->setImage(res.rustedIronMetallic.get());
-    rustedIronRoughness->setImage(res.rustedIronRoughness.get());
+    auto rustedIronAlbedo = allocator.createTexture(res.rustedIronAlbedo.get(), WRAP_CLAMP_TO_EDGE);
+    auto rustedIronMetallic = allocator.createTexture(res.rustedIronMetallic.get(), WRAP_CLAMP_TO_EDGE);
+    auto rustedIronRoughness = allocator.createTexture(res.rustedIronRoughness.get(), WRAP_CLAMP_TO_EDGE);
 
     auto rustedIronSphereMaterial = allocator.createMaterial({},
                                                              0,
@@ -214,12 +203,9 @@ void createCornellInstance(RenderAllocator &allocator, Resources &res, RenderDra
 
     drawList.models.emplace_back(rustedIronSphereModel);
 
-    auto goldAlbedo = allocator.createTexture(res.goldAlbedo.get().getResolution());
-    auto goldMetallic = allocator.createTexture(res.goldMetallic.get().getResolution());
-    auto goldRoughness = allocator.createTexture(res.goldRoughness.get().getResolution());
-    goldAlbedo->setImage(res.goldAlbedo.get());
-    goldMetallic->setImage(res.goldMetallic.get());
-    goldRoughness->setImage(res.goldRoughness.get());
+    auto goldAlbedo = allocator.createTexture(res.goldAlbedo.get(), WRAP_CLAMP_TO_EDGE);
+    auto goldMetallic = allocator.createTexture(res.goldMetallic.get(), WRAP_CLAMP_TO_EDGE);
+    auto goldRoughness = allocator.createTexture(res.goldRoughness.get(), WRAP_CLAMP_TO_EDGE);
 
     auto goldSphereMaterial = allocator.createMaterial({},
                                                        1,
@@ -292,7 +278,7 @@ RenderDrawList createDrawList(RenderAllocator &allocator) {
         mesh.transform.setScale(Vec3f(0.05f));
         scene.skinnedModels.push_back(mesh);
     */
-    const int rows = 3;
+    const int rows = 2;
     const int columns = rows;
     const float spacing = 1.5f;
     for (int x = 0; x < columns; x++) {

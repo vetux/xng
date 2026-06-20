@@ -82,90 +82,71 @@ namespace xng {
             material.normalIntensity_flipNormal = Vec4f(normalIntensity, flipNormal ? 1.0f : 0.0f, 0, 0);
 
             if (albedo) {
-                const auto &handle = albedo->getHandle();
-                auto scale = handle.getScale();
-
-                material.albedo.level_index = Vec2i(handle.level, static_cast<int>(handle.slot));
+                material.albedo.textureSize_textureID_maxMip = Vec4i(albedo->getSize().x,
+                                                                     albedo->getSize().y,
+                                                                     static_cast<int>(albedo->getHandle()),
+                                                                     static_cast<int>(albedo->getMaxMip()));
                 material.albedo.minFilter_magFilter_mipFilter_wrap = Vec4i(albedoProperties.minFilter,
                                                                            albedoProperties.magFilter,
                                                                            albedoProperties.mipFilter,
                                                                            albedoProperties.wrapping);
-                material.albedo.scale_texSize = Vec4f(scale.x,
-                                                      scale.y,
-                                                      static_cast<float>(handle.size.x),
-                                                      static_cast<float>(handle.size.y));
             } else {
-                material.albedo.level_index = Vec2i(-1);
+                material.albedo.textureSize_textureID_maxMip = Vec4i(-1);
             }
 
             if (metallic) {
-                const auto &handle = metallic->getHandle();
-                auto scale = handle.getScale();
-
-                material.metallic.level_index = Vec2i(handle.level, static_cast<int>(handle.slot));
+                material.metallic.textureSize_textureID_maxMip = Vec4i(metallic->getSize().x,
+                                                                       metallic->getSize().y,
+                                                                       static_cast<int>(metallic->getHandle()),
+                                                                       static_cast<int>(metallic->getMaxMip()));
                 material.metallic.minFilter_magFilter_mipFilter_wrap = Vec4i(metallicProperties.minFilter,
                                                                              metallicProperties.magFilter,
                                                                              metallicProperties.mipFilter,
                                                                              metallicProperties.wrapping);
-                material.metallic.scale_texSize = Vec4f(scale.x,
-                                                        scale.y,
-                                                        static_cast<float>(handle.size.x),
-                                                        static_cast<float>(handle.size.y));
             } else {
-                material.metallic.level_index = Vec2i(-1);
+                material.metallic.textureSize_textureID_maxMip = Vec4i(-1);
             }
 
             if (roughness) {
-                const auto &handle = roughness->getHandle();
-                auto scale = handle.getScale();
-
-                material.roughness.level_index = Vec2i(handle.level, static_cast<int>(handle.slot));
+                material.roughness.textureSize_textureID_maxMip = Vec4i(roughness->getSize().x,
+                                                                        roughness->getSize().y,
+                                                                        static_cast<int>(roughness->getHandle()),
+                                                                        static_cast<int>(roughness->getMaxMip()));
                 material.roughness.minFilter_magFilter_mipFilter_wrap = Vec4i(roughnessProperties.minFilter,
                                                                               roughnessProperties.magFilter,
                                                                               roughnessProperties.mipFilter,
                                                                               roughnessProperties.wrapping);
-                material.roughness.scale_texSize = Vec4f(scale.x,
-                                                         scale.y,
-                                                         static_cast<float>(handle.size.x),
-                                                         static_cast<float>(handle.size.y));
             } else {
-                material.roughness.level_index = Vec2i(-1);
+                material.roughness.textureSize_textureID_maxMip = Vec4i(-1);
             }
 
             if (ambientOcclusion) {
-                const auto &handle = ambientOcclusion->getHandle();
-                auto scale = handle.getScale();
-
-                material.ambientOcclusion.level_index = Vec2i(handle.level, static_cast<int>(handle.slot));
+                material.ambientOcclusion.textureSize_textureID_maxMip = Vec4i(ambientOcclusion->getSize().x,
+                                                                               ambientOcclusion->getSize().y,
+                                                                               static_cast<int>(ambientOcclusion->
+                                                                                   getHandle()),
+                                                                               static_cast<int>(ambientOcclusion->
+                                                                                   getMaxMip()));
                 material.ambientOcclusion.minFilter_magFilter_mipFilter_wrap = Vec4i(
                     ambientOcclusionProperties.minFilter,
                     ambientOcclusionProperties.magFilter,
                     ambientOcclusionProperties.mipFilter,
                     ambientOcclusionProperties.wrapping);
-
-                material.ambientOcclusion.scale_texSize = Vec4f(scale.x,
-                                                                scale.y,
-                                                                static_cast<float>(handle.size.x),
-                                                                static_cast<float>(handle.size.y));
             } else {
-                material.ambientOcclusion.level_index = Vec2i(-1);
+                material.ambientOcclusion.textureSize_textureID_maxMip = Vec4i(-1);
             }
 
             if (normal) {
-                const auto &handle = normal->getHandle();
-                auto scale = handle.getScale();
-
-                material.normal.level_index = Vec2i(handle.level, static_cast<int>(handle.slot));
+                material.normal.textureSize_textureID_maxMip = Vec4i(normal->getSize().x,
+                                                                     normal->getSize().y,
+                                                                     static_cast<int>(normal->getHandle()),
+                                                                     static_cast<int>(normal->getMaxMip()));
                 material.normal.minFilter_magFilter_mipFilter_wrap = Vec4i(normalProperties.minFilter,
                                                                            normalProperties.magFilter,
                                                                            normalProperties.mipFilter,
                                                                            normalProperties.wrapping);
-                material.normal.scale_texSize = Vec4f(scale.x,
-                                                      scale.y,
-                                                      static_cast<float>(handle.size.x),
-                                                      static_cast<float>(handle.size.y));
             } else {
-                material.normal.level_index = Vec2i(-1);
+                material.normal.textureSize_textureID_maxMip = Vec4i(-1);
             }
 
             materialStream.upload(materialHandle, material);

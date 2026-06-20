@@ -20,40 +20,67 @@
 #define XENGINE_RENDERTEXTURE_HPP
 
 #include "xng/renderer/renderobject.hpp"
-#include "xng/renderer/stream/texturestreamer.hpp"
+#include "xng/renderer/virtualtexture/imagetileloader.hpp"
+#include "xng/renderer/virtualtexture/virtualtexturestreamer.hpp"
 
 namespace xng {
-    // TODO: Design texture mip level streaming user interface
     class RenderTexture final : public RenderObject {
     public:
-        explicit RenderTexture(const Id id, TextureStreamer &textureStreamer, const Vec2u &resolution)
+        //TODO: Multiple backing techniques for textures
+        RenderTexture(const Id id,
+                      VirtualTextureStreamer &textureStreamer,
+                      rg::Heap &heap,
+                      const ImageRGBA &image,
+                      const WrappingMethod wrapping = WRAP_REPEAT)
             : RenderObject(OBJECT_TEXTURE, id), textureStreamer(textureStreamer) {
-            textureHandle = textureStreamer.create(resolution);
+            size = image.getResolution().convert<int>();
+            maxMip = rg::Texture::calculateMipLevels(image.getResolution()) - 1;
+            textureHandle = textureStreamer.create(std::make_shared<ImageTileLoader>(image,
+                maxMip + 1,
+                textureStreamer.getTileSize(),
+                textureStreamer.getTileBorder(),
+                wrapping,
+                heap));
+        }
+
+        RenderTexture(const Id id,
+                      VirtualTextureStreamer &textureStreamer,
+                      const std::shared_ptr<TileLoader> &tileLoader)
+            : RenderObject(OBJECT_TEXTURE, id), textureStreamer(textureStreamer) {
+            size = tileLoader->getSize().convert<int>();
+            maxMip = tileLoader->getMipLevels() - 1;
+            textureHandle = textureStreamer.create(tileLoader);
         }
 
         ~RenderTexture() override {
             textureStreamer.destroy(textureHandle);
         }
 
-        void setImage(const ImageRGBA &image, const int mipLevel = 0) const {
-            textureStreamer.upload(textureHandle, image, mipLevel);
-        }
-
-        [[nodiscard]] TextureStreamer::Handle getHandle() const {
+        [[nodiscard]] VirtualTextureStreamer::TextureID getHandle() const {
             return textureHandle;
         }
 
         bool isUploadComplete() override {
-            return textureStreamer.isUploadComplete(textureHandle, 0);
+            return true;
         }
 
         void flush() override {
-            textureStreamer.flush(textureHandle);
+        }
+
+        Vec2i getSize() const {
+            return size;
+        }
+
+        unsigned int getMaxMip() const {
+            return maxMip;
         }
 
     private:
-        TextureStreamer &textureStreamer;
-        TextureStreamer::Handle textureHandle{};
+        VirtualTextureStreamer &textureStreamer;
+        VirtualTextureStreamer::TextureID textureHandle{};
+
+        Vec2i size;
+        unsigned int maxMip;
     };
 }
 

@@ -196,7 +196,7 @@ namespace xng {
             paint.color = colorF;
             paint.colorMixFactor = mix;
             paint.alphaMixFactor = alpha_mix;
-
+/*
             const auto uvOffset = srcRect.position / texture->getHandle().size.convert<float>();
             const auto uvScale = (srcRect.dimensions / texture->getHandle().size.convert<float>());
             paint.uvOffset_uvScale = Vec4f(uvOffset.x, uvOffset.y, uvScale.x, uvScale.y);
@@ -211,7 +211,7 @@ namespace xng {
             paint.texture.scale_texSize = Vec4f(scale.x,
                                                 scale.y,
                                                 texture->getHandle().size.x,
-                                                texture->getHandle().size.y);
+                                                texture->getHandle().size.y);*/
 
             paintStream.upload(slot, paint);
 

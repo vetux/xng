@@ -55,18 +55,29 @@ namespace xng {
             rg::HeapResource<rg::Buffer> skinnedBoneIndicesBuffer;
             rg::HeapResource<rg::Buffer> skinnedBoneWeightsBuffer;
 
-            std::unordered_map<TextureResolution, rg::HeapResource<rg::Texture> > textures;
+            rg::HeapResource<rg::Texture> atlasTexture;
+            rg::HeapResource<rg::Buffer> tileMapBuffer;
+            rg::HeapResource<rg::Buffer> tileMapOffsetsBuffer;
+            rg::HeapResource<rg::Buffer> residencyMapBuffer;
+            rg::HeapResource<rg::Buffer> residencyMapOffsetsBuffer;
+
+            unsigned int atlasSize;
+            unsigned int tileSize;
+            unsigned int tileBorder;
+            float maxAnisotropy;
         };
 
         /**
          * The streamingBudget may be exceeded when flushing objects.
          *
-         * @param heap
+         * @param runtime
          * @param streamingBudget The total streaming budget to saturate in bytes. Should be multiple of 1KB.
          */
-        explicit RenderAllocator(rg::Heap &heap, size_t streamingBudget);
+        explicit RenderAllocator(rg::Runtime &runtime, size_t streamingBudget);
 
-        RenderObjectHandle<RenderTexture> createTexture(const Vec2u &resolution);
+        RenderObjectHandle<RenderTexture> createTexture(const std::shared_ptr<TileLoader> &tileLoader);
+
+        RenderObjectHandle<RenderTexture> createTexture(const ImageRGBA &image, WrappingMethod wrapping);
 
         RenderObjectHandle<RenderMaterial> createMaterial(const ColorRGBA &albedo,
                                                           float metallic,
@@ -124,7 +135,7 @@ namespace xng {
             freeIds.push_back(id);
         }
 
-        RenderObject::Id nextId;
+        RenderObject::Id nextId = 0;
         std::vector<RenderObject::Id> freeIds;
 
         rg::Heap &heap;
@@ -143,7 +154,7 @@ namespace xng {
         BufferStreamer<ShaderDirectionalLight::CPU> directionalLightStream;
 
         MeshStreamer meshStream;
-        TextureStreamer textureStream;
+        VirtualTextureStreamer textureStream;
     };
 }
 
