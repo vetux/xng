@@ -424,18 +424,18 @@ namespace xng::ShaderScript {
 
     inline ShaderObject texelFetch(const ShaderObject &texture,
                                    const ShaderObject &coords,
-                                   const ShaderObject &index) {
+                                   const ShaderObject &lod) {
         return ShaderObject(rg::ShaderInstructionFactory::textureFetch(texture.operand,
                                                                        coords.operand,
-                                                                       index.operand));
+                                                                       lod.operand));
     }
 
     inline ShaderObject texelFetchArray(const ShaderObject &texture,
                                         const ShaderObject &coords,
-                                        const ShaderObject &index) {
+                                        const ShaderObject &lod) {
         return ShaderObject(rg::ShaderInstructionFactory::textureFetchArray(texture.operand,
                                                                             coords.operand,
-                                                                            index.operand));
+                                                                            lod.operand));
     }
 
     inline ShaderObject texelFetchMS(const ShaderObject &texture,
