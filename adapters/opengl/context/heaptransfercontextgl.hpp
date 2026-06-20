@@ -154,6 +154,7 @@ namespace xng::opengl {
                         glDeleteSync(e.sync->fence);
                         e.sync->fence = nullptr;
                         e.sync->done = true;
+                        e.sync->cv.notify_all();
                     }
                 }
             }
@@ -164,6 +165,7 @@ namespace xng::opengl {
                         glDeleteSync(e.sync->fence);
                         e.sync->fence = nullptr;
                         e.sync->done = true;
+                        e.sync->cv.notify_all();
                     }
                 }
             }
@@ -877,6 +879,7 @@ namespace xng::opengl {
                         sync->fence = nullptr;
                     }
                     sync->done = true;
+                    sync->cv.notify_all();
                 }
             }
         }
@@ -950,9 +953,9 @@ namespace xng::opengl {
                     {
                         std::lock_guard lock(fallback->mutex);
                         fallback->fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+                        glFlush();
                     }
                     fallback->cv.notify_all();
-                    glFlush();
                     std::lock_guard lock(syncMutex);
                     for (auto &[h, regions]: pendingBuffers) {
                         for (auto &r: regions)
