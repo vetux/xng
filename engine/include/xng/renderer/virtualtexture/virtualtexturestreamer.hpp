@@ -58,7 +58,8 @@ namespace xng {
         }
 
         void readback() {
-            //TODO: Implement readback / Readback needs to be transparent to user defined passes
+            //TODO: Implement readback
+            //TODO: Tile streaming limiting based on available VRAM
 
             // Upload all coarsest mip tiles for testing.
             for (auto &pair: tileStreamer.getTextureStates()) {
