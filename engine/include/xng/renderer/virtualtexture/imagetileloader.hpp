@@ -37,6 +37,8 @@ namespace xng {
             Vec2u tileCount;
             std::vector<std::vector<uint8_t> > tiles;
 
+            TiledImage() = default;
+
             explicit TiledImage(const Vec2u &tileCount)
                 : tileCount(tileCount), tiles(tileCount.x * tileCount.y) {
             }
@@ -58,79 +60,99 @@ namespace xng {
                                         const WrappingMethod wrapping) {
             const auto &imageRes = image.getResolution();
             TiledImage ret(TileStreamer::getTiles(imageRes, tileSize));
+            std::vector<std::shared_ptr<Task> > tasks;
             const auto atlasTileSize = tileSize + tileBorder * 2;
             for (auto tileX = 0u; tileX < ret.tileCount.x; tileX++) {
                 for (auto tileY = 0u; tileY < ret.tileCount.y; tileY++) {
-                    const auto tilePos = Vec2u(tileX * tileSize, tileY * tileSize);
-                    auto tileDim = Vec2u(tileSize, tileSize);
-                    if (tilePos.x + tileDim.x > imageRes.x) {
-                        tileDim.x = imageRes.x - tilePos.x;
-                    }
-                    if (tilePos.y + tileDim.y > imageRes.y) {
-                        tileDim.y = imageRes.y - tilePos.y;
-                    }
+                    auto task = ThreadPool::getPool().addTask(
+                        [&image,
+                            &imageRes,
+                            &ret,
+                            tileX,
+                            tileY,
+                            tileSize,
+                            tileBorder,
+                            atlasTileSize,
+                            wrapping]() {
+                            const auto tilePos = Vec2u(tileX * tileSize, tileY * tileSize);
+                            auto tileDim = Vec2u(tileSize, tileSize);
+                            if (tilePos.x + tileDim.x > imageRes.x) {
+                                tileDim.x = imageRes.x - tilePos.x;
+                            }
+                            if (tilePos.y + tileDim.y > imageRes.y) {
+                                tileDim.y = imageRes.y - tilePos.y;
+                            }
 
-                    ImageRGBA tile = image.slice(Rectu(tilePos, tileDim));
+                            ImageRGBA tile = image.slice(Rectu(tilePos, tileDim));
 
-                    ImageRGBA atlasTile(atlasTileSize, atlasTileSize);
-                    atlasTile.blit(Vec2u(tileBorder, tileBorder), tile);
+                            ImageRGBA atlasTile(atlasTileSize, atlasTileSize);
+                            atlasTile.blit(Vec2u(tileBorder, tileBorder), tile);
 
-                    // Blit Left Border Edge
-                    for (auto x = 0; x < tileBorder; x++) {
-                        for (auto y = 0; y < tileDim.y + 2 * tileBorder; y++) {
-                            const auto srcPos = Vec2i(static_cast<int>(tilePos.x) - (static_cast<int>(tileBorder) - x),
-                                                      static_cast<int>(tilePos.y) + y - static_cast<int>(tileBorder));
-                            copyTexel(image,
-                                      atlasTile,
-                                      srcPos,
-                                      Vec2u(x, y),
-                                      wrapping);
-                        }
-                    }
+                            // Blit Left Border Edge
+                            for (auto x = 0; x < tileBorder; x++) {
+                                for (auto y = 0; y < tileDim.y + 2 * tileBorder; y++) {
+                                    const auto srcPos = Vec2i(
+                                        static_cast<int>(tilePos.x) - (static_cast<int>(tileBorder) - x),
+                                        static_cast<int>(tilePos.y) + y - static_cast<int>(tileBorder));
+                                    copyTexel(image,
+                                              atlasTile,
+                                              srcPos,
+                                              Vec2u(x, y),
+                                              wrapping);
+                                }
+                            }
 
-                    // Blit Right Border Edge
-                    for (auto x = 0; x < tileBorder; x++) {
-                        for (auto y = 0; y < tileDim.y + 2 * tileBorder; y++) {
-                            const auto srcPos = Vec2i(static_cast<int>(tilePos.x + tileDim.x) + x,
-                                                      static_cast<int>(tilePos.y) + y - static_cast<int>(tileBorder));
-                            copyTexel(image,
-                                      atlasTile,
-                                      srcPos,
-                                      Vec2u((tileBorder + tileDim.x) + x, y),
-                                      wrapping);
-                        }
-                    }
+                            // Blit Right Border Edge
+                            for (auto x = 0; x < tileBorder; x++) {
+                                for (auto y = 0; y < tileDim.y + 2 * tileBorder; y++) {
+                                    const auto srcPos = Vec2i(static_cast<int>(tilePos.x + tileDim.x) + x,
+                                                              static_cast<int>(tilePos.y) + y - static_cast<int>(
+                                                                  tileBorder));
+                                    copyTexel(image,
+                                              atlasTile,
+                                              srcPos,
+                                              Vec2u((tileBorder + tileDim.x) + x, y),
+                                              wrapping);
+                                }
+                            }
 
-                    // Blit Top Border Edge
-                    for (auto y = 0; y < tileBorder; y++) {
-                        for (auto x = 0; x < tileDim.x; x++) {
-                            const auto srcPos = Vec2i(static_cast<int>(tilePos.x) + x,
-                                                      static_cast<int>(tilePos.y) - (static_cast<int>(tileBorder) - y));
-                            copyTexel(image,
-                                      atlasTile,
-                                      srcPos,
-                                      Vec2u(x + tileBorder, y),
-                                      wrapping);
-                        }
-                    }
+                            // Blit Top Border Edge
+                            for (auto y = 0; y < tileBorder; y++) {
+                                for (auto x = 0; x < tileDim.x; x++) {
+                                    const auto srcPos = Vec2i(static_cast<int>(tilePos.x) + x,
+                                                              static_cast<int>(tilePos.y) - (
+                                                                  static_cast<int>(tileBorder) - y));
+                                    copyTexel(image,
+                                              atlasTile,
+                                              srcPos,
+                                              Vec2u(x + tileBorder, y),
+                                              wrapping);
+                                }
+                            }
 
-                    // Blit Bottom Border Edge
-                    for (auto y = 0; y < tileBorder; y++) {
-                        for (auto x = 0; x < tileDim.x; x++) {
-                            const auto srcPos = Vec2i(static_cast<int>(tilePos.x) + x,
-                                                      static_cast<int>(tilePos.y + tileDim.y) + y);
-                            copyTexel(image,
-                                      atlasTile,
-                                      srcPos,
-                                      Vec2u(x + tileBorder, (tileBorder + tileDim.y) + y),
-                                      wrapping);
-                        }
-                    }
+                            // Blit Bottom Border Edge
+                            for (auto y = 0; y < tileBorder; y++) {
+                                for (auto x = 0; x < tileDim.x; x++) {
+                                    const auto srcPos = Vec2i(static_cast<int>(tilePos.x) + x,
+                                                              static_cast<int>(tilePos.y + tileDim.y) + y);
+                                    copyTexel(image,
+                                              atlasTile,
+                                              srcPos,
+                                              Vec2u(x + tileBorder, (tileBorder + tileDim.y) + y),
+                                              wrapping);
+                                }
+                            }
 
-                    auto bytes = std::vector<uint8_t>(atlasTile.getBuffer().size() * sizeof(ColorRGBA));
-                    std::memcpy(bytes.data(), atlasTile.getBuffer().data(), bytes.size());
-                    ret.setTile({tileX, tileY}, std::move(bytes));
+                            auto bytes = std::vector<uint8_t>(atlasTile.getBuffer().size() * sizeof(ColorRGBA));
+                            std::memcpy(bytes.data(), atlasTile.getBuffer().data(), bytes.size());
+
+                            ret.setTile({tileX, tileY}, std::move(bytes));
+                        });
+                    tasks.emplace_back(task);
                 }
+            }
+            for (auto &task: tasks) {
+                task->join();
             }
             return ret;
         }
@@ -152,9 +174,18 @@ namespace xng {
                 throw std::runtime_error("Image resolution must fit in int");
             }
             const auto mipImages = MipGenerator(heap).generate(image, mipLevels);
-            mips.emplace_back(generateTiles(image, tileSize, tileBorder, wrapping));
+            mips.resize(mipLevels);
+            std::vector<std::shared_ptr<Task> > tasks;
+            tasks.emplace_back(ThreadPool::getPool().addTask([&]() {
+                mips.at(0) = generateTiles(image, tileSize, tileBorder, wrapping);
+            }));
             for (auto &pair: mipImages) {
-                mips.emplace_back(generateTiles(pair.second, tileSize, tileBorder, wrapping));
+                tasks.emplace_back(ThreadPool::getPool().addTask([&]() {
+                    mips[pair.first] = generateTiles(pair.second, tileSize, tileBorder, wrapping);
+                }));
+            }
+            for (auto &task: tasks) {
+                task->join();
             }
         }
 

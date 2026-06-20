@@ -155,6 +155,14 @@ namespace xng {
             return texture;
         }
 
+        unsigned int getTileSize() const {
+            return tileSize;
+        }
+
+        unsigned int getTileBorder() const {
+            return tileBorder;
+        }
+
     private:
         //TODO: Use single stream buffer for all uploads
         struct PendingUpload {

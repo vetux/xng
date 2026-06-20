@@ -112,6 +112,14 @@ namespace xng {
             throw std::runtime_error("Not implemented");
         }
 
+        unsigned int getTileSize() const {
+            return atlas.getTileSize();
+        }
+
+        unsigned int getTileBorder() const {
+            return atlas.getTileBorder();
+        }
+
     private:
         rg::Runtime &runtime;
         TextureAtlas atlas;

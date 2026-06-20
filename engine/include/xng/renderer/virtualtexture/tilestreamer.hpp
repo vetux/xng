@@ -437,7 +437,6 @@ namespace xng {
                 tileTask = pool.addTask([tileDataCapture, loader, mip, tileCapture]() {
                     *tileDataCapture = std::move(loader->getTile(mip, tileCapture));
                 });
-                tileTask->start();
             }
         };
 
