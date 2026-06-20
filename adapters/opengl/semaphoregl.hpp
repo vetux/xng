@@ -21,6 +21,7 @@
 
 #include <memory>
 #include <mutex>
+#include <condition_variable>
 
 #include "glad/glad.h"
 
@@ -42,7 +43,7 @@ namespace xng::opengl {
             : sync(std::move(sync)) {}
 
         bool isSignaled() override {
-            return sync->done;
+            return wait(0);
         }
 
         bool wait(const size_t timeOut) override {
