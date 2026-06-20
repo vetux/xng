@@ -95,6 +95,10 @@ namespace InstructionCompiler {
                 return compileTextureFetchMS(instruction, source, functionName, indent);
             case ShaderInstruction::TextureFetchMSArray:
                 return compileTextureFetchMSArray(instruction, source, functionName, indent);
+            case ShaderInstruction::TextureGrad:
+                return compileTextureGrad(instruction, source, functionName, indent);
+            case ShaderInstruction::TextureGradArray:
+                return compileTextureGradArray(instruction, source, functionName, indent);
             case ShaderInstruction::TextureSample:
                 return compileTextureSample(instruction, source, functionName, indent);
             case ShaderInstruction::TextureSampleArray:
@@ -134,6 +138,7 @@ namespace InstructionCompiler {
             case ShaderInstruction::Atan2:
             case ShaderInstruction::Pow:
             case ShaderInstruction::Exp:
+            case ShaderInstruction::Exp2:
             case ShaderInstruction::Log:
             case ShaderInstruction::Log2:
             case ShaderInstruction::Sqrt:
@@ -161,6 +166,14 @@ namespace InstructionCompiler {
             case ShaderInstruction::Inverse:
             case ShaderInstruction::PartialDerivativeX:
             case ShaderInstruction::PartialDerivativeY:
+            case ShaderInstruction::AtomicAdd:
+            case ShaderInstruction::AtomicMin:
+            case ShaderInstruction::AtomicMax:
+            case ShaderInstruction::AtomicAnd:
+            case ShaderInstruction::AtomicOr:
+            case ShaderInstruction::AtomicXor:
+            case ShaderInstruction::AtomicExchange:
+            case ShaderInstruction::AtomicCompareSwap:
                 return compileCallBuiltIn(instruction, source, functionName, indent);
             case ShaderInstruction::CastBool:
                 return compileCastBool(instruction, source, functionName, indent);
@@ -464,7 +477,7 @@ namespace InstructionCompiler {
                                         const std::string &indent) {
         auto name = compileOperand(instruction.operands.at(0), source, functionName);
         auto coords = compileOperand(instruction.operands.at(1), source, functionName);
-        coords = "vec2(" + coords + ".x, 1 - " + coords + ".y)";
+        coords = "vec3(" + coords + ".x, 1 - " + coords + ".y," + coords + ".z)";
         auto dPdx = compileOperand(instruction.operands.at(2), source, functionName);
         auto dPdy = compileOperand(instruction.operands.at(3), source, functionName);
         return "textureGrad(" + name + ", " + coords + ", " + dPdx + ", " + dPdy + ")";
