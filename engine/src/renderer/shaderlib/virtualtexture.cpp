@@ -45,8 +45,8 @@ namespace xng::shaderlib::virtualtexture {
         IRFunction
 
         ivec2 texel = ivec2(wrapped * mipSize);
-        texel.x() = clamp(texel.x(), 0, mipSize.value().x() - 1);
-        texel.y() = clamp(texel.y(), 0, mipSize.value().y() - 1);
+        texel.x() = clamp(texel.x(), 0, Int(mipSize.value().x()) - 1);
+        texel.y() = clamp(texel.y(), 0, Int(mipSize.value().y()) - 1);
 
         uvec2 tile = uvec2(texel) / tileSize;
         uvec2 tiles = (uvec2(mipSize) + tileSize - 1) / tileSize;
@@ -218,7 +218,7 @@ namespace xng::shaderlib::virtualtexture {
         IRFunctionEnd
     }
 
-    vec4 sample(Param<UInt> textureID,
+    vec4 sample_virtual(Param<UInt> textureID,
                 Param<vec2> uv,
                 Param<Int> wrap,
                 Param<Int> minFilter,
@@ -471,7 +471,7 @@ namespace xng::shaderlib::virtualtexture {
                                       tileMapOffsets,
                                       tileMap);
 
-        IRReturn(vec4(texelFetchArray(sampler, atlasUV.xy(), atlasUV.z())));
+        IRReturn(vec4(texelFetchArray(sampler, atlasUV, 0)));
 
         IRFunctionEnd
     }
@@ -528,8 +528,8 @@ namespace xng::shaderlib::virtualtexture {
                                        tileMapOffsets,
                                        tileMap);
 
-        vec4 s0 = vec4(texelFetchArray(sampler, atlasUV0.xy(), atlasUV0.z()));
-        vec4 s1 = vec4(texelFetchArray(sampler, atlasUV1.xy(), atlasUV1.z()));
+        vec4 s0 = vec4(texelFetchArray(sampler, atlasUV0, 0));
+        vec4 s1 = vec4(texelFetchArray(sampler, atlasUV1, 0));
 
         IRReturn(vec4(mix(s0, s1, blend)));
 
