@@ -110,7 +110,7 @@ namespace xng::shaderlib::virtualtexture {
      * @param sampler The array texture containing the tiles.
      * @return
      */
-    XENGINE_EXPORT vec4 sample(Param<UInt> textureID,
+    XENGINE_EXPORT vec4 sample_virtual(Param<UInt> textureID,
                                Param<vec2> uv,
                                Param<Int> wrap,
                                Param<Int> minFilter,
