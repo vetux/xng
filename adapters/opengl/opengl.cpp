@@ -466,7 +466,7 @@ namespace xng::opengl {
                 case 1: {
                     auto p = std::get<RasterPass>(pass);
                     auto dimensions = bindAttachments(data->framebuffer, p, passResources);
-                    rasterContext.setFrameBufferHeight(dimensions.y);
+                    rasterContext.setFrameBufferHeight(static_cast<int>(dimensions.y));
                     p.callback(rasterContext);
                     insertBarrier(p);
                     break;
