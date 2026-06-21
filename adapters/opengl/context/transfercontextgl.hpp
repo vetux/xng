@@ -305,8 +305,8 @@ namespace xng::opengl {
             GLenum dataType;
             getFormatAndDataType(bufferFormat, dataType, pixelFormat);
 
-            const auto rect = getCorrectedTextureRect(textureOffset,
-                                                      tex.desc.getMipLevelSize(textureSubResource.mipLevel));
+            const auto mipSize = tex.desc.getMipLevelSize(textureSubResource.mipLevel);
+            const auto rect = getCorrectedTextureRect(textureOffset, mipSize);
 
             glBindBuffer(GL_PIXEL_UNPACK_BUFFER, unpackCopy.handle);
 
@@ -679,7 +679,7 @@ namespace xng::opengl {
     private:
         static Recti getCorrectedTextureRect(const Rectu &region, const Vec2u &textureSize) {
             auto ret = region.convert<int>();
-            ret.position.y = textureSize.y - ret.position.y - ret.dimensions.y;
+            ret.position.y = static_cast<int>(textureSize.y) - ret.position.y - ret.dimensions.y;
             return ret;
         }
 
