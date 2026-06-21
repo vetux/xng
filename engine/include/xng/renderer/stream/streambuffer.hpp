@@ -23,9 +23,9 @@
 
 namespace xng {
     /**
-     * The stream buffer is double-buffered.
-     * The stream buffer dynamically grows in size on upload.
-     * The stream buffer cannot be downsized without reallocating a new stream buffer.
+     * The stream buffer is double-buffered to avoid queue resource ownership transfer stalls.
+     *
+     * The stream buffer dynamically grows in size if flushed uploads exceed targetSize and dynamically shrinks back to targetSize.
      *
      * TODO: Implement dynamic double buffer size (Instead of full size double buffer)
      */
@@ -36,19 +36,19 @@ namespace xng {
         StreamBuffer(rg::Heap &heap,
                      ChunkStreamer &chunkStreamer,
                      const rg::Buffer::Capability capabilities,
-                     const size_t initialSize = 1)
+                     const size_t targetSize = 1)
             : heap(heap),
               chunkStreamer(chunkStreamer),
-              buffer(heap.allocateBuffer(rg::Buffer(initialSize,
+              buffer(heap.allocateBuffer(rg::Buffer(targetSize,
                                                     capabilities
                                                     | rg::Buffer::CAPABILITY_TRANSFER_SRC
                                                     | rg::Buffer::CAPABILITY_TRANSFER_DST,
                                                     rg::Buffer::MEMORY_GPU_ONLY))),
-              backBuffer(heap.allocateBuffer(rg::Buffer(initialSize,
+              backBuffer(heap.allocateBuffer(rg::Buffer(targetSize,
                                                         rg::Buffer::CAPABILITY_TRANSFER_SRC
                                                         | rg::Buffer::CAPABILITY_TRANSFER_DST,
                                                         rg::Buffer::MEMORY_GPU_ONLY))),
-              bufferSize(initialSize) {
+              targetSize(targetSize) {
         }
 
         ~StreamBuffer() = default;
@@ -68,11 +68,8 @@ namespace xng {
          * @return The offset of the data in the stable buffer.
          */
         Handle upload(const uint8_t *data, const size_t dataSize, const size_t offset) {
-            if (offset + dataSize > bufferSize) {
-                bufferSize = offset + dataSize;
-            }
             const auto ret = chunkStreamer.upload(data, dataSize, backBuffer, offset);
-            pendingUploads.emplace(ret, PendingUpload{offset, dataSize});
+            uploads.emplace(ret, PendingUpload{offset, dataSize});
             return ret;
         }
 
@@ -105,7 +102,7 @@ namespace xng {
          */
         void release(const Handle handle) {
             chunkStreamer.release(handle);
-            pendingUploads.erase(handle);
+            uploads.erase(handle);
             flushedUploads.erase(handle);
             finishedUploads.erase(handle);
         }
@@ -126,7 +123,9 @@ namespace xng {
             // By setting a new target buffer on the chunk streamer the ChunkStreamer::commit then
             // submits new chunks to the new target buffer, and the copy syncs in flight transfers.
             // Chunk streamer commit must be called after all stream buffer commits.
-            if (bufferSize > buffer.getDescription().size) {
+            const auto bufferSize = getBufferSize();
+
+            if (buffer.getDescription().size != bufferSize) {
                 // This will stall the graph execution on all in flight chunk uploads on the backBuffer
                 // and may issue a queue ownership transfer if the runtime executes the graph transfer passes
                 // on the graphics queue.
@@ -140,14 +139,16 @@ namespace xng {
                                                             backBuffer.getDescription().capabilityFlags,
                                                             backBuffer.getDescription().memoryType));
 
+                const auto copySize = std::min(staleBuffer.getDescription().size, buffer.getDescription().size);
+
                 const auto pass = rg::TransferPassBuilder("StreamBuffer/Resize")
                         .read(staleBuffer, 0, staleBuffer.getDescription().size)
                         .write(buffer, 0, staleBuffer.getDescription().size)
                         .read(staleBackBuffer, 0, staleBackBuffer.getDescription().size)
                         .write(backBuffer, 0, staleBackBuffer.getDescription().size)
-                        .execute([this, staleBuffer, staleBackBuffer](rg::TransferContext &ctx) {
-                            ctx.copyBuffer(buffer, staleBuffer, 0, 0, staleBuffer.getDescription().size);
-                            ctx.copyBuffer(backBuffer, staleBackBuffer, 0, 0, staleBackBuffer.getDescription().size);
+                        .execute([this, staleBuffer, staleBackBuffer, copySize](rg::TransferContext &ctx) {
+                            ctx.copyBuffer(buffer, staleBuffer, 0, 0, copySize);
+                            ctx.copyBuffer(backBuffer, staleBackBuffer, 0, 0, copySize);
                         });
 
                 //TODO: Find clean performant solution to resize.
@@ -155,13 +156,13 @@ namespace xng {
                     throw std::runtime_error("Failed to resize stream buffer");
                 }
 
-                for (auto &upload: pendingUploads) {
+                for (auto &upload: uploads) {
                     chunkStreamer.setTargetBuffer(upload.first, backBuffer);
                 }
             }
 
             std::unordered_map<Handle, PendingUpload> frameUploads;
-            for (auto &upload: pendingUploads) {
+            for (auto &upload: uploads) {
                 if (finishedUploads.find(upload.first) == finishedUploads.end()) {
                     if (flushedUploads.find(upload.first) != flushedUploads.end()
                         || chunkStreamer.isUploadComplete(upload.first)) {
@@ -204,8 +205,20 @@ namespace xng {
             return buffer;
         }
 
+        void setTargetSize(const size_t size) {
+            targetSize = size;
+        }
+
     private:
         static constexpr size_t timeOut = 10'000'000'000ULL;
+
+        size_t getBufferSize() const {
+            size_t ret = targetSize;
+            for (auto &upload: uploads) {
+                ret = std::max(ret, upload.second.offset + upload.second.size);
+            }
+            return ret;
+        }
 
         struct PendingUpload {
             size_t offset;
@@ -217,9 +230,10 @@ namespace xng {
 
         rg::HeapResource<rg::Buffer> buffer;
         rg::HeapResource<rg::Buffer> backBuffer;
-        size_t bufferSize = 0;
 
-        std::unordered_map<Handle, PendingUpload> pendingUploads;
+        size_t targetSize = 0;
+
+        std::unordered_map<Handle, PendingUpload> uploads;
         std::unordered_set<Handle> flushedUploads;
         std::unordered_set<Handle> finishedUploads;
     };

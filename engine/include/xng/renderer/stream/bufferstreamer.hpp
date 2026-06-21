@@ -49,35 +49,35 @@ namespace xng {
         }
 
         void destroy(Slot slot) {
-            auto it = pendingUploads.find(slot);
-            if (it != pendingUploads.end()) {
+            auto it = regions.find(slot);
+            if (it != regions.end()) {
                 buffer.release(it->second.handle);
             }
-            pendingUploads.erase(slot);
+            regions.erase(slot);
             freeSlots.push_back(slot);
         }
 
         void upload(const Slot slot, const T &data) {
-            auto it = pendingUploads.find(slot);
-            if (it != pendingUploads.end()) {
+            auto it = regions.find(slot);
+            if (it != regions.end()) {
                 buffer.release(it->second.handle);
-                pendingUploads.erase(slot);
+                regions.erase(slot);
             }
             const auto handle = buffer.upload(reinterpret_cast<const uint8_t *>(&data),
                           sizeof(T),
                           slot * sizeof(T));
-            pendingUploads.insert(std::pair(slot, PendingUpload{handle}));
+            regions.insert(std::pair(slot, Region{handle}));
         }
 
         bool isUploadComplete(Slot slot) {
-            auto it = pendingUploads.find(slot);
-            if (it == pendingUploads.end()) return true;
+            auto it = regions.find(slot);
+            if (it == regions.end()) return true;
             return buffer.isUploadComplete(it->second.handle);
         }
 
         void flush(Slot slot) {
-            auto it = pendingUploads.find(slot);
-            if (it == pendingUploads.end()) return;
+            auto it = regions.find(slot);
+            if (it == regions.end()) return;
             auto &pendingUpload = it->second;
             if (!pendingUpload.flushed) {
                 buffer.flush(pendingUpload.handle);
@@ -87,18 +87,6 @@ namespace xng {
 
         std::vector<rg::TransferPass> commit(rg::GraphBuilder &graph) {
             auto ret = buffer.commit(graph);
-
-            std::unordered_set<Slot> evictedHandles;
-            for (auto &pair: pendingUploads) {
-                auto &pendingUpload = pair.second;
-                if (buffer.isUploadComplete(pendingUpload.handle)) {
-                    evictedHandles.insert(pair.first);
-                }
-            }
-            for (auto &slot: evictedHandles) {
-                buffer.release(pendingUploads.at(slot).handle);
-                pendingUploads.erase(slot);
-            }
             return ret;
         }
 
@@ -107,7 +95,7 @@ namespace xng {
         }
 
     private:
-        struct PendingUpload {
+        struct Region {
             StreamBuffer::Handle handle;
             bool flushed = false;
         };
@@ -117,7 +105,7 @@ namespace xng {
         Slot nextSlot = 0;
         std::vector<Slot> freeSlots;
 
-        std::unordered_map<Slot, PendingUpload> pendingUploads;
+        std::unordered_map<Slot, Region> regions;
     };
 }
 
