@@ -202,6 +202,10 @@ namespace xng {
         }
 
         void loadTile(const TextureID tex, unsigned int mip, const Vec2u &tile) {
+            if (mip >= textures.at(tex).tileMapOffsets.size()) {
+                throw std::runtime_error("Mip level out of range.");
+            }
+
             const auto texSize = textures.at(tex).loader->getSize();
             const auto mipSize = rg::Texture::getMipLevelSize(texSize, mip);
             const auto mipTiles = getTiles(mipSize, tileSize);

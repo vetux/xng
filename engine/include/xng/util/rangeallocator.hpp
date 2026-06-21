@@ -130,6 +130,10 @@ namespace xng {
             return rangeCount;
         }
 
+        [[nodiscard]] const std::map<size_t, size_t> &getFreeRanges() const {
+            return freeRanges;
+        }
+
     private:
         bool getFreeRange(const size_t count, size_t &out) const {
             for (auto &pair: freeRanges) {

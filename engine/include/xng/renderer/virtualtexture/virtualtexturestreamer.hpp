@@ -39,11 +39,11 @@ namespace xng {
     public:
         typedef TileStreamer::TextureID TextureID;
 
-        explicit VirtualTextureStreamer(rg::Runtime &runtime,
-                                        ChunkStreamer &chunkStreamer,
-                                        const unsigned int tileSize,
-                                        const unsigned int tileBorder,
-                                        const float maxAnisotropy)
+        VirtualTextureStreamer(rg::Runtime &runtime,
+                               ChunkStreamer &chunkStreamer,
+                               const unsigned int tileSize,
+                               const unsigned int tileBorder,
+                               const float maxAnisotropy)
             : runtime(runtime),
               atlas(runtime, chunkStreamer, tileSize, tileBorder, maxAnisotropy),
               tileStreamer(runtime.getResourceHeap(), chunkStreamer, atlas, ThreadPool::getPool(), tileSize) {

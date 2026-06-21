@@ -30,17 +30,33 @@ namespace xng {
     public:
         typedef unsigned int Slot;
 
+        /**
+         * The ChunkStreamer streaming budget defines the PCIe bandwidth limit.
+         * Additionally, the max tiles in flight represent a VRAM usage limit for bounding the tile staging buffer.
+         *
+         * @param runtime
+         * @param chunkStreamer
+         * @param tileSize
+         * @param tileBorder
+         * @param maxAnisotropy
+         * @param maxTilesInFlight The max tiles in flight per frame (Flushed tiles can exceed this value)
+         */
         TextureAtlas(rg::Runtime &runtime,
                      ChunkStreamer &chunkStreamer,
                      const unsigned int tileSize,
                      const unsigned int tileBorder,
-                     const float maxAnisotropy)
+                     const float maxAnisotropy,
+                     const unsigned int maxTilesInFlight = 1)
             : runtime(runtime),
-              chunkStreamer(chunkStreamer),
+              buffer(runtime.getResourceHeap(), chunkStreamer, rg::Buffer::CAPABILITY_TRANSFER_SRC),
               tileSize(tileSize),
               tileBorder(tileBorder),
-              atlasTileSize(tileSize + 2 * tileBorder) {
-            const auto limits = runtime.getTextureFormatLimits(rg::TEXTURE_2D,
+              atlasTileSize(tileSize + 2 * tileBorder),
+              atlasTileBytes((atlasTileSize * atlasTileSize) * 4),
+              maxTilesInFlight(maxTilesInFlight) {
+            buffer.setTargetSize(maxTilesInFlight * atlasTileBytes);
+
+            const auto limits = runtime.getTextureFormatLimits(rg::TEXTURE_2D_ARRAY,
                                                                rg::RGBA8,
                                                                rg::Texture::CAPABILITY_SAMPLED |
                                                                rg::Texture::CAPABILITY_TRANSFER_SRC |
@@ -69,47 +85,56 @@ namespace xng {
 
         Slot create(const std::vector<uint8_t> &texels) {
             const auto slot = slotAllocator.allocate(1);
-            pendingUploads.emplace(slot, PendingUpload(slot,
-                                                       getOffset(slot),
-                                                       runtime.getResourceHeap(),
-                                                       chunkStreamer,
-                                                       texels));
+            pendingUploads.emplace(slot, PendingUpload(slot, getOffset(slot), texels));
             return slot;
         }
 
         void destroy(const Slot slot) {
             slotAllocator.free(slot, 1);
+            auto it = pendingUploads.find(slot);
+            if (it != pendingUploads.end()) {
+                if (it->second.startedUpload) {
+                    buffer.release(it->second.bufferHandle);
+                }
+                bufferAllocator.free(it->second.bufferSlot, 1);
+            }
             pendingUploads.erase(slot);
+            flushedUploads.erase(slot);
         }
 
         void flush(const Slot handle) {
-            auto it = pendingUploads.find(handle);
-            if (it != pendingUploads.end()) {
-                it->second.buffer.flush(it->second.handle);
+            if (pendingUploads.find(handle) != pendingUploads.end()) {
+                flushedUploads.insert(handle);
             }
         }
 
         bool isUploadComplete(const Slot handle) {
             auto it = pendingUploads.find(handle);
             if (it != pendingUploads.end()) {
-                return it->second.buffer.isUploadComplete(it->second.handle);
+                if (it->second.startedUpload) {
+                    return buffer.isUploadComplete(it->second.bufferHandle);
+                }
+                return false;
             }
             return true;
         }
 
+        // TODO: Find reason why atlas texture resize causes copyBufferToTexture to throw GL_INVALID_OPERATION when binding the new texture.
         std::vector<rg::TransferPass> commit(rg::GraphBuilder &graph) {
             std::vector<rg::TransferPass> ret;
 
+            staleTexture = {};
+
             const auto totalOffset = getOffset(slotAllocator.getSize());
             if (texture.getDescription().arrayLayers <= totalOffset.z) {
-                auto staleTexture = texture;
+                staleTexture = texture;
                 auto desc = texture.getDescription();
                 desc.arrayLayers = totalOffset.z + 1;
                 texture = runtime.getResourceHeap().allocateTexture(desc);
                 ret.emplace_back(rg::TransferPassBuilder("TextureAtlas/Copy")
                     .read(staleTexture, rg::TextureBinding::Range(0, 1, 0, staleTexture.getDescription().arrayLayers))
                     .write(texture, rg::TextureBinding::Range(0, 1, 0, staleTexture.getDescription().arrayLayers))
-                    .execute([this, staleTexture](rg::TransferContext &ctx) {
+                    .execute([this](rg::TransferContext &ctx) {
                         rg::TransferContext::TextureCopyRegion region;
                         region.src = rg::Texture::SubResource(0);
                         region.dst = rg::Texture::SubResource(0);
@@ -121,37 +146,77 @@ namespace xng {
                     }));
             }
 
-            std::unordered_set<Slot> prunedUploads;
+            std::unordered_set<Slot> frameCopies;
+            std::unordered_set<Slot> finishedUploads;
+
+            for (auto slot: flushedUploads) {
+                auto &upload = pendingUploads.at(slot);
+                if (!upload.startedUpload) {
+                    upload.bufferSlot = bufferAllocator.allocate(1);
+                    upload.bufferHandle = buffer.upload(upload.texels, upload.bufferSlot * atlasTileBytes);
+                    upload.startedUpload = true;
+                    buffer.flush(upload.bufferHandle);
+                    tilesInFlight++;
+                } else {
+                    buffer.flush(upload.bufferHandle);
+                }
+            }
+
             for (auto &pair: pendingUploads) {
-                if (pair.second.submitted) {
-                    prunedUploads.insert(pair.first);
+                if (pair.second.copied) {
+                    finishedUploads.insert(pair.first);
                     continue;
                 }
 
-                auto passes = pair.second.buffer.commit(graph);
-                ret.insert(ret.end(), passes.begin(), passes.end());
+                if (!pair.second.startedUpload && tilesInFlight < maxTilesInFlight) {
+                    pair.second.bufferSlot = bufferAllocator.allocate(1);
+                    pair.second.bufferHandle = buffer.upload(pair.second.texels,
+                                                             pair.second.bufferSlot * atlasTileBytes);
+                    pair.second.startedUpload = true;
+                    tilesInFlight++;
+                }
 
-                if (pair.second.buffer.isUploadComplete(pair.second.handle)) {
-                    const auto &upload = pair.second;
-                    ret.emplace_back(rg::TransferPassBuilder("TextureAtlas/Copy")
-                        .read(upload.buffer.getBuffer(), 0, upload.buffer.getBuffer().getDescription().size)
-                        .write(texture, rg::TextureBinding::Range(0, 1, upload.offset.z, 1))
-                        .execute([this, &upload](rg::TransferContext &ctx) {
-                            ctx.copyBufferToTexture(texture,
-                                                    upload.buffer.getBuffer(),
-                                                    rg::Texture::SubResource(0, upload.offset.z, rg::FACE_UNDEFINED),
-                                                    0,
-                                                    Rectu(Vec2u(upload.offset.x, upload.offset.y),
-                                                          Vec2u(atlasTileSize, atlasTileSize)),
-                                                    rg::RGBA8);
-                        }));
-                    pair.second.submitted = true;
+                if ((pair.second.startedUpload && buffer.isUploadComplete(pair.second.bufferHandle))
+                    || flushedUploads.find(pair.first) != flushedUploads.end()) {
+                    frameCopies.insert(pair.first);
+                    pair.second.copied = true;
                 }
             }
 
-            for (auto slot: prunedUploads) {
+            for (auto slot: finishedUploads) {
+                const auto &upload = pendingUploads.at(slot);
+                bufferAllocator.free(upload.bufferSlot, 1);
+                buffer.release(upload.bufferHandle);
                 pendingUploads.erase(slot);
+                flushedUploads.erase(slot);
+                tilesInFlight--;
             }
+
+            auto passes = buffer.commit(graph);
+            ret.insert(ret.end(), passes.begin(), passes.end());
+
+            auto pass = rg::TransferPassBuilder("TextureAtlas/Copy");
+
+            for (auto slot: frameCopies) {
+                const auto &upload = pendingUploads.at(slot);
+                pass.read(buffer.getBuffer(),
+                          upload.bufferSlot * atlasTileBytes,
+                          atlasTileBytes);
+                pass.write(texture, rg::TextureBinding::Range(0, 1, upload.offset.z, 1));
+            }
+
+            ret.emplace_back(pass.execute([this, frameCopies](rg::TransferContext &ctx) {
+                for (auto slot: frameCopies) {
+                    const auto &upload = pendingUploads.at(slot);
+                    ctx.copyBufferToTexture(texture,
+                                            buffer.getBuffer(),
+                                            rg::Texture::SubResource(0, upload.offset.z, rg::FACE_UNDEFINED),
+                                            upload.bufferSlot * atlasTileBytes,
+                                            Rectu(Vec2u(upload.offset.x, upload.offset.y),
+                                                  Vec2u(atlasTileSize, atlasTileSize)),
+                                            rg::RGBA8);
+                }
+            }));
 
             return ret;
         }
@@ -169,22 +234,24 @@ namespace xng {
         }
 
     private:
-        //TODO: Use single stream buffer for all uploads
         struct PendingUpload {
             Slot slot;
             Vec3u offset;
-            StreamBuffer buffer;
-            StreamBuffer::Handle handle;
-            bool submitted = false;
+
+            std::vector<uint8_t> texels;
+
+            StreamBuffer::Handle bufferHandle{};
+            size_t bufferSlot{};
+
+            bool startedUpload = false;
+            bool copied = false;
 
             PendingUpload(const Slot slot,
                           Vec3u offset,
-                          rg::Heap &heap,
-                          ChunkStreamer &chunkStreamer,
-                          const std::vector<uint8_t> &texels)
-                : slot(slot), offset(std::move(offset)),
-                  buffer(heap, chunkStreamer, rg::Buffer::CAPABILITY_TRANSFER_SRC) {
-                handle = buffer.upload(texels, 0);
+                          std::vector<uint8_t> texels)
+                : slot(slot),
+                  offset(std::move(offset)),
+                  texels(std::move(texels)) {
             }
         };
 
@@ -199,18 +266,26 @@ namespace xng {
 
         rg::Runtime &runtime;
 
-        ChunkStreamer &chunkStreamer;
+        StreamBuffer buffer;
+        RangeAllocator bufferAllocator;
 
         const unsigned int tileSize;
         const unsigned int tileBorder;
         const unsigned int atlasTileSize;
 
+        const unsigned int atlasTileBytes;
+
+        const unsigned int maxTilesInFlight;
+        unsigned int tilesInFlight = 0;
+
         Vec2u atlasTiles;
         unsigned int tilesPerLayer;
 
+        rg::HeapResource<rg::Texture> staleTexture;
         rg::HeapResource<rg::Texture> texture;
 
         std::unordered_map<Slot, PendingUpload> pendingUploads;
+        std::unordered_set<Slot> flushedUploads;
 
         RangeAllocator slotAllocator;
     };
