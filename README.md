@@ -13,10 +13,10 @@ The [editor](https://github.com/vetux/xng-editor) builds ontop of the library to
 
 Users may also create their own specialized tools that link against the engine library.
 
-Once the project has reached a stable state there will be semantically versioned releases (v0.1.0) and a stable branch (master) will be maintained.
-
 ## ⚠️ Current Project Status
 The engine is currently under heavy construction and should not be used in projects yet because the interface is still unstable and may change any time.
+
+Once the project has reached a stable state there will be semantically versioned releases (v0.1.0) and a stable branch (master) will be maintained.
 
 ## Features
  - High Performance Renderer using GPU Driven rendering techniques
