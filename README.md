@@ -6,12 +6,12 @@
 <br>
 
 # xEngine - Game Engine library for C++
+xEngine aims to provide a modular high-performance toolkit for game development.
 
-xEngine is designed to be a standalone modular toolkit for game development. Games can be created entirely in C++. 
+The engine is a standalone C++ library that can be used independently of the editor or other tools.
 
-The [editor](https://github.com/vetux/xng-editor) builds ontop of the library to provide a graphical user interface for building games with the engine. 
-
-Users may also create their own specialized tools that link against the engine library.
+The [editor](https://github.com/vetux/xng-editor) builds ontop of the library to provide a graphical user interface for creating games. 
+Users may also create their own standalone specialized tools that link against the engine library.
 
 ## ⚠️ Current Project Status
 The engine is currently under heavy construction and should not be used in projects yet because the interface is still unstable and may change any time.
