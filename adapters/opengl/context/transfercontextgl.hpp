@@ -242,8 +242,8 @@ namespace xng::opengl {
 
             oglDebugStartGroup("TransferContextGL::copyTexture");
 
-            const auto srcTexture = resources.getTexture(source);
-            const auto dstTexture = resources.getTexture(target);
+            const auto &srcTexture = resources.getTexture(source);
+            const auto &dstTexture = resources.getTexture(target);
 
             for (auto &region: regions) {
                 const Vec2u srcMipSize = source.getDescription().getMipLevelSize(region.src.mipLevel);
