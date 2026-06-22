@@ -42,6 +42,10 @@
 #include "display/windowgl.hpp"
 #include "context/transfercontextgl.hpp"
 
+// TODO: Hand Rewrite GL heap transfer context implementation
+// This mess was mostly generated with claude but for now i think its ok to leave it because in the future GL will be fallback/debug implementation
+// anyways and the vulkan adapter will be completely handwritten by me.
+
 namespace xng::opengl {
     class HeapTransferContextGL final : public rg::TransferContext {
     public:
@@ -146,6 +150,10 @@ namespace xng::opengl {
             }
             cv.notify_one();
             thread.join();
+            for (const auto fence: creationFences) {
+                glDeleteSync(fence);
+            }
+            creationFences.clear();
             std::lock_guard lock(syncMutex);
             for (auto &[handle, entries]: bufferSyncs) {
                 for (auto &e: entries) {
@@ -371,16 +379,40 @@ namespace xng::opengl {
         }
 
         ResourceId::Handle allocateBuffer(const Buffer &desc) {
-            auto gl = std::make_shared<BufferGL>(desc);
+            // glGenBuffers runs on the calling (render) context; flush deferred deletes here so that
+            // name allocation and deallocation both happen on this one context.
+            drainPendingDeletes();
+            // Defer the GL-name deletion to the render context regardless of which thread drops the
+            // last reference: a heap-thread snapshot (ResourceScope copies share the underlying
+            // objects) may outlive free(). The deleter only runs once the refcount reaches zero, so
+            // zeroing the handle there is race-free and neuters ~BufferGL (glDeleteBuffers(0) is a no-op).
+            auto gl = std::shared_ptr<BufferGL>(new BufferGL(desc), [this](BufferGL *b) {
+                queueBufferDelete(b->handle);
+                b->handle = 0;
+                delete b;
+            });
+            GLsync const fence = createVisibilityFence();
             std::lock_guard lock(mutex);
+            if (fence != nullptr) creationFences.push_back(fence);
             auto handle = allocateHandle();
             resources.buffers.emplace(handle, std::move(gl));
             return handle;
         }
 
         ResourceId::Handle allocateTexture(const Texture &desc) {
-            auto gl = std::make_shared<TextureGL>(desc);
+            // glGenTextures runs on the calling (render) context; flush deferred deletes here so that
+            // name allocation and deallocation both happen on this one context.
+            drainPendingDeletes();
+            // See allocateBuffer: defer GL-name deletion to the render context via a custom deleter so
+            // a shared snapshot held by the heap thread is never mutated by free().
+            auto gl = std::shared_ptr<TextureGL>(new TextureGL(desc), [this](TextureGL *t) {
+                queueTextureDelete(t->handle);
+                t->handle = 0;
+                delete t;
+            });
+            const GLsync fence = createVisibilityFence();
             std::lock_guard lock(mutex);
+            if (fence != nullptr) creationFences.push_back(fence);
             auto handle = allocateHandle();
             resources.textures.emplace(handle, std::move(gl));
             return handle;
@@ -390,8 +422,12 @@ namespace xng::opengl {
             blockUntilIdle(handle);
             {
                 std::lock_guard lock(mutex);
-                resources.buffers.erase(handle);
+                // Drop this scope's reference. The GL object may still be referenced by a heap-thread
+                // snapshot (ResourceScope copies share the underlying shared_ptrs); its name is reclaimed
+                // by the custom deleter (queued for the render context) when the last reference is dropped.
+                // We must NOT mutate the shared object's handle here — a live snapshot would see it zeroed.
                 resources.textures.erase(handle);
+                resources.buffers.erase(handle);
                 freeHandles.push_back(handle);
             }
         }
@@ -402,6 +438,8 @@ namespace xng::opengl {
         }
 
         ResourceScope getResources() {
+            // Called from Runtime::execute on the render context — a safe place to reclaim detached names.
+            drainPendingDeletes();
             std::lock_guard lock(mutex);
             return resources;
         }
@@ -897,16 +935,30 @@ namespace xng::opengl {
             while (true) {
                 std::vector<Command> batch;
                 ResourceScope ctxResources;
+                std::vector<GLsync> newResourceFences;
                 {
                     std::unique_lock lock(mutex);
                     cv.wait(lock, [this] { return !commandQueue.empty() || !running; });
                     if (!running && commandQueue.empty()) break;
                     std::swap(batch, commandQueue);
                     ctxResources = resources;
+                    newResourceFences = std::move(creationFences);
+                    creationFences.clear();
                     // Populate in-flight regions for the entire batch so waitForTransfers predicates see them.
                     for (const auto &cmd: batch) {
                         collectRegions(cmd, inFlightBuffers, inFlightTextures);
                     }
+                }
+
+                // Make resources created on the render context visible to this sub-context before any
+                // command in the batch binds them. A client-side wait is what actually refreshes this
+                // context's view of the shared GL name namespace (see createVisibilityFence).
+                for (const auto fence: newResourceFences) {
+                    GLenum result;
+                    do {
+                        result = glClientWaitSync(fence, GL_SYNC_FLUSH_COMMANDS_BIT, 1000000000ull);
+                    } while (result == GL_TIMEOUT_EXPIRED);
+                    glDeleteSync(fence);
                 }
 
                 context.setResources(PassResources({}, ctxResources));
@@ -1016,6 +1068,53 @@ namespace xng::opengl {
             ctx.generateMipMaps(cmd.target);
         }
 
+        // Heap GL objects are created (glGen*) on the calling/render context. Their names must also be
+        // deleted on that context: deleting on the heap transfer thread corrupts the shared GL name
+        // namespace — a name freed there can be handed back out by glGen* on the render context before
+        // the two contexts agree, leaving a freshly created texture invalid on the heap context
+        // (glIsTexture == false) and glBindTexture failing with GL_INVALID_OPERATION.
+        // free() detaches the GL name into these queues; drainPendingDeletes() issues the real glDelete*
+        // and is only ever called from the render context (allocate*/getResources).
+        void queueTextureDelete(const GLuint handle) {
+            if (handle == 0) return;
+            std::lock_guard lock(deleteMutex);
+            pendingTextureDeletes.push_back(handle);
+        }
+
+        void queueBufferDelete(const GLuint handle) {
+            if (handle == 0) return;
+            std::lock_guard lock(deleteMutex);
+            pendingBufferDeletes.push_back(handle);
+        }
+
+        void drainPendingDeletes() {
+            std::vector<GLuint> textures;
+            std::vector<GLuint> buffers;
+            {
+                std::lock_guard lock(deleteMutex);
+                textures.swap(pendingTextureDeletes);
+                buffers.swap(pendingBufferDeletes);
+            }
+            if (!textures.empty()) {
+                glDeleteTextures(static_cast<GLsizei>(textures.size()), textures.data());
+            }
+            if (!buffers.empty()) {
+                glDeleteBuffers(static_cast<GLsizei>(buffers.size()), buffers.data());
+            }
+            oglCheckError();
+        }
+
+        // Fence the calling (render) context right after a resource was created. The heap sub-context
+        // ClientWaitSyncs on it before first use so the freshly created shared object becomes visible
+        // there. A client-side wait is required: glFlush on the producer and glWaitSync on the consumer
+        // (a GPU-only wait) both proved insufficient on this driver — the consuming context only
+        // re-reads the shared name table across a client-side synchronization.
+        static GLsync createVisibilityFence() {
+            const GLsync fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+            glFlush(); // make the fence (and the creation commands before it) reachable from other contexts
+            return fence;
+        }
+
         ResourceId::Handle allocateHandle() {
             if (freeHandles.empty()) return nextHandle++;
             const auto ret = freeHandles.back();
@@ -1046,6 +1145,15 @@ namespace xng::opengl {
         std::unordered_map<ResourceId::Handle, std::vector<TextureSyncEntry> > textureSyncs;
 
         ResourceScope resources;
+
+        // GL names detached by free(), deleted later on the render context via drainPendingDeletes().
+        std::mutex deleteMutex;
+        std::vector<GLuint> pendingTextureDeletes;
+        std::vector<GLuint> pendingBufferDeletes;
+
+        // Guarded by mutex — fences placed after resource creation on the render context; the heap
+        // sub-context ClientWaitSyncs on them before the next batch so new shared objects are visible.
+        std::vector<GLsync> creationFences;
 
         bool running = true;
     };
