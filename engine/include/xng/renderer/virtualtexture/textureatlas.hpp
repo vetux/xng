@@ -46,7 +46,7 @@ namespace xng {
                      const unsigned int tileSize,
                      const unsigned int tileBorder,
                      const float maxAnisotropy,
-                     const unsigned int maxTilesInFlight = 1)
+                     const unsigned int maxTilesInFlight = 100)
             : runtime(runtime),
               buffer(runtime.getResourceHeap(), chunkStreamer, rg::Buffer::CAPABILITY_TRANSFER_SRC),
               tileSize(tileSize),
