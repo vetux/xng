@@ -68,7 +68,7 @@ namespace xng {
             if (uploaded) return;
             uploaded = true;
 
-            const int mips = 4;
+            const int mips = 100;
             for (auto &pair: tileStreamer.getTextureStates()) {
                 auto mipSub = std::clamp(mips, 0, static_cast<int>(pair.second.size()));
                 for (auto i = pair.second.size() - mipSub; i < pair.second.size(); i++) {
