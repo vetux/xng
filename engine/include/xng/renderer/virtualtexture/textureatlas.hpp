@@ -47,7 +47,7 @@ namespace xng {
                      const unsigned int tileSize,
                      const unsigned int tileBorder,
                      const float maxAnisotropy,
-                     const unsigned int maxTilesInFlight = 100)
+                     const unsigned int maxTilesInFlight = 10)
             : runtime(runtime),
               buffer(runtime.getResourceHeap(), chunkStreamer, rg::Buffer::CAPABILITY_TRANSFER_SRC),
               tileSize(tileSize),
@@ -84,7 +84,7 @@ namespace xng {
             texture = runtime.getResourceHeap().allocateTexture(desc);
         }
 
-        Slot create(const std::vector<uint8_t> &texels) {
+        Slot create(const std::shared_ptr<std::vector<uint8_t>> &texels) {
             const auto slot = slotAllocator.allocate(1);
             pendingUploads.emplace(slot, PendingUpload(slot, getOffset(slot), texels));
             return slot;
@@ -154,7 +154,7 @@ namespace xng {
                 auto &upload = pendingUploads.at(slot);
                 if (!upload.startedUpload) {
                     upload.bufferSlot = bufferAllocator.allocate(1);
-                    upload.bufferHandle = buffer.upload(upload.texels, upload.bufferSlot * atlasTileBytes);
+                    upload.bufferHandle = buffer.upload(*upload.texels, upload.bufferSlot * atlasTileBytes);
                     upload.startedUpload = true;
                     buffer.flush(upload.bufferHandle);
                     tilesInFlight++;
@@ -171,7 +171,7 @@ namespace xng {
 
                 if (!pair.second.startedUpload && tilesInFlight < maxTilesInFlight) {
                     pair.second.bufferSlot = bufferAllocator.allocate(1);
-                    pair.second.bufferHandle = buffer.upload(pair.second.texels,
+                    pair.second.bufferHandle = buffer.upload(*pair.second.texels,
                                                              pair.second.bufferSlot * atlasTileBytes);
                     pair.second.startedUpload = true;
                     tilesInFlight++;
@@ -239,7 +239,7 @@ namespace xng {
             Slot slot;
             Vec3u offset;
 
-            std::vector<uint8_t> texels;
+            std::shared_ptr<std::vector<uint8_t>> texels;
 
             StreamBuffer::Handle bufferHandle{};
             size_t bufferSlot{};
@@ -249,7 +249,7 @@ namespace xng {
 
             PendingUpload(const Slot slot,
                           Vec3u offset,
-                          std::vector<uint8_t> texels)
+                          std::shared_ptr<std::vector<uint8_t>> texels)
                 : slot(slot),
                   offset(std::move(offset)),
                   texels(std::move(texels)) {

@@ -36,6 +36,7 @@
 #include "xng/renderer/virtualtexture/tileloader.hpp"
 
 namespace xng {
+    // TODO: Optimize TileStreamer
     /**
      * Load tiles via TileLoader asynchronously and upload the tiles to the atlas texture on the render thread and update the residency buffer.
      */
@@ -263,13 +264,14 @@ namespace xng {
             std::vector<rg::TransferPass> ret;
 
             std::unordered_map<TextureID, std::vector<PendingUpload> > framePendingUploads;
+            framePendingUploads.reserve(pendingUploads.size());
             for (auto &pair: pendingUploads) {
                 for (auto &pendingUpload: pair.second) {
                     if (pendingUpload.flushed) {
                         if (!pendingUpload.startedUpload) {
                             pendingUpload.tileTask->join();
                             pendingUpload.startedUpload = true;
-                            pendingUpload.atlasSlot = atlas.create(*pendingUpload.tileData);
+                            pendingUpload.atlasSlot = atlas.create(pendingUpload.tileData);
                         }
                         atlas.flush(pendingUpload.atlasSlot);
                         auto &state = textureStates.at(pair.first).at(pendingUpload.mip);
@@ -289,7 +291,7 @@ namespace xng {
                         }
                     } else if (pendingUpload.tileTask->isDone()) {
                         pendingUpload.startedUpload = true;
-                        pendingUpload.atlasSlot = atlas.create(*pendingUpload.tileData);
+                        pendingUpload.atlasSlot = atlas.create(pendingUpload.tileData);
                     }
                     framePendingUploads[pair.first].emplace_back(std::move(pendingUpload));
                 }
