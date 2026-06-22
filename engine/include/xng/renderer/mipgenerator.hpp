@@ -28,6 +28,7 @@
 #include "xng/rendergraph/builder/transferpassbuilder.hpp"
 
 namespace xng {
+    // TODO: Use raster pipeline for mip generation (Currently the downsampling blit doesnt filter across texture edges)
     class MipGenerator {
     public:
         explicit MipGenerator(rg::Heap &heap)
@@ -73,6 +74,7 @@ namespace xng {
             );
 
             std::unordered_map<unsigned int, std::pair<rg::HeapResource<rg::Texture>, rg::HeapResource<rg::Buffer> > > blits;
+            blits[0] = {texture, buffer};
             for (int mip = 1; mip < mipLevels; mip++) {
                 const auto mipSize = rg::Texture::getMipLevelSize(texture.getDescription().size, mip);
                 const auto mipTexture = heap.allocateTexture(rg::Texture(rg::Texture::CAPABILITY_TRANSFER_DST,
@@ -81,15 +83,17 @@ namespace xng {
                                                                       rg::Buffer::CAPABILITY_TRANSFER_DST,
                                                                       rg::Buffer::MEMORY_GPU_TO_CPU));
 
+                const auto sourceTexture = blits.at(mip - 1).first;
+
                 passes.emplace_back(rg::TransferPassBuilder("MipGenerator::Blit")
-                    .read(texture)
+                    .read(sourceTexture)
                     .write(mipTexture)
-                    .execute([texture, mipTexture](rg::TransferContext &ctx) {
-                        ctx.blitTexture(texture,
+                    .execute([sourceTexture, mipTexture](rg::TransferContext &ctx) {
+                        ctx.blitTexture(sourceTexture,
                                         mipTexture,
                                         rg::Texture::SubResource(),
                                         rg::Texture::SubResource(),
-                                        Rectu({}, texture.getDescription().size),
+                                        Rectu({}, sourceTexture.getDescription().size),
                                         Rectu({}, mipTexture.getDescription().size),
                                         rg::LINEAR);
                     }));
@@ -111,6 +115,8 @@ namespace xng {
             if (!sem->wait(timeOut)) {
                 throw std::runtime_error("Failed to generate mip levels");
             }
+
+            blits.erase(0);
 
             std::unordered_map<unsigned int, ImageRGBA> ret;
             for (auto &pair: blits) {
