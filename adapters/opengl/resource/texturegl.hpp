@@ -34,8 +34,6 @@ namespace xng::opengl {
 
         rg::Texture desc;
 
-        TextureGL() = default;
-
         explicit TextureGL(const rg::Texture &texture)
             : desc(texture) {
             if (desc.format == RGB8
@@ -62,6 +60,14 @@ namespace xng::opengl {
             glDeleteTextures(1, &handle);
             oglCheckError();
         }
+
+        TextureGL(const TextureGL &) = delete;
+
+        TextureGL &operator=(const TextureGL &) = delete;
+
+        TextureGL(TextureGL &&) = delete;
+
+        TextureGL &operator=(TextureGL &&) = delete;
 
     private:
         static GLsizei safeMipLevels(const unsigned int requested, const Vec2u &size) {

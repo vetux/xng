@@ -85,6 +85,14 @@ namespace xng::opengl {
             oglCheckError();
         }
 
+        BufferGL(const BufferGL &) = delete;
+
+        BufferGL &operator=(const BufferGL &) = delete;
+
+        BufferGL(BufferGL &&) = delete;
+
+        BufferGL &operator=(BufferGL &&) = delete;
+
         [[nodiscard]] uint8_t *map() const {
             oglDebugStartGroup("BufferGL::map");
 
