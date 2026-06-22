@@ -32,7 +32,8 @@ namespace xng {
 
         /**
          * The ChunkStreamer streaming budget defines the PCIe bandwidth limit.
-         * Additionally, the max tiles in flight represent a VRAM usage limit for bounding the tile staging buffer.
+         * Additionally, the max tiles in flight represent a VRAM usage limit for bounding the tile staging buffer and
+         * the gpu side copy overhead.
          *
          * @param runtime
          * @param chunkStreamer
