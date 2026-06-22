@@ -60,7 +60,7 @@ namespace xng {
         void readback() {
             //TODO: Implement readback
             //TODO: Tile streaming limiting based on available VRAM
-            //TODO: Redesign broken sync flow.
+            //TODO: Redesign sync flow between StreamBuffer / ChunkStreamer.
             //TODO: Tile streaming priorities
 
             // Upload up to mips from coarsest mip tiles for testing.
