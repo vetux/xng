@@ -141,14 +141,14 @@ namespace xng::shaderlib::virtualtexture {
         Float C = dot(dy, dy);
         Float B = dot(dx, dy);
 
-        Float halfSum  = 0.5f * (A + C);
+        Float halfSum = 0.5f * (A + C);
         Float halfDiff = 0.5f * (A - C);
 
         // discriminant is a sum of squares -> always >= 0, sqrt is safe without a guard
         Float root = sqrt(halfDiff * halfDiff + B * B);
 
-        Float majorSq = halfSum + root;             // >= 0 structurally (halfSum >= 0, root >= 0)
-        Float minorSq = max(halfSum - root, 0.0f);  // can dip < 0 from fp when det ~ 0 -> clamp
+        Float majorSq = halfSum + root; // >= 0 structurally (halfSum >= 0, root >= 0)
+        Float minorSq = max(halfSum - root, 0.0f); // can dip < 0 from fp when det ~ 0 -> clamp
 
         // + epsilon only guards the exact-zero case; negligible on any real footprint
         Float majorLod = 0.5f * log2(majorSq + 1e-20f);
@@ -219,22 +219,22 @@ namespace xng::shaderlib::virtualtexture {
     }
 
     vec4 sample_virtual(Param<UInt> textureID,
-                Param<vec2> uv,
-                Param<Int> wrap,
-                Param<Int> minFilter,
-                Param<Int> magFilter,
-                Param<Int> mipFilter,
-                Param<ivec2> imageSize,
-                Param<UInt> imageMaxMip,
-                Param<UInt> atlasSize,
-                Param<UInt> tileSize,
-                Param<UInt> tileBorder,
-                Param<Float> maxAnisotropy,
-                DynamicBufferWrapper<UInt> &tileMapOffsets,
-                DynamicBufferWrapper<UInt> &tileMap,
-                DynamicBufferWrapper<UInt> &residencyMapOffsets,
-                DynamicBufferWrapper<UInt> &residencyMap,
-                ShaderObject &sampler) {
+                        Param<vec2> uv,
+                        Param<Int> wrap,
+                        Param<Int> minFilter,
+                        Param<Int> magFilter,
+                        Param<Int> mipFilter,
+                        Param<ivec2> imageSize,
+                        Param<UInt> imageMaxMip,
+                        Param<UInt> atlasSize,
+                        Param<UInt> tileSize,
+                        Param<UInt> tileBorder,
+                        Param<Float> maxAnisotropy,
+                        DynamicBufferWrapper<UInt> &tileMapOffsets,
+                        DynamicBufferWrapper<UInt> &tileMap,
+                        DynamicBufferWrapper<UInt> &residencyMapOffsets,
+                        DynamicBufferWrapper<UInt> &residencyMap,
+                        ShaderObject &sampler) {
         IRFunction
 
         vec2 dx = partialDerivativeX(uv);
