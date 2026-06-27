@@ -191,8 +191,11 @@ namespace xng::shaderlib::virtualtexture {
         IRFunctionEnd
     }
 
-    Float getMip(Param<vec2> dx, Param<vec2> dy, Param<ivec2> imageSize, Param<UInt> imageMaxMip,
-                 Param<Float> maxAnisotropy) {
+    Float getMipReadback(Param<vec2> dx,
+                         Param<vec2> dy,
+                         Param<ivec2> imageSize,
+                         Param<UInt> imageMaxMip,
+                         Param<Float> maxAnisotropy) {
         IRFunction
 
         Float maxMip = Float(imageMaxMip);
@@ -215,6 +218,57 @@ namespace xng::shaderlib::virtualtexture {
         Fi
         IRReturn(wrapped);
 
+        IRFunctionEnd
+    }
+
+    vec4 sample_virtual_readback(Param<UInt> textureID,
+                                 Param<vec2> uv,
+                                 Param<Int> wrap,
+                                 Param<Int> minFilter,
+                                 Param<Int> magFilter,
+                                 Param<Int> mipFilter,
+                                 Param<ivec2> imageSize,
+                                 Param<UInt> imageMaxMip,
+                                 Param<UInt> atlasSize,
+                                 Param<UInt> tileSize,
+                                 Param<UInt> tileBorder,
+                                 Param<Float> maxAnisotropy,
+                                 DynamicBufferWrapper<UInt> &tileMapOffsets,
+                                 DynamicBufferWrapper<UInt> &tileMap,
+                                 DynamicBufferWrapper<UInt> &residencyMapOffsets,
+                                 DynamicBufferWrapper<UInt> &residencyMap,
+                                 DynamicBufferWrapper<UInt> &readback,
+                                 ShaderObject &sampler) {
+        IRFunction
+        sideEffect(readback_sample(textureID,
+                                   uv,
+                                   wrap,
+                                   minFilter,
+                                   magFilter,
+                                   mipFilter,
+                                   imageSize,
+                                   imageMaxMip,
+                                   tileSize,
+                                   maxAnisotropy,
+                                   tileMapOffsets,
+                                   readback));
+        IRReturn(sample_virtual(textureID,
+            uv,
+            wrap,
+            minFilter,
+            magFilter,
+            mipFilter,
+            imageSize,
+            imageMaxMip,
+            atlasSize,
+            tileSize,
+            tileBorder,
+            maxAnisotropy,
+            tileMapOffsets,
+            tileMap,
+            residencyMapOffsets,
+            residencyMap,
+            sampler))
         IRFunctionEnd
     }
 
@@ -1057,7 +1111,7 @@ namespace xng::shaderlib::virtualtexture {
 
         vec2 wrapped = wrapUV(uv, wrap);
 
-        Float mip = getMip(dx, dy, imageSize, imageMaxMip, maxAnisotropy);
+        Float mip = getMipReadback(dx, dy, imageSize, imageMaxMip, maxAnisotropy);
         vec2 mipSize = max(vec2(1.0f), vec2(imageSize) / exp2(mip));
 
         UInt tileIndex = getTileIndex(wrapped, mipSize, tileSize);
@@ -1124,7 +1178,7 @@ namespace xng::shaderlib::virtualtexture {
         IRFunction
 
         vec2 wrapped = wrapUV(uv, wrap);
-        Float mip = getMip(dx, dy, imageSize, imageMaxMip, maxAnisotropy);
+        Float mip = getMipReadback(dx, dy, imageSize, imageMaxMip, maxAnisotropy);
         vec2 mipSize = max(vec2(1.0f), vec2(imageSize) / exp2(mip));
 
         UInt tileIndex = getTileIndex(wrapped, mipSize, tileSize);
@@ -1191,7 +1245,7 @@ namespace xng::shaderlib::virtualtexture {
         IRFunction
 
         vec2 wrapped = wrapUV(uv, wrap);
-        Float mip = getMip(dx, dy, imageSize, imageMaxMip, maxAnisotropy);
+        Float mip = getMipReadback(dx, dy, imageSize, imageMaxMip, maxAnisotropy);
 
         vec2 mipSize = max(vec2(1.0f), vec2(imageSize) / exp2(mip));
 

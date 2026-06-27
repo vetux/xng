@@ -39,6 +39,25 @@ namespace xng::shaderlib::virtualtexture {
 
     using namespace ShaderScript;
 
+    XENGINE_EXPORT vec4 sample_virtual_readback(Param<UInt> textureID,
+                                                Param<vec2> uv,
+                                                Param<Int> wrap,
+                                                Param<Int> minFilter,
+                                                Param<Int> magFilter,
+                                                Param<Int> mipFilter,
+                                                Param<ivec2> imageSize,
+                                                Param<UInt> imageMaxMip,
+                                                Param<UInt> atlasSize,
+                                                Param<UInt> tileSize,
+                                                Param<UInt> tileBorder,
+                                                Param<Float> maxAnisotropy,
+                                                DynamicBufferWrapper<UInt> &tileMapOffsets,
+                                                DynamicBufferWrapper<UInt> &tileMap,
+                                                DynamicBufferWrapper<UInt> &residencyMapOffsets,
+                                                DynamicBufferWrapper<UInt> &residencyMap,
+                                                DynamicBufferWrapper<UInt> &readback,
+                                                ShaderObject &sampler);
+
     /**
      * Sample the virtual texture.
      *
