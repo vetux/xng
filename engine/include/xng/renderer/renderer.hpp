@@ -26,7 +26,7 @@
 
 namespace xng {
     // TODO: Frames in flight implementation
-    // TODO: Fix ghosting (Might be linux compositor related)
+    // TODO: Fix ghosting (Might be linux compositor related or broken synchronization in gl adapter)
     class XENGINE_EXPORT Renderer {
     public:
         static rg::Shader compileSkinningShader();
