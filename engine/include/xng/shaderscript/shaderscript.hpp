@@ -662,40 +662,88 @@ namespace xng::ShaderScript {
         return ShaderObject(rg::ShaderInstructionFactory::partialDerivativeY(value.operand));
     }
 
-    inline ShaderObject atomicAdd(const ShaderObject &mem, const ShaderObject &data) {
+    [[nodiscard]] inline ShaderObject atomicAddReturn(const ShaderObject &mem, const ShaderObject &data) {
         return ShaderObject(rg::ShaderInstructionFactory::atomicAdd(mem.operand, data.operand));
     }
 
-    inline ShaderObject atomicMin(const ShaderObject &mem, const ShaderObject &data) {
+    [[nodiscard]] inline ShaderObject atomicMinReturn(const ShaderObject &mem, const ShaderObject &data) {
         return ShaderObject(rg::ShaderInstructionFactory::atomicMin(mem.operand, data.operand));
     }
 
-    inline ShaderObject atomicMax(const ShaderObject &mem, const ShaderObject &data) {
+    [[nodiscard]] inline ShaderObject atomicMaxReturn(const ShaderObject &mem, const ShaderObject &data) {
         return ShaderObject(rg::ShaderInstructionFactory::atomicMax(mem.operand, data.operand));
     }
 
-    inline ShaderObject atomicAnd(const ShaderObject &mem, const ShaderObject &data) {
+    [[nodiscard]] inline ShaderObject atomicAndReturn(const ShaderObject &mem, const ShaderObject &data) {
         return ShaderObject(rg::ShaderInstructionFactory::atomicAnd(mem.operand, data.operand));
     }
 
-    inline ShaderObject atomicOr(const ShaderObject &mem, const ShaderObject &data) {
+    [[nodiscard]] inline ShaderObject atomicOrReturn(const ShaderObject &mem, const ShaderObject &data) {
         return ShaderObject(rg::ShaderInstructionFactory::atomicOr(mem.operand, data.operand));
     }
 
-    inline ShaderObject atomicXor(const ShaderObject &mem, const ShaderObject &data) {
+    [[nodiscard]] inline ShaderObject atomicXorReturn(const ShaderObject &mem, const ShaderObject &data) {
         return ShaderObject(rg::ShaderInstructionFactory::atomicXor(mem.operand, data.operand));
     }
 
-    inline ShaderObject atomicExchange(const ShaderObject &mem, const ShaderObject &data) {
+    [[nodiscard]] inline ShaderObject atomicExchangeReturn(const ShaderObject &mem, const ShaderObject &data) {
         return ShaderObject(rg::ShaderInstructionFactory::atomicExchange(mem.operand, data.operand));
     }
 
-    inline ShaderObject atomicCompareSwap(const ShaderObject &mem,
-                                          const ShaderObject &compare,
-                                          const ShaderObject &data) {
+    [[nodiscard]] inline ShaderObject atomicCompareSwapReturn(const ShaderObject &mem,
+                                                              const ShaderObject &compare,
+                                                              const ShaderObject &data) {
         return ShaderObject(rg::ShaderInstructionFactory::atomicCompareSwap(mem.operand,
                                                                             compare.operand,
                                                                             data.operand));
+    }
+
+    inline void atomicAdd(const ShaderObject &mem, const ShaderObject &data) {
+        BlockScope::get().addInstruction(rg::ShaderInstructionFactory::atomicAdd(mem.operand, data.operand));
+    }
+
+    inline void atomicMin(const ShaderObject &mem, const ShaderObject &data) {
+        BlockScope::get().addInstruction(rg::ShaderInstructionFactory::atomicMin(mem.operand, data.operand));
+    }
+
+    inline void atomicMax(const ShaderObject &mem, const ShaderObject &data) {
+        BlockScope::get().addInstruction(rg::ShaderInstructionFactory::atomicMax(mem.operand, data.operand));
+    }
+
+    inline void atomicAnd(const ShaderObject &mem, const ShaderObject &data) {
+        BlockScope::get().addInstruction(rg::ShaderInstructionFactory::atomicAnd(mem.operand, data.operand));
+    }
+
+    inline void atomicOr(const ShaderObject &mem, const ShaderObject &data) {
+        BlockScope::get().addInstruction(rg::ShaderInstructionFactory::atomicOr(mem.operand, data.operand));
+    }
+
+    inline void atomicXor(const ShaderObject &mem, const ShaderObject &data) {
+        BlockScope::get().addInstruction(rg::ShaderInstructionFactory::atomicXor(mem.operand, data.operand));
+    }
+
+    inline void atomicExchange(const ShaderObject &mem, const ShaderObject &data) {
+        BlockScope::get().addInstruction(rg::ShaderInstructionFactory::atomicExchange(mem.operand, data.operand));
+    }
+
+    inline void atomicCompareSwap(const ShaderObject &mem,
+                                  const ShaderObject &compare,
+                                  const ShaderObject &data) {
+        BlockScope::get().addInstruction(rg::ShaderInstructionFactory::atomicCompareSwap(mem.operand,
+            compare.operand,
+            data.operand));
+    }
+
+    // TODO: Redesign ShaderScript instruction generation scheme. (No static allocation and side effect tracking.)
+    /**
+     * Currently, ShaderScript only emits instructions into the block scope when they are referenced in assignments, return values etc.
+     *
+     * Instructions which are pure side effects must go through this function for now.
+     *
+     * @param value
+     */
+    inline void sideEffect(const ShaderObject &value) {
+        BlockScope::get().addInstruction(rg::ShaderInstructionFactory::assign(value.operand, value.operand));
     }
 
     template<typename T>
