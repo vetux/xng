@@ -35,34 +35,23 @@ struct Resources {
     ResourceHandle<Mesh> sphereMesh2 = ResourceHandle<Mesh>(Uri("file://meshes/cornell.fbx:Sphere.002"));
     Transform sphereTransform2{};
 
-    ResourceHandle<ImageRGBA> boxAlbedoImage = ResourceHandle<ImageRGBA>(Uri("file://images/cornell_boxcolor.png"));
+    std::shared_ptr<ImageTileLoader> boxAlbedoLoader;
 
-    ResourceHandle<ImageRGBA> brickAlbedo = ResourceHandle<ImageRGBA>(
-        Uri("file://images/subway_brick/old-subway-brick_albedo.png"));
-    ResourceHandle<ImageRGBA> brickMetallic = ResourceHandle<ImageRGBA>(
-        Uri("file://images/subway_brick/old-subway-brick_metallic.png"));
-    ResourceHandle<ImageRGBA> brickRoughness = ResourceHandle<ImageRGBA>(
-        Uri("file://images/subway_brick/old-subway-brick_roughness.png"));
-    ResourceHandle<ImageRGBA> brickAo = ResourceHandle<ImageRGBA>(
-        Uri("file://images/subway_brick/old-subway-brick_ao.png"));
-    ResourceHandle<ImageRGBA> brickNormal = ResourceHandle<ImageRGBA>(
-        Uri("file://images/subway_brick/old-subway-brick_normal-ogl.png"));
+    std::shared_ptr<ImageTileLoader> brickAlbedoLoader;
+    std::shared_ptr<ImageTileLoader> brickMetallicLoader;
+    std::shared_ptr<ImageTileLoader> brickRoughnessLoader;
+    std::shared_ptr<ImageTileLoader> brickAoLoader;
+    std::shared_ptr<ImageTileLoader> brickNormalLoader;
 
-    ResourceHandle<ImageRGBA> rustedIronAlbedo = ResourceHandle<ImageRGBA>(
-        Uri("file://images/rusted_iron/rustediron2_basecolor.png"));
-    ResourceHandle<ImageRGBA> rustedIronMetallic = ResourceHandle<ImageRGBA>(
-        Uri("file://images/rusted_iron/rustediron2_metallic.png"));
-    ResourceHandle<ImageRGBA> rustedIronRoughness = ResourceHandle<ImageRGBA>(
-        Uri("file://images/rusted_iron/rustediron2_roughness.png"));
+    std::shared_ptr<ImageTileLoader> rustedIronAlbedoLoader;
+    std::shared_ptr<ImageTileLoader> rustedIronMetallicLoader;
+    std::shared_ptr<ImageTileLoader> rustedIronRoughnessLoader;
 
-    ResourceHandle<ImageRGBA> goldAlbedo = ResourceHandle<ImageRGBA>(
-        Uri("file://images/lightgold/lightgold_albedo.png"));
-    ResourceHandle<ImageRGBA> goldMetallic = ResourceHandle<ImageRGBA>(
-        Uri("file://images/lightgold/lightgold_metallic.png"));
-    ResourceHandle<ImageRGBA> goldRoughness = ResourceHandle<ImageRGBA>(
-        Uri("file://images/lightgold/lightgold_roughness.png"));
+    std::shared_ptr<ImageTileLoader> goldAlbedoLoader;
+    std::shared_ptr<ImageTileLoader> goldMetallicLoader;
+    std::shared_ptr<ImageTileLoader> goldRoughnessLoader;
 
-    ResourceHandle<ImageRGBA> sphereNormal = ResourceHandle<ImageRGBA>(Uri("file://images/sphere_normals.png"));
+    std::shared_ptr<ImageTileLoader> sphereNormalLoader;
 
     Transform getTransform(const std::string &name, const AssetScene::Node &node, bool &found) {
         if (node.name == name) {
@@ -78,7 +67,7 @@ struct Resources {
         return node.transform;
     }
 
-    Resources() {
+    Resources(rg::Heap &heap) {
         const auto scene = ResourceHandle<AssetScene>(Uri("file://meshes/cornell.fbx:RootNode")).get();
         bool found = false;
         boxTransform = getTransform("Box", scene.root, found);
@@ -88,11 +77,83 @@ struct Resources {
         sphereTransform1 = getTransform("Sphere.001", scene.root, found);
         found = false;
         sphereTransform2 = getTransform("Sphere.002", scene.root, found);
+
+        ResourceHandle<ImageRGBA> boxAlbedoImage = ResourceHandle<ImageRGBA>(Uri("file://images/cornell_boxcolor.png"));
+
+        ResourceHandle<ImageRGBA> brickAlbedo = ResourceHandle<ImageRGBA>(
+            Uri("file://images/subway_brick/old-subway-brick_albedo.png"));
+
+        ResourceHandle<ImageRGBA> brickMetallic = ResourceHandle<ImageRGBA>(
+            Uri("file://images/subway_brick/old-subway-brick_metallic.png"));
+
+        ResourceHandle<ImageRGBA> brickRoughness = ResourceHandle<ImageRGBA>(
+            Uri("file://images/subway_brick/old-subway-brick_roughness.png"));
+
+        ResourceHandle<ImageRGBA> brickAo = ResourceHandle<ImageRGBA>(
+            Uri("file://images/subway_brick/old-subway-brick_ao.png"));
+
+        ResourceHandle<ImageRGBA> brickNormal = ResourceHandle<ImageRGBA>(
+            Uri("file://images/subway_brick/old-subway-brick_normal-ogl.png"));
+
+        ResourceHandle<ImageRGBA> rustedIronAlbedo = ResourceHandle<ImageRGBA>(
+            Uri("file://images/rusted_iron/rustediron2_basecolor.png"));
+
+        ResourceHandle<ImageRGBA> rustedIronMetallic = ResourceHandle<ImageRGBA>(
+            Uri("file://images/rusted_iron/rustediron2_metallic.png"));
+
+        ResourceHandle<ImageRGBA> rustedIronRoughness = ResourceHandle<ImageRGBA>(
+            Uri("file://images/rusted_iron/rustediron2_roughness.png"));
+
+        ResourceHandle<ImageRGBA> goldAlbedo = ResourceHandle<ImageRGBA>(
+            Uri("file://images/lightgold/lightgold_albedo.png"));
+
+        ResourceHandle<ImageRGBA> goldMetallic = ResourceHandle<ImageRGBA>(
+            Uri("file://images/lightgold/lightgold_metallic.png"));
+
+        ResourceHandle<ImageRGBA> goldRoughness = ResourceHandle<ImageRGBA>(
+            Uri("file://images/lightgold/lightgold_roughness.png"));
+
+        ResourceHandle<ImageRGBA> sphereNormal = ResourceHandle<ImageRGBA>(Uri("file://images/sphere_normals.png"));
+
+        constexpr auto tileSize = 256;
+        constexpr auto tileBorder = 9;
+
+        boxAlbedoLoader = getLoader(boxAlbedoImage, heap, tileSize, tileBorder);
+
+        brickAlbedoLoader = getLoader(brickAlbedo, heap, tileSize, tileBorder);
+        brickMetallicLoader = getLoader(brickMetallic, heap, tileSize, tileBorder);
+        brickRoughnessLoader = getLoader(brickRoughness, heap, tileSize, tileBorder);
+        brickAoLoader = getLoader(brickAo, heap, tileSize, tileBorder);
+        brickNormalLoader = getLoader(brickNormal, heap, tileSize, tileBorder);
+
+        rustedIronAlbedoLoader = getLoader(rustedIronAlbedo, heap, tileSize, tileBorder);
+        rustedIronMetallicLoader = getLoader(rustedIronMetallic, heap, tileSize, tileBorder);
+        rustedIronRoughnessLoader = getLoader(rustedIronRoughness, heap, tileSize, tileBorder);
+
+        goldAlbedoLoader = getLoader(goldAlbedo, heap, tileSize, tileBorder);
+        goldMetallicLoader = getLoader(goldMetallic, heap, tileSize, tileBorder);
+        goldRoughnessLoader = getLoader(goldRoughness, heap, tileSize, tileBorder);
+
+        sphereNormalLoader = getLoader(sphereNormal, heap, tileSize, tileBorder);
+    }
+
+private:
+    std::shared_ptr<ImageTileLoader> getLoader(const ResourceHandle<ImageRGBA> &image,
+                                               rg::Heap &heap,
+                                               const unsigned int tileSize,
+                                               const unsigned int tileBorder) {
+        return std::make_shared<ImageTileLoader>(image.get(),
+                                                 rg::Texture::calculateMipLevels(
+                                                     image.get().getResolution()),
+                                                 tileSize,
+                                                 tileBorder,
+                                                 WRAP_CLAMP_TO_EDGE,
+                                                 heap);
     }
 };
 
 void createCornellInstance(RenderAllocator &allocator, Resources &res, RenderDrawList &drawList, Vec3f offset) {
-    auto boxAlbedo = allocator.createTexture(res.boxAlbedoImage.get(), WRAP_CLAMP_TO_EDGE);
+    auto boxAlbedo = allocator.createTexture(res.boxAlbedoLoader);
 
     auto boxMaterial = allocator.createMaterial({},
                                                 1,
@@ -124,11 +185,11 @@ void createCornellInstance(RenderAllocator &allocator, Resources &res, RenderDra
 
     drawList.models.emplace_back(boxModel);
 
-    auto brickAlbedo = allocator.createTexture(res.brickAlbedo.get(), WRAP_CLAMP_TO_EDGE);
-    auto brickMetallic = allocator.createTexture(res.brickMetallic.get(), WRAP_CLAMP_TO_EDGE);
-    auto brickRoughness = allocator.createTexture(res.brickRoughness.get(), WRAP_CLAMP_TO_EDGE);
-    auto brickAo = allocator.createTexture(res.brickAo.get(), WRAP_CLAMP_TO_EDGE);
-    auto brickNormal = allocator.createTexture(res.brickNormal.get(), WRAP_CLAMP_TO_EDGE);
+    auto brickAlbedo = allocator.createTexture(res.brickAlbedoLoader);
+    auto brickMetallic = allocator.createTexture(res.brickMetallicLoader);
+    auto brickRoughness = allocator.createTexture(res.brickRoughnessLoader);
+    auto brickAo = allocator.createTexture(res.brickAoLoader);
+    auto brickNormal = allocator.createTexture(res.brickNormalLoader);
 
     SamplingProperties brickProps(FILTER_BICUBIC, FILTER_BICUBIC, rg::LINEAR, WRAP_REPEAT);
 
@@ -167,11 +228,11 @@ void createCornellInstance(RenderAllocator &allocator, Resources &res, RenderDra
     auto sphereMesh = allocator.createMesh(Mesh::computeSmoothNormals(res.sphereMesh1.get()), {});
     auto sphereMesh2 = allocator.createMesh(res.sphereMesh2.get(), {});
 
-    auto sphereNormal = allocator.createTexture(res.sphereNormal.get(), WRAP_CLAMP_TO_EDGE);
+    auto sphereNormal = allocator.createTexture(res.sphereNormalLoader);
 
-    auto rustedIronAlbedo = allocator.createTexture(res.rustedIronAlbedo.get(), WRAP_CLAMP_TO_EDGE);
-    auto rustedIronMetallic = allocator.createTexture(res.rustedIronMetallic.get(), WRAP_CLAMP_TO_EDGE);
-    auto rustedIronRoughness = allocator.createTexture(res.rustedIronRoughness.get(), WRAP_CLAMP_TO_EDGE);
+    auto rustedIronAlbedo = allocator.createTexture(res.rustedIronAlbedoLoader);
+    auto rustedIronMetallic = allocator.createTexture(res.rustedIronMetallicLoader);
+    auto rustedIronRoughness = allocator.createTexture(res.rustedIronRoughnessLoader);
 
     auto rustedIronSphereMaterial = allocator.createMaterial({},
                                                              0,
@@ -203,9 +264,9 @@ void createCornellInstance(RenderAllocator &allocator, Resources &res, RenderDra
 
     drawList.models.emplace_back(rustedIronSphereModel);
 
-    auto goldAlbedo = allocator.createTexture(res.goldAlbedo.get(), WRAP_CLAMP_TO_EDGE);
-    auto goldMetallic = allocator.createTexture(res.goldMetallic.get(), WRAP_CLAMP_TO_EDGE);
-    auto goldRoughness = allocator.createTexture(res.goldRoughness.get(), WRAP_CLAMP_TO_EDGE);
+    auto goldAlbedo = allocator.createTexture(res.goldAlbedoLoader);
+    auto goldMetallic = allocator.createTexture(res.goldMetallicLoader);
+    auto goldRoughness = allocator.createTexture(res.goldRoughnessLoader);
 
     auto goldSphereMaterial = allocator.createMaterial({},
                                                        1,
@@ -246,8 +307,11 @@ void createCornellInstance(RenderAllocator &allocator, Resources &res, RenderDra
     drawList.pointLights.emplace_back(pointLight);
 }
 
-RenderDrawList createDrawList(RenderAllocator &allocator) {
-    Resources res;
+RenderDrawList createDrawList(RenderAllocator &allocator, rg::Heap &heap) {
+    std::cout << "Generating Mips..." << std::endl;
+    Resources res(heap);
+
+    std::cout << "Generating Draw List..." << std::endl;
     RenderDrawList ret;
 
     // scene.hdri = ResourceHandle<ImageRGBF>(Uri("file://hdri/church_stairway_4k.hdr"));
@@ -392,6 +456,7 @@ int main(int argc, char *argv[]) {
 
     WindowAttributes attributes;
     attributes.visible = true;
+    attributes.doubleBuffer = false;
 
     const std::shared_ptr window = std::move(glfw.createWindow("RenderGraph Test",
                                                                {1000, 900},
@@ -418,7 +483,7 @@ int main(int argc, char *argv[]) {
     ResourceRegistry::getDefaultRegistry().awaitAll();
 
     std::cout << "Allocating Objects..." << std::endl;
-    auto drawList = createDrawList(ren.getAllocator());
+    auto drawList = createDrawList(ren.getAllocator(), runtime->getResourceHeap());
 
     std::cout << "Ready" << std::endl;
 
