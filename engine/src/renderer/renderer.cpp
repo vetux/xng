@@ -89,7 +89,11 @@ namespace xng {
             pass->record(graph, surface, registry, scene);
         }
 
-        runtime.execute(graph.build());
+        static constexpr size_t timeOut = 10'000'000'000ULL;
+        auto sem = runtime.execute(graph.build());
+        if (!sem->wait(timeOut)) {
+            throw std::runtime_error("Renderer timed out");
+        }
     }
 
     rg::ComputePass Renderer::recordSkinningPass(const RenderDrawList &drawList,
@@ -263,6 +267,7 @@ namespace xng {
         scene.tileMapOffsetsBuffer = rg::Resource(buffers.tileMapOffsetsBuffer);
         scene.residencyMapBuffer = rg::Resource(buffers.residencyMapBuffer);
         scene.residencyMapOffsetsBuffer = rg::Resource(buffers.residencyMapOffsetsBuffer);
+        scene.readbackBuffer = rg::Resource(buffers.readbackBuffer);
 
         scene.atlasSize = buffers.atlasSize;
         scene.tileSize = buffers.tileSize;

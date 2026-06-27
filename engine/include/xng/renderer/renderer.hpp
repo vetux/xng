@@ -25,6 +25,7 @@
 #include "xng/renderer/renderpass.hpp"
 
 namespace xng {
+    // TODO: Frames in flight implementation
     class XENGINE_EXPORT Renderer {
     public:
         static rg::Shader compileSkinningShader();

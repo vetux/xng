@@ -22,6 +22,7 @@
 #include <utility>
 #include <vector>
 #include <cstdint>
+#include <cstring>
 
 #include "xng/assets/image.hpp"
 #include "xng/async/task.hpp"
@@ -60,14 +61,27 @@ namespace xng {
             Vec2u size;
             Vec2u tileCount;
 
+            std::vector<bool> pending;
             std::vector<bool> resident;
             std::vector<TextureAtlas::Slot> atlasSlots;
+
+            std::vector<unsigned int> taps;
 
             TextureState(Vec2u size, const Vec2u &tileCount)
                 : size(std::move(size)),
                   tileCount(tileCount),
+                  pending(tileCount.x * tileCount.y, false),
                   resident(tileCount.x * tileCount.y),
-                  atlasSlots(tileCount.x * tileCount.y) {
+                  atlasSlots(tileCount.x * tileCount.y),
+                  taps(tileCount.x * tileCount.y, 0) {
+            }
+
+            [[nodiscard]] bool isPending(const Vec2u &tile) const {
+                return pending.at(tileToIndex(tile, tileCount));
+            }
+
+            void setPending(const Vec2u &tile, const bool isPending) {
+                this->pending.at(tileToIndex(tile, tileCount)) = isPending;
             }
 
             [[nodiscard]] bool isResident(const Vec2u &tile) const {
@@ -85,6 +99,14 @@ namespace xng {
             void setAtlasSlot(const Vec2u &tile, const TextureAtlas::Slot slot) {
                 this->atlasSlots.at(tileToIndex(tile, tileCount)) = slot;
             }
+
+            [[nodiscard]] unsigned int getTaps(const Vec2u &tile) const {
+                return taps.at(tileToIndex(tile, tileCount));
+            }
+
+            void setTaps(const Vec2u &tile, const unsigned int value) {
+                taps.at(tileToIndex(tile, tileCount)) = value;
+            }
         };
 
         TileStreamer(rg::Heap &heap,
@@ -100,6 +122,15 @@ namespace xng {
               tileMapBuffer(heap, chunkStreamer, rg::Buffer::CAPABILITY_STORAGE),
               residencyMapOffsetsBuffer(heap, chunkStreamer, rg::Buffer::CAPABILITY_STORAGE),
               residencyMapBuffer(heap, chunkStreamer, rg::Buffer::CAPABILITY_STORAGE) {
+            readbackBuffer = heap.allocateBuffer(rg::Buffer(1,
+                                                            rg::Buffer::CAPABILITY_STORAGE,
+                                                            rg::Buffer::MEMORY_GPU_ONLY));
+            readbackHostBuffer = heap.allocateBuffer(rg::Buffer(1,
+                                                                rg::Buffer::CAPABILITY_STORAGE,
+                                                                rg::Buffer::MEMORY_GPU_TO_CPU));
+            readbackClearBuffer = heap.allocateBuffer(rg::Buffer(1,
+                                                                 rg::Buffer::CAPABILITY_STORAGE,
+                                                                 rg::Buffer::MEMORY_CPU_TO_GPU));
         }
 
         ~TileStreamer() = default;
@@ -168,6 +199,8 @@ namespace xng {
 
             textures[ret] = std::move(tex);
 
+            newTextures.insert(ret);
+
             return ret;
         }
 
@@ -207,9 +240,17 @@ namespace xng {
                 throw std::runtime_error("Mip level out of range.");
             }
 
+            auto &state = textureStates.at(tex).at(mip);
+            if (state.isPending(tile) || state.isResident(tile)) {
+                return;
+            }
+
             const auto texSize = textures.at(tex).loader->getSize();
             const auto mipSize = rg::Texture::getMipLevelSize(texSize, mip);
             const auto mipTiles = getTiles(mipSize, tileSize);
+
+            textureStates.at(tex).at(mip).setPending(tile, true);
+
             pendingUploads[tex].emplace_back(tex,
                                              mip,
                                              tile,
@@ -235,6 +276,7 @@ namespace xng {
             if (state.isResident(tile)) {
                 atlas.destroy(state.getAtlasSlot(tile));
                 state.setResident(tile, false);
+                state.setPending(tile, false);
                 updatedMips[tex].insert(mip);
             }
         }
@@ -261,6 +303,29 @@ namespace xng {
             return true;
         }
 
+        void readback() {
+            // Readback taps
+            const auto mapping = heap.map(readbackHostBuffer);
+            for (auto &pair: textures) {
+                if (newTextures.find(pair.first) != newTextures.end()) {
+                    continue;
+                }
+                for (auto i = 0; i < pair.second.tileMapOffsets.size(); i++) {
+                    auto &state = textureStates.at(pair.first).at(i);
+                    const auto tileCount = state.tileCount;
+                    const auto offset = pair.second.tileMapOffsets.at(i);
+                    for (auto x = 0; x < tileCount.x; x++) {
+                        for (auto y = 0; y < tileCount.y; y++) {
+                            const auto index = tileToIndex(Vec2u(x, y), tileCount);
+                            const unsigned int taps = *(
+                                reinterpret_cast<unsigned int *>(mapping->data()) + offset + index);
+                            state.setTaps(Vec2u(x, y), taps);
+                        }
+                    }
+                }
+            }
+        }
+
         std::vector<rg::TransferPass> commit(rg::GraphBuilder &graph) {
             std::vector<rg::TransferPass> ret;
 
@@ -276,6 +341,7 @@ namespace xng {
                         }
                         atlas.flush(pendingUpload.atlasSlot);
                         auto &state = textureStates.at(pair.first).at(pendingUpload.mip);
+                        state.setPending(pendingUpload.tile, false);
                         state.setResident(pendingUpload.tile, true);
                         state.setAtlasSlot(pendingUpload.tile, pendingUpload.atlasSlot);
                         updatedMips[pendingUpload.tex].insert(pendingUpload.mip);
@@ -285,6 +351,7 @@ namespace xng {
                     if (pendingUpload.startedUpload) {
                         if (atlas.isUploadComplete(pendingUpload.atlasSlot)) {
                             auto &state = textureStates.at(pair.first).at(pendingUpload.mip);
+                            state.setPending(pendingUpload.tile, false);
                             state.setResident(pendingUpload.tile, true);
                             state.setAtlasSlot(pendingUpload.tile, pendingUpload.atlasSlot);
                             updatedMips[pendingUpload.tex].insert(pendingUpload.mip);
@@ -341,6 +408,48 @@ namespace xng {
             passes = residencyMapBuffer.commit(graph);
             ret.insert(ret.end(), passes.begin(), passes.end());
 
+            bool copyReadback = true;
+            if (readbackBuffer.getDescription().size != tileMapBuffer.getBuffer().getDescription().size) {
+                copyReadback = false;
+                auto desc = readbackBuffer.getDescription();
+                desc.size = tileMapBuffer.getBuffer().getDescription().size;
+                readbackBuffer = heap.allocateBuffer(desc);
+
+                desc = readbackHostBuffer.getDescription();
+                desc.size = tileMapBuffer.getBuffer().getDescription().size;
+                readbackHostBuffer = heap.allocateBuffer(desc);
+
+                desc = readbackClearBuffer.getDescription();
+                desc.size = tileMapBuffer.getBuffer().getDescription().size;
+                readbackClearBuffer = heap.allocateBuffer(desc);
+                {
+                    const auto mapping = heap.map(readbackClearBuffer);
+                    std::memset(mapping->data(), 0, mapping->size());
+                }
+                {
+                    const auto mapping = heap.map(readbackHostBuffer);
+                    std::memset(mapping->data(), 0, mapping->size());
+                }
+            }
+
+            if (copyReadback) {
+                ret.emplace_back(rg::TransferPassBuilder("TileStreamer/Readback")
+                    .read(readbackBuffer)
+                    .write(readbackHostBuffer)
+                    .execute([this](rg::TransferContext &ctx) {
+                        ctx.copyBuffer(readbackHostBuffer, readbackBuffer, 0, 0, readbackBuffer.getDescription().size);
+                    }));
+            }
+
+            ret.emplace_back(rg::TransferPassBuilder("TileStreamer/ReadbackClear")
+                .write(readbackBuffer)
+                .read(readbackClearBuffer)
+                .execute([this](rg::TransferContext &ctx) {
+                    ctx.copyBuffer(readbackBuffer, readbackClearBuffer, 0, 0, readbackBuffer.getDescription().size);
+                }));
+
+            newTextures.clear();
+
             return ret;
         }
 
@@ -358,6 +467,10 @@ namespace xng {
 
         rg::HeapResource<rg::Buffer> getResidencyMapBuffer() const {
             return residencyMapBuffer.getBuffer();
+        }
+
+        rg::HeapResource<rg::Buffer> getReadbackBuffer() const {
+            return readbackBuffer;
         }
 
     private:
@@ -481,6 +594,8 @@ namespace xng {
 
         std::unordered_map<TextureID, std::unordered_set<unsigned int> > updatedMips;
 
+        std::unordered_set<TextureID> newTextures;
+
         StreamBuffer tileMapOffsetsBuffer;
         StreamBuffer tileMapBuffer;
         RangeAllocator tileMapAllocator;
@@ -488,6 +603,10 @@ namespace xng {
         StreamBuffer residencyMapOffsetsBuffer;
         StreamBuffer residencyMapBuffer;
         RangeAllocator residencyMapAllocator;
+
+        rg::HeapResource<rg::Buffer> readbackBuffer;
+        rg::HeapResource<rg::Buffer> readbackHostBuffer;
+        rg::HeapResource<rg::Buffer> readbackClearBuffer;
     };
 }
 

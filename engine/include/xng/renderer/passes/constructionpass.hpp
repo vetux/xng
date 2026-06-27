@@ -180,6 +180,7 @@ namespace xng {
                 builder.storageRead(scene.tileMapOffsetsBuffer, {rg::Shader::FRAGMENT});
                 builder.storageRead(scene.residencyMapBuffer, {rg::Shader::FRAGMENT});
                 builder.storageRead(scene.residencyMapOffsetsBuffer, {rg::Shader::FRAGMENT});
+                builder.storageWrite(scene.readbackBuffer, {rg::Shader::FRAGMENT});
             }
 
             if (totalDrawCount <= 0) {
@@ -227,6 +228,7 @@ namespace xng {
                 cmd.bindStorageBuffer("tileMapOffsets", scene.tileMapOffsetsBuffer, 0, 0);
                 cmd.bindStorageBuffer("residencyMap", scene.residencyMapBuffer, 0, 0);
                 cmd.bindStorageBuffer("residencyMapOffsets", scene.residencyMapOffsetsBuffer, 0, 0);
+                cmd.bindStorageBuffer("readbackBuffer", scene.readbackBuffer, 0, 0);
 
                 cmd.setShaderParameter("atlasSize", rg::ShaderPrimitive(scene.atlasSize));
                 cmd.setShaderParameter("tileSize", rg::ShaderPrimitive(scene.tileSize));

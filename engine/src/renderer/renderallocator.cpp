@@ -139,7 +139,7 @@ namespace xng {
     }
 
     [[nodiscard]] RenderAllocator::Buffers RenderAllocator::commit(rg::GraphBuilder &graph) {
-        textureStream.readback();
+        textureStream.update();
         std::vector<rg::TransferPass> streamPasses;
         concatPasses(shaderMeshStream.commit(graph), streamPasses);
         concatPasses(transformStream.commit(graph), streamPasses);
@@ -169,6 +169,7 @@ namespace xng {
             textureStream.getTileMapOffsetsBuffer(),
             textureStream.getResidencyMapBuffer(),
             textureStream.getResidencyMapOffsetsBuffer(),
+            textureStream.getReadbackBuffer(),
             textureStream.getAtlasTexture().getDescription().size.x,
             textureStream.getTileSize(),
             textureStream.getTileBorder(),

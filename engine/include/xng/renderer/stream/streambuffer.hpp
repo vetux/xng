@@ -28,6 +28,7 @@ namespace xng {
      * The stream buffer dynamically grows in size if flushed uploads exceed targetSize and dynamically shrinks back to targetSize.
      *
      * TODO: Implement dynamic double buffer size (Instead of full size double buffer)
+     * TODO: Redesign sync flow between StreamBuffer / ChunkStreamer.
      */
     class StreamBuffer {
     public:

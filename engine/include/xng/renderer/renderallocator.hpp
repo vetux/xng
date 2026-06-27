@@ -60,6 +60,7 @@ namespace xng {
             rg::HeapResource<rg::Buffer> tileMapOffsetsBuffer;
             rg::HeapResource<rg::Buffer> residencyMapBuffer;
             rg::HeapResource<rg::Buffer> residencyMapOffsetsBuffer;
+            rg::HeapResource<rg::Buffer> readbackBuffer;
 
             unsigned int atlasSize;
             unsigned int tileSize;

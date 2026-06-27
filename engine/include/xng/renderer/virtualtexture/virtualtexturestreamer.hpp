@@ -57,32 +57,69 @@ namespace xng {
             tileStreamer.destroy(textureID);
         }
 
-        void readback() {
-            //TODO: Implement readback
-            //TODO: Tile streaming limiting based on available VRAM
-            //TODO: Redesign sync flow between StreamBuffer / ChunkStreamer.
-            //TODO: Tile streaming priorities
+        void update() {
+            // TODO: Tile streaming limiting based on available VRAM
+            // TODO: Tile eviction / History
 
-            // Upload up to mips from coarsest mip tiles for testing.
+            tileStreamer.readback();
 
-            static bool uploaded = false;
-            if (uploaded) return;
-            uploaded = true;
+            const auto tileSize = atlas.getTileSize();
 
-            const int mips = 100;
-            for (auto &pair: tileStreamer.getTextureStates()) {
-                auto mipSub = std::clamp(mips, 0, static_cast<int>(pair.second.size()));
-                for (auto i = pair.second.size() - mipSub; i < pair.second.size(); i++) {
-                    auto &state = pair.second.at(i);
-                    for (auto x = 0u; x < state.tileCount.x; x++) {
-                        for (auto y = 0u; y < state.tileCount.y; y++) {
-                            if (!state.isResident({x, y})) {
-                                tileStreamer.loadTile(pair.first, i, {x, y}, mips - static_cast<int>(i));
-                            }
-                        }
+            for (const auto &pair: tileStreamer.getTextureStates()) {
+                const TextureID tex = pair.first;
+                const auto &mips = pair.second; // [0] = finest, back() = coarsest
+                const auto coarsest = static_cast<unsigned int>(mips.size()) - 1;
+                const auto size0 = mips[0].size;
+
+                std::vector<std::vector<uint8_t> > queued(mips.size());
+                for (auto m = 0u; m < mips.size(); ++m)
+                    queued[m].assign(mips[m].tileCount.x * mips[m].tileCount.y, 0);
+
+                auto request = [&](const unsigned int mip, const Vec2u &tile) {
+                    const auto idx = TileStreamer::tileToIndex(tile, mips[mip].tileCount);
+                    if (queued[mip][idx])
+                        return;
+                    queued[mip][idx] = 1;
+                    tileStreamer.loadTile(tex, mip, tile, pair.second.size() - mip);
+                };
+
+                // A tile's full covering tile-RANGE at every mip from `fromMip` to coarsest.
+                // Uses the same mip0-texel >> mip mapping as getResidencyMap, so coverage and
+                // residency always agree. Under the >> convention the range is always 1x1;
+                // if you switch to native-res addressing it widens to <=2x2 at NPOT boundaries.
+                auto requestChain = [&](const unsigned int fromMip, const Vec2u &tile) {
+                    const unsigned int x0 = (tile.x * tileSize) << fromMip;
+                    const unsigned int y0 = (tile.y * tileSize) << fromMip;
+                    const unsigned int x1 = std::min(((tile.x + 1) * tileSize) << fromMip, size0.x) - 1;
+                    const unsigned int y1 = std::min(((tile.y + 1) * tileSize) << fromMip, size0.y) - 1;
+
+                    for (auto m = fromMip; m <= coarsest; ++m) {
+                        const auto &state = mips[m];
+                        const unsigned int tx0 = std::min((x0 >> m) / tileSize, state.tileCount.x - 1);
+                        const unsigned int tx1 = std::min((x1 >> m) / tileSize, state.tileCount.x - 1);
+                        const unsigned int ty0 = std::min((y0 >> m) / tileSize, state.tileCount.y - 1);
+                        const unsigned int ty1 = std::min((y1 >> m) / tileSize, state.tileCount.y - 1);
+                        for (auto ty = ty0; ty <= ty1; ++ty)
+                            for (auto tx = tx0; tx <= tx1; ++tx)
+                                request(m, {tx, ty});
                     }
+                };
+
+                // Coarsest mip: always fully resident, flushed below.
+                for (auto x = 0u; x < mips[coarsest].tileCount.x; ++x)
+                    for (auto y = 0u; y < mips[coarsest].tileCount.y; ++y)
+                        request(coarsest, {x, y});
+
+                // Every tapped tile + its covering coarser chain (streamed, not flushed).
+                for (auto mip = 0u; mip < coarsest; ++mip) {
+                    const auto &state = mips[mip];
+                    for (auto x = 0u; x < state.tileCount.x; ++x)
+                        for (auto y = 0u; y < state.tileCount.y; ++y)
+                            if (state.getTaps({x, y}) != 0)
+                                requestChain(mip, {x, y});
                 }
-                tileStreamer.flush(pair.first, pair.second.size() - 1);
+
+                tileStreamer.flush(tex, coarsest);
             }
         }
 
@@ -109,6 +146,10 @@ namespace xng {
 
         rg::HeapResource<rg::Buffer> getResidencyMapBuffer() const {
             return tileStreamer.getResidencyMapBuffer();
+        }
+
+        rg::HeapResource<rg::Buffer> getReadbackBuffer() const {
+            return tileStreamer.getReadbackBuffer();
         }
 
         rg::HeapResource<rg::Texture> getAtlasTexture() const {

@@ -162,6 +162,7 @@ namespace xng {
         rg::Resource<rg::Buffer> tileMapOffsetsBuffer;
         rg::Resource<rg::Buffer> residencyMapBuffer;
         rg::Resource<rg::Buffer> residencyMapOffsetsBuffer;
+        rg::Resource<rg::Buffer> readbackBuffer;
 
         unsigned int atlasSize;
         unsigned int tileSize;
