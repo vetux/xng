@@ -726,95 +726,60 @@ namespace xng::shaderlib::virtualtexture {
 
         vec2 wrapped = wrapUV(uv, wrap);
 
-        // coarsest resident mip across the 4 catmull taps at a given mipSize
-        auto residentFloor = [&](vec2 mipSize) -> Float {
-            vec2 texel_f = wrapped * mipSize;
-            vec2 tc = floor(texel_f - 0.5f) + 0.5f;
-            vec2 f = texel_f - tc;
-
-            vec2 f2 = f * f;
-            vec2 f3 = f2 * f;
-            vec2 w0 = -0.5f * f3 + f2 - 0.5f * f;
-            vec2 w1 = 1.5f * f3 - 2.5f * f2 + 1.0f;
-            vec2 w2 = -1.5f * f3 + 2.0f * f2 + 0.5f * f;
-            vec2 w3 = 0.5f * f3 - 0.5f * f2;
-
-            vec2 g0 = w0 + w1;
-            vec2 g1 = w2 + w3;
-            vec2 h0 = -1.0f + w1 / g0;
-            vec2 h1 = 1.0f + w3 / g1;
-
-            vec2 uv00 = wrapUV((tc + vec2(h0.x(), h0.y())) / mipSize, wrap);
-            vec2 uv10 = wrapUV((tc + vec2(h1.x(), h0.y())) / mipSize, wrap);
-            vec2 uv01 = wrapUV((tc + vec2(h0.x(), h1.y())) / mipSize, wrap);
-            vec2 uv11 = wrapUV((tc + vec2(h1.x(), h1.y())) / mipSize, wrap);
-
-            Float r = getResidentMip(textureID, wrapped, imageSize, tileSize, residencyMapOffsets, residencyMap);
-            r = max(r, getResidentMip(textureID, uv00, imageSize, tileSize, residencyMapOffsets, residencyMap));
-            r = max(r, getResidentMip(textureID, uv10, imageSize, tileSize, residencyMapOffsets, residencyMap));
-            r = max(r, getResidentMip(textureID, uv01, imageSize, tileSize, residencyMapOffsets, residencyMap));
-            r = max(r, getResidentMip(textureID, uv11, imageSize, tileSize, residencyMapOffsets, residencyMap));
-            return r;
-        };
-
-        // single bicubic fetch at a fixed, already-resident mip
-        auto sampleBicubic = [&](Float mip, vec2 mipSize) -> vec4 {
-            vec2 texel_f = wrapped * mipSize;
-            vec2 tc = floor(texel_f - 0.5f) + 0.5f;
-            vec2 f = texel_f - tc;
-
-            vec2 f2 = f * f;
-            vec2 f3 = f2 * f;
-            vec2 w0 = -0.5f * f3 + f2 - 0.5f * f;
-            vec2 w1 = 1.5f * f3 - 2.5f * f2 + 1.0f;
-            vec2 w2 = -1.5f * f3 + 2.0f * f2 + 0.5f * f;
-            vec2 w3 = 0.5f * f3 - 0.5f * f2;
-
-            vec2 g0 = w0 + w1;
-            vec2 g1 = w2 + w3;
-            vec2 h0 = -1.0f + w1 / g0;
-            vec2 h1 = 1.0f + w3 / g1;
-
-            vec2 uv00 = wrapUV((tc + vec2(h0.x(), h0.y())) / mipSize, wrap);
-            vec2 uv10 = wrapUV((tc + vec2(h1.x(), h0.y())) / mipSize, wrap);
-            vec2 uv01 = wrapUV((tc + vec2(h0.x(), h1.y())) / mipSize, wrap);
-            vec2 uv11 = wrapUV((tc + vec2(h1.x(), h1.y())) / mipSize, wrap);
-
-            vec2 adx = dx * mipSize / Float(atlasSize);
-            vec2 ady = dy * mipSize / Float(atlasSize);
-
-            vec3 a00 = getAtlasUV(textureID, uv00, Int(mip), mipSize, atlasSize, tileSize, tileBorder, tileMapOffsets,
-                                  tileMap);
-            vec3 a10 = getAtlasUV(textureID, uv10, Int(mip), mipSize, atlasSize, tileSize, tileBorder, tileMapOffsets,
-                                  tileMap);
-            vec3 a01 = getAtlasUV(textureID, uv01, Int(mip), mipSize, atlasSize, tileSize, tileBorder, tileMapOffsets,
-                                  tileMap);
-            vec3 a11 = getAtlasUV(textureID, uv11, Int(mip), mipSize, atlasSize, tileSize, tileBorder, tileMapOffsets,
-                                  tileMap);
-
-            vec4 s00 = vec4(textureGradArray(sampler, a00, adx, ady));
-            vec4 s10 = vec4(textureGradArray(sampler, a10, adx, ady));
-            vec4 s01 = vec4(textureGradArray(sampler, a01, adx, ady));
-            vec4 s11 = vec4(textureGradArray(sampler, a11, adx, ady));
-
-            return g0.x() * g0.y() * s00
-                   + g1.x() * g0.y() * s10
-                   + g0.x() * g1.y() * s01
-                   + g1.x() * g1.y() * s11;
-        };
-
         Float maxMip = Float(imageMaxMip);
         Float lod = getLod(dx, dy, imageSize, maxAnisotropy);
 
-        // probe taps at the lod estimate, then unify to the coarsest resident mip
-        Float estMip = clamp(floor(lod), 0.0f, maxMip);
-        vec2 estSize = max(vec2(1.0f), vec2(imageSize) / exp2(estMip));
+        // tap placement uses the unclamped lod mip
+        Float baseMip = clamp(floor(lod), 0.0f, maxMip);
+        vec2 mipSize = max(vec2(1.0f), vec2(imageSize) / exp2(baseMip));
 
-        Float r = residentFloor(estSize);
-        Float mip = clamp(floor(lod), r, maxMip);
-        vec2 mipSize = max(vec2(1.0f), vec2(imageSize) / exp2(mip));
+        vec2 texel_f = wrapped * mipSize;
+        vec2 tc = floor(texel_f - 0.5f) + 0.5f;
+        vec2 f = texel_f - tc;
 
-        IRReturn(sampleBicubic(mip, mipSize));
+        vec2 f2 = f * f;
+        vec2 f3 = f2 * f;
+        vec2 w0 = -0.5f * f3 + f2 - 0.5f * f;
+        vec2 w1 = 1.5f * f3 - 2.5f * f2 + 1.0f;
+        vec2 w2 = -1.5f * f3 + 2.0f * f2 + 0.5f * f;
+        vec2 w3 = 0.5f * f3 - 0.5f * f2;
+
+        vec2 g0 = w0 + w1;
+        vec2 g1 = w2 + w3;
+        vec2 h0 = -1.0f + w1 / g0;
+        vec2 h1 = 1.0f + w3 / g1;
+
+        vec2 uv00 = wrapUV((tc + vec2(h0.x(), h0.y())) / mipSize, wrap);
+        vec2 uv10 = wrapUV((tc + vec2(h1.x(), h0.y())) / mipSize, wrap);
+        vec2 uv01 = wrapUV((tc + vec2(h0.x(), h1.y())) / mipSize, wrap);
+        vec2 uv11 = wrapUV((tc + vec2(h1.x(), h1.y())) / mipSize, wrap);
+
+        // each tap clamps its own mip to its own resident floor, then fetches at that mip
+        auto fetchTap = [&](vec2 tapUV) -> vec4 {
+            Float rMip = getResidentMip(textureID, tapUV, imageSize, tileSize,
+                                        residencyMapOffsets, residencyMap);
+            Float mip = clamp(floor(lod), rMip, maxMip);
+            vec2 ms = max(vec2(1.0f), vec2(imageSize) / exp2(mip));
+
+            vec2 adx = dx * ms / Float(atlasSize);
+            vec2 ady = dy * ms / Float(atlasSize);
+
+            vec3 a = getAtlasUV(textureID, tapUV, Int(mip), ms,
+                                atlasSize, tileSize, tileBorder, tileMapOffsets, tileMap);
+            return vec4(textureGradArray(sampler, a, adx, ady));
+        };
+
+        vec4 s00 = fetchTap(uv00);
+        vec4 s10 = fetchTap(uv10);
+        vec4 s01 = fetchTap(uv01);
+        vec4 s11 = fetchTap(uv11);
+
+        vec4 color = g0.x() * g0.y() * s00
+                     + g1.x() * g0.y() * s10
+                     + g0.x() * g1.y() * s01
+                     + g1.x() * g1.y() * s11;
+
+        IRReturn(color);
 
         IRFunctionEnd
     }
@@ -839,100 +804,73 @@ namespace xng::shaderlib::virtualtexture {
 
         vec2 wrapped = wrapUV(uv, wrap);
 
-        // coarsest resident mip across the 4 catmull taps at a given mipSize
-        auto residentFloor = [&](vec2 mipSize) -> Float {
-            vec2 texel_f = wrapped * mipSize;
-            vec2 tc = floor(texel_f - 0.5f) + 0.5f;
-            vec2 f = texel_f - tc;
-
-            vec2 f2 = f * f;
-            vec2 f3 = f2 * f;
-            vec2 w0 = -0.5f * f3 + f2 - 0.5f * f;
-            vec2 w1 = 1.5f * f3 - 2.5f * f2 + 1.0f;
-            vec2 w2 = -1.5f * f3 + 2.0f * f2 + 0.5f * f;
-            vec2 w3 = 0.5f * f3 - 0.5f * f2;
-
-            vec2 g0 = w0 + w1;
-            vec2 g1 = w2 + w3;
-            vec2 h0 = -1.0f + w1 / g0;
-            vec2 h1 = 1.0f + w3 / g1;
-
-            vec2 uv00 = wrapUV((tc + vec2(h0.x(), h0.y())) / mipSize, wrap);
-            vec2 uv10 = wrapUV((tc + vec2(h1.x(), h0.y())) / mipSize, wrap);
-            vec2 uv01 = wrapUV((tc + vec2(h0.x(), h1.y())) / mipSize, wrap);
-            vec2 uv11 = wrapUV((tc + vec2(h1.x(), h1.y())) / mipSize, wrap);
-
-            Float r = getResidentMip(textureID, uv00, imageSize, tileSize, residencyMapOffsets, residencyMap);
-            r = max(r, getResidentMip(textureID, uv10, imageSize, tileSize, residencyMapOffsets, residencyMap));
-            r = max(r, getResidentMip(textureID, uv01, imageSize, tileSize, residencyMapOffsets, residencyMap));
-            r = max(r, getResidentMip(textureID, uv11, imageSize, tileSize, residencyMapOffsets, residencyMap));
-            return r;
-        };
-
-        // single bicubic fetch at a fixed, already-resident mip
-        auto sampleBicubic = [&](Float mip, vec2 mipSize) -> vec4 {
-            vec2 texel_f = wrapped * mipSize;
-            vec2 tc = floor(texel_f - 0.5f) + 0.5f;
-            vec2 f = texel_f - tc;
-
-            vec2 f2 = f * f;
-            vec2 f3 = f2 * f;
-            vec2 w0 = -0.5f * f3 + f2 - 0.5f * f;
-            vec2 w1 = 1.5f * f3 - 2.5f * f2 + 1.0f;
-            vec2 w2 = -1.5f * f3 + 2.0f * f2 + 0.5f * f;
-            vec2 w3 = 0.5f * f3 - 0.5f * f2;
-
-            vec2 g0 = w0 + w1;
-            vec2 g1 = w2 + w3;
-            vec2 h0 = -1.0f + w1 / g0;
-            vec2 h1 = 1.0f + w3 / g1;
-
-            vec2 uv00 = wrapUV((tc + vec2(h0.x(), h0.y())) / mipSize, wrap);
-            vec2 uv10 = wrapUV((tc + vec2(h1.x(), h0.y())) / mipSize, wrap);
-            vec2 uv01 = wrapUV((tc + vec2(h0.x(), h1.y())) / mipSize, wrap);
-            vec2 uv11 = wrapUV((tc + vec2(h1.x(), h1.y())) / mipSize, wrap);
-
-            vec2 adx = dx * mipSize / Float(atlasSize);
-            vec2 ady = dy * mipSize / Float(atlasSize);
-
-            vec3 a00 = getAtlasUV(textureID, uv00, Int(mip), mipSize, atlasSize, tileSize, tileBorder, tileMapOffsets,
-                                  tileMap);
-            vec3 a10 = getAtlasUV(textureID, uv10, Int(mip), mipSize, atlasSize, tileSize, tileBorder, tileMapOffsets,
-                                  tileMap);
-            vec3 a01 = getAtlasUV(textureID, uv01, Int(mip), mipSize, atlasSize, tileSize, tileBorder, tileMapOffsets,
-                                  tileMap);
-            vec3 a11 = getAtlasUV(textureID, uv11, Int(mip), mipSize, atlasSize, tileSize, tileBorder, tileMapOffsets,
-                                  tileMap);
-
-            vec4 s00 = vec4(textureGradArray(sampler, a00, adx, ady));
-            vec4 s10 = vec4(textureGradArray(sampler, a10, adx, ady));
-            vec4 s01 = vec4(textureGradArray(sampler, a01, adx, ady));
-            vec4 s11 = vec4(textureGradArray(sampler, a11, adx, ady));
-
-            return g0.x() * g0.y() * s00
-                   + g1.x() * g0.y() * s10
-                   + g0.x() * g1.y() * s01
-                   + g1.x() * g1.y() * s11;
-        };
-
         Float maxMip = Float(imageMaxMip);
         Float lod = getLod(dx, dy, imageSize, maxAnisotropy);
 
-        // probe taps at the lod estimate, unify mip0 to the coarsest resident floor
-        Float estMip = clamp(floor(lod), 0.0f, maxMip);
-        vec2 estSize = max(vec2(1.0f), vec2(imageSize) / exp2(estMip));
+        // tap placement uses the unclamped lod mip
+        Float baseMip = clamp(floor(lod), 0.0f, maxMip);
+        vec2 mipSize = max(vec2(1.0f), vec2(imageSize) / exp2(baseMip));
 
-        Float r = residentFloor(estSize);
-        Float clampedLod = clamp(lod, r, maxMip);
+        vec2 texel_f = wrapped * mipSize;
+        vec2 tc = floor(texel_f - 0.5f) + 0.5f;
+        vec2 f = texel_f - tc;
 
-        Float mip0 = floor(clampedLod);
-        Float mip1 = min(mip0 + 1.0f, maxMip);
-        Float blend = fract(clampedLod);
+        vec2 f2 = f * f;
+        vec2 f3 = f2 * f;
+        vec2 w0 = -0.5f * f3 + f2 - 0.5f * f;
+        vec2 w1 = 1.5f * f3 - 2.5f * f2 + 1.0f;
+        vec2 w2 = -1.5f * f3 + 2.0f * f2 + 0.5f * f;
+        vec2 w3 = 0.5f * f3 - 0.5f * f2;
 
-        vec2 mipSize0 = max(vec2(1.0f), vec2(imageSize) / exp2(mip0));
-        vec2 mipSize1 = max(vec2(1.0f), vec2(imageSize) / exp2(mip1));
+        vec2 g0 = w0 + w1;
+        vec2 g1 = w2 + w3;
+        vec2 h0 = -1.0f + w1 / g0;
+        vec2 h1 = 1.0f + w3 / g1;
 
-        IRReturn(vec4(mix(sampleBicubic(mip0, mipSize0), sampleBicubic(mip1, mipSize1), blend)));
+        vec2 uv00 = wrapUV((tc + vec2(h0.x(), h0.y())) / mipSize, wrap);
+        vec2 uv10 = wrapUV((tc + vec2(h1.x(), h0.y())) / mipSize, wrap);
+        vec2 uv01 = wrapUV((tc + vec2(h0.x(), h1.y())) / mipSize, wrap);
+        vec2 uv11 = wrapUV((tc + vec2(h1.x(), h1.y())) / mipSize, wrap);
+
+        // each tap clamps both blend levels to its own resident floor
+        auto fetchTap = [&](vec2 tapUV) -> vec4 {
+            Float rMip = getResidentMip(textureID, tapUV, imageSize, tileSize,
+                                        residencyMapOffsets, residencyMap);
+            Float clampedLod = clamp(lod, rMip, maxMip);
+
+            Float mip0 = floor(clampedLod);
+            Float mip1 = min(mip0 + 1.0f, maxMip);
+            Float blend = fract(clampedLod);
+
+            vec2 ms0 = max(vec2(1.0f), vec2(imageSize) / exp2(mip0));
+            vec2 ms1 = max(vec2(1.0f), vec2(imageSize) / exp2(mip1));
+
+            vec2 adx0 = dx * ms0 / Float(atlasSize);
+            vec2 ady0 = dy * ms0 / Float(atlasSize);
+            vec2 adx1 = dx * ms1 / Float(atlasSize);
+            vec2 ady1 = dy * ms1 / Float(atlasSize);
+
+            vec3 a0 = getAtlasUV(textureID, tapUV, Int(mip0), ms0,
+                                 atlasSize, tileSize, tileBorder, tileMapOffsets, tileMap);
+            vec3 a1 = getAtlasUV(textureID, tapUV, Int(mip1), ms1,
+                                 atlasSize, tileSize, tileBorder, tileMapOffsets, tileMap);
+
+            vec4 c0 = vec4(textureGradArray(sampler, a0, adx0, ady0));
+            vec4 c1 = vec4(textureGradArray(sampler, a1, adx1, ady1));
+            return mix(c0, c1, blend);
+        };
+
+        vec4 s00 = fetchTap(uv00);
+        vec4 s10 = fetchTap(uv10);
+        vec4 s01 = fetchTap(uv01);
+        vec4 s11 = fetchTap(uv11);
+
+        vec4 color = g0.x() * g0.y() * s00
+                     + g1.x() * g0.y() * s10
+                     + g0.x() * g1.y() * s01
+                     + g1.x() * g1.y() * s11;
+
+        IRReturn(color);
 
         IRFunctionEnd
     }
