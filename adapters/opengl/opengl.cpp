@@ -500,13 +500,17 @@ namespace xng::opengl {
             data->cachedTextures[tex.second->desc].emplace_back(std::move(tex.second));
         }
 
-        return std::make_unique<SemaphoreGL>();
+        auto sync = std::make_shared<HeapTransferSync>();
+        sync->fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+        return std::make_unique<SemaphoreGL>(sync);
     }
 
     std::unique_ptr<Semaphore> Runtime::execute(const std::vector<rg::Graph> &graphs) {
         for (auto &graph: graphs) {
             execute(graph);
         }
-        return std::make_unique<SemaphoreGL>();
+        auto sync = std::make_shared<HeapTransferSync>();
+        sync->fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+        return std::make_unique<SemaphoreGL>(sync);
     }
 }

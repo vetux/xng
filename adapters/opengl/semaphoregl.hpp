@@ -37,8 +37,6 @@ namespace xng::opengl {
 
     class SemaphoreGL final : public rg::Semaphore {
     public:
-        explicit SemaphoreGL() = default;
-
         explicit SemaphoreGL(std::shared_ptr<HeapTransferSync> sync)
             : sync(std::move(sync)) {}
 
