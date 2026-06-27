@@ -84,9 +84,11 @@ namespace xng {
             texture = runtime.getResourceHeap().allocateTexture(desc);
         }
 
-        Slot create(const std::shared_ptr<std::vector<uint8_t>> &texels) {
+        Slot create(const std::shared_ptr<std::vector<uint8_t> > &texels, const int priority) {
             const auto slot = slotAllocator.allocate(1);
             pendingUploads.emplace(slot, PendingUpload(slot, getOffset(slot), texels));
+            pendingUploadPriorities.emplace(slot, priority);
+            pendingUploadQueues[priority].insert(slot);
             return slot;
         }
 
@@ -98,6 +100,8 @@ namespace xng {
                     buffer.release(it->second.bufferHandle);
                 }
                 bufferAllocator.free(it->second.bufferSlot, 1);
+                pendingUploadQueues[pendingUploadPriorities.at(slot)].erase(slot);
+                pendingUploadPriorities.erase(slot);
             }
             pendingUploads.erase(slot);
             flushedUploads.erase(slot);
@@ -162,24 +166,27 @@ namespace xng {
                 }
             }
 
-            for (auto &pair: pendingUploads) {
-                if (pair.second.copied) {
-                    finishedUploads.insert(pair.first);
-                    continue;
-                }
+            for (auto &pair: pendingUploadQueues) {
+                for (auto slot: pair.second) {
+                    auto &upload = pendingUploads.at(slot);
+                    if (upload.copied) {
+                        finishedUploads.insert(slot);
+                        continue;
+                    }
 
-                if (!pair.second.startedUpload && tilesInFlight < maxTilesInFlight) {
-                    pair.second.bufferSlot = bufferAllocator.allocate(1);
-                    pair.second.bufferHandle = buffer.upload(*pair.second.texels,
-                                                             pair.second.bufferSlot * atlasTileBytes);
-                    pair.second.startedUpload = true;
-                    tilesInFlight++;
-                }
+                    if (!upload.startedUpload && tilesInFlight < maxTilesInFlight) {
+                        upload.bufferSlot = bufferAllocator.allocate(1);
+                        upload.bufferHandle = buffer.upload(*upload.texels,
+                                                            upload.bufferSlot * atlasTileBytes);
+                        upload.startedUpload = true;
+                        tilesInFlight++;
+                    }
 
-                if ((pair.second.startedUpload && buffer.isUploadComplete(pair.second.bufferHandle))
-                    || flushedUploads.find(pair.first) != flushedUploads.end()) {
-                    frameCopies.insert(pair.first);
-                    pair.second.copied = true;
+                    if ((upload.startedUpload && buffer.isUploadComplete(upload.bufferHandle))
+                        || flushedUploads.find(slot) != flushedUploads.end()) {
+                        frameCopies.insert(slot);
+                        upload.copied = true;
+                    }
                 }
             }
 
@@ -189,6 +196,11 @@ namespace xng {
                 buffer.release(upload.bufferHandle);
                 pendingUploads.erase(slot);
                 flushedUploads.erase(slot);
+                pendingUploadQueues.at(pendingUploadPriorities.at(slot)).erase(slot);
+                if (pendingUploadQueues.at(pendingUploadPriorities.at(slot)).empty()) {
+                    pendingUploadQueues.erase(pendingUploadPriorities.at(slot));
+                }
+                pendingUploadPriorities.erase(slot);
                 tilesInFlight--;
             }
 
@@ -238,7 +250,7 @@ namespace xng {
             Slot slot;
             Vec3u offset;
 
-            std::shared_ptr<std::vector<uint8_t>> texels;
+            std::shared_ptr<std::vector<uint8_t> > texels;
 
             StreamBuffer::Handle bufferHandle{};
             size_t bufferSlot{};
@@ -248,7 +260,7 @@ namespace xng {
 
             PendingUpload(const Slot slot,
                           Vec3u offset,
-                          std::shared_ptr<std::vector<uint8_t>> texels)
+                          std::shared_ptr<std::vector<uint8_t> > texels)
                 : slot(slot),
                   offset(std::move(offset)),
                   texels(std::move(texels)) {
@@ -284,7 +296,10 @@ namespace xng {
         rg::HeapResource<rg::Texture> staleTexture;
         rg::HeapResource<rg::Texture> texture;
 
+        std::map<int, std::unordered_set<Slot> > pendingUploadQueues;
+
         std::unordered_map<Slot, PendingUpload> pendingUploads;
+        std::unordered_map<Slot, int> pendingUploadPriorities;
         std::unordered_set<Slot> flushedUploads;
 
         RangeAllocator slotAllocator;

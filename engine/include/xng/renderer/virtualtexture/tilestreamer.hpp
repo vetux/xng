@@ -202,7 +202,7 @@ namespace xng {
             return textureStates;
         }
 
-        void loadTile(const TextureID tex, unsigned int mip, const Vec2u &tile) {
+        void loadTile(const TextureID tex, unsigned int mip, const Vec2u &tile, const int priority) {
             if (mip >= textures.at(tex).tileMapOffsets.size()) {
                 throw std::runtime_error("Mip level out of range.");
             }
@@ -215,7 +215,8 @@ namespace xng {
                                              tile,
                                              mipTiles,
                                              pool,
-                                             textures.at(tex).loader);
+                                             textures.at(tex).loader,
+                                             priority);
         }
 
         void evictTile(const TextureID tex, const unsigned int mip, const Vec2u &tile) {
@@ -271,7 +272,7 @@ namespace xng {
                         if (!pendingUpload.startedUpload) {
                             pendingUpload.tileTask->join();
                             pendingUpload.startedUpload = true;
-                            pendingUpload.atlasSlot = atlas.create(pendingUpload.tileData);
+                            pendingUpload.atlasSlot = atlas.create(pendingUpload.tileData, pendingUpload.priority);
                         }
                         atlas.flush(pendingUpload.atlasSlot);
                         auto &state = textureStates.at(pair.first).at(pendingUpload.mip);
@@ -291,7 +292,7 @@ namespace xng {
                         }
                     } else if (pendingUpload.tileTask->isDone()) {
                         pendingUpload.startedUpload = true;
-                        pendingUpload.atlasSlot = atlas.create(pendingUpload.tileData);
+                        pendingUpload.atlasSlot = atlas.create(pendingUpload.tileData, pendingUpload.priority);
                     }
                     framePendingUploads[pair.first].emplace_back(std::move(pendingUpload));
                 }
@@ -417,6 +418,7 @@ namespace xng {
             unsigned int mip{};
             Vec2u tile;
             unsigned int tileIndex{};
+            int priority{};
 
             std::shared_ptr<Task> tileTask;
             std::shared_ptr<std::vector<uint8_t> > tileData; // The tile data including borders
@@ -433,11 +435,13 @@ namespace xng {
                           Vec2u _tile,
                           const Vec2u &mipTiles,
                           ThreadPool &pool,
-                          const std::shared_ptr<TileLoader> &loader)
+                          const std::shared_ptr<TileLoader> &loader,
+                          const int priority)
                 : tex(tex),
                   mip(mip),
                   tile(std::move(_tile)),
-                  tileIndex(tileToIndex(tile, mipTiles)) {
+                  tileIndex(tileToIndex(tile, mipTiles)),
+                  priority(priority) {
                 tileData = std::make_shared<std::vector<uint8_t> >();
                 auto tileDataCapture = tileData;
                 auto tileCapture = tile;

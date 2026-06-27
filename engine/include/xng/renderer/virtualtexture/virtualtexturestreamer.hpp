@@ -77,7 +77,7 @@ namespace xng {
                     for (auto x = 0u; x < state.tileCount.x; x++) {
                         for (auto y = 0u; y < state.tileCount.y; y++) {
                             if (!state.isResident({x, y})) {
-                                tileStreamer.loadTile(pair.first, i, {x, y});
+                                tileStreamer.loadTile(pair.first, i, {x, y}, mips - static_cast<int>(i));
                             }
                         }
                     }
