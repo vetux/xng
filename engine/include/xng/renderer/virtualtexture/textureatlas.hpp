@@ -120,7 +120,6 @@ namespace xng {
             return true;
         }
 
-        // TODO: Find reason why atlas texture resize causes copyBufferToTexture to throw GL_INVALID_OPERATION when binding the new texture.
         std::vector<rg::TransferPass> commit(rg::GraphBuilder &graph) {
             std::vector<rg::TransferPass> ret;
 
