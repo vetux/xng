@@ -64,7 +64,7 @@ namespace xng {
 
         void update() {
             // TODO: Tile streaming limiting based on available VRAM
-
+            // TODO: Optimize virtual texture streaming
             auto tappedTiles = tileStreamer.readback();
             for (auto &pair: tappedTiles) {
                 const auto &mips = tileStreamer.getTextureStates().at(pair.first);
@@ -76,7 +76,7 @@ namespace xng {
                     for (auto &tile: mipPair.second) {
                         if (state.getTaps(tile) > 0) {
                             finestMipTapped = std::min(finestMipTapped, mip);
-                            loadTileChain(pair.first, tile, mip, static_cast<int>(mips.size() - mip), mips);
+                            loadTileChain(pair.first, tile, mip, mips);
                         }
                     }
                 }
@@ -149,13 +149,12 @@ namespace xng {
         void loadTileChain(const TextureID texture,
                            const Vec2u &tile,
                            const unsigned int mip,
-                           const int priority,
                            const std::vector<TileStreamer::TextureState> &mips) {
             const auto size0 = mips.at(0).size;
             const auto coarsest = static_cast<unsigned int>(mips.size()) - 1;
             const unsigned int x0 = (tile.x * atlas.getTileSize()) << mip;
             const unsigned int y0 = (tile.y * atlas.getTileSize()) << mip;
-            const unsigned int x1 = std::min(((tile.x + 1) * mip) << mip, size0.x) - 1;
+            const unsigned int x1 = std::min(((tile.x + 1) * atlas.getTileSize()) << mip, size0.x) - 1;
             const unsigned int y1 = std::min(((tile.y + 1) * atlas.getTileSize()) << mip, size0.y) - 1;
 
             for (auto m = mip; m <= coarsest; ++m) {
@@ -166,7 +165,7 @@ namespace xng {
                 const unsigned int ty1 = std::min((y1 >> m) / atlas.getTileSize(), state.tileCount.y - 1);
                 for (auto ty = ty0; ty <= ty1; ++ty) {
                     for (auto tx = tx0; tx <= tx1; ++tx) {
-                        tileStreamer.loadTile(texture, m, {tx, ty}, priority);
+                        tileStreamer.loadTile(texture, m, {tx, ty}, static_cast<int>(mips.size() - m));
                     }
                 }
             }

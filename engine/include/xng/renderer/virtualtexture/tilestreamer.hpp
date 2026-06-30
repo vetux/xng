@@ -37,7 +37,6 @@
 #include "xng/renderer/virtualtexture/tileloader.hpp"
 
 namespace xng {
-    // TODO: Optimize TileStreamer
     /**
      * Load tiles via TileLoader asynchronously and upload the tiles to the atlas texture on the render thread and update the residency buffer.
      */
@@ -366,24 +365,23 @@ namespace xng {
             // Readback taps
             std::unordered_map<TextureID, std::unordered_map<unsigned int, std::vector<Vec2u> > > ret;
             const auto mapping = heap.map(readbackHostBuffer);
+            const auto ptr = reinterpret_cast<unsigned int *>(mapping->data());
             for (auto &pair: textures) {
                 if (newTextures.find(pair.first) != newTextures.end()) {
                     continue;
                 }
-                for (auto i = 0; i < pair.second.tileMapOffsets.size(); i++) {
-                    auto &state = textureStates.at(pair.first).at(i);
+                for (auto mip = 0; mip < pair.second.tileMapOffsets.size(); mip++) {
+                    auto &state = textureStates.at(pair.first).at(mip);
                     const auto tileCount = state.tileCount;
-                    const auto offset = pair.second.tileMapOffsets.at(i);
-                    for (auto x = 0; x < tileCount.x; x++) {
-                        for (auto y = 0; y < tileCount.y; y++) {
-                            const auto tile = Vec2u(x, y);
-                            const auto index = tileToIndex(tile, tileCount);
-                            const unsigned int taps = *(
-                                reinterpret_cast<unsigned int *>(mapping->data()) + offset + index);
-                            if (state.getTaps(tile) != taps) {
-                                ret[pair.first][i].emplace_back(tile);
-                                state.setTaps(tile, taps);
-                            }
+                    const auto offset = pair.second.tileMapOffsets.at(mip);
+                    for (auto tileIndex = 0; tileIndex < tileCount.x * tileCount.y; tileIndex++) {
+                        const auto tile = indexToTile(tileIndex, tileCount);
+                        const unsigned int taps = *(ptr
+                            + offset
+                            + tileIndex);
+                        if (state.taps[tileIndex] != taps) {
+                            state.taps[tileIndex] = taps;
+                            ret[pair.first][mip].emplace_back(tile);
                         }
                     }
                 }

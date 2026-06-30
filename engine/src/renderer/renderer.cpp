@@ -54,23 +54,6 @@ namespace xng {
     }
 
     void Renderer::draw(const std::shared_ptr<rg::Surface> &surface, const RenderDrawList &drawList) {
-        // Flush all referenced objects
-        for (auto &model: drawList.models) {
-            model->flush();
-        }
-        for (auto &light: drawList.directionalLights) {
-            light->flush();
-        }
-        for (auto &light: drawList.pointLights) {
-            light->flush();
-        }
-        for (auto &light: drawList.spotLights) {
-            light->flush();
-        }
-        for (auto &canvas: drawList.canvases) {
-            canvas->flush();
-        }
-
         rg::GraphBuilder graph;
 
         // Commit streams
@@ -205,6 +188,9 @@ namespace xng {
 
         size_t totalDrawCount = 0;
         for (auto &model: drawList.models) {
+            if (!model->isUploadComplete()) {
+                continue;
+            }
             DrawBatch *currentBatch = &currentForwardBatch;
             if (model->getRenderPath() == RENDER_PATH_DEFERRED) {
                 currentBatch = &deferredBatches[model->getShadingModel()];
