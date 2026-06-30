@@ -260,18 +260,19 @@ namespace xng {
         }
 
         void evictTile(const TextureID tex, const unsigned int mip, const Vec2u &tile) {
-            std::vector<PendingUpload> nPendingUploads;
-            for (auto &pendingUpload: pendingUploads[tex]) {
-                if (pendingUpload.mip == mip && pendingUpload.tile == tile) {
-                    if (pendingUpload.startedUpload) {
-                        atlas.destroy(pendingUpload.atlasSlot);
-                    }
-                    streamingTiles--;
-                    continue;
-                }
-                nPendingUploads.emplace_back(std::move(pendingUpload));
-            }
-            pendingUploads[tex] = std::move(nPendingUploads);
+            pendingUploads[tex].erase(std::remove_if(pendingUploads[tex].begin(),
+                                                     pendingUploads[tex].end(),
+                                                     [this, mip](auto &pendingUpload) {
+                                                         if (pendingUpload.mip == mip) {
+                                                             if (pendingUpload.startedUpload) {
+                                                                 atlas.destroy(pendingUpload.atlasSlot);
+                                                             }
+                                                             streamingTiles--;
+                                                             return true;
+                                                         }
+                                                         return false;
+                                                     }),
+                                      pendingUploads[tex].end());
             auto &state = textureStates.at(tex).at(mip);
             if (state.getTileState(tile) == TILE_RESIDENT) {
                 atlas.destroy(state.getAtlasSlot(tile));
@@ -313,17 +314,19 @@ namespace xng {
 
         void evictTiles(const TextureID tex, const unsigned int mip) {
             std::vector<PendingUpload> nPendingUploads;
-            for (auto &pendingUpload: pendingUploads[tex]) {
-                if (pendingUpload.mip == mip) {
-                    if (pendingUpload.startedUpload) {
-                        atlas.destroy(pendingUpload.atlasSlot);
-                    }
-                    streamingTiles--;
-                    continue;
-                }
-                nPendingUploads.emplace_back(std::move(pendingUpload));
-            }
-            pendingUploads[tex] = std::move(nPendingUploads);
+            pendingUploads[tex].erase(std::remove_if(pendingUploads[tex].begin(),
+                                                     pendingUploads[tex].end(),
+                                                     [this, mip](auto &pendingUpload) {
+                                                         if (pendingUpload.mip == mip) {
+                                                             if (pendingUpload.startedUpload) {
+                                                                 atlas.destroy(pendingUpload.atlasSlot);
+                                                             }
+                                                             streamingTiles--;
+                                                             return true;
+                                                         }
+                                                         return false;
+                                                     }),
+                                      pendingUploads[tex].end());
             auto &state = textureStates.at(tex).at(mip);
             for (auto x = 0u; x < state.tileCount.x; x++) {
                 for (auto y = 0u; y < state.tileCount.y; y++) {
@@ -377,8 +380,8 @@ namespace xng {
                     for (auto tileIndex = 0; tileIndex < tileCount.x * tileCount.y; tileIndex++) {
                         const auto tile = indexToTile(tileIndex, tileCount);
                         const unsigned int taps = *(ptr
-                            + offset
-                            + tileIndex);
+                                                    + offset
+                                                    + tileIndex);
                         if (state.taps[tileIndex] != taps) {
                             state.taps[tileIndex] = taps;
                             ret[pair.first][mip].emplace_back(tile);
@@ -391,43 +394,48 @@ namespace xng {
 
         std::vector<rg::TransferPass> commit(rg::GraphBuilder &graph) {
             std::vector<rg::TransferPass> ret;
-
-            std::unordered_map<TextureID, std::vector<PendingUpload> > framePendingUploads;
-            framePendingUploads.reserve(pendingUploads.size());
             for (auto &pair: pendingUploads) {
-                for (auto &pendingUpload: pair.second) {
-                    if (pendingUpload.flushed) {
-                        if (!pendingUpload.startedUpload) {
-                            pendingUpload.tileTask->join();
-                            pendingUpload.startedUpload = true;
-                            pendingUpload.atlasSlot = atlas.create(pendingUpload.tileData, pendingUpload.priority);
-                        }
-                        atlas.flush(pendingUpload.atlasSlot);
-                        auto &state = textureStates.at(pair.first).at(pendingUpload.mip);
-                        state.setTileState(pendingUpload.tile, TILE_RESIDENT);
-                        state.setAtlasSlot(pendingUpload.tile, pendingUpload.atlasSlot);
-                        updatedMips[pendingUpload.tex].insert(pendingUpload.mip);
-                        streamingTiles--;
-                        continue;
-                    }
+                pair.second.erase(std::remove_if(pair.second.begin(),
+                                                 pair.second.end(),
+                                                 [this, pair](auto &pendingUpload) {
+                                                     if (pendingUpload.flushed) {
+                                                         if (!pendingUpload.startedUpload) {
+                                                             pendingUpload.tileTask->join();
+                                                             pendingUpload.startedUpload = true;
+                                                             pendingUpload.atlasSlot = atlas.create(
+                                                                 pendingUpload.tileData, pendingUpload.priority);
+                                                         }
+                                                         atlas.flush(pendingUpload.atlasSlot);
+                                                         auto &state = textureStates.at(pair.first).at(
+                                                             pendingUpload.mip);
+                                                         state.setTileState(pendingUpload.tile, TILE_RESIDENT);
+                                                         state.setAtlasSlot(
+                                                             pendingUpload.tile, pendingUpload.atlasSlot);
+                                                         updatedMips[pendingUpload.tex].insert(pendingUpload.mip);
+                                                         streamingTiles--;
+                                                         return true;
+                                                     }
 
-                    if (pendingUpload.startedUpload) {
-                        if (atlas.isUploadComplete(pendingUpload.atlasSlot)) {
-                            auto &state = textureStates.at(pair.first).at(pendingUpload.mip);
-                            state.setTileState(pendingUpload.tile, TILE_RESIDENT);
-                            state.setAtlasSlot(pendingUpload.tile, pendingUpload.atlasSlot);
-                            updatedMips[pendingUpload.tex].insert(pendingUpload.mip);
-                            streamingTiles--;
-                            continue;
-                        }
-                    } else if (pendingUpload.tileTask->isDone()) {
-                        pendingUpload.startedUpload = true;
-                        pendingUpload.atlasSlot = atlas.create(pendingUpload.tileData, pendingUpload.priority);
-                    }
-                    framePendingUploads[pair.first].emplace_back(std::move(pendingUpload));
-                }
+                                                     if (pendingUpload.startedUpload) {
+                                                         if (atlas.isUploadComplete(pendingUpload.atlasSlot)) {
+                                                             auto &state = textureStates.at(pair.first).at(
+                                                                 pendingUpload.mip);
+                                                             state.setTileState(pendingUpload.tile, TILE_RESIDENT);
+                                                             state.setAtlasSlot(
+                                                                 pendingUpload.tile, pendingUpload.atlasSlot);
+                                                             updatedMips[pendingUpload.tex].insert(pendingUpload.mip);
+                                                             streamingTiles--;
+                                                             return true;
+                                                         }
+                                                     } else if (pendingUpload.tileTask->isDone()) {
+                                                         pendingUpload.startedUpload = true;
+                                                         pendingUpload.atlasSlot = atlas.create(
+                                                             pendingUpload.tileData, pendingUpload.priority);
+                                                     }
+                                                     return false;
+                                                 }),
+                                  pair.second.end());
             }
-            pendingUploads = std::move(framePendingUploads);
 
             for (auto &pair: updatedMips) {
                 auto &texture = textures.at(pair.first);
