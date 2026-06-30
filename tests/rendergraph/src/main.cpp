@@ -342,7 +342,7 @@ RenderDrawList createDrawList(RenderAllocator &allocator, rg::Heap &heap) {
         mesh.transform.setScale(Vec3f(0.05f));
         scene.skinnedModels.push_back(mesh);
     */
-    const int rows = 3;
+    const int rows = 10;
     const int columns = rows;
     const float spacing = 1.5f;
     for (int x = 0; x < columns; x++) {
@@ -592,7 +592,7 @@ int main(int argc, char *argv[]) {
                }
 
                stats = passScheduler->execute(graph3D);*/
-        ren.draw(surface, drawList.getResident());
+        ren.draw(surface, drawList);
     }
 
     return 0;
