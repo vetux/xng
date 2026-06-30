@@ -29,6 +29,7 @@ namespace xng {
      *
      * TODO: Implement dynamic double buffer size (Instead of full size double buffer)
      * TODO: Redesign sync flow between StreamBuffer / ChunkStreamer.
+     * TODO: Efficient stream buffer shrinking
      */
     class StreamBuffer {
     public:
@@ -111,12 +112,6 @@ namespace xng {
             flushedUploads.erase(handle);
             finishedUploads.erase(handle);
             uploads.erase(handle);
-
-            bufferSize = targetSize;
-            for (const auto &upload: uploads) {
-                bufferSize = std::max(bufferSize, upload.second.offset + upload.second.size);
-            }
-            bufferSize = std::max(bufferSize, targetSize);
         }
 
         /**
