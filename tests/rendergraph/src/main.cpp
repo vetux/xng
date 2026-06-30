@@ -512,7 +512,10 @@ int main(int argc, char *argv[]) {
 
     RendererStatistics stats;
     while (!window->shouldClose()) {
-        std::cout << frameLimiter.getFramerate() << " fps" << std::endl;
+        std::cout << frameLimiter.getFramerate()
+                << " fps (Streaming "
+                << ren.getStatistics().streamingTiles
+                << " tiles)" << std::endl;
         frameLimiter.newFrame();
         window->update();
 
