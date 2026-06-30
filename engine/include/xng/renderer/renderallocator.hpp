@@ -122,6 +122,10 @@ namespace xng {
 
         [[nodiscard]] Buffers commit(rg::GraphBuilder &graph);
 
+        const VirtualTextureStreamer &getTextureStreamer() const {
+            return textureStream;
+        }
+
     private:
         RenderObject::Id allocateId() {
             if (freeIds.empty()) {

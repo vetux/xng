@@ -47,7 +47,7 @@ namespace xng {
                      const unsigned int tileSize,
                      const unsigned int tileBorder,
                      const float maxAnisotropy,
-                     const unsigned int maxTilesInFlight = 5)
+                     const unsigned int maxTilesInFlight = 10)
             : runtime(runtime),
               buffer(runtime.getResourceHeap(), chunkStreamer, rg::Buffer::CAPABILITY_TRANSFER_SRC),
               tileSize(tileSize),
@@ -98,8 +98,9 @@ namespace xng {
             if (it != pendingUploads.end()) {
                 if (it->second.startedUpload) {
                     buffer.release(it->second.bufferHandle);
+                    bufferAllocator.free(it->second.bufferSlot, 1);
+                    tilesInFlight--;
                 }
-                bufferAllocator.free(it->second.bufferSlot, 1);
                 pendingUploadQueues[pendingUploadPriorities.at(slot)].erase(slot);
                 pendingUploadPriorities.erase(slot);
             }

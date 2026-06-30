@@ -57,12 +57,17 @@ namespace xng {
             return {index % tileCount.x, index / tileCount.x};
         }
 
+        enum TileState {
+            TILE_EVICTED = 0,
+            TILE_PENDING,
+            TILE_RESIDENT
+        };
+
         struct TextureState {
             Vec2u size;
             Vec2u tileCount;
 
-            std::vector<bool> pending;
-            std::vector<bool> resident;
+            std::vector<TileState> tileStates;
             std::vector<TextureAtlas::Slot> atlasSlots;
 
             std::vector<unsigned int> taps;
@@ -70,26 +75,20 @@ namespace xng {
             TextureState(Vec2u size, const Vec2u &tileCount)
                 : size(std::move(size)),
                   tileCount(tileCount),
-                  pending(tileCount.x * tileCount.y, false),
-                  resident(tileCount.x * tileCount.y),
+                  tileStates(tileCount.x * tileCount.y, TILE_EVICTED),
                   atlasSlots(tileCount.x * tileCount.y),
                   taps(tileCount.x * tileCount.y, 0) {
             }
 
-            [[nodiscard]] bool isPending(const Vec2u &tile) const {
-                return pending.at(tileToIndex(tile, tileCount));
+            void setTileState(const Vec2u &tile, const TileState state) {
+                const auto index = tileToIndex(tile, tileCount);
+                assert(!(tileStates.at(index) == TILE_RESIDENT && state == TILE_PENDING));
+                assert(!(tileStates.at(index) == TILE_EVICTED && state == TILE_RESIDENT));
+                tileStates.at(index) = state;
             }
 
-            void setPending(const Vec2u &tile, const bool isPending) {
-                this->pending.at(tileToIndex(tile, tileCount)) = isPending;
-            }
-
-            [[nodiscard]] bool isResident(const Vec2u &tile) const {
-                return resident.at(tileToIndex(tile, tileCount));
-            }
-
-            void setResident(const Vec2u &tile, const bool isResident) {
-                this->resident.at(tileToIndex(tile, tileCount)) = isResident;
+            TileState getTileState(const Vec2u &tile) const {
+                return tileStates.at(tileToIndex(tile, tileCount));
             }
 
             [[nodiscard]] TextureAtlas::Slot getAtlasSlot(const Vec2u &tile) const {
@@ -241,7 +240,7 @@ namespace xng {
             }
 
             auto &state = textureStates.at(tex).at(mip);
-            if (state.isPending(tile) || state.isResident(tile)) {
+            if (state.getTileState(tile) != TILE_EVICTED) {
                 return;
             }
 
@@ -249,7 +248,7 @@ namespace xng {
             const auto mipSize = rg::Texture::getMipLevelSize(texSize, mip);
             const auto mipTiles = getTiles(mipSize, tileSize);
 
-            textureStates.at(tex).at(mip).setPending(tile, true);
+            textureStates.at(tex).at(mip).setTileState(tile, TILE_PENDING);
 
             pendingUploads[tex].emplace_back(tex,
                                              mip,
@@ -258,6 +257,7 @@ namespace xng {
                                              pool,
                                              textures.at(tex).loader,
                                              priority);
+            streamingTiles++;
         }
 
         void evictTile(const TextureID tex, const unsigned int mip, const Vec2u &tile) {
@@ -267,17 +267,74 @@ namespace xng {
                     if (pendingUpload.startedUpload) {
                         atlas.destroy(pendingUpload.atlasSlot);
                     }
+                    streamingTiles--;
                     continue;
                 }
                 nPendingUploads.emplace_back(std::move(pendingUpload));
             }
             pendingUploads[tex] = std::move(nPendingUploads);
             auto &state = textureStates.at(tex).at(mip);
-            if (state.isResident(tile)) {
+            if (state.getTileState(tile) == TILE_RESIDENT) {
                 atlas.destroy(state.getAtlasSlot(tile));
-                state.setResident(tile, false);
-                state.setPending(tile, false);
                 updatedMips[tex].insert(mip);
+            }
+            state.setTileState(tile, TILE_EVICTED);
+        }
+
+        void loadTiles(const TextureID tex, unsigned int mip, const int priority) {
+            if (mip >= textures.at(tex).tileMapOffsets.size()) {
+                throw std::runtime_error("Mip level out of range.");
+            }
+
+            auto &state = textureStates.at(tex).at(mip);
+            for (auto x = 0u; x < state.tileCount.x; x++) {
+                for (auto y = 0u; y < state.tileCount.y; y++) {
+                    const auto tile = Vec2u(x, y);
+                    if (state.getTileState(tile) != TILE_EVICTED) {
+                        return;
+                    }
+
+                    const auto texSize = textures.at(tex).loader->getSize();
+                    const auto mipSize = rg::Texture::getMipLevelSize(texSize, mip);
+                    const auto mipTiles = getTiles(mipSize, tileSize);
+
+                    textureStates.at(tex).at(mip).setTileState(tile, TILE_PENDING);
+
+                    pendingUploads[tex].emplace_back(tex,
+                                                     mip,
+                                                     tile,
+                                                     mipTiles,
+                                                     pool,
+                                                     textures.at(tex).loader,
+                                                     priority);
+                    streamingTiles++;
+                }
+            }
+        }
+
+        void evictTiles(const TextureID tex, const unsigned int mip) {
+            std::vector<PendingUpload> nPendingUploads;
+            for (auto &pendingUpload: pendingUploads[tex]) {
+                if (pendingUpload.mip == mip) {
+                    if (pendingUpload.startedUpload) {
+                        atlas.destroy(pendingUpload.atlasSlot);
+                    }
+                    streamingTiles--;
+                    continue;
+                }
+                nPendingUploads.emplace_back(std::move(pendingUpload));
+            }
+            pendingUploads[tex] = std::move(nPendingUploads);
+            auto &state = textureStates.at(tex).at(mip);
+            for (auto x = 0u; x < state.tileCount.x; x++) {
+                for (auto y = 0u; y < state.tileCount.y; y++) {
+                    const auto tile = Vec2u(x, y);
+                    if (state.getTileState(tile) == TILE_RESIDENT) {
+                        atlas.destroy(state.getAtlasSlot(tile));
+                        updatedMips[tex].insert(mip);
+                    }
+                    state.setTileState(tile, TILE_EVICTED);
+                }
             }
         }
 
@@ -288,14 +345,12 @@ namespace xng {
             }
         }
 
-        bool isUploadComplete(const TextureID tex) {
-            for (auto &pendingUpload: pendingUploads[tex]) {
-                if (!pendingUpload.flushed) {
-                    if (pendingUpload.startedUpload) {
-                        if (!atlas.isUploadComplete(pendingUpload.atlasSlot)) {
-                            return false;
-                        }
-                    } else {
+        bool isUploadComplete(const TextureID tex) const {
+            const auto &state = textureStates.at(tex).back();
+            for (auto x = 0u; x < state.tileCount.x; x++) {
+                for (auto y = 0u; y < state.tileCount.y; y++) {
+                    const auto tile = Vec2u(x, y);
+                    if (state.getTileState(tile) != TILE_RESIDENT) {
                         return false;
                     }
                 }
@@ -303,8 +358,13 @@ namespace xng {
             return true;
         }
 
-        void readback() {
+        size_t getStreamingTiles() const {
+            return streamingTiles;
+        }
+
+        std::unordered_map<TextureID, std::unordered_map<unsigned int, std::vector<Vec2u> > > readback() {
             // Readback taps
+            std::unordered_map<TextureID, std::unordered_map<unsigned int, std::vector<Vec2u> > > ret;
             const auto mapping = heap.map(readbackHostBuffer);
             for (auto &pair: textures) {
                 if (newTextures.find(pair.first) != newTextures.end()) {
@@ -316,14 +376,19 @@ namespace xng {
                     const auto offset = pair.second.tileMapOffsets.at(i);
                     for (auto x = 0; x < tileCount.x; x++) {
                         for (auto y = 0; y < tileCount.y; y++) {
-                            const auto index = tileToIndex(Vec2u(x, y), tileCount);
+                            const auto tile = Vec2u(x, y);
+                            const auto index = tileToIndex(tile, tileCount);
                             const unsigned int taps = *(
                                 reinterpret_cast<unsigned int *>(mapping->data()) + offset + index);
-                            state.setTaps(Vec2u(x, y), taps);
+                            if (state.getTaps(tile) != taps) {
+                                ret[pair.first][i].emplace_back(tile);
+                                state.setTaps(tile, taps);
+                            }
                         }
                     }
                 }
             }
+            return ret;
         }
 
         std::vector<rg::TransferPass> commit(rg::GraphBuilder &graph) {
@@ -341,20 +406,20 @@ namespace xng {
                         }
                         atlas.flush(pendingUpload.atlasSlot);
                         auto &state = textureStates.at(pair.first).at(pendingUpload.mip);
-                        state.setPending(pendingUpload.tile, false);
-                        state.setResident(pendingUpload.tile, true);
+                        state.setTileState(pendingUpload.tile, TILE_RESIDENT);
                         state.setAtlasSlot(pendingUpload.tile, pendingUpload.atlasSlot);
                         updatedMips[pendingUpload.tex].insert(pendingUpload.mip);
+                        streamingTiles--;
                         continue;
                     }
 
                     if (pendingUpload.startedUpload) {
                         if (atlas.isUploadComplete(pendingUpload.atlasSlot)) {
                             auto &state = textureStates.at(pair.first).at(pendingUpload.mip);
-                            state.setPending(pendingUpload.tile, false);
-                            state.setResident(pendingUpload.tile, true);
+                            state.setTileState(pendingUpload.tile, TILE_RESIDENT);
                             state.setAtlasSlot(pendingUpload.tile, pendingUpload.atlasSlot);
                             updatedMips[pendingUpload.tex].insert(pendingUpload.mip);
+                            streamingTiles--;
                             continue;
                         }
                     } else if (pendingUpload.tileTask->isDone()) {
@@ -511,7 +576,7 @@ namespace xng {
                                     std::min(mx, state.tileCount.x - 1),
                                     std::min(my, state.tileCount.y - 1)
                                 };
-                                if (!state.isResident(t)) {
+                                if (state.getTileState(t) != TILE_RESIDENT) {
                                     allResident = false;
                                     break;
                                 }
@@ -607,6 +672,8 @@ namespace xng {
         rg::HeapResource<rg::Buffer> readbackBuffer;
         rg::HeapResource<rg::Buffer> readbackHostBuffer;
         rg::HeapResource<rg::Buffer> readbackClearBuffer;
+
+        size_t streamingTiles = 0;
     };
 }
 

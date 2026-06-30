@@ -44,22 +44,7 @@ namespace xng {
         size_t textureVRamDownload = 0;
         size_t textureVRamCopy = 0;
 
-        RendererStatistics &operator+=(const RendererStatistics &other) {
-            drawCalls += other.drawCalls;
-            polygons += other.polygons;
-
-            bufferVRamUsage += other.bufferVRamUsage;
-            bufferVRamUpload += other.bufferVRamUpload;
-            bufferVRamDownload += other.bufferVRamDownload;
-            bufferVRamCopy += other.bufferVRamCopy;
-
-            textureVRamUsage += other.textureVRamUsage;
-            textureVRamUpload += other.textureVRamUpload;
-            textureVRamDownload += other.textureVRamDownload;
-            textureVRamCopy += other.textureVRamCopy;
-
-            return *this;
-        }
+        size_t streamingTiles = 0;
     };
 }
 

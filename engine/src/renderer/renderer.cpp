@@ -96,6 +96,12 @@ namespace xng {
         }
     }
 
+    RendererStatistics Renderer::getStatistics() const {
+        RendererStatistics stats;
+        stats.streamingTiles = allocator.getTextureStreamer().getStreamingTiles();
+        return stats;
+    }
+
     rg::ComputePass Renderer::recordSkinningPass(const RenderDrawList &drawList,
                                                  const RenderAllocator::Buffers &buffers) const {
         std::unordered_set<RenderObjectHandle<RenderMesh> > meshes;

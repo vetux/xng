@@ -61,7 +61,7 @@ namespace xng {
         }
 
         bool isUploadComplete() override {
-            return true;
+            return textureStreamer.isUploadComplete(textureHandle);
         }
 
         void flush() override {
