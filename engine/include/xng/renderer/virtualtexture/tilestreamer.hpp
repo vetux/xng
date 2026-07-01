@@ -368,12 +368,27 @@ namespace xng {
             // Readback taps
             std::unordered_map<TextureID, std::unordered_map<unsigned int, std::vector<Vec2u> > > ret;
 
+            if (!copiedReadback) {
+                return ret;
+            }
+
             // TODO: Fix gl mapping corruption in RenderDoc replay
             // When replaying in RenderDoc for some reason this glMapBufferRange call attempts to bind as a write binding instead
             // of read binding but executes live without errors. GL_INVALID_OPERATION in glMapBufferRange(buffer does not allow write access)
             // I dont know why and there is no reason why or way for this to happen.
             // At this point i think its time to delete the opengl adapter and build dx11 and vulkan support by hand.
             // I wanted to first complete the renderer features on gl but it seems theres no way around it.
+
+            const auto sem = heap.transfer({rg::TransferPassBuilder("TileStreamer/Readback")
+            .read(readbackBuffer)
+            .write(readbackHostBuffer)
+            .execute([this](rg::TransferContext &ctx) {
+                ctx.copyBuffer(readbackHostBuffer, readbackBuffer, 0, 0, readbackBuffer.getDescription().size);
+            })});
+
+            if (!sem->wait(timeOut)) {
+                throw std::runtime_error("TileStreamer readback timed out.");
+            }
 
             const auto mapping = heap.map(readbackHostBuffer);
             const auto ptr = reinterpret_cast<unsigned int *>(mapping->data());
@@ -487,9 +502,7 @@ namespace xng {
             passes = residencyMapBuffer.commit(graph);
             ret.insert(ret.end(), passes.begin(), passes.end());
 
-            bool copyReadback = true;
             if (readbackBuffer.getDescription().size != tileMapBuffer.getBuffer().getDescription().size) {
-                copyReadback = false;
                 auto desc = readbackBuffer.getDescription();
                 desc.size = tileMapBuffer.getBuffer().getDescription().size;
                 readbackBuffer = heap.allocateBuffer(desc);
@@ -507,21 +520,14 @@ namespace xng {
                 }
             }
 
-            if (copyReadback) {
-                ret.emplace_back(rg::TransferPassBuilder("TileStreamer/Readback")
-                    .read(readbackBuffer)
-                    .write(readbackHostBuffer)
-                    .execute([this](rg::TransferContext &ctx) {
-                        ctx.copyBuffer(readbackHostBuffer, readbackBuffer, 0, 0, readbackBuffer.getDescription().size);
-                    }));
-            }
-
             ret.emplace_back(rg::TransferPassBuilder("TileStreamer/ReadbackClear")
                 .write(readbackBuffer)
                 .read(readbackClearBuffer)
                 .execute([this](rg::TransferContext &ctx) {
                     ctx.copyBuffer(readbackBuffer, readbackClearBuffer, 0, 0, readbackBuffer.getDescription().size);
                 }));
+
+            copiedReadback = true;
 
             newTextures.clear();
 
@@ -655,6 +661,8 @@ namespace xng {
             StreamBuffer::Handle residencyMapUploadHandle{};
         };
 
+        static constexpr size_t timeOut = 10'000'000'000ULL;
+
         rg::Heap &heap;
         TextureAtlas &atlas;
         ThreadPool &pool;
@@ -684,6 +692,8 @@ namespace xng {
         rg::HeapResource<rg::Buffer> readbackClearBuffer;
 
         size_t streamingTiles = 0;
+
+        bool copiedReadback = false;
     };
 }
 
