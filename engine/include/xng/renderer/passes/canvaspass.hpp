@@ -120,6 +120,7 @@ namespace xng {
                                     ctx.setShaderParameter("textureSize_textureID_maxMip",
                                                            rg::ShaderPrimitive(textureSize_textureID_maxMip));
                                     ctx.setShaderParameter("mvp", rg::ShaderPrimitive(viewProjection * c.modelMatrix));
+                                    ctx.setShaderParameter("grayscale", rg::ShaderPrimitive(c.grayscale));
                                     ctx.drawIndexed(scene.normalizedQuad.drawCall, scene.normalizedQuad.baseVertex);
                                 }
                                 break;
@@ -133,12 +134,16 @@ namespace xng {
     private:
         static rg::RasterPipeline getPipeline(const rg::Shader &vertexShader, const rg::Shader &fragmentShader) {
             rg::RasterPipeline ret;
+            ret.colorAttachments = {rg::ColorFormat::RGBA8};
             ret.shaders = {vertexShader, fragmentShader};
             ret.enableDepthTest = false;
             ret.depthTestWrite = false;
+
             ret.enableBlending = true;
+
             ret.enableStencilTest = false;
             ret.enableDynamicStencilReference = false;
+
             std::vector<size_t> offsets;
             offsets.resize(2, 0);
 
