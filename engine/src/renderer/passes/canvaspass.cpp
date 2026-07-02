@@ -51,7 +51,9 @@ namespace xng {
 
         Parameter(mat4, mvp)
         Parameter(vec4, color)
-        Parameter(UInt, texture)
+        Parameter(ivec4, textureSize_textureID_maxMip)
+        Parameter(ivec4, minFilter_magFilter_mipFilter_wrap)
+        Parameter(Bool, grayscale)
 
         vec4 pos = vec4(position, 1.0f);
 
@@ -89,6 +91,7 @@ namespace xng {
         Parameter(vec4, color)
         Parameter(ivec4, textureSize_textureID_maxMip)
         Parameter(ivec4, minFilter_magFilter_mipFilter_wrap)
+        Parameter(Bool, grayscale)
 
         vec4 texColor = sample_virtual_readback(textureSize_textureID_maxMip.z(),
                                                 fUv,
@@ -109,7 +112,12 @@ namespace xng {
                                                 readbackBuffer,
                                                 atlasTexture);
 
-        oColor = texColor * color;
+        If(grayscale)
+            oColor = color;
+            oColor.w() = texColor.x();
+        Else
+            oColor = texColor;
+        Fi
 
         EndShader();
 
