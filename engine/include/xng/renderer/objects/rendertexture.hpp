@@ -75,6 +75,19 @@ namespace xng {
             return maxMip;
         }
 
+        [[nodiscard]] ShaderTexture::CPU getShaderData(const SamplingProperties &properties) const {
+            ShaderTexture::CPU ret;
+            ret.textureSize_textureID_maxMip = Vec4i(size.x,
+                                                     size.y,
+                                                     static_cast<int>(textureHandle),
+                                                     static_cast<int>(maxMip));
+            ret.minFilter_magFilter_mipFilter_wrap = Vec4i(properties.minFilter,
+                                                           properties.magFilter,
+                                                           properties.mipFilter,
+                                                           properties.wrapping);
+            return ret;
+        }
+
     private:
         VirtualTextureStreamer &textureStreamer;
         VirtualTextureStreamer::TextureID textureHandle{};

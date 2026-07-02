@@ -291,6 +291,9 @@ namespace xng {
         }
         scene.configBuffer = rg::Resource(configBuffer);
 
+        scene.normalizedQuad = allocator.getMeshStreamer().getAllocation(allocator.getMeshStreamer().getNormalizedQuad());
+        scene.normalizedCube = allocator.getMeshStreamer().getAllocation(allocator.getMeshStreamer().getNormalizedCube());
+
         rg::ComputePassBuilder builder("ScenePrePass");
 
         if (totalDrawCount <= 0) {
@@ -324,6 +327,8 @@ namespace xng {
                 currentMeshIndex += batch.second.meshIndices.size();
             }
         }
+
+        scene.canvases = drawList.canvases;
 
         // TODO: Split draw batches across (oversized) batch counts to allow command buffer reuse.
         // TODO: Share single indirect / count buffer across batches.

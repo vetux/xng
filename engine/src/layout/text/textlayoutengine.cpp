@@ -29,8 +29,16 @@ namespace xng {
         size_t currentLineWidth = 0;
         size_t maximumLineWidth = 0;
         for (auto c: str) {
+            if (c < 32) {
+                // Non Printable Char
+                if (c == '\n') {
+                    numberOfLines++;
+                    currentLineWidth = 0;
+                }
+                continue;
+            }
             const auto metrics = glyphMetrics.at(c);
-            if (c == '\n' || (layout.maxLineWidth > 0 && currentLineWidth + metrics.advance > layout.maxLineWidth)) {
+            if ((layout.maxLineWidth > 0 && currentLineWidth + metrics.advance > layout.maxLineWidth)) {
                 numberOfLines++;
                 currentLineWidth = 0;
             }
@@ -67,20 +75,26 @@ namespace xng {
 
         for (auto &c: text) {
             auto lineIndex = lines.size() - 1;
+
+            if (c < 32) {
+                // Non Printable Char
+                if (c == '\n') {
+                    lines.emplace_back();
+                    posx = 0;
+                    lineIndex = lines.size() - 1;
+                }
+                continue;
+            }
+
             auto &character = glyphMetrics.at(c);
             auto lineWidth = getWidth(lines.at(lineIndex), glyphMetrics);
 
-            if (c == '\n'
-                || (layoutParameters.maxLineWidth > 0 && lineWidth + character.advance > layoutParameters.
-                    maxLineWidth)) {
+            if ((layoutParameters.maxLineWidth > 0 && lineWidth + character.advance > layoutParameters.maxLineWidth)) {
                 lines.emplace_back();
                 posx = 0;
                 lineIndex = lines.size() - 1;
                 lineWidth = 0;
             }
-
-            if (c < 32)
-                continue; // Skip non printable characters
 
             if (lineWidth + character.advance > largestWidth)
                 largestWidth = lineWidth + character.advance;

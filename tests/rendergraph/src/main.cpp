@@ -22,6 +22,8 @@
 #include "xng/adapters/opengl/opengl.hpp"
 #include "xng/adapters/freetype/freetype.hpp"
 #include "xng/adapters/assimp/assimp.hpp"
+#include "xng/renderer/objects/paint/renderpainttext.hpp"
+#include "xng/renderer/passes/canvaspass.hpp"
 
 using namespace xng;
 
@@ -476,7 +478,8 @@ int main(int argc, char *argv[]) {
 
     ren.setPasses({
         std::make_shared<ConstructionPass>(runtime->getPipelineCache()),
-        std::make_shared<DeferredPBRPass>(runtime->getResourceHeap(), runtime->getPipelineCache())
+        //std::make_shared<DeferredPBRPass>(runtime->getResourceHeap(), runtime->getPipelineCache()),
+        std::make_shared<CanvasPass>(runtime->getResourceHeap(), runtime->getPipelineCache())
     });
 
     std::cout << "Loading Assets..." << std::endl;
@@ -510,14 +513,40 @@ int main(int argc, char *argv[]) {
     std::chrono::milliseconds fpsUpdateInterval = std::chrono::milliseconds(50);
     auto now = std::chrono::steady_clock::now();
 
+    std::vector<std::unique_ptr<FontRenderer> > fonts;
+    fonts.emplace_back(freeType->createFontRenderer(font.get().data));
+
+    const auto fontObject = ren.getAllocator().createFont(std::move(fonts),
+                                                          Vec2i(0, 15));
+
+    const auto canvas = ren.getAllocator().createCanvas();
+
+    drawList.canvases.emplace_back(canvas);
+
+    RenderObjectHandle<RenderPaintText> textObject;
+
     RendererStatistics stats;
     while (!window->shouldClose()) {
-        std::cout << frameLimiter.getFramerate()
+        std::wstring txt = std::to_wstring(frameLimiter.getFramerate())
+                           + L" FPS\nStreaming "
+                           + std::to_wstring(ren.getStatistics().streamingTiles)
+                           + L" tiles";
+
+        textObject = ren.getAllocator().createPaintText(fontObject, std::u32string(txt.begin(), txt.end()), {},
+                                                        ColorRGBA::green(), {});
+
+        canvas->setPaints({textObject});
+
+       /* std::cout << frameLimiter.getFramerate()
                 << " fps (Streaming "
                 << ren.getStatistics().streamingTiles
-                << " tiles)" << std::endl;
+                << " tiles)" << std::endl;*/
+
         frameLimiter.newFrame();
         window->update();
+
+        canvas->setLocalProjection(
+            RenderCanvas::getLocalProjection(0, window->getFramebufferSize().x, 0, window->getFramebufferSize().y));
 
         if (std::chrono::steady_clock::now() - now > fpsUpdateInterval) {
             now = std::chrono::steady_clock::now();

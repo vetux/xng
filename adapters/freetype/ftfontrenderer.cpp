@@ -45,6 +45,10 @@ namespace xng {
         FT_Set_Pixel_Sizes(face, size.x, size.y);
     }
 
+    bool FTFontRenderer::check(const char32_t c) {
+        return FT_Get_Char_Index(face, c) != 0;
+    }
+
     Glyph FTFontRenderer::render(const char32_t c) {
         auto r = FT_Load_Char(face, c, FT_LOAD_RENDER);
         if (r != 0) {
@@ -57,6 +61,10 @@ namespace xng {
         ret.metrics.advance = static_cast<int>(face->glyph->advance.x) >> 6;
         ret.metrics.bitmapSize = Vec2i(static_cast<int>(face->glyph->bitmap.width),
                                        static_cast<int>(face->glyph->bitmap.rows));
+
+        if (ret.metrics.bitmapSize.x == 0 || ret.metrics.bitmapSize.y == 0) {
+            return ret;
+        }
 
         if (face->glyph->bitmap.pixel_mode == FT_PIXEL_MODE_GRAY) {
             const auto bitmap = face->glyph->bitmap;

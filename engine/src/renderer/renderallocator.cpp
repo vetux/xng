@@ -120,14 +120,27 @@ namespace xng {
         return std::make_shared<RenderDirectionalLight>(allocateId(), directionalLightStream);
     }
 
-    RenderObjectHandle<RenderPaint> RenderAllocator::createPaint() {
-        throw std::runtime_error("Not implemented");
-        return nullptr;
+    RenderObjectHandle<RenderFont> RenderAllocator::createFont(std::vector<std::unique_ptr<FontRenderer> > fonts,
+                                                               const Vec2i &pixelSize) {
+        return std::make_shared<RenderFont>(allocateId(),
+                                            heap,
+                                            textureStream,
+                                            std::move(fonts),
+                                            pixelSize);
+    }
+
+    RenderObjectHandle<RenderPaintText> RenderAllocator::createPaintText(const RenderObjectHandle<RenderFont> &font,
+                                                                         const std::u32string &text,
+                                                                         const TextLayoutParameters &layoutParameters,
+                                                                         const ColorRGBA &color,
+                                                                         const SamplingProperties &
+                                                                         sampling_properties) {
+        return std::make_shared<
+            RenderPaintText>(allocateId(), font, text, layoutParameters, color, sampling_properties);
     }
 
     RenderObjectHandle<RenderCanvas> RenderAllocator::createCanvas() {
-        throw std::runtime_error("Not implemented");
-        return nullptr;
+        return std::make_shared<RenderCanvas>(allocateId(), MatrixMath::identity());
     }
 
     void RenderAllocator::destroy(const RenderObject &object) {

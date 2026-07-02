@@ -166,9 +166,6 @@ namespace xng {
             : size(image.getResolution()),
               mipLevels(mipLevels),
               wrapping(wrapping) {
-            if (size.x <= tileBorder * 2 || size.y <= tileBorder * 2) {
-                throw std::runtime_error("Image must be at least tileBorder * 2 size.");
-            }
             if (size.x > std::numeric_limits<int>::max()
                 || size.y > std::numeric_limits<int>::max()) {
                 throw std::runtime_error("Image resolution must fit in int");
@@ -209,44 +206,36 @@ namespace xng {
 
     private:
         static void copyTexel(const ImageRGBA &source,
-                              ImageRGBA &target,
-                              const Vec2i &sourcePos,
-                              const Vec2u &targetPos,
-                              const WrappingMethod wrapping) {
-            Vec2u pos;
-            if (sourcePos.x < 0) {
-                if (wrapping == WRAP_REPEAT) {
-                    pos.x = source.getResolution().x + sourcePos.x;
-                } else {
-                    pos.x = 0;
-                }
-            } else if (sourcePos.x >= source.getResolution().x) {
-                if (wrapping == WRAP_REPEAT) {
-                    pos.x = sourcePos.x - source.getResolution().x;
-                } else {
-                    pos.x = source.getResolution().x - 1;
-                }
-            } else {
-                pos.x = sourcePos.x;
-            }
-
-            if (sourcePos.y < 0) {
-                if (wrapping == WRAP_REPEAT) {
-                    pos.y = source.getResolution().y + sourcePos.y;
-                } else {
-                    pos.y = 0;
-                }
-            } else if (sourcePos.y >= source.getResolution().y) {
-                if (wrapping == WRAP_REPEAT) {
-                    pos.y = sourcePos.y - source.getResolution().y;
-                } else {
-                    pos.y = source.getResolution().y - 1;
-                }
-            } else {
-                pos.y = sourcePos.y;
-            }
-
+                        ImageRGBA &target,
+                        const Vec2i &sourcePos,
+                        const Vec2u &targetPos,
+                        const WrappingMethod wrapping) {
+            const Vec2u pos(wrapCoord(sourcePos.x, static_cast<int>(source.getResolution().x), wrapping),
+                            wrapCoord(sourcePos.y, static_cast<int>(source.getResolution().y), wrapping));
             target.setPixel(targetPos.x, targetPos.y, source.getPixel(pos.x, pos.y));
+        }
+
+        static unsigned int wrapCoord(const int coord, const int resolution, const WrappingMethod wrapping) {
+            if (resolution <= 0) {
+                return 0;
+            }
+            if (wrapping == WRAP_REPEAT) {
+                // Proper modulo wrap - handles borders many times larger than the resolution,
+                // e.g. a 1-2px image with an 8px+ tileBorder.
+                int wrapped = coord % resolution;
+                if (wrapped < 0) {
+                    wrapped += resolution;
+                }
+                return static_cast<unsigned int>(wrapped);
+            }
+            // Clamp - safe regardless of how far out of range coord is.
+            if (coord < 0) {
+                return 0;
+            }
+            if (coord >= resolution) {
+                return static_cast<unsigned int>(resolution - 1);
+            }
+            return static_cast<unsigned int>(coord);
         }
 
         Vec2u size;

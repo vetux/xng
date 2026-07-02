@@ -39,6 +39,12 @@ namespace xng {
         virtual void setPixelSize(const Vec2i &size) = 0;
 
         /**
+         * @param c The code point to check.
+         * @return True if the font renderer supports rendering the given character.
+         */
+        virtual bool check(char32_t c) = 0;
+
+        /**
          * Rasterize the given Unicode character.
          *
          * @param c

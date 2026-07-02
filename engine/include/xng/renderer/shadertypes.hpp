@@ -97,10 +97,6 @@ namespace xng {
                  Vec4f, uvOffset_uvScale,
                  ShaderTexture, texture)
 
-    ShaderStruct(ShaderDrawPaint,
-                 Mat4f, mvp,
-                 int, paintIndex)
-
     ShaderStruct(ShaderConfiguration,
                  float, gamma,
                  bool, ibl)

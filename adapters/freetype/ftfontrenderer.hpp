@@ -38,6 +38,8 @@ namespace xng {
 
         void setPixelSize(const Vec2i &size) override;
 
+        bool check(char32_t c) override;
+
         Glyph render(char32_t c) override;
 
         FontMetrics getFontMetrics() override;

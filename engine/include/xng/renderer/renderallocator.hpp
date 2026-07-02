@@ -19,6 +19,8 @@
 #ifndef XENGINE_RENDERALLOCATOR_HPP
 #define XENGINE_RENDERALLOCATOR_HPP
 
+#include "xng/renderer/objects/renderfont.hpp"
+#include "xng/renderer/objects/paint/renderpainttext.hpp"
 #include "xng/assets/assetscene.hpp"
 
 #include "xng/renderer/camera.hpp"
@@ -114,7 +116,14 @@ namespace xng {
 
         RenderObjectHandle<RenderDirectionalLight> createDirectionalLight();
 
-        RenderObjectHandle<RenderPaint> createPaint();
+        RenderObjectHandle<RenderFont> createFont(std::vector<std::unique_ptr<FontRenderer> > fonts,
+                                                  const Vec2i &pixelSize);
+
+        RenderObjectHandle<RenderPaintText> createPaintText(const RenderObjectHandle<RenderFont> &font,
+                                                            const std::u32string &text,
+                                                            const TextLayoutParameters &layoutParameters,
+                                                            const ColorRGBA &color,
+                                                            const SamplingProperties &sampling_properties);
 
         RenderObjectHandle<RenderCanvas> createCanvas();
 
@@ -124,6 +133,10 @@ namespace xng {
 
         const VirtualTextureStreamer &getTextureStreamer() const {
             return textureStream;
+        }
+
+        const MeshStreamer &getMeshStreamer() const {
+            return meshStream;
         }
 
     private:

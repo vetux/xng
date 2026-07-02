@@ -96,6 +96,10 @@ namespace xng {
             paints = std::move(_paints);
         }
 
+        void setLocalProjection(const Mat4f &p) {
+            localProjection = p;
+        }
+
         bool isUploadComplete() override {
             for (auto &paint: paints) {
                 if (!paint->isUploadComplete()) {

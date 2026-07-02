@@ -53,8 +53,13 @@ namespace xng {
             OBJECT_POINT_LIGHT,
             OBJECT_DIRECTIONAL_LIGHT,
             OBJECT_SPOT_LIGHT,
+            OBJECT_FONT,
             OBJECT_CANVAS,
-            OBJECT_PAINT,
+            OBJECT_PAINT_POINT,
+            OBJECT_PAINT_LINE,
+            OBJECT_PAINT_RECTANGLE,
+            OBJECT_PAINT_TEXTURE,
+            OBJECT_PAINT_TEXT,
         };
 
         explicit RenderObject(const Type type, const Id id)

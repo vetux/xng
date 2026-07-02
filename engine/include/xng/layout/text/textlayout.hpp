@@ -34,6 +34,8 @@ namespace xng {
             }
         };
 
+        TextLayout() = default;
+
         TextLayout(Vec2i size, const std::vector<Character> &characters)
             : size(std::move(size)),
               characters(characters) {

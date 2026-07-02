@@ -186,19 +186,10 @@ namespace xng {
          */
         rg::Resource<rg::Buffer> configBuffer;
 
-        /**
-         * The draw calls for drawing a normalized quad / cube from the vertex buffers / index buffer.
-         */
-        rg::DrawCall normalizedQuadDrawCall;
-        rg::DrawCall normalizedCubeDrawCall;
+        MeshStreamer::Allocation normalizedQuad;
+        MeshStreamer::Allocation normalizedCube;
 
-        struct PaintDrawBatch {
-            rg::Resource<rg::Texture> texture; // If unassigned render to screen / compositing layer
-            std::vector<rg::DrawCall> drawCalls;
-            rg::Resource<rg::Buffer> drawBuffer; // Indexed via multi draw GetDrawID
-        };
-
-        std::vector<PaintDrawBatch> paintDrawList;
+        std::vector<RenderObjectHandle<RenderCanvas> > canvases;
 
         rg::Resource<rg::Buffer> paintBuffer;
     };

@@ -57,13 +57,13 @@ namespace xng {
             auto &gObjectIdReceiveShadows = registry.getTexture(RenderPassRegistry::G_BUFFER_OBJECT_ID_RECEIVE_SHADOWS);
             auto &gDepth = registry.getTexture(RenderPassRegistry::G_BUFFER_DEPTH);
 
-            /*const auto colorTexture = builder.allocateTexture(rg::Texture(rg::Texture::CAPABILITY_COLOR_ATTACHMENT,
-                                                                          surface->getDimensions()));*/
+            const auto colorTexture = builder.allocateTexture(rg::Texture(rg::Texture::CAPABILITY_COLOR_ATTACHMENT,
+                                                                          surface->getDimensions()));
 
-            //registry.set(RenderPassRegistry::PBR_COLOR_DEFERRED, colorTexture);
+            registry.set(RenderPassRegistry::PBR_COLOR_DEFERRED, colorTexture);
 
             builder.addPass(rg::RasterPassBuilder("DeferredPBRPass")
-                .attachColor(rg::Attachment(surface, Vec4f(0)))
+                .attachColor(rg::Attachment(colorTexture, Vec4f(0)))
                 .attachDepthStencil(rg::Attachment(gDepth))
                 .storageRead(scene.cameraBuffer, {rg::Shader::FRAGMENT})
                 .storageRead(scene.configBuffer, {rg::Shader::FRAGMENT})

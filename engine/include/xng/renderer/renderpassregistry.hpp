@@ -44,6 +44,8 @@ namespace xng {
             PBR_COLOR_DEFERRED,
             PBR_COLOR_FORWARD,
 
+            CANVAS_COLOR,
+
             RESOURCE_USER = 255, // User-defined resource names should start at RESOURCE_USER
         };
 
