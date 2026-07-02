@@ -478,8 +478,9 @@ int main(int argc, char *argv[]) {
 
     ren.setPasses({
         std::make_shared<ConstructionPass>(runtime->getPipelineCache()),
-        //std::make_shared<DeferredPBRPass>(runtime->getResourceHeap(), runtime->getPipelineCache()),
-        std::make_shared<CanvasPass>(runtime->getResourceHeap(), runtime->getPipelineCache())
+        std::make_shared<DeferredPBRPass>(runtime->getResourceHeap(), runtime->getPipelineCache()),
+        std::make_shared<CanvasPass>(runtime->getResourceHeap(), runtime->getPipelineCache()),
+        std::make_shared<CompositingPass>(runtime->getPipelineCache())
     });
 
     std::cout << "Loading Assets..." << std::endl;
@@ -493,23 +494,6 @@ int main(int argc, char *argv[]) {
     FrameLimiter frameLimiter(0);
     frameLimiter.reset();
 
-    /*auto textLayoutEngine = TextLayoutEngine(*freeType, font, {0, 30});
-    auto text = textLayoutEngine.getLayout(
-        "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.",
-        {
-            500,
-            0,
-            TEXT_ALIGN_LEFT,
-        });
-
-    auto deltaTextLayoutEngine = TextLayoutEngine(*freeType, font, {0, 20});
-
-    auto deltaText = deltaTextLayoutEngine.getLayout(std::to_string(0) + " FPS",
-                                                     {
-                                                         0,
-                                                         0,
-                                                         TEXT_ALIGN_LEFT
-                                                     });*/
     std::chrono::milliseconds fpsUpdateInterval = std::chrono::milliseconds(50);
     auto now = std::chrono::steady_clock::now();
 
@@ -517,7 +501,7 @@ int main(int argc, char *argv[]) {
     fonts.emplace_back(freeType->createFontRenderer(font.get().data));
 
     const auto fontObject = ren.getAllocator().createFont(std::move(fonts),
-                                                          Vec2i(0, 15));
+                                                          Vec2i(0, 16));
 
     const auto canvas = ren.getAllocator().createCanvas();
 
@@ -527,51 +511,34 @@ int main(int argc, char *argv[]) {
 
     RendererStatistics stats;
     while (!window->shouldClose()) {
-        std::wstring txt = std::to_wstring(frameLimiter.getFramerate())
-                           + L" FPS\nStreaming "
-                           + std::to_wstring(ren.getStatistics().streamingTiles)
-                           + L" tiles";
-
-        textObject = ren.getAllocator().createPaintText(fontObject, std::u32string(txt.begin(), txt.end()), {},
-                                                        ColorRGBA::green(), {});
-
-        canvas->setPaints({textObject});
-
-       /* std::cout << frameLimiter.getFramerate()
-                << " fps (Streaming "
-                << ren.getStatistics().streamingTiles
-                << " tiles)" << std::endl;*/
-
         frameLimiter.newFrame();
         window->update();
 
-        canvas->setLocalProjection(
-            RenderCanvas::getLocalProjection(0, window->getFramebufferSize().x, 0, window->getFramebufferSize().y));
+        canvas->setLocalProjection(RenderCanvas::getLocalProjection(0,
+                                                                    window->getFramebufferSize().x,
+                                                                    0,
+                                                                    window->getFramebufferSize().y));
 
         if (std::chrono::steady_clock::now() - now > fpsUpdateInterval) {
             now = std::chrono::steady_clock::now();
 
-            auto txt = std::to_string(frameLimiter.getFramerate()) + " FPS\n\n";
-            txt += std::to_string(stats.drawCalls) + " draw calls\n";
-            txt += std::to_string(stats.polygons) + " polygons\n\n";
-            txt += "VRAM Usage\n";
-            txt += "Total " + std::to_string(
-                (stats.bufferVRamUsage + stats.textureVRamUsage) /
-                MEGABYTE) + " MB\n";
-            txt += "Buffers " + std::to_string(stats.bufferVRamUsage / KILOBYTE) + " KB\n";
-            txt += "Textures " + std::to_string(stats.textureVRamUsage / KILOBYTE) + " KB\n\n";
-            txt += "VRAM Copy\n";
-            txt += "Buffers " + std::to_string(stats.bufferVRamCopy / KILOBYTE) + " KB\n";
-            txt += "Textures " + std::to_string(stats.textureVRamCopy / KILOBYTE) + " KB\n\n";
-            txt += "VRAM Upload\n";
-            txt += "Buffers " + std::to_string(stats.bufferVRamUpload / KILOBYTE) + " KB\n";
-            txt += "Texture Buffers " + std::to_string(stats.textureVRamUpload / KILOBYTE) + " KB\n";
-            /*    deltaText = deltaTextLayoutEngine.getLayout(txt,
-                                                            {
-                                                                0,
-                                                                0,
-                                                                TEXT_ALIGN_RIGHT
-                                                            });*/
+            std::wstring txt = std::to_wstring(frameLimiter.getFramerate())
+                               + L" FPS";
+            if (ren.getStatistics().streamingTiles > 0)
+                txt += L"\nStreaming "
+                        + std::to_wstring(ren.getStatistics().streamingTiles)
+                        + L" tiles";
+
+            SamplingProperties props;
+            props.minFilter = FILTER_NEAREST;
+            props.magFilter = FILTER_NEAREST;
+            textObject = ren.getAllocator().createPaintText(fontObject,
+                                                            std::u32string(txt.begin(), txt.end()),
+                                                            {},
+                                                            ColorRGBA::lime(),
+                                                            props);
+
+            canvas->setPaints({textObject});
         }
 
         auto fbSize = surface->getDimensions();

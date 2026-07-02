@@ -53,7 +53,7 @@ namespace xng {
             resources[name] = texture;
         }
 
-        void set(const ResourceName name, const rg::Resource<rg::Buffer>& buffer) {
+        void set(const ResourceName name, const rg::Resource<rg::Buffer> &buffer) {
             resources[name] = buffer;
         }
 
@@ -65,7 +65,7 @@ namespace xng {
             if (it->second.index() != 0) {
                 throw std::runtime_error("Resource is not a texture");
             }
-            return std::get<rg::Resource<rg::Texture>>(it->second);
+            return std::get<rg::Resource<rg::Texture> >(it->second);
         }
 
         const rg::Resource<rg::Buffer> &getBuffer(const ResourceName name) const {
@@ -76,11 +76,25 @@ namespace xng {
             if (it->second.index() != 1) {
                 throw std::runtime_error("Resource is not a buffer");
             }
-            return std::get<rg::Resource<rg::Buffer>>(it->second);
+            return std::get<rg::Resource<rg::Buffer> >(it->second);
+        }
+
+        bool checkTexture(const ResourceName name) const {
+            if (resources.find(name) != resources.end()) {
+                return true;
+            }
+            return false;
+        }
+
+        bool checkBuffer(const ResourceName name) const {
+            if (resources.find(name) != resources.end()) {
+                return true;
+            }
+            return false;
         }
 
     private:
-        std::unordered_map<ResourceName, std::variant<rg::Resource<rg::Texture>, rg::Resource<rg::Buffer>>> resources;
+        std::unordered_map<ResourceName, std::variant<rg::Resource<rg::Texture>, rg::Resource<rg::Buffer> > > resources;
     };
 }
 

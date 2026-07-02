@@ -50,7 +50,8 @@ namespace xng {
                     std::shared_ptr<rg::Surface> surface,
                     RenderPassRegistry &registry,
                     const RenderScene &scene) override {
-            const auto colorTexture = builder.allocateTexture(rg::Texture(rg::Texture::CAPABILITY_COLOR_ATTACHMENT,
+            const auto colorTexture = builder.allocateTexture(rg::Texture(rg::Texture::CAPABILITY_COLOR_ATTACHMENT
+                                                                          | rg::Texture::CAPABILITY_SAMPLED,
                                                                           surface->getDimensions()));
 
             registry.set(RenderPassRegistry::CANVAS_COLOR, colorTexture);
@@ -64,13 +65,15 @@ namespace xng {
 
                 pass.vertexRead(scene.vertexBuffers.at(POSITION));
                 pass.vertexRead(scene.vertexBuffers.at(UV));
+                pass.indexRead(scene.indexBuffer);
+
                 pass.textureSampledRead(scene.textureAtlas, {rg::Shader::FRAGMENT});
 
-                pass.attachColor(rg::Attachment(surface, Vec4f(0)));
+                pass.attachColor(rg::Attachment(colorTexture, Vec4f(0)));
 
-                builder.addPass(pass.execute([this, scene, canvas, surface](rg::RasterContext &ctx) {
+                builder.addPass(pass.execute([this, scene, canvas, colorTexture](rg::RasterContext &ctx) {
                     ctx.bindPipeline(pipeline);
-                    ctx.setViewport({}, surface->getDimensions());
+                    ctx.setViewport({}, colorTexture.getDescription().size);
 
                     // Bind Vertex Buffers
                     ctx.bindVertexBuffer(scene.vertexBuffers.at(POSITION), 0, 0, getVertexAttributeSize(POSITION));
@@ -128,7 +131,7 @@ namespace xng {
         }
 
     private:
-        rg::RasterPipeline getPipeline(const rg::Shader &vertexShader, const rg::Shader &fragmentShader) const {
+        static rg::RasterPipeline getPipeline(const rg::Shader &vertexShader, const rg::Shader &fragmentShader) {
             rg::RasterPipeline ret;
             ret.shaders = {vertexShader, fragmentShader};
             ret.enableDepthTest = false;
