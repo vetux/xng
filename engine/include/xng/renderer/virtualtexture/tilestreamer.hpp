@@ -372,13 +372,10 @@ namespace xng {
                 return ret;
             }
 
-            // TODO: Fix gl mapping corruption in RenderDoc replay on Linux
-            // When replaying in RenderDoc for some reason this glMapBufferRange call attempts to bind as a write binding instead
+            // TODO: Fix gl mapping corruption / Sync Correctness Bug
+            // When replaying in RenderDoc v1.24+dfsg-1+deb12u1 on Linux (Debian) for some reason this glMapBufferRange call attempts to bind as a write binding instead
             // of read binding but executes live without errors. GL_INVALID_OPERATION in glMapBufferRange(buffer does not allow write access)
-            // I dont know why and there is no reason why or way for this to happen.
-            // At this point i think its time to delete the opengl adapter and build dx11 and vulkan support by hand.
-            // I wanted to first complete the renderer features on gl but it seems theres no way around it.
-            // This only happens when using RenderDoc v1.24+dfsg-1+deb12u1 on Linux (Debian) and works flawlessly on win32.
+            // On Win32 the process crashes while capturing.
 
             const auto sem = heap.transfer({rg::TransferPassBuilder("TileStreamer/Readback")
             .read(readbackBuffer)
