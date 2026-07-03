@@ -20,8 +20,7 @@ Users may also create their own standalone specialized tools that link against t
 The engine is currently under heavy construction and should not be used in projects yet because the interface is still
 unstable and may change any time.
 
-Once the project has reached a stable state there will be semantically versioned releases (v0.1.0) and a stable branch (
-master) will be maintained.
+Starting with v0.1.0 all releases will follow semantic versioning rules. [ROADMAP.md](ROADMAP.md)
 
 ## Features
 
