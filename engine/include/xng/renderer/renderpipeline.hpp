@@ -39,6 +39,8 @@ namespace xng {
      * the renderer can abstract the rendering technique fully down to the shader level.
      *
      * This allows users to write pure shader code without having to write a custom pass. (In the future the editor will use this for the custom shading language and / or node-based shaders)
+     *
+     * TODO: Further RenderPipeline Design (Shader Permutations, Frames in Flight, Solve Canvas and model rendering with a unified interface / rendering path)
      */
     class RenderPipeline {
     public:
