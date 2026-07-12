@@ -16,8 +16,8 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef XENGINE_TEXTURESTREAMER_HPP
-#define XENGINE_TEXTURESTREAMER_HPP
+#ifndef XENGINE_ARRAYTEXTURESTREAMER_HPP
+#define XENGINE_ARRAYTEXTURESTREAMER_HPP
 
 #include "xng/assets/image.hpp"
 #include "xng/math/vector2.hpp"
@@ -31,7 +31,7 @@
 
 namespace xng {
     /**
-     * The texture streamer streams images to the gpu via a fixed set of StreamTextures.
+     * The array texture streamer streams images to the gpu via a fixed set of StreamTextures.
      *
      * Each resolution level represents an array texture.
      *
@@ -46,10 +46,8 @@ namespace xng {
      *
      * Array textures have a hardware limit on the number of layers. (256 on OpenGLES / Vulkan, 2,048 on OpenGL 4.x)
      * Textures have a hardware limit on the maximum dimensions. (2048x2048 on OpenGLES 3.x, 4096x4096 on 1.1 Vulkan)
-     *
-     * TODO: Implement hybrid texture streaming technique using 2D atlasing + tiling inside array textures.
      */
-    class TextureStreamer {
+    class ArrayTextureStreamer {
     public:
         static Vec2u getTextureResolutionLevelSize(const TextureResolution level) {
             switch (level) {
@@ -84,7 +82,7 @@ namespace xng {
             }
         };
 
-        explicit TextureStreamer(rg::Heap &heap, ChunkStreamer &chunkStreamer) {
+        explicit ArrayTextureStreamer(rg::Heap &heap, ChunkStreamer &chunkStreamer) {
             for (auto res = RESOLUTION_BEGIN; res <= RESOLUTION_END; res = static_cast<TextureResolution>(res + 1)) {
                 rg::Texture desc;
                 desc.textureType = rg::TEXTURE_2D;
@@ -154,4 +152,4 @@ namespace xng {
     };
 }
 
-#endif //XENGINE_TEXTURESTREAMER_HPP
+#endif //XENGINE_ARRAYTEXTURESTREAMER_HPP
