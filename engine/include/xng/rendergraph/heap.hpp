@@ -89,6 +89,7 @@ namespace xng::rg {
          */
         virtual std::unique_ptr<HeapMapping> map(const HeapResource<Buffer> &target) = 0;
 
+        //TODO: Drop Heap::transfer() in favour of Runtime::execute()
         /**
          * Perform transfer operations on heap resources in the heap transfer context.
          *
