@@ -27,6 +27,17 @@ namespace xng {
     class RenderTexture final : public RenderObject {
     public:
         //TODO: Multiple backing techniques for textures
+        enum TextureBacking : int {
+            // Texture stored in virtual texture (Sampling overhead, No limits)
+            TEXTURE_BACKING_VIRTUAL_TEXTURE = 0,
+
+            // Texture stored in array texture (Fixed resolution levels, Array layer limit)
+            TEXTURE_BACKING_ARRAY_TEXTURE,
+
+            // Single texture object (Binding limits, Limited resolution)
+            TEXTURE_BACKING_TEXTURE,
+        };
+
         RenderTexture(const Id id,
                       VirtualTextureStreamer &textureStreamer,
                       rg::Heap &heap,
