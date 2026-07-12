@@ -28,7 +28,7 @@ namespace xng {
     public:
         //TODO: Multiple backing techniques for textures
         enum TextureBacking : int {
-            // Texture stored as virtual texture (Automatic tile level texture culling, High Sampling overhead, No limits)
+            // Texture stored as virtual texture (High Sampling overhead, No Cross-Mip Anisotropic filtering, Automatic tile level texture streaming, No limits)
             TEXTURE_BACKING_VIRTUAL_TEXTURE = 0,
 
             // Texture stored in array texture (Low Sampling Overhead, Fixed resolution levels, Array layer limit)
