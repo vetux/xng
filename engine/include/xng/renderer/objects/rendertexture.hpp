@@ -31,10 +31,10 @@ namespace xng {
             // Texture stored as virtual texture (Automatic tile level texture culling, High Sampling overhead, No limits)
             TEXTURE_BACKING_VIRTUAL_TEXTURE = 0,
 
-            // Texture stored in array texture (Fixed resolution levels, Array layer limit)
+            // Texture stored in array texture (Low Sampling Overhead, Fixed resolution levels, Array layer limit)
             TEXTURE_BACKING_ARRAY_TEXTURE,
 
-            // Texture stored in a separate texture object (Binding limits, Limited resolution)
+            // Texture stored in a separate texture object (Lowest Sampling Overhead, Binding limits, Limited resolution)
             TEXTURE_BACKING_TEXTURE,
         };
 
