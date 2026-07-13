@@ -27,6 +27,7 @@
 #include "xng/renderer/stream/bufferstreamer.hpp"
 #include "xng/renderer/objects/rendermaterial.hpp"
 #include "xng/renderer/objects/rendermesh.hpp"
+#include "xng/renderer/objects/rendertransform.hpp"
 
 namespace xng {
     /**
@@ -35,8 +36,8 @@ namespace xng {
     class RenderModel final : public RenderObject {
     public:
         RenderModel(const Id id,
-                    BufferStreamer<ShaderTransform::CPU> &transformStream,
                     BufferStreamer<ShaderMesh::CPU> &shaderMeshStream,
+                    RenderObjectHandle<RenderTransform> _transform,
                     std::vector<RenderObjectHandle<RenderMesh> > _meshes,
                     RenderObjectHandle<RenderMaterial> _material,
                     const RenderPath renderPath,
@@ -44,9 +45,8 @@ namespace xng {
                     const bool receiveShadows,
                     const bool castShadows)
             : RenderObject(OBJECT_MODEL, id),
-              transformStream(transformStream),
-              transformHandle(transformStream.create()),
               shaderMeshStream(shaderMeshStream),
+              transform(std::move(_transform)),
               meshes(std::move(_meshes)),
               material(std::move(_material)),
               renderPath(renderPath),
@@ -60,7 +60,7 @@ namespace xng {
                 shaderMesh.indexCount = mesh->getAllocation().drawCall.count;
                 shaderMesh.modelID = id;
                 shaderMesh.meshID = mesh->getId();
-                shaderMesh.transformIndex = transformHandle;
+                shaderMesh.transformIndex = transform->getSlot();
                 shaderMesh.materialIndex = material->getSlot();
                 shaderMesh.receiveShadows = receiveShadows;
                 const auto handle = shaderMeshStream.create();
@@ -70,23 +70,17 @@ namespace xng {
         }
 
         ~RenderModel() override {
-            transformStream.destroy(transformHandle);
             for (auto &handle: shaderMeshSlots) {
                 shaderMeshStream.destroy(handle);
             }
         }
 
-        void setTransform(const Transform &transform) const {
-            const auto &model = transform.model();
-            transformStream.upload(transformHandle, {model});
-        }
-
-        [[nodiscard]] BufferStreamer<ShaderTransform::CPU>::Slot getTransformSlot() const {
-            return transformHandle;
-        }
-
         [[nodiscard]] const std::vector<BufferStreamer<ShaderMesh::CPU>::Slot> &getShaderMeshSlots() const {
             return shaderMeshSlots;
+        }
+
+        [[nodiscard]] const RenderObjectHandle<RenderTransform> &getTransform() const {
+            return transform;
         }
 
         [[nodiscard]] const std::vector<RenderObjectHandle<RenderMesh> > &getMeshes() const {
@@ -127,11 +121,11 @@ namespace xng {
             if (material && !material->isUploadComplete()) {
                 return false;
             }
-            return transformStream.isUploadComplete(transformHandle);
+            return transform->isUploadComplete();
         }
 
         void flush() override {
-            transformStream.flush(transformHandle);
+            transform->flush();
             for (auto &slot: shaderMeshSlots) {
                 shaderMeshStream.flush(slot);
             }
@@ -144,11 +138,10 @@ namespace xng {
         }
 
     private:
-        BufferStreamer<ShaderTransform::CPU> &transformStream;
-        BufferStreamer<ShaderTransform::CPU>::Slot transformHandle;
-
         BufferStreamer<ShaderMesh::CPU> &shaderMeshStream;
         std::vector<BufferStreamer<ShaderMesh::CPU>::Slot> shaderMeshSlots;
+
+        RenderObjectHandle<RenderTransform> transform;
 
         std::vector<RenderObjectHandle<RenderMesh> > meshes;
         RenderObjectHandle<RenderMaterial> material;

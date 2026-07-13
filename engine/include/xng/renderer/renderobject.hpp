@@ -45,21 +45,18 @@ namespace xng {
         typedef size_t Id;
 
         enum Type {
+            OBJECT_TRANSFORM,
             OBJECT_TEXTURE,
             OBJECT_MATERIAL,
-            OBJECT_SKELETON,
             OBJECT_MESH,
             OBJECT_MODEL,
+            OBJECT_SKELETON,
             OBJECT_POINT_LIGHT,
             OBJECT_DIRECTIONAL_LIGHT,
             OBJECT_SPOT_LIGHT,
             OBJECT_FONT,
             OBJECT_CANVAS,
-            OBJECT_PAINT_POINT,
-            OBJECT_PAINT_LINE,
-            OBJECT_PAINT_RECTANGLE,
-            OBJECT_PAINT_TEXTURE,
-            OBJECT_PAINT_TEXT,
+            OBJECT_PAINT
         };
 
         explicit RenderObject(const Type type, const Id id)

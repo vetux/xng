@@ -22,10 +22,67 @@
 #include "xng/renderer/renderobject.hpp"
 
 namespace xng {
-    class RenderPaint : public RenderObject {
-        public:
+    class RenderPaint final : public RenderObject {
+    public:
+        static Mat4f getTransform(const Rectf &dstRect, const float rotation) {
+            return MatrixMath::translate(Vec3f(dstRect.position.x, dstRect.position.y, 0))
+                   * MatrixMath::rotate(Vec3f(0, 0, rotation))
+                   * MatrixMath::scale(Vec3f(dstRect.dimensions.x, dstRect.dimensions.y, 1));
+        }
 
-        RenderPaint(const Type type, const Id id) : RenderObject(type, id) {}
+        RenderPaint(const Id id,
+                    BufferStreamer<ShaderPaint::CPU> &paintStream,
+                    RenderObjectHandle<RenderTransform> _transform,
+                    RenderObjectHandle<RenderMesh> _mesh,
+                    const ColorRGBA &color,
+                    const RenderObjectHandle<RenderTexture> &texture,
+                    const SamplingProperties &samplingProperties,
+                    const Vec4f &mix,
+                    const Rectf &srcRect)
+            : RenderObject(OBJECT_PAINT, id),
+              paintStream(paintStream),
+              paintSlot(paintStream.create()),
+              transform(std::move(_transform)),
+              mesh(std::move(_mesh)) {
+            ShaderPaint::CPU data;
+            data.transformIndex = transform->getSlot();
+            data.color = color.divide();
+            data.texture = texture->getShaderData(samplingProperties);
+            data.mix = mix;
+            data.srcRect = Vec4f(srcRect.position.x, srcRect.position.y, srcRect.dimensions.x, srcRect.dimensions.y);
+            paintStream.upload(paintSlot, data);
+        }
+
+        [[nodiscard]] BufferStreamer<ShaderPaint::CPU>::Slot getSlot() const {
+            return paintSlot;
+        }
+
+        [[nodiscard]] RenderObjectHandle<RenderTransform> getTransform() const {
+            return transform;
+        }
+
+        [[nodiscard]] RenderObjectHandle<RenderMesh> getMesh() const {
+            return mesh;
+        }
+
+        bool isUploadComplete() override {
+            return paintStream.isUploadComplete(paintSlot)
+                   && transform->isUploadComplete()
+                   && mesh->isUploadComplete();
+        }
+
+        void flush() override {
+            paintStream.flush(paintSlot);
+            transform->flush();
+            mesh->flush();
+        }
+
+    private:
+        BufferStreamer<ShaderPaint::CPU> &paintStream;
+        BufferStreamer<ShaderPaint::CPU>::Slot paintSlot;
+
+        RenderObjectHandle<RenderTransform> transform;
+        RenderObjectHandle<RenderMesh> mesh;
     };
 }
 

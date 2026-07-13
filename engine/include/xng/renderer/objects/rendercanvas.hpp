@@ -92,12 +92,28 @@ namespace xng {
 
         ~RenderCanvas() override = default;
 
+        void setLocalProjection(const Mat4f &p) {
+            localProjection = p;
+        }
+
+        const Mat4f &getLocalProjection() const {
+            return localProjection;
+        }
+
+        const RenderObjectHandle<RenderTexture> &getTexture() const {
+            return texture;
+        }
+
+        void setTexture(RenderObjectHandle<RenderTexture> _texture) {
+            texture = std::move(_texture);
+        }
+
         void setPaints(std::vector<RenderObjectHandle<RenderPaint> > _paints) {
             paints = std::move(_paints);
         }
 
-        void setLocalProjection(const Mat4f &p) {
-            localProjection = p;
+        const std::vector<RenderObjectHandle<RenderPaint> > &getPaints() const {
+            return paints;
         }
 
         bool isUploadComplete() override {
@@ -115,22 +131,10 @@ namespace xng {
             }
         }
 
-        const Mat4f &getLocalProjection() const {
-            return localProjection;
-        }
-
-        const std::vector<RenderObjectHandle<RenderPaint> > &getPaints() const {
-            return paints;
-        }
-
-        const RenderObjectHandle<RenderTexture> &getTexture() const {
-            return texture;
-        }
-
     private:
         Mat4f localProjection{};
-        std::vector<RenderObjectHandle<RenderPaint> > paints{};
         RenderObjectHandle<RenderTexture> texture{};
+        std::vector<RenderObjectHandle<RenderPaint> > paints{};
     };
 }
 

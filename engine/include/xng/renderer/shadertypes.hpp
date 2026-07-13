@@ -66,6 +66,13 @@ namespace xng {
                  ShaderTexture, ambientOcclusion,
                  ShaderTexture, albedo)
 
+    ShaderStruct(ShaderPaint,
+                 Vec4f, color,
+                 ShaderTexture, texture,
+                 Vec4f, mix,
+                 Vec4f, srcRect,
+                 int, transformIndex)
+
     /**
      * Indexed by the pre pass to build the ShaderDrawMesh list.
      */
