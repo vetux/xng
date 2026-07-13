@@ -90,7 +90,7 @@
 // when wrapping __VA_ARGS__ usage in another macro invocation, it forces the preprocessor to not treat __VA_ARGS__ as a single token.
 #define ExpandVAArgs(v) v
 
-#define GenerateElementDeclaration1(_type, name) xng::ShaderScript::ShaderTypeOf<_type>::type name;
+#define GenerateElementDeclaration1(_type, name) xng::ShaderScript::ShaderTypeOf<_type>::type name{};
 #define GenerateElementDeclaration2(type, name, ...) GenerateElementDeclaration1(type, name) ExpandVAArgs(GenerateElementDeclaration1(__VA_ARGS__))
 #define GenerateElementDeclaration3(type, name, ...) GenerateElementDeclaration1(type, name) ExpandVAArgs(GenerateElementDeclaration2(__VA_ARGS__))
 #define GenerateElementDeclaration4(type, name, ...) GenerateElementDeclaration1(type, name) ExpandVAArgs(GenerateElementDeclaration3(__VA_ARGS__))
@@ -399,7 +399,7 @@
     GenerateStructElements2, GenerateStructElements2, \
     GenerateStructElements1, GenerateStructElements1,)(__VA_ARGS__))
 
-#define GenerateCpuElementDeclaration1(type, name) xng::ShaderScript::ShaderType<type> name;
+#define GenerateCpuElementDeclaration1(type, name) xng::ShaderScript::ShaderType<type> name{};
 #define GenerateCpuElementDeclaration2(type, name, ...) GenerateCpuElementDeclaration1(type, name) ExpandVAArgs(GenerateCpuElementDeclaration1(__VA_ARGS__))
 #define GenerateCpuElementDeclaration3(type, name, ...) GenerateCpuElementDeclaration1(type, name) ExpandVAArgs(GenerateCpuElementDeclaration2(__VA_ARGS__))
 #define GenerateCpuElementDeclaration4(type, name, ...) GenerateCpuElementDeclaration1(type, name) ExpandVAArgs(GenerateCpuElementDeclaration3(__VA_ARGS__))
@@ -543,7 +543,7 @@
         xng::ShaderScript::ShaderObject _object;\
         GenerateElementDeclaration(__VA_ARGS__)\
         name() : _object(xng::ShaderScript::ShaderStructObject<_##name##_type, 1>()), GenerateConstructor(__VA_ARGS__) { xng::ShaderScript::ShaderScope::get().addTypeDefinition(getShaderStructDef()); }\
-        name(const xng::ShaderScript::ShaderObject &buffer, bool b = false) : _object(buffer), GenerateConstructor(__VA_ARGS__) { xng::ShaderScript::ShaderScope::get().addTypeDefinition(getShaderStructDef()); }\
+        explicit name(const xng::ShaderScript::ShaderObject &buffer, bool b = false) : _object(buffer), GenerateConstructor(__VA_ARGS__) { xng::ShaderScript::ShaderScope::get().addTypeDefinition(getShaderStructDef()); }\
         name& operator=(const name& other) {\
             _object = other._object;\
             return *this;\
