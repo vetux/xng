@@ -19,7 +19,8 @@
 #ifndef XENGINE_RENDERCONFIGURATION_HPP
 #define XENGINE_RENDERCONFIGURATION_HPP
 
-#include "xng/renderer/renderscene.hpp"
+#include "xng/assets/color.hpp"
+#include "xng/math/vector2.hpp"
 
 namespace xng {
     struct RenderConfiguration {

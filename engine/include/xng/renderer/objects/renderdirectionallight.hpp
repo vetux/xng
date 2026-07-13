@@ -19,10 +19,18 @@
 #ifndef XENGINE_RENDERDIRECTIONALLIGHT_HPP
 #define XENGINE_RENDERDIRECTIONALLIGHT_HPP
 
+#include "xng/assets/color.hpp"
+#include "xng/shaderscript/macro/shaderstruct.hpp"
 #include "xng/renderer/renderobject.hpp"
 #include "xng/renderer/stream/bufferstreamer.hpp"
 
 namespace xng {
+    ShaderStruct(ShaderDirectionalLight,
+                 Vec4f, color,
+                 Vec4f, direction,
+                 Vec4f, shadowFarPlane,
+                 Mat4f, shadowProjectionMatrix)
+
     class RenderDirectionalLight final : public RenderObject {
     public:
         static Mat4f getShadowProjection(const Transform &transform,
@@ -54,7 +62,7 @@ namespace xng {
                  const bool castShadows,
                  const float shadowNearPlane,
                  const float shadowFarPlane,
-                 const float shadowExtent) {
+                 const float shadowExtent) const {
             const auto colorF = color.divide() * power;
 
             ShaderDirectionalLight::CPU light;
@@ -73,7 +81,7 @@ namespace xng {
             lightStream.upload(lightHandle, light);
         }
 
-        [[nodiscard]] BufferStreamer<ShaderPointLight::CPU>::Slot getSlot() const {
+        [[nodiscard]] BufferStreamer<ShaderDirectionalLight::CPU>::Slot getSlot() const {
             return lightHandle;
         }
 

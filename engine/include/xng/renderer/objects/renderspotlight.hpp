@@ -20,9 +20,19 @@
 #define XENGINE_RENDERSPOTLIGHT_HPP
 
 #include "xng/renderer/renderobject.hpp"
-#include "xng/renderer/stream/streamtexture.hpp"
+#include "xng/assets/color.hpp"
+#include "xng/renderer/stream/bufferstreamer.hpp"
+#include "xng/shaderscript/macro/shaderstruct.hpp"
 
 namespace xng {
+    ShaderStruct(ShaderSpotLight,
+                 Vec4f, position,
+                 Vec4f, color,
+                 Vec4f, direction_quadratic,
+                 Vec4f, cutOff_outerCutOff_constant_linear,
+                 Vec4f, shadowFarPlane,
+                 Mat4f, shadowProjectionMatrix)
+
     class RenderSpotLight final : public RenderObject {
     public:
         static Mat4f getShadowProjection(const Transform &transform, const float near, const float far) {
@@ -34,7 +44,7 @@ namespace xng {
                    * MatrixMath::translate(transform.getPosition() * -1);
         }
 
-        explicit RenderSpotLight(const Id id, BufferStreamer<ShaderSpotLight::CPU> &lightStream)
+        RenderSpotLight(const Id id, BufferStreamer<ShaderSpotLight::CPU> &lightStream)
             : RenderObject(OBJECT_SPOT_LIGHT, id),
               lightStream(lightStream) {
             lightHandle = lightStream.create();
@@ -55,7 +65,7 @@ namespace xng {
                  const float linear,
                  const bool castShadows,
                  const float shadowNearPlane,
-                 const float shadowFarPlane) {
+                 const float shadowFarPlane) const {
             const auto colorF = color.divide() * power;
 
             ShaderSpotLight::CPU light;
@@ -75,7 +85,7 @@ namespace xng {
             lightStream.upload(lightHandle, light);
         }
 
-        [[nodiscard]] BufferStreamer<ShaderPointLight::CPU>::Slot getSlot() const {
+        [[nodiscard]] BufferStreamer<ShaderSpotLight::CPU>::Slot getSlot() const {
             return lightHandle;
         }
 

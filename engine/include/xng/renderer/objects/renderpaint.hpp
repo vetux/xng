@@ -20,20 +20,20 @@
 #define XENGINE_RENDERPAINT_HPP
 
 #include "xng/renderer/renderobject.hpp"
+#include "xng/renderer/stream/bufferstreamer.hpp"
+#include "xng/shaderscript/macro/shaderstruct.hpp"
 
 namespace xng {
+    ShaderStruct(ShaderPaint,
+                 Vec4f, color,
+                 ShaderTexture, texture,
+                 Vec4f, mix,
+                 Vec4f, srcRect)
+
     class RenderPaint final : public RenderObject {
     public:
-        static Mat4f getTransform(const Rectf &dstRect, const float rotation) {
-            return MatrixMath::translate(Vec3f(dstRect.position.x, dstRect.position.y, 0))
-                   * MatrixMath::rotate(Vec3f(0, 0, rotation))
-                   * MatrixMath::scale(Vec3f(dstRect.dimensions.x, dstRect.dimensions.y, 1));
-        }
-
         RenderPaint(const Id id,
                     BufferStreamer<ShaderPaint::CPU> &paintStream,
-                    RenderObjectHandle<RenderTransform> _transform,
-                    RenderObjectHandle<RenderMesh> _mesh,
                     const ColorRGBA &color,
                     const RenderObjectHandle<RenderTexture> &texture,
                     const SamplingProperties &samplingProperties,
@@ -41,15 +41,19 @@ namespace xng {
                     const Rectf &srcRect)
             : RenderObject(OBJECT_PAINT, id),
               paintStream(paintStream),
-              paintSlot(paintStream.create()),
-              transform(std::move(_transform)),
-              mesh(std::move(_mesh)) {
+              paintSlot(paintStream.create()) {
             ShaderPaint::CPU data;
-            data.transformIndex = transform->getSlot();
             data.color = color.divide();
-            data.texture = texture->getShaderData(samplingProperties);
-            data.mix = mix;
-            data.srcRect = Vec4f(srcRect.position.x, srcRect.position.y, srcRect.dimensions.x, srcRect.dimensions.y);
+            if (texture) {
+                data.texture = texture->getShaderData(samplingProperties);
+                data.mix = mix;
+                data.srcRect = Vec4f(srcRect.position.x,
+                                     srcRect.position.y,
+                                     srcRect.dimensions.x,
+                                     srcRect.dimensions.y);
+            } else {
+                data.texture.textureSize_textureID_maxMip = Vec4i(-1);
+            }
             paintStream.upload(paintSlot, data);
         }
 
@@ -57,32 +61,17 @@ namespace xng {
             return paintSlot;
         }
 
-        [[nodiscard]] RenderObjectHandle<RenderTransform> getTransform() const {
-            return transform;
-        }
-
-        [[nodiscard]] RenderObjectHandle<RenderMesh> getMesh() const {
-            return mesh;
-        }
-
         bool isUploadComplete() override {
-            return paintStream.isUploadComplete(paintSlot)
-                   && transform->isUploadComplete()
-                   && mesh->isUploadComplete();
+            return paintStream.isUploadComplete(paintSlot);
         }
 
         void flush() override {
             paintStream.flush(paintSlot);
-            transform->flush();
-            mesh->flush();
         }
 
     private:
         BufferStreamer<ShaderPaint::CPU> &paintStream;
         BufferStreamer<ShaderPaint::CPU>::Slot paintSlot;
-
-        RenderObjectHandle<RenderTransform> transform;
-        RenderObjectHandle<RenderMesh> mesh;
     };
 }
 

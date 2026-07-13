@@ -19,28 +19,20 @@
 #ifndef XENGINE_RENDERALLOCATOR_HPP
 #define XENGINE_RENDERALLOCATOR_HPP
 
-#include "xng/renderer/objects/renderfont.hpp"
-#include "xng/renderer/objects/paint/renderpainttext.hpp"
-#include "xng/assets/assetscene.hpp"
-
-#include "xng/renderer/camera.hpp"
+#include "xng/renderer/objects/rendertransform.hpp"
 #include "xng/renderer/objects/renderdirectionallight.hpp"
 #include "xng/renderer/objects/rendermaterial.hpp"
 #include "xng/renderer/objects/rendermesh.hpp"
-#include "xng/renderer/objects/rendermodel.hpp"
 #include "xng/renderer/objects/renderpointlight.hpp"
 #include "xng/renderer/objects/renderskeleton.hpp"
 #include "xng/renderer/objects/renderspotlight.hpp"
 #include "xng/renderer/objects/rendertexture.hpp"
 #include "xng/renderer/objects/renderpaint.hpp"
-#include "xng/renderer/objects/rendercanvas.hpp"
 
 namespace xng {
     class XENGINE_EXPORT RenderAllocator {
     public:
         struct Buffers {
-            rg::HeapResource<rg::Buffer> meshBuffer;
-
             rg::HeapResource<rg::Buffer> transformBuffer;
             rg::HeapResource<rg::Buffer> materialBuffer;
 
@@ -78,9 +70,15 @@ namespace xng {
          */
         explicit RenderAllocator(rg::Runtime &runtime, size_t streamingBudget);
 
+        RenderObjectHandle<RenderTransform> createTransform(const Mat4f &transform = MatrixMath::identity());
+
         RenderObjectHandle<RenderTexture> createTexture(const std::shared_ptr<TileLoader> &tileLoader);
 
         RenderObjectHandle<RenderTexture> createTexture(const ImageRGBA &image, WrappingMethod wrapping);
+
+        RenderObjectHandle<RenderTexture> createTexture(const ImageRGBA &image,
+                                                        WrappingMethod wrapping,
+                                                        unsigned int mipLevels);
 
         RenderObjectHandle<RenderMaterial> createMaterial(const ColorRGBA &albedo,
                                                           float metallic,
@@ -103,29 +101,17 @@ namespace xng {
 
         RenderObjectHandle<RenderMesh> createMesh(const Mesh &mesh, RenderObjectHandle<RenderSkeleton> skeleton);
 
-        RenderObjectHandle<RenderModel> createModel(std::vector<RenderObjectHandle<RenderMesh> > meshes,
-                                                    RenderObjectHandle<RenderMaterial> material,
-                                                    RenderPath renderPath,
-                                                    ShadingModel shadingModel,
-                                                    bool receiveShadows,
-                                                    bool castShadows);
-
         RenderObjectHandle<RenderPointLight> createPointLight();
 
         RenderObjectHandle<RenderSpotLight> createSpotLight();
 
         RenderObjectHandle<RenderDirectionalLight> createDirectionalLight();
 
-        RenderObjectHandle<RenderFont> createFont(std::vector<std::unique_ptr<FontRenderer> > fonts,
-                                                  const Vec2i &pixelSize);
-
-        RenderObjectHandle<RenderPaintText> createPaintText(const RenderObjectHandle<RenderFont> &font,
-                                                            const std::u32string &text,
-                                                            const TextLayoutParameters &layoutParameters,
-                                                            const ColorRGBA &color,
-                                                            const SamplingProperties &sampling_properties);
-
-        RenderObjectHandle<RenderCanvas> createCanvas();
+        RenderObjectHandle<RenderPaint> createPaint(const ColorRGBA &color,
+                                                    const RenderObjectHandle<RenderTexture> &texture,
+                                                    const SamplingProperties &samplingProperties,
+                                                    const Vec4f &mix,
+                                                    const Rectf &srcRect);
 
         void destroy(const RenderObject &object);
 
@@ -160,10 +146,10 @@ namespace xng {
 
         ChunkStreamer chunkStreamer;
 
-        BufferStreamer<ShaderMesh::CPU> shaderMeshStream;
-
         BufferStreamer<ShaderTransform::CPU> transformStream;
+
         BufferStreamer<ShaderMaterial::CPU> materialStream;
+        BufferStreamer<ShaderPaint::CPU> paintStream;
 
         SkeletonStreamer skeletonStream;
 

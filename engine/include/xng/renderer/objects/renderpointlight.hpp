@@ -20,9 +20,19 @@
 #define XENGINE_RENDERPOINTLIGHT_HPP
 
 #include "xng/assets/color.hpp"
+#include "xng/renderer/stream/bufferstreamer.hpp"
 #include "xng/renderer/renderobject.hpp"
+#include "xng/shaderscript/macro/shaderstruct.hpp"
 
 namespace xng {
+    using Mat4f_Array_6 = std::array<Mat4f, 6>;
+
+    ShaderStruct(ShaderPointLight,
+                 Vec4f, position,
+                 Vec4f, color,
+                 Vec4f, shadowFarPlane,
+                 Mat4f_Array_6, shadowMatrices)
+
     class RenderPointLight final : public RenderObject {
     public:
         explicit RenderPointLight(const Id id, BufferStreamer<ShaderPointLight::CPU> &lightStream)

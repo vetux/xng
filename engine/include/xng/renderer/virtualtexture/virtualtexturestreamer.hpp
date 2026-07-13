@@ -27,7 +27,6 @@
 #include "xng/rendergraph/resource/texture.hpp"
 
 #include "xng/renderer/stream/streambuffer.hpp"
-#include "xng/renderer/stream/texturestreamer.hpp"
 
 #include "xng/renderer/virtualtexture/textureatlas.hpp"
 #include "xng/renderer/virtualtexture/tileloader.hpp"

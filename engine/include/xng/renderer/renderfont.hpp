@@ -19,45 +19,29 @@
 #ifndef XENGINE_RENDERFONT_HPP
 #define XENGINE_RENDERFONT_HPP
 
-#include <utility>
-
-#include "xng/assets/color.hpp"
 #include "xng/font/fontrenderer.hpp"
-#include "xng/renderer/renderobject.hpp"
-#include "xng/renderer/virtualtexture/imagetileloader.hpp"
-#include "xng/renderer/virtualtexture/virtualtexturestreamer.hpp"
-#include "xng/renderer/objects/rendertexture.hpp"
+#include "xng/renderer/renderallocator.hpp"
 
 namespace xng {
-    class RenderFont final : public RenderObject {
+    class RenderFont {
     public:
         struct RenderGlyph {
             Glyph::Metrics metrics{};
-            VirtualTextureStreamer::TextureID texture{};
+            RenderObjectHandle<RenderTexture> texture;
             bool grayscale{};
         };
 
-        RenderFont(const Id id,
-                   rg::Heap &heap,
-                   VirtualTextureStreamer &textureStreamer,
+        RenderFont(RenderAllocator &allocator,
                    std::vector<std::unique_ptr<FontRenderer> > _fonts,
                    const Vec2i &pixelSize)
-            : RenderObject(OBJECT_FONT, id),
-              heap(heap),
-              textureStreamer(textureStreamer),
+            : allocator(allocator),
               fonts(std::move(_fonts)) {
             for (const auto &font: fonts) {
                 font->setPixelSize(pixelSize);
             }
         }
 
-        ~RenderFont() override {
-            for (auto &g: glyphs) {
-                if (g.second.metrics.bitmapSize.x > 0 && g.second.metrics.bitmapSize.y > 0) {
-                    textureStreamer.destroy(g.second.texture);
-                }
-            }
-        }
+        ~RenderFont() = default;
 
         void loadGlyph(const char32_t c) {
             if (glyphs.find(c) != glyphs.end()) {
@@ -88,13 +72,6 @@ namespace xng {
             return glyphs.at(c);
         }
 
-        bool isUploadComplete() override {
-            return true;
-        }
-
-        void flush() override {
-        }
-
     private:
         void loadGlyph(const Glyph &glyph) {
             RenderGlyph g;
@@ -106,7 +83,8 @@ namespace xng {
                     image = ImageRGBA(imageGS.getWidth(), imageGS.getHeight());
                     for (unsigned int y = 0; y < image.getHeight(); ++y) {
                         for (unsigned int x = 0; x < image.getWidth(); ++x) {
-                            image.setPixel(x, y, ColorRGBA(imageGS.getPixel(x, y), imageGS.getPixel(x, y), imageGS.getPixel(x, y), imageGS.getPixel(x, y)));
+                            image.setPixel(x, y, ColorRGBA(imageGS.getPixel(x, y), imageGS.getPixel(x, y),
+                                                           imageGS.getPixel(x, y), imageGS.getPixel(x, y)));
                         }
                     }
                     g.grayscale = true;
@@ -115,12 +93,7 @@ namespace xng {
                     g.grayscale = false;
                 }
 
-                g.texture = textureStreamer.create(std::make_shared<ImageTileLoader>(image,
-                    1,
-                    textureStreamer.getTileSize(),
-                    textureStreamer.getTileBorder(),
-                    WRAP_CLAMP_TO_EDGE,
-                    heap));
+                g.texture = allocator.createTexture(image, WRAP_CLAMP_TO_EDGE, 1);
             }
 
             g.metrics = glyph.metrics;
@@ -129,8 +102,7 @@ namespace xng {
             glyphMetrics[glyph.character] = glyph.metrics;
         }
 
-        rg::Heap &heap;
-        VirtualTextureStreamer &textureStreamer;
+        RenderAllocator &allocator;
 
         std::vector<std::unique_ptr<FontRenderer> > fonts;
 
@@ -138,5 +110,4 @@ namespace xng {
         std::unordered_map<char32_t, Glyph::Metrics> glyphMetrics;
     };
 }
-
 #endif //XENGINE_RENDERFONT_HPP

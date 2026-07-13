@@ -19,8 +19,8 @@
 #ifndef XENGINE_RENDEROBJECT_HPP
 #define XENGINE_RENDEROBJECT_HPP
 
-#include "xng/renderer/stream/bufferstreamer.hpp"
-#include "xng/renderer/shadertypes.hpp"
+#include <cstddef>
+#include <memory>
 
 namespace xng {
     /**
@@ -38,7 +38,8 @@ namespace xng {
     /**
      * Base class for any render object.
      *
-     * Render objects are directly backed by heap resources that are consumed by the renderer.
+     * Render objects represent the persistent state of the renderer.
+     * Users can control allocation pressure via the render object interface.
      */
     class RenderObject {
     public:
@@ -48,15 +49,12 @@ namespace xng {
             OBJECT_TRANSFORM,
             OBJECT_TEXTURE,
             OBJECT_MATERIAL,
+            OBJECT_PAINT,
             OBJECT_MESH,
-            OBJECT_MODEL,
             OBJECT_SKELETON,
             OBJECT_POINT_LIGHT,
             OBJECT_DIRECTIONAL_LIGHT,
             OBJECT_SPOT_LIGHT,
-            OBJECT_FONT,
-            OBJECT_CANVAS,
-            OBJECT_PAINT
         };
 
         explicit RenderObject(const Type type, const Id id)

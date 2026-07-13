@@ -20,8 +20,6 @@
 #define XENGINE_RENDERSKELETON_HPP
 
 #include "xng/renderer/renderobject.hpp"
-#include "xng/renderer/shadertypes.hpp"
-#include "xng/renderer/stream/bufferstreamer.hpp"
 #include "xng/renderer/stream/skeletonstreamer.hpp"
 
 namespace xng {

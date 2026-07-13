@@ -20,17 +20,25 @@
 #define XENGINE_RENDERTRANSFORM_HPP
 
 #include "xng/renderer/renderobject.hpp"
-
 #include "xng/math/transform.hpp"
+#include "xng/renderer/stream/bufferstreamer.hpp"
+#include "xng/shaderscript/macro/shaderstruct.hpp"
 
 namespace xng {
+    ShaderStruct(ShaderTransform,
+                 Mat4f, transform)
+
     class RenderTransform final : public RenderObject {
     public:
         RenderTransform(const Id id,
-                        BufferStreamer<ShaderTransform::CPU> &transformStream)
+                        BufferStreamer<ShaderTransform::CPU> &transformStream,
+                        const Mat4f &transform)
             : RenderObject(OBJECT_TRANSFORM, id),
               transformStream(transformStream),
               transformSlot(transformStream.create()) {
+            ShaderTransform::CPU data;
+            data.transform = transform;
+            transformStream.upload(transformSlot, data);
         }
 
         void set(const Transform &transform) const {

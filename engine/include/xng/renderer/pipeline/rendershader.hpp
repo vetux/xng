@@ -16,17 +16,22 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef XENGINE_RENDERPIPELINESHADER_HPP
-#define XENGINE_RENDERPIPELINESHADER_HPP
+#ifndef XENGINE_RENDERSHADER_HPP
+#define XENGINE_RENDERSHADER_HPP
 
-#include <unordered_set>
-
-#include "xng/rendergraph/shader/shader.hpp"
-
-#include "xng/renderer/vertexattribute.hpp"
+#include "xng/rendergraph/pipelinecache.hpp"
 
 namespace xng {
-    class RenderPipelineShader {
+    /**
+     * TODO: Shader Permutations
+     *
+     * This is where permutations would live based on material combinations including backing method and the pipeline
+     * can bind different sub shaders based on accessed attribute combination.
+     *
+     * This also means permutations are only at pipeline level and passes would have to define their own permutations
+     * separately but i think this is fine because permutations outside of the render object scope are pass specific anyway.
+     */
+    class RenderShader {
     public:
         enum Attribute : int {
             // Either sampled material textures or material color.
@@ -38,6 +43,9 @@ namespace xng {
 
             // In the fragment stage either vertex normal or transformed texture normal is used, and with current abstraction the vertex -> fragment data is user-controlled.
             MATERIAL_HAS_NORMAL,
+
+            // Either sampled paint texture with color mixed in or the paint color.
+            PAINT_COLOR,
 
             TRANSFORM_MODEL_VIEW_PROJECTION,
 
@@ -77,57 +85,30 @@ namespace xng {
             rg::ShaderPrimitiveType value{};
         };
 
-        virtual ~RenderPipelineShader() = default;
+        RenderShader(rg::PipelineCache &cache,
+                     const rg::PipelineCache::Handle pipeline,
+                     std::vector<Attachment> _attachments,
+                     std::unordered_set<Attribute> _attributes,
+                     std::unordered_set<VertexAttribute> _vertexAttributes)
+            : cache(cache),
+              pipeline(pipeline),
+              attachments(std::move(_attachments)),
+              attributes(std::move(_attributes)),
+              vertexAttributes(std::move(_vertexAttributes)) {
+        }
 
-        /**
-         * Retrieve vertex attribute value. (Only valid in Vertex stage)
-         *
-         * @param attr
-         * @return
-         */
-        virtual rg::ShaderInstruction getVertexAttribute(VertexAttribute attr) = 0;
+        ~RenderShader() {
+            cache.destroy(pipeline);
+        }
 
-        /**
-         * Retrieve non indexed attribute value.
-         *
-         * @param attr
-         * @return
-         */
-        virtual rg::ShaderInstruction getAttribute(Attribute attr) = 0;
+    private:
+        rg::PipelineCache &cache;
+        rg::PipelineCache::Handle pipeline;
 
-        /**
-         * Retrieve the indexed attribute value.
-         *
-         * @param attr
-         * @param index
-         * @return
-         */
-        virtual rg::ShaderInstruction getAttribute(Attribute attr, const rg::ShaderInstruction &index) = 0;
-
-        /**
-         * Write the specified color value to the specified attachment.
-         *
-         * This wraps virtual texture write if the shader attachment is a virtual texture.
-         *
-         * @param index
-         * @param color
-         * @return
-         */
-        virtual rg::ShaderInstruction writeAttachment(unsigned int index, const rg::ShaderInstruction &color) = 0;
-
-        /**
-         * Inject the pipeline dependent required bindings, parameters, functions and vertex layout into the passed shader.
-         *
-         * Stage must be either VERTEX or FRAGMENT.
-         *
-         * @param shader The shader to inject into.
-         * @param attachments The format of the attachments.
-         * @param attrs The set of accessed attributes.
-         */
-        virtual void inject(rg::Shader &shader,
-                            const std::vector<Attachment> &attachments,
-                            const std::unordered_set<Attribute> &attrs) = 0;
+        std::vector<Attachment> attachments;
+        std::unordered_set<Attribute> attributes;
+        std::unordered_set<VertexAttribute> vertexAttributes;
     };
 }
 
-#endif //XENGINE_RENDERPIPELINESHADER_HPP
+#endif //XENGINE_RENDERSHADER_HPP

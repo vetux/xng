@@ -20,10 +20,20 @@
 #define XENGINE_RENDERMATERIAL_HPP
 
 #include "xng/renderer/objects/rendertexture.hpp"
-
 #include "xng/renderer/samplingproperties.hpp"
+#include "xng/shaderscript/macro/shaderstruct.hpp"
 
 namespace xng {
+    ShaderStruct(ShaderMaterial,
+                 Vec4f, albedoColor,
+                 Vec4f, metallic_roughness_ambientOcclusion,
+                 Vec4f, normalIntensity_flipNormal,
+                 ShaderTexture, normal,
+                 ShaderTexture, metallic,
+                 ShaderTexture, roughness,
+                 ShaderTexture, ambientOcclusion,
+                 ShaderTexture, albedo)
+
     class RenderMaterial final : public RenderObject {
     public:
         /**

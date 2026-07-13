@@ -22,15 +22,19 @@ namespace xng {
     RenderAllocator::RenderAllocator(rg::Runtime &runtime, const size_t streamingBudget)
         : heap(runtime.getResourceHeap()),
           chunkStreamer(heap, 256 * 1024, streamingBudget / (256 * 1024)),
-          shaderMeshStream(heap, chunkStreamer),
           transformStream(heap, chunkStreamer),
           materialStream(heap, chunkStreamer),
+          paintStream(heap, chunkStreamer),
           skeletonStream(heap, chunkStreamer),
           pointLightStream(heap, chunkStreamer),
           spotLightStream(heap, chunkStreamer),
           directionalLightStream(heap, chunkStreamer),
           meshStream(heap, chunkStreamer),
           textureStream(runtime, chunkStreamer, 256, 9, 16.0f) {
+    }
+
+    RenderObjectHandle<RenderTransform> RenderAllocator::createTransform(const Mat4f &transform) {
+        return std::make_shared<RenderTransform>(allocateId(), transformStream, transform);
     }
 
     RenderObjectHandle<RenderTexture> RenderAllocator::createTexture(const std::shared_ptr<TileLoader> &tileLoader) {
@@ -40,6 +44,12 @@ namespace xng {
     RenderObjectHandle<RenderTexture> RenderAllocator::createTexture(const ImageRGBA &image,
                                                                      const WrappingMethod wrapping) {
         return std::make_shared<RenderTexture>(allocateId(), textureStream, heap, image, wrapping);
+    }
+
+    RenderObjectHandle<RenderTexture> RenderAllocator::createTexture(const ImageRGBA &image,
+                                                                     const WrappingMethod wrapping,
+                                                                     const unsigned int mipLevels) {
+        return std::make_shared<RenderTexture>(allocateId(), textureStream, heap, image, wrapping, mipLevels);
     }
 
     RenderObjectHandle<RenderMaterial> RenderAllocator::createMaterial(const ColorRGBA &albedo,
@@ -91,23 +101,6 @@ namespace xng {
         return std::make_shared<RenderMesh>(allocateId(), meshStream, mesh, std::move(skeleton));
     }
 
-    RenderObjectHandle<RenderModel> RenderAllocator::createModel(std::vector<RenderObjectHandle<RenderMesh> > meshes,
-                                                                 RenderObjectHandle<RenderMaterial> material,
-                                                                 RenderPath renderPath,
-                                                                 ShadingModel shadingModel,
-                                                                 bool receiveShadows,
-                                                                 bool castShadows) {
-        return std::make_shared<RenderModel>(allocateId(),
-                                             transformStream,
-                                             shaderMeshStream,
-                                             std::move(meshes),
-                                             std::move(material),
-                                             renderPath,
-                                             shadingModel,
-                                             receiveShadows,
-                                             castShadows);
-    }
-
     RenderObjectHandle<RenderPointLight> RenderAllocator::createPointLight() {
         return std::make_shared<RenderPointLight>(allocateId(), pointLightStream);
     }
@@ -120,27 +113,18 @@ namespace xng {
         return std::make_shared<RenderDirectionalLight>(allocateId(), directionalLightStream);
     }
 
-    RenderObjectHandle<RenderFont> RenderAllocator::createFont(std::vector<std::unique_ptr<FontRenderer> > fonts,
-                                                               const Vec2i &pixelSize) {
-        return std::make_shared<RenderFont>(allocateId(),
-                                            heap,
-                                            textureStream,
-                                            std::move(fonts),
-                                            pixelSize);
-    }
-
-    RenderObjectHandle<RenderPaintText> RenderAllocator::createPaintText(const RenderObjectHandle<RenderFont> &font,
-                                                                         const std::u32string &text,
-                                                                         const TextLayoutParameters &layoutParameters,
-                                                                         const ColorRGBA &color,
-                                                                         const SamplingProperties &
-                                                                         sampling_properties) {
-        return std::make_shared<
-            RenderPaintText>(allocateId(), font, text, layoutParameters, color, sampling_properties);
-    }
-
-    RenderObjectHandle<RenderCanvas> RenderAllocator::createCanvas() {
-        return std::make_shared<RenderCanvas>(allocateId(), MatrixMath::identity());
+    RenderObjectHandle<RenderPaint> RenderAllocator::createPaint(const ColorRGBA &color,
+                                                                 const RenderObjectHandle<RenderTexture> &texture,
+                                                                 const SamplingProperties &samplingProperties,
+                                                                 const Vec4f &mix,
+                                                                 const Rectf &srcRect) {
+        return std::make_shared<RenderPaint>(allocateId(),
+                                             paintStream,
+                                             color,
+                                             texture,
+                                             samplingProperties,
+                                             mix,
+                                             srcRect);
     }
 
     void RenderAllocator::destroy(const RenderObject &object) {
@@ -154,7 +138,6 @@ namespace xng {
     [[nodiscard]] RenderAllocator::Buffers RenderAllocator::commit(rg::GraphBuilder &graph) {
         textureStream.update();
         std::vector<rg::TransferPass> streamPasses;
-        concatPasses(shaderMeshStream.commit(graph), streamPasses);
         concatPasses(transformStream.commit(graph), streamPasses);
         concatPasses(materialStream.commit(graph), streamPasses);
         concatPasses(skeletonStream.commit(graph), streamPasses);
@@ -165,7 +148,6 @@ namespace xng {
         concatPasses(textureStream.commit(graph), streamPasses);
         chunkStreamer.commit((std::move(streamPasses)));
         return {
-            shaderMeshStream.getBuffer(),
             transformStream.getBuffer(),
             materialStream.getBuffer(),
             skeletonStream.getBuffer(),

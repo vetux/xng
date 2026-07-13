@@ -19,179 +19,322 @@
 #ifndef XENGINE_RENDERSCENE_HPP
 #define XENGINE_RENDERSCENE_HPP
 
-#include "xng/rendergraph/heap.hpp"
+#include "xng/renderer/objects/rendertransform.hpp"
+#include "xng/renderer/objects/rendermaterial.hpp"
+#include "xng/renderer/objects/rendermesh.hpp"
 
-#include "xng/renderer/shadingmodel.hpp"
-#include "xng/renderer/vertexattribute.hpp"
+#include "xng/renderer/pipeline/rendershader.hpp"
+#include "xng/renderer/pipeline/renderbatch.hpp"
+
 #include "xng/renderer/renderpath.hpp"
-#include "xng/renderer/objects/rendermodel.hpp"
-#include "xng/renderer/objects/renderpointlight.hpp"
-#include "xng/renderer/objects/renderspotlight.hpp"
-#include "xng/renderer/objects/renderdirectionallight.hpp"
-#include "xng/renderer/objects/rendercanvas.hpp"
-
-#include "xng/shaderscript/indirectbuffers.hpp"
+#include "xng/renderer/shadingmodel.hpp"
+#include "xng/renderer/camera.hpp"
 
 namespace xng {
     /**
-     * The absolute (Packed) data to be drawn via indirect draw.
+     * A scene should represent the complete contents of one frame.
      *
-     * Any kind of virtual geometry / culling / packing logic would sit in front of this.
-     *
-     * Passes only have to be rerecorded when any members of this struct are changed but not if the actual contents of the resources on the gpu change.
-     *
-     * Heap / Streaming / Residency concepts are hidden from consumers of the render scene.
+     * It is bounded and defines the available features for the renderer.
      */
-    struct RenderScene {
-        struct BufferAccessRange {
-            size_t offset;
-            size_t size;
-        };
+    class RenderScene {
+    public:
+        typedef size_t ObjectID;
 
-        struct Batch {
-            /**
-             * The maximum number of commands in the indirect buffer.
-             */
-            size_t batchSize;
-
-            /**
-             * The stride between commands in the indirect buffer.
-             */
-            size_t stride;
-
-            /**
-             * The indirect buffer containing up to batchSize commands.
-             *
-             * The size of the indirect buffer is batchSize * sizeof(ShaderDrawIndirectIndexed)
-             */
-            rg::Resource<rg::Buffer> indirectBuffer;
-            size_t indirectBufferOffset;
-
-            /**
-             * The count buffer containing the number of commands in the indirect buffer
-             */
-            rg::Resource<rg::Buffer> indirectCountBuffer;
-            size_t indirectCountBufferOffset;
-
-            /**
-             * Which render path to use for this batch.
-             * The scene prepass handles batch / draw ordering.
-             */
-            RenderPath renderPath;
-
-            /**
-             * The shading model to use for this batch.
-             */
-            ShadingModel shadingModel;
-
-            /**
-             * The set of byte ranges / texture layers in the buffers that may be read by this draw batch.
-             */
-            std::vector<BufferAccessRange> drawBufferAccesses;
-            std::vector<BufferAccessRange> transformBufferAccesses;
-            std::vector<BufferAccessRange> materialBufferAccesses;
-
-            std::unordered_map<VertexAttribute, std::vector<BufferAccessRange> > vertexBufferAccesses;
-            std::vector<BufferAccessRange> indexBufferAccesses;
-
-            std::vector<size_t> textureAccesses;
-
-            Batch(const size_t batchSize,
-                  const size_t stride,
-                  const rg::Resource<rg::Buffer> &indirectBuffer,
-                  const size_t indirectBufferOffset,
-                  const rg::Resource<rg::Buffer> &indirectCountBuffer,
-                  const size_t indirectCountBufferOffset,
+        class Model {
+        public:
+            Model(RenderObjectHandle<RenderTransform> transform,
+                  RenderObjectHandle<RenderMaterial> material,
+                  std::vector<RenderObjectHandle<RenderMesh> > meshes,
                   const RenderPath renderPath,
+                  const bool castShadows,
                   const ShadingModel shadingModel,
-                  std::vector<BufferAccessRange> drawBufferAccesses,
-                  std::vector<BufferAccessRange> transformBufferAccesses,
-                  std::vector<BufferAccessRange> materialBufferAccesses,
-                  std::unordered_map<VertexAttribute, std::vector<BufferAccessRange> > vertexBufferAccesses,
-                  std::vector<BufferAccessRange> indexBufferAccesses,
-                  std::vector<size_t> textureAccesses)
-                : batchSize(batchSize),
-                  stride(stride),
-                  indirectBuffer(indirectBuffer),
-                  indirectBufferOffset(indirectBufferOffset),
-                  indirectCountBuffer(indirectCountBuffer),
-                  indirectCountBufferOffset(indirectCountBufferOffset),
+                  const bool receiveShadows)
+                : transform(std::move(transform)),
+                  material(std::move(material)),
+                  meshes(std::move(meshes)),
                   renderPath(renderPath),
+                  castShadows(castShadows),
                   shadingModel(shadingModel),
-                  drawBufferAccesses(std::move(drawBufferAccesses)),
-                  transformBufferAccesses(std::move(transformBufferAccesses)),
-                  materialBufferAccesses(std::move(materialBufferAccesses)),
-                  vertexBufferAccesses(std::move(vertexBufferAccesses)),
-                  indexBufferAccesses(std::move(indexBufferAccesses)),
-                  textureAccesses(std::move(textureAccesses)) {
+                  receiveShadows(receiveShadows),
+                  shader(nullptr) {
             }
+
+            Model(RenderObjectHandle<RenderTransform> transform,
+                  RenderObjectHandle<RenderMaterial> material,
+                  std::vector<RenderObjectHandle<RenderMesh> > meshes,
+                  const RenderPath renderPath,
+                  const bool castShadows,
+                  std::shared_ptr<RenderShader> shader)
+                : transform(std::move(transform)),
+                  material(std::move(material)),
+                  meshes(std::move(meshes)),
+                  renderPath(renderPath),
+                  castShadows(castShadows),
+                  shader(std::move(shader)) {
+            }
+
+            [[nodiscard]] RenderObjectHandle<RenderTransform> getTransform() const {
+                return transform;
+            }
+
+            [[nodiscard]] RenderObjectHandle<RenderMaterial> getMaterial() const {
+                return material;
+            }
+
+            [[nodiscard]] const std::vector<RenderObjectHandle<RenderMesh> > &getMeshes() const {
+                return meshes;
+            }
+
+            [[nodiscard]] RenderPath getRenderPath() const {
+                return renderPath;
+            }
+
+            [[nodiscard]] ShadingModel getShadingModel() const {
+                return shadingModel;
+            }
+
+            [[nodiscard]] bool isCastShadows() const {
+                return castShadows;
+            }
+
+            [[nodiscard]] bool isReceiveShadows() const {
+                return receiveShadows;
+            }
+
+            [[nodiscard]] std::shared_ptr<RenderShader> getShader() const {
+                return shader;
+            }
+
+        private:
+            RenderObjectHandle<RenderTransform> transform;
+            RenderObjectHandle<RenderMaterial> material;
+            std::vector<RenderObjectHandle<RenderMesh> > meshes;
+
+            RenderPath renderPath = RENDER_PATH_DEFERRED;
+            bool castShadows = false;
+
+            ShadingModel shadingModel = SHADING_MODEL_NONE;
+            bool receiveShadows = false;
+
+            std::shared_ptr<RenderShader> shader;
         };
 
-        /**
-         * The render batches for drawing the models.
-         */
-        std::vector<Batch> drawList;
+        class Paint {
+        public:
+            static Mat4f getTransform(const Rectf &dstRect, const float rotation) {
+                return MatrixMath::translate(Vec3f(dstRect.position.x, dstRect.position.y, 0))
+                       * MatrixMath::rotate(Vec3f(0, 0, rotation))
+                       * MatrixMath::scale(Vec3f(dstRect.dimensions.x, dstRect.dimensions.y, 1));
+            }
 
-        /**
-         * The draw buffer indexed by the draw batches via GetBaseInstance + GetDrawID + GetInstanceID
-         */
-        rg::Resource<rg::Buffer> drawBuffer;
+            /**
+             * Paint Line
+             *
+             * @param allocator
+             * @param start
+             * @param end
+             * @param color
+             * @param center
+             * @param rotation
+             */
+            Paint(RenderAllocator &allocator,
+                  const Vec2f &start,
+                  const Vec2f &end,
+                  const ColorRGBA &color,
+                  const Vec2f &center = {},
+                  const float rotation = 0) {
+                transform = allocator.createTransform(MatrixMath::rotate(Vec3f(0, 0, rotation))
+                                                      * MatrixMath::translate(Vec3f(center.x, center.y, 0)));
+                paint = allocator.createPaint(color, {}, {}, {}, {});
+                Mesh m;
+                m.primitive = Mesh::TRIANGLES;
+                m.positions.emplace_back(start.x, start.y, 1);
+                m.positions.emplace_back(end.x, end.y, 1);
+                m.positions.emplace_back(end.x, end.y, 1);
+                mesh = allocator.createMesh(m, {});
+            }
 
-        /**
-         * The buffers indexed via the indices in the model buffer
-         */
-        rg::Resource<rg::Buffer> transformBuffer;
-        rg::Resource<rg::Buffer> materialBuffer;
+            /**
+             * Paint Point
+             *
+             * @param allocator
+             * @param unitQuadMesh
+             * @param position
+             * @param size
+             * @param color
+             */
+            Paint(RenderAllocator &allocator,
+                  RenderObjectHandle<RenderMesh> unitQuadMesh,
+                  const Vec2f &position,
+                  const float size,
+                  const ColorRGBA &color) {
+                transform = allocator.createTransform(MatrixMath::scale(Vec3f(size, size, 1))
+                                                      * MatrixMath::translate(Vec3f(position.x, position.y, 0)));
+                paint = allocator.createPaint(color, {}, {}, {}, {});
+                mesh = std::move(unitQuadMesh);
+            }
 
-        /**
-         * The vertex / index buffers containing all geometry.
-         * The vertex buffer positions are skinned positions.
-         */
-        std::unordered_map<VertexAttribute, rg::Resource<rg::Buffer> > vertexBuffers;
-        rg::Resource<rg::Buffer> indexBuffer;
+            /**
+             * Paint Rect
+             *
+             * @param allocator
+             * @param unitQuadMesh
+             * @param dstRect
+             * @param color
+             * @param center
+             * @param rotation
+             */
+            Paint(RenderAllocator &allocator,
+                  RenderObjectHandle<RenderMesh> unitQuadMesh,
+                  const Rectf &dstRect,
+                  const ColorRGBA &color,
+                  const Vec2f &center = {},
+                  const float rotation = 0) {
+                transform = allocator.createTransform(
+                    MatrixMath::translate(Vec3f(dstRect.position.x, dstRect.position.y, 0))
+                    * MatrixMath::rotate(Vec3f(0, 0, rotation))
+                    * MatrixMath::translate(Vec3f(center.x, center.y, 0))
+                    * MatrixMath::scale(Vec3f(dstRect.dimensions.x, dstRect.dimensions.y, 1)));
+                paint = allocator.createPaint(color, {}, {}, {}, {});
+                mesh = std::move(unitQuadMesh);
+            }
 
-        /**
-         * The texture arrays containing all textures.
-         */
-        rg::Resource<rg::Texture> textureAtlas;
+            /**
+             * Paint Texture
+             *
+             * @param allocator
+             * @param unitQuadMesh
+             * @param srcRect
+             * @param dstRect
+             * @param texture
+             * @param samplingProperties
+             * @param mix
+             * @param mixColor
+             * @param center
+             * @param rotation
+             */
+            Paint(RenderAllocator &allocator,
+                  RenderObjectHandle<RenderMesh> unitQuadMesh,
+                  const Rectf &srcRect,
+                  const Rectf &dstRect,
+                  const RenderObjectHandle<RenderTexture> &texture,
+                  const SamplingProperties &samplingProperties,
+                  const Vec4f mix = {},
+                  const ColorRGBA &mixColor = {},
+                  const Vec2f &center = {},
+                  const float rotation = 0) {
+                transform = allocator.createTransform(
+                    MatrixMath::translate(Vec3f(dstRect.position.x, dstRect.position.y, 0))
+                    * MatrixMath::rotate(Vec3f(0, 0, rotation))
+                    * MatrixMath::translate(Vec3f(center.x, center.y, 0))
+                    * MatrixMath::scale(Vec3f(dstRect.dimensions.x, dstRect.dimensions.y, 1)));
+                paint = allocator.createPaint(mixColor,
+                                              texture,
+                                              samplingProperties,
+                                              mix,
+                                              srcRect);
+                mesh = std::move(unitQuadMesh);
+            }
 
-        /**
-         * The virtual texture mapping buffers.
-         */
-        rg::Resource<rg::Buffer> tileMapBuffer;
-        rg::Resource<rg::Buffer> tileMapOffsetsBuffer;
-        rg::Resource<rg::Buffer> residencyMapBuffer;
-        rg::Resource<rg::Buffer> residencyMapOffsetsBuffer;
-        rg::Resource<rg::Buffer> readbackBuffer;
+            [[nodiscard]] RenderObjectHandle<RenderTransform> getTransform() const {
+                return transform;
+            }
 
-        unsigned int atlasSize;
-        unsigned int tileSize;
-        unsigned int tileBorder;
-        float maxAnisotropy;
+            [[nodiscard]] RenderObjectHandle<RenderPaint> getPaint() const {
+                return paint;
+            }
 
-        /**
-         * The light buffers.
-         */
-        rg::Resource<rg::Buffer> pointLightBuffer;
-        rg::Resource<rg::Buffer> spotLightBuffer;
-        rg::Resource<rg::Buffer> directionalLightBuffer;
+            [[nodiscard]] RenderObjectHandle<RenderMesh> getMesh() const {
+                return mesh;
+            }
 
-        /**
-         * The camera buffer.
-         */
-        rg::Resource<rg::Buffer> cameraBuffer;
+        private:
+            RenderObjectHandle<RenderTransform> transform;
+            RenderObjectHandle<RenderPaint> paint;
+            RenderObjectHandle<RenderMesh> mesh;
+        };
 
-        /**
-         * The config buffer.
-         */
-        rg::Resource<rg::Buffer> configBuffer;
+        class Canvas {
+        public:
+            /**
+             * Construct a default local transformation matrix for translating the canvas contents in canvas space.
+             *
+             * E.g., for a pixel-perfect screen space canvas use left=0, right=screenSize.x, top=0, bottom=screenSize.y
+             *
+             * @param left
+             * @param right
+             * @param top
+             * @param bottom
+             */
+            static Mat4f getLocalProjection(const float left, const float right, const float top, const float bottom) {
+                Transform cameraTransform;
+                cameraTransform.setPosition({0, 0, -1});
 
-        MeshStreamer::Allocation normalizedQuad;
-        MeshStreamer::Allocation normalizedCube;
+                const auto view = Camera::getView(cameraTransform);
+                const auto projection = Camera::getOrthographicProjection(left,
+                                                                          right,
+                                                                          bottom,
+                                                                          top,
+                                                                          0.001,
+                                                                          1);
 
-        std::vector<RenderObjectHandle<RenderCanvas> > canvases;
+                return projection * view;
+            }
 
-        rg::Resource<rg::Buffer> paintBuffer;
+            Canvas(const Mat4f &localProjection,
+                   RenderObjectHandle<RenderTexture> texture,
+                   std::vector<Paint> paints)
+                : localProjection(localProjection),
+                  texture(std::move(texture)),
+                  paints(std::move(paints)) {
+            }
+
+        private:
+            Mat4f localProjection;
+            RenderObjectHandle<RenderTexture> texture;
+            std::vector<Paint> paints;
+        };
+
+        struct UserShadingBatch {
+            std::shared_ptr<RenderShader> shader;
+            std::shared_ptr<RenderBatch> batch;
+        };
+
+        struct CanvasBatch {
+            RenderObjectHandle<RenderTexture> texture;
+            std::shared_ptr<RenderBatch> batch;
+        };
+
+        // TODO: Design scene object interface.
+        // Models and canvases should be a reactive interface so the renderer doesnt need to rebuild the draw list every frame
+        ObjectID createModel(Model &&model);
+
+        ObjectID createCanvas(Canvas &&canvas);
+
+        void setLights(const std::vector<RenderObjectHandle<RenderPointLight> > &lights);
+
+        void setCamera(const Camera &camera);
+
+        const std::unordered_map<ObjectID, Model> &getModels() const;
+
+        const std::unordered_map<ObjectID, Canvas> &getCanvases() const;
+
+        std::shared_ptr<RenderBatch> getPbrDeferredBatch();
+
+        std::shared_ptr<RenderBatch> getPbrForwardBatch();
+
+        std::vector<UserShadingBatch> getUserShadingBatches();
+
+        std::shared_ptr<RenderBatch> getScreenCanvasBatch();
+
+        std::vector<CanvasBatch> getCanvasBatches();
+
+    private:
+        std::unordered_map<ObjectID, Model> models;
+        std::unordered_map<ObjectID, Canvas> canvases;
+
+        RenderObjectHandle<RenderMesh> unitQuadMesh;
+        RenderObjectHandle<RenderMesh> unitCubeMesh;
     };
 }
 

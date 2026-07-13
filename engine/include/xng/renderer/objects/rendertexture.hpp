@@ -22,8 +22,13 @@
 #include "xng/renderer/renderobject.hpp"
 #include "xng/renderer/virtualtexture/imagetileloader.hpp"
 #include "xng/renderer/virtualtexture/virtualtexturestreamer.hpp"
+#include "xng/shaderscript/macro/shaderstruct.hpp"
 
 namespace xng {
+    ShaderStruct(ShaderTexture,
+                 Vec4i, textureSize_textureID_maxMip,
+                 Vec4i, minFilter_magFilter_mipFilter_wrap)
+
     class RenderTexture final : public RenderObject {
     public:
         //TODO: Multiple backing techniques for textures
@@ -43,7 +48,9 @@ namespace xng {
                       rg::Heap &heap,
                       const ImageRGBA &image,
                       const WrappingMethod wrapping = WRAP_REPEAT)
-            : RenderObject(OBJECT_TEXTURE, id), textureStreamer(textureStreamer) {
+            : RenderObject(OBJECT_TEXTURE, id),
+              backing(TEXTURE_BACKING_VIRTUAL_TEXTURE),
+              textureStreamer(textureStreamer) {
             size = image.getResolution().convert<int>();
             maxMip = rg::Texture::calculateMipLevels(image.getResolution()) - 1;
             textureHandle = textureStreamer.create(std::make_shared<ImageTileLoader>(image,
@@ -56,8 +63,29 @@ namespace xng {
 
         RenderTexture(const Id id,
                       VirtualTextureStreamer &textureStreamer,
+                      rg::Heap &heap,
+                      const ImageRGBA &image,
+                      const WrappingMethod wrapping,
+                      const unsigned int mipLevels)
+            : RenderObject(OBJECT_TEXTURE, id),
+              backing(TEXTURE_BACKING_VIRTUAL_TEXTURE),
+              textureStreamer(textureStreamer),
+              maxMip(mipLevels - 1) {
+            size = image.getResolution().convert<int>();
+            textureHandle = textureStreamer.create(std::make_shared<ImageTileLoader>(image,
+                mipLevels,
+                textureStreamer.getTileSize(),
+                textureStreamer.getTileBorder(),
+                wrapping,
+                heap));
+        }
+
+        RenderTexture(const Id id,
+                      VirtualTextureStreamer &textureStreamer,
                       const std::shared_ptr<TileLoader> &tileLoader)
-            : RenderObject(OBJECT_TEXTURE, id), textureStreamer(textureStreamer) {
+            : RenderObject(OBJECT_TEXTURE, id),
+              backing(TEXTURE_BACKING_VIRTUAL_TEXTURE),
+              textureStreamer(textureStreamer) {
             size = tileLoader->getSize().convert<int>();
             maxMip = tileLoader->getMipLevels() - 1;
             textureHandle = textureStreamer.create(tileLoader);
@@ -100,6 +128,8 @@ namespace xng {
         }
 
     private:
+        TextureBacking backing{};
+
         VirtualTextureStreamer &textureStreamer;
         VirtualTextureStreamer::TextureID textureHandle{};
 

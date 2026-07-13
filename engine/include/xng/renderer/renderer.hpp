@@ -22,7 +22,7 @@
 #include "xng/rendergraph/runtime.hpp"
 
 #include "xng/renderer/renderallocator.hpp"
-#include "xng/renderer/renderdrawlist.hpp"
+#include "xng/renderer/renderscene.hpp"
 #include "xng/renderer/renderpass.hpp"
 #include "xng/renderer/rendererstatistics.hpp"
 
@@ -50,9 +50,11 @@ namespace xng {
 
         RenderAllocator &getAllocator();
 
+        std::shared_ptr<RenderScene> createScene();
+
         void setPasses(std::vector<std::shared_ptr<RenderPass> > passes);
 
-        void draw(const std::shared_ptr<rg::Surface> &surface, const RenderDrawList &drawList);
+        void draw(const std::shared_ptr<rg::Surface> &surface, const RenderScene &drawList);
 
         RendererStatistics getStatistics() const;
 

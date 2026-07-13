@@ -77,10 +77,6 @@ namespace xng {
                 vertexBuffers.emplace(attr, std::move(StreamBuffer(heap, chunkStreamer, caps)));
             }
             skinnedBufferAlloc = RangeAllocator();
-            normalizedQuad = create(Mesh::normalizedQuad());
-            normalizedCube = create(Mesh::normalizedCube());
-            flush(normalizedQuad);
-            flush(normalizedCube);
         }
 
         /**
@@ -368,14 +364,6 @@ namespace xng {
             return skinnedBoneWeightsBuffer.getBuffer();
         }
 
-        Handle getNormalizedQuad() const {
-            return normalizedQuad;
-        }
-
-        Handle getNormalizedCube() const {
-            return normalizedCube;
-        }
-
     private:
         static std::vector<uint8_t> getBytes(const VertexAttribute attr, const Mesh &mesh) {
             VertexBuilder builder;
@@ -462,9 +450,6 @@ namespace xng {
         std::vector<Handle> freeHandles;
 
         std::unordered_map<Handle, Allocation> allocations;
-
-        Handle normalizedQuad;
-        Handle normalizedCube;
     };
 }
 
