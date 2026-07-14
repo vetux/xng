@@ -23,8 +23,7 @@
 #include "xng/renderer/objects/rendermaterial.hpp"
 #include "xng/renderer/objects/rendermesh.hpp"
 
-#include "xng/renderer/pipeline/rendershader.hpp"
-#include "xng/renderer/pipeline/renderbatch.hpp"
+#include "xng/renderer/pipeline/renderpipeline.hpp"
 
 #include "xng/renderer/renderallocator.hpp"
 #include "xng/renderer/renderpath.hpp"
@@ -56,22 +55,7 @@ namespace xng {
                   renderPath(renderPath),
                   castShadows(castShadows),
                   shadingModel(shadingModel),
-                  receiveShadows(receiveShadows),
-                  shader(nullptr) {
-            }
-
-            Model(RenderObjectHandle<RenderTransform> transform,
-                  RenderObjectHandle<RenderMaterial> material,
-                  std::vector<RenderObjectHandle<RenderMesh> > meshes,
-                  const RenderPath renderPath,
-                  const bool castShadows,
-                  std::shared_ptr<RenderShader> shader)
-                : transform(std::move(transform)),
-                  material(std::move(material)),
-                  meshes(std::move(meshes)),
-                  renderPath(renderPath),
-                  castShadows(castShadows),
-                  shader(std::move(shader)) {
+                  receiveShadows(receiveShadows){
             }
 
             [[nodiscard]] RenderObjectHandle<RenderTransform> getTransform() const {
@@ -102,10 +86,6 @@ namespace xng {
                 return receiveShadows;
             }
 
-            [[nodiscard]] std::shared_ptr<RenderShader> getShader() const {
-                return shader;
-            }
-
         private:
             RenderObjectHandle<RenderTransform> transform;
             RenderObjectHandle<RenderMaterial> material;
@@ -116,8 +96,6 @@ namespace xng {
 
             ShadingModel shadingModel = SHADING_MODEL_NONE;
             bool receiveShadows = false;
-
-            std::shared_ptr<RenderShader> shader;
         };
 
         class Paint {
@@ -346,41 +324,69 @@ namespace xng {
             std::vector<Paint> paints;
         };
 
-        struct UserShadingBatch {
-            std::shared_ptr<RenderShader> shader;
-            std::shared_ptr<RenderBatch> batch;
-        };
-
-        struct CanvasBatch {
-            RenderObjectHandle<RenderTexture> texture;
-            std::shared_ptr<RenderBatch> batch;
+        struct Shader {
+            rg::RasterPipeline pip;
         };
 
         // TODO: Design scene object interface.
-        // Models and canvases should be a reactive interface so the renderer doesnt need to rebuild the draw list every frame
+        // Models and canvases should be a reactive interface so pipeline state changes only happen on demand and thus pipeline prepasses are also only executed on demand.
         ObjectID createModel(Model &&model);
 
+        ObjectID createShader(Shader &&shader);
+
         ObjectID createCanvas(Canvas &&canvas);
+
+        ObjectID createModel(ObjectID shader, ObjectID model);
 
         void setLights(const std::vector<RenderObjectHandle<RenderPointLight> > &lights);
 
         void setCamera(const Camera &camera);
 
+        // Const interface naturally defines the intent that passes do not modify the scene.
+
         const std::unordered_map<ObjectID, Model> &getModels() const;
 
         const std::unordered_map<ObjectID, Canvas> &getCanvases() const;
 
-        std::shared_ptr<RenderBatch> getPbrDeferredBatch();
+        void drawPbrDeferred(rg::GraphBuilder &graph,
+                             const RenderShader &shader,
+                             std::vector<RenderPipeline::Attachment> attachments,
+                             std::unordered_map<std::string, rg::ShaderPrimitive> parameters,
+                             std::unordered_map<std::string, RenderPipeline::BufferBinding> storageBuffers,
+                             std::unordered_map<std::string, std::vector<rg::TextureBinding> > textureArrays) const;
 
-        std::shared_ptr<RenderBatch> getPbrForwardBatch();
+        void drawPbrForward(rg::GraphBuilder &graph,
+                            const RenderShader &shader,
+                            std::vector<RenderPipeline::Attachment> attachments,
+                            std::unordered_map<std::string, rg::ShaderPrimitive> parameters,
+                            std::unordered_map<std::string, RenderPipeline::BufferBinding> storageBuffers,
+                            std::unordered_map<std::string, std::vector<rg::TextureBinding> > textureArrays) const;
 
-        std::shared_ptr<RenderBatch> getShadowCastersBatch();
+        void drawShadowCasters(rg::GraphBuilder &graph,
+                               const RenderShader &shader,
+                               std::vector<RenderPipeline::Attachment> attachments,
+                               std::unordered_map<std::string, rg::ShaderPrimitive> parameters,
+                               std::unordered_map<std::string, RenderPipeline::BufferBinding> storageBuffers,
+                               std::unordered_map<std::string, std::vector<rg::TextureBinding> > textureArrays) const;
 
-        std::vector<UserShadingBatch> getUserShadingBatches();
+        void drawUserShading(rg::GraphBuilder &graph,
+                             std::vector<RenderPipeline::Attachment> attachments,
+                             std::unordered_map<std::string, rg::ShaderPrimitive> parameters,
+                             std::unordered_map<std::string, RenderPipeline::BufferBinding> storageBuffers,
+                             std::unordered_map<std::string, std::vector<rg::TextureBinding> > textureArrays) const;
 
-        std::shared_ptr<RenderBatch> getScreenCanvasBatch();
+        void drawScreenCanvas(rg::GraphBuilder &graph,
+                              const RenderShader &shader,
+                              std::vector<RenderPipeline::Attachment> attachments,
+                              std::unordered_map<std::string, rg::ShaderPrimitive> parameters,
+                              std::unordered_map<std::string, RenderPipeline::BufferBinding> storageBuffers,
+                              std::unordered_map<std::string, std::vector<rg::TextureBinding> > textureArrays) const;
 
-        std::vector<CanvasBatch> getCanvasBatches();
+        void drawTextureCanvases(rg::GraphBuilder &graph,
+                                 const RenderShader &shader,
+                                 std::unordered_map<std::string, rg::ShaderPrimitive> parameters,
+                                 std::unordered_map<std::string, RenderPipeline::BufferBinding> storageBuffers,
+                                 std::unordered_map<std::string, std::vector<rg::TextureBinding> > textureArrays) const;
 
     private:
         std::unordered_map<ObjectID, Model> models;
@@ -388,6 +394,19 @@ namespace xng {
 
         RenderObjectHandle<RenderMesh> unitQuadMesh;
         RenderObjectHandle<RenderMesh> unitCubeMesh;
+
+        std::unique_ptr<RenderPipeline> pbrDeferededPipeline;
+        std::unique_ptr<RenderPipeline> pbrForwardPipeline;
+
+        std::unique_ptr<RenderPipeline> shadowCastersPipeline;
+
+        // For each user shader one pipeline with models allocated into it.
+        std::unordered_map<ObjectID, std::unique_ptr<RenderPipeline> > userShadingPipelines;
+
+        std::unique_ptr<RenderPipeline> screenCanvasPipeline;
+
+        // For each canvas texture one pipeline with models / paints allocated into it.
+        std::unordered_map<RenderObject::Id, std::unique_ptr<RenderPipeline> > textureCanvasesPipelines;
     };
 }
 

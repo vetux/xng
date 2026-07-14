@@ -25,6 +25,7 @@
 #include "xng/rendergraph/builder/graphbuilder.hpp"
 
 namespace xng {
+    //TODO: RenderPass / Pipeline interaction is now kind of awkward and should be more integrated with the pipeline interface without loosing flexibility.
     class RenderPass {
     public:
         virtual ~RenderPass() = default;

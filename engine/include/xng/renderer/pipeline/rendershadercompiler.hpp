@@ -79,14 +79,16 @@ namespace xng {
         /**
          * Inject the pipeline dependent required bindings, parameters, functions and vertex layout into the passed shaders.
          *
-         * @param stages The shader stages. Must form a valid raster pipeline.
+         * Users are free to do anything between vertex input and fragment output such as geometry stage etc. and may bind and access custom data.
+         *
+         * @param pipeline The pipeline containing the shader stages and pipeline configuration. Attachments and vertex layout are overridden.
          * @param attachments The format of the attachments.
          * @param vertexAttributes The set of accessed vertex attributes.
          * @param instanceAttributes The set of accessed attributes.
          * @param globalAttributes
          * @param indexedAttributes
          */
-        virtual std::shared_ptr<RenderShader> compile(const std::vector<rg::Shader> &stages,
+        virtual std::shared_ptr<RenderShader> compile(const rg::RasterPipeline &pipeline,
                                                       const std::vector<RenderShader::Attachment> &attachments,
                                                       const std::unordered_set<VertexAttribute> &vertexAttributes,
                                                       const std::unordered_set<RenderShader::InstanceAttribute> &

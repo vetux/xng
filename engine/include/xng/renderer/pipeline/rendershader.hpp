@@ -23,6 +23,11 @@
 
 namespace xng {
     /**
+     * Because the RenderObject layer already defines a hardcoded set of features
+     * the pipeline can abstract the rendering technique fully down to the shader level.
+     *
+     * This allows users to write pure shader code without having to write a custom pass. (In the future the editor will use this for the custom shading language and / or node-based shaders)
+     *
      * TODO: Shader Permutations
      *
      * This is where permutations would live based on material combinations including backing method and the pipeline

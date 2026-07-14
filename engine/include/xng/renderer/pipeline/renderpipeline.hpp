@@ -20,54 +20,95 @@
 #define XENGINE_RENDERPIPELINE_HPP
 
 #include "xng/renderer/objects/rendertexture.hpp"
+#include "xng/renderer/objects/renderpointlight.hpp"
+#include "xng/renderer/objects/renderdirectionallight.hpp"
+#include "xng/renderer/objects/renderspotlight.hpp"
+#include "xng/renderer/objects/rendermesh.hpp"
+#include "xng/renderer/objects/rendertransform.hpp"
+#include "xng/renderer/objects/rendermaterial.hpp"
 
 #include "xng/renderer/pipeline/rendershadercompiler.hpp"
-#include "xng/renderer/pipeline/renderbatch.hpp"
 
 namespace xng {
     /**
-     * The RenderPipeline represents the rendering and allocation technique for RenderObjects.
-     * This allows swapping the rendering / allocation technique at runtime (E.g. No Indirect draw on mobile platforms)
+     * The RenderPipeline represents the rendering technique for RenderObjects.
+     * This allows swapping the rendering technique at runtime (E.g. No Indirect draw on mobile platforms)
      *
-     * Because the RenderObject layer is hardcoded to the set of available data and not extensible by users,
-     * the renderer can abstract the rendering technique fully down to the shader level.
+     * Each pipeline manages persistent state such as indirect draw buffers, shader storage buffers, etc.
      *
-     * This allows users to write pure shader code without having to write a custom pass. (In the future the editor will use this for the custom shading language and / or node-based shaders)
+     * The renderer transforms / directs user-supplied render objects to the appropriate pipeline.
+     *
+     * Ideally, with indirect draw the cpu only iterates batches and never models.
+     *
+     * The pipeline also must handle draw call sorting internally based on sort priority and distance to the camera.
+     *
+     * Essentially, the RenderPipeline interface extends the concept of a pipeline in the RenderGraph (Which represents
+     * a hardware pipeline) to the full render path from scene to shader.
      */
     class RenderPipeline {
     public:
         typedef std::variant<rg::Attachment, RenderObjectHandle<RenderTexture> > Attachment;
 
-        struct Binding {
+        struct BufferBinding {
             rg::Resource<rg::Buffer> buffer;
             size_t offset{};
             size_t size{};
         };
 
+        typedef size_t DrawID;
+
         virtual ~RenderPipeline() = default;
 
-        /**
-         * Users are free to do anything between input / output such as geometry stage etc. and may bind and access custom data.
-         */
-        virtual RenderShaderCompiler &getShaderCompiler() = 0;
+        virtual DrawID addDrawCall(const RenderObjectHandle<RenderTransform> &transform,
+                                   const RenderObjectHandle<RenderMaterial> &material,
+                                   const std::vector<RenderObjectHandle<RenderMesh> > &meshes,
+                                   bool receiveShadows,
+                                   int sortPriority) = 0;
+
+        virtual void removeDrawCall(DrawID id) = 0;
+
+        virtual void setPointLights(const std::vector<RenderObjectHandle<RenderPointLight> > &lights) = 0;
+
+        virtual void setDirectionalLights(const std::vector<RenderObjectHandle<RenderDirectionalLight> > &lights) = 0;
+
+        virtual void setSpotLights(const std::vector<RenderObjectHandle<RenderSpotLight> > &lights) = 0;
+
+        virtual void setCamera(const Vec3f &position, const Mat4f &view, const Mat4f &projection) = 0;
+
+        virtual void setGamma(float gamma) = 0;
 
         /**
-         * Draw the specified draw list using the supplied pipeline, attachments and additional bindings.
+         * The batch will sort draw calls by distance to the camera for draw calls with identical sortPriority when enabled.
          *
+         * Otherwise, draw calls are sorted only by sortPriority.
+         *
+         * @param enable
+         */
+        virtual void setEnableDistanceSort(bool enable) = 0;
+
+        /**
+         * Prepare the pipeline for execution. Must be called anytime the pipeline state changes before calling draw().
+         *
+         * @param graph The graph to record the pipeline preparation into.
+         */
+        virtual void prepare(rg::GraphBuilder &graph) = 0;
+
+        /**
+         * Execute the pipeline.
+         *
+         * @param graph The graph to record the draw invocations into.
          * @param shader The shader to use for drawing.
-         * @param batch The batch to draw.
          * @param attachments The Attachments to bind. (Type / Format must match the format in the shader)
          * @param parameters Optional user-supplied shader parameters.
          * @param storageBuffers Optional user-supplied storage buffer bindings.
          * @param textureArrays Optional user-supplied texture bindings.
-         * @return The Pass for performing the draw.
          */
-        virtual rg::RasterPass draw(const RenderShader &shader,
-                                    const RenderBatch &batch,
-                                    std::vector<Attachment> attachments,
-                                    std::unordered_map<std::string, rg::ShaderPrimitive> parameters,
-                                    std::unordered_map<std::string, Binding> storageBuffers,
-                                    std::unordered_map<std::string, std::vector<rg::TextureBinding> > textureArrays) =0;
+        virtual void execute(rg::GraphBuilder &graph,
+                             const RenderShader &shader,
+                             std::vector<Attachment> attachments,
+                             std::unordered_map<std::string, rg::ShaderPrimitive> parameters,
+                             std::unordered_map<std::string, BufferBinding> storageBuffers,
+                             std::unordered_map<std::string, std::vector<rg::TextureBinding> > textureArrays);
     };
 }
 

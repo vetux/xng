@@ -55,8 +55,8 @@ namespace xng {
             return compiler.writeAttachment(index, color);
         }
 
-        std::shared_ptr<RenderShader> compile(const std::vector<rg::Shader> &stages) const {
-            return compiler.compile(stages,
+        std::shared_ptr<RenderShader> compile(const rg::RasterPipeline &pipeline) const {
+            return compiler.compile(pipeline,
                                     attachments,
                                     vertexAttributes,
                                     instanceAttributes,

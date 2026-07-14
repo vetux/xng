@@ -22,27 +22,76 @@
 #include "xng/renderer/pipeline/renderpipeline.hpp"
 
 #include "xng/renderer/pipeline/indirect/rendershadercompilerindirect.hpp"
-#include "xng/renderer/pipeline/indirect/renderbatchindirect.hpp"
 
 namespace xng {
     class RenderPipelineIndirect final : public RenderPipeline {
     public:
+        explicit RenderPipelineIndirect(rg::Heap &heap);
+
         ~RenderPipelineIndirect() override;
 
-        RenderShaderCompiler &getShaderCompiler() override {
-            return compiler;
-        }
+        DrawID addDrawCall(const RenderObjectHandle<RenderTransform> &transform,
+                           const RenderObjectHandle<RenderMaterial> &material,
+                           const std::vector<RenderObjectHandle<RenderMesh> > &meshes,
+                           bool receiveShadows,
+                           int sortPriority) override;
 
-        rg::RasterPass draw(const RenderShader &shader,
-                            const RenderBatch &batch,
-                            std::vector<Attachment> attachments,
-                            std::unordered_map<std::string, rg::ShaderPrimitive> parameters,
-                            std::unordered_map<std::string, Binding> storageBuffers,
-                            std::unordered_map<std::string, std::vector<rg::TextureBinding> > textureArrays) override {
-        }
+        void removeDrawCall(DrawID id) override;
+
+        void setPointLights(const std::vector<RenderObjectHandle<RenderPointLight> > &lights) override;
+
+        void setDirectionalLights(const std::vector<RenderObjectHandle<RenderDirectionalLight> > &lights) override;
+
+        void setSpotLights(const std::vector<RenderObjectHandle<RenderSpotLight> > &lights) override;
+
+        void setCamera(const Vec3f &position, const Mat4f &view, const Mat4f &projection) override;
+
+        void setGamma(float gamma) override;
+
+        void setEnableDistanceSort(bool enable) override;
+
+        void prepare(rg::Graph &graph) override;
+
+        void execute(rg::Graph &graph,
+                     const RenderShader &shader,
+                     std::vector<Attachment> attachments,
+                     std::unordered_map<std::string, rg::ShaderPrimitive> parameters,
+                     std::unordered_map<std::string, BufferBinding> storageBuffers,
+                     std::unordered_map<std::string, std::vector<rg::TextureBinding> > textureArrays) override;
 
     private:
-        RenderShaderCompilerIndirect compiler;
+        ShaderStruct(ShaderDrawCall,
+                     unsigned int, transformIndex,
+                     unsigned int, materialIndex,
+                     Vec4i, receiveShadows)
+
+        struct BufferAccessRange {
+            size_t offset;
+            size_t size;
+        };
+
+        struct DrawList {
+            BufferStreamer<ShaderDrawCall> drawCallBuffer;
+
+            rg::HeapResource<rg::Buffer> indirectBuffer;
+            size_t indirectBufferOffset;
+
+            rg::HeapResource<rg::Buffer> indirectCountBuffer;
+            size_t indirectCountBufferOffset;
+
+            std::vector<BufferAccessRange> transformAccessRanges;
+            std::vector<BufferAccessRange> materialAccessRanges;
+
+            std::unordered_map<VertexAttribute, std::vector<BufferAccessRange> > vertexBufferAccesses;
+            std::vector<BufferAccessRange> indexBufferAccesses;
+
+            std::vector<size_t> textureAccesses;
+        };
+
+        rg::Heap &heap;
+
+        // Per sortPriority draw lists which are drawn in order and each draw list is additionally sorted in prepass based on camera distance.
+        std::map<int, DrawList> drawLists;
     };
 }
 
