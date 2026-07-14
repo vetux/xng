@@ -38,69 +38,13 @@ namespace xng {
      */
     class RenderShader {
     public:
-        /**
-         * Per draw attributes.
-         */
-        enum InstanceAttribute : int {
-            TRANSFORM_MODEL_VIEW_PROJECTION = 0,
-            TRANSFORM_MODEL,
-            TRANSFORM_VIEW,
-            TRANSFORM_PROJECTION,
+        typedef size_t InstanceAttributeID;
 
-            // Either sampled material textures or material color.
-            MATERIAL_ALBEDO,
-            MATERIAL_METALLIC,
-            MATERIAL_ROUGHNESS,
-            MATERIAL_AMBIENT_OCCLUSION,
-            MATERIAL_EMISSIVE,
-            MATERIAL_HEIGHT_MAP,
-            MATERIAL_NORMAL,
-            MATERIAL_HAS_NORMAL,
+        typedef size_t GlobalAttributeID;
 
-            RECEIVE_SHADOWS,
-        };
+        typedef size_t ArrayID;
 
-        /**
-         * Pipeline invocation wide attributes.
-         */
-        enum GlobalAttribute : int {
-            CONFIG_GAMMA = 0,
-
-            CAMERA_POSITION,
-
-            POINT_LIGHT_COUNT,
-            DIRECTIONAL_LIGHT_COUNT,
-            SPOT_LIGHT_COUNT,
-        };
-
-        /**
-         * Pipeline invocation wide indexed attributes
-         */
-        enum IndexedAttribute : int {
-            POINT_LIGHT_COLOR,
-            POINT_LIGHT_POSITION,
-            POINT_LIGHT_CAST_SHADOW,
-            POINT_LIGHT_SHADOW_FAR_PLANE,
-            POINT_LIGHT_SHADOW_PROJECTION, // Array[6] of mat4
-
-            DIRECTIONAL_LIGHT_COLOR,
-            DIRECTIONAL_LIGHT_DIRECTION,
-            DIRECTIONAL_LIGHT_CAST_SHADOW,
-            DIRECTIONAL_LIGHT_SHADOW_FAR_PLANE,
-            DIRECTIONAL_LIGHT_SHADOW_PROJECTION, // mat4
-
-            SPOT_LIGHT_COLOR,
-            SPOT_LIGHT_DIRECTION,
-            SPOT_LIGHT_POSITION,
-            SPOT_LIGHT_QUADRATIC,
-            SPOT_LIGHT_CUT_OFF,
-            SPOT_LIGHT_OUTER_CUT_OFF,
-            SPOT_LIGHT_CONSTANT,
-            SPOT_LIGHT_LINEAR,
-            SPOT_LIGHT_CAST_SHADOW,
-            SPOT_LIGHT_SHADOW_FAR_PLANE,
-            SPOT_LIGHT_SHADOW_PROJECTION, // mat4
-        };
+        typedef size_t ArrayAttributeID;
 
         struct Attachment {
             enum Type : int {
@@ -115,9 +59,9 @@ namespace xng {
                      const rg::PipelineCache::Handle pipeline,
                      std::vector<Attachment> _attachments,
                      std::unordered_set<VertexAttribute> _vertexAttributes,
-                     std::unordered_set<InstanceAttribute> _instanceAttributes,
-                     std::unordered_set<GlobalAttribute> _globalAttributes,
-                     std::unordered_set<IndexedAttribute> _indexedAttributes)
+                     std::unordered_set<InstanceAttributeID> _instanceAttributes,
+                     std::unordered_set<GlobalAttributeID> _globalAttributes,
+                     std::unordered_set<ArrayID> _indexedAttributes)
             : cache(cache),
               pipeline(pipeline),
               attachments(std::move(_attachments)),
@@ -139,9 +83,9 @@ namespace xng {
 
         std::unordered_set<VertexAttribute> vertexAttributes;
 
-        std::unordered_set<InstanceAttribute> instanceAttributes;
-        std::unordered_set<GlobalAttribute> globalAttributes;
-        std::unordered_set<IndexedAttribute> indexedAttributes;
+        std::unordered_set<InstanceAttributeID> instanceAttributes;
+        std::unordered_set<GlobalAttributeID> globalAttributes;
+        std::unordered_set<ArrayID> indexedAttributes;
     };
 }
 

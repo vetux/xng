@@ -55,30 +55,70 @@ namespace xng {
             size_t size{};
         };
 
+        // Each attribute is either a RenderTexture object or a primitive
+        typedef std::variant<RenderObjectHandle<RenderTexture>, rg::ShaderPrimitive> AttributeValue;
+
+        struct Attribute {
+            std::optional<rg::ShaderPrimitiveType> type;
+        };
+
+        struct ArrayAttribute {
+            std::unordered_map<RenderShader::ArrayAttributeID, Attribute> attributes;
+        };
+
+        // Each pipeline instance configures a single set of available attributes
+        // All global attributes are grouped in one ssbo or parameters
+        // One struct containing all indexed attributes
+        // For instance attributes user creates persistent and pass handle in draw but problem is transform
+        // But transform is also needed in prepass for culling and sorting so cant be abstracted
+        struct Attributes {
+            std::unordered_map<RenderShader::InstanceAttributeID, Attribute> instanceAttributeTypes;
+            std::unordered_map<RenderShader::GlobalAttributeID, Attribute> globalAttributesTypes;
+            std::unordered_map<RenderShader::ArrayID, ArrayAttribute> arrayAttributeTypes;
+        };
+
+        class InstanceAttributes {
+        public:
+            virtual ~InstanceAttributes() = default;
+
+            virtual void setValue(RenderShader::InstanceAttributeID attribute, AttributeValue value);
+        };
+
+        class Transform {
+        public:
+            virtual ~Transform() = default;
+
+            virtual void setTransform(const Mat4f &mat) = 0;
+        };
+
         typedef size_t DrawID;
 
         virtual ~RenderPipeline() = default;
 
-        virtual DrawID addDrawCall(const RenderObjectHandle<RenderTransform> &transform,
-                                   const RenderObjectHandle<RenderMaterial> &material,
-                                   const std::vector<RenderObjectHandle<RenderMesh> > &meshes,
-                                   bool receiveShadows,
-                                   int sortPriority) = 0;
+        virtual RenderShaderCompiler &getCompiler();
+
+        virtual std::shared_ptr<Transform> createTransform();
+
+        virtual std::shared_ptr<InstanceAttributes> createInstanceAttributes(
+            std::unordered_map<RenderShader::InstanceAttributeID, AttributeValue> values);
+
+        virtual void setGlobalAttribute(RenderShader::GlobalAttributeID attr, AttributeValue value);
+
+        virtual void setArrayAttribute(RenderShader::ArrayID array,
+                                       std::vector<std::unordered_map<RenderShader::ArrayAttributeID, AttributeValue> >
+                                       values);
+
+        virtual DrawID addDrawCall(std::shared_ptr<Transform> transform,
+                                   std::shared_ptr<InstanceAttributes> instanceAttributes,
+                                   RenderObjectHandle<RenderMesh> mesh,
+                                   int sortPriority);
 
         virtual void removeDrawCall(DrawID id) = 0;
 
-        virtual void setPointLights(const std::vector<RenderObjectHandle<RenderPointLight> > &lights) = 0;
-
-        virtual void setDirectionalLights(const std::vector<RenderObjectHandle<RenderDirectionalLight> > &lights) = 0;
-
-        virtual void setSpotLights(const std::vector<RenderObjectHandle<RenderSpotLight> > &lights) = 0;
-
         virtual void setCamera(const Vec3f &position, const Mat4f &view, const Mat4f &projection) = 0;
 
-        virtual void setGamma(float gamma) = 0;
-
         /**
-         * The batch will sort draw calls by distance to the camera for draw calls with identical sortPriority when enabled.
+         * The pipeline will sort draw calls by distance to the camera for draw calls with identical sortPriority when enabled.
          *
          * Otherwise, draw calls are sorted only by sortPriority.
          *

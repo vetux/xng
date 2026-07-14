@@ -39,13 +39,23 @@ namespace xng {
          */
         virtual rg::ShaderInstruction getVertexAttribute(VertexAttribute attr) = 0;
 
+        virtual rg::ShaderInstruction getCameraPosition() = 0;
+
+        virtual rg::ShaderInstruction getModel() = 0;
+
+        virtual rg::ShaderInstruction getView() = 0;
+
+        virtual rg::ShaderInstruction getProjection() = 0;
+
+        virtual rg::ShaderInstruction getModelViewProjection() = 0;
+
         /**
          * Retrieve instance attribute value.
          *
          * @param attr
          * @return
          */
-        virtual rg::ShaderInstruction getInstanceAttribute(RenderShader::InstanceAttribute attr) = 0;
+        virtual rg::ShaderInstruction getInstanceAttribute(RenderShader::InstanceAttributeID attr) = 0;
 
         /**
          * Retrieve global attribute value.
@@ -53,17 +63,13 @@ namespace xng {
          * @param attr
          * @return
          */
-        virtual rg::ShaderInstruction getGlobalAttribute(RenderShader::GlobalAttribute attr) = 0;
+        virtual rg::ShaderInstruction getGlobalAttribute(RenderShader::GlobalAttributeID attr) = 0;
 
-        /**
-         * Retrieve indexed attribute value.
-         *
-         * @param attr
-         * @param index
-         * @return
-         */
-        virtual rg::ShaderInstruction getIndexedAttribute(RenderShader::IndexedAttribute attr,
-                                                          const rg::ShaderInstruction &index) = 0;
+        virtual rg::ShaderInstruction getArrayLength(RenderShader::ArrayID array) = 0;
+
+        virtual rg::ShaderInstruction getArrayAttribute(RenderShader::ArrayID array,
+                                                        RenderShader::ArrayAttributeID attr,
+                                                        const rg::ShaderInstruction &index) = 0;
 
         /**
          * Write the specified color value to the specified attachment.
@@ -91,11 +97,11 @@ namespace xng {
         virtual std::shared_ptr<RenderShader> compile(const rg::RasterPipeline &pipeline,
                                                       const std::vector<RenderShader::Attachment> &attachments,
                                                       const std::unordered_set<VertexAttribute> &vertexAttributes,
-                                                      const std::unordered_set<RenderShader::InstanceAttribute> &
+                                                      const std::unordered_set<RenderShader::InstanceAttributeID> &
                                                       instanceAttributes,
-                                                      const std::unordered_set<RenderShader::GlobalAttribute> &
+                                                      const std::unordered_set<RenderShader::GlobalAttributeID> &
                                                       globalAttributes,
-                                                      const std::unordered_set<RenderShader::IndexedAttribute> &
+                                                      const std::unordered_set<RenderShader::ArrayID> &
                                                       indexedAttributes) = 0;
     };
 }
