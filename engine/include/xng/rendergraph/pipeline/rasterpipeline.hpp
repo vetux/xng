@@ -137,6 +137,7 @@ namespace xng::rg {
             }
         };
 
+        //TODO: Split pipeline configuration into separate struct
         std::vector<Shader> shaders;
 
         std::vector<ColorFormat> colorAttachments;
