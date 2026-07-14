@@ -25,7 +25,6 @@
 #include "xng/renderer/objects/rendermesh.hpp"
 #include "xng/renderer/objects/rendertransform.hpp"
 #include "xng/renderer/objects/rendermaterial.hpp"
-#include "xng/renderer/objects/renderpaint.hpp"
 
 namespace xng {
     /**
@@ -35,6 +34,10 @@ namespace xng {
      *
      * The renderer manages batches and transforms / directs user-supplied render objects to the
      * appropriate pipeline / batch.
+     *
+     * Ideally, with indirect draw the cpu only iterates batches and never models.
+     *
+     * The batch also must handle draw call sorting internally based on sort priority and distance to the camera.
      */
     class RenderBatch {
     public:
@@ -44,11 +47,9 @@ namespace xng {
 
         virtual DrawID add(const RenderObjectHandle<RenderTransform> &transform,
                            const RenderObjectHandle<RenderMaterial> &material,
-                           const std::vector<RenderObjectHandle<RenderMesh> > &meshes) = 0;
-
-        virtual DrawID add(const RenderObjectHandle<RenderTransform> &transform,
-                           const RenderObjectHandle<RenderPaint> &paint,
-                           const RenderObjectHandle<RenderMesh> &mesh) = 0;
+                           const std::vector<RenderObjectHandle<RenderMesh> > &meshes,
+                           bool receiveShadows,
+                           int sortPriority) = 0;
 
         virtual void remove(DrawID id) = 0;
 
@@ -60,6 +61,17 @@ namespace xng {
         virtual void setSpotLights(const std::vector<RenderObjectHandle<RenderSpotLight> > &lights) = 0;
 
         virtual void setCamera(const Vec3f &position, const Mat4f &view, const Mat4f &projection) = 0;
+
+        virtual void setGamma(float gamma) = 0;
+
+        /**
+         * The batch will sort draw calls by distance to the camera for draw calls with identical sortPriority when enabled.
+         *
+         * Otherwise, draw calls are sorted only by sortPriority.
+         *
+         * @param enable
+         */
+        virtual void setEnableDistanceSort(bool enable) = 0;
     };
 }
 

@@ -21,19 +21,28 @@
 
 #include "xng/renderer/pipeline/renderpipeline.hpp"
 
+#include "xng/renderer/pipeline/indirect/rendershadercompilerindirect.hpp"
+#include "xng/renderer/pipeline/indirect/renderbatchindirect.hpp"
+
 namespace xng {
     class RenderPipelineIndirect final : public RenderPipeline {
     public:
         ~RenderPipelineIndirect() override;
 
-        RenderShaderCompiler &getShaderCompiler() override;
+        RenderShaderCompiler &getShaderCompiler() override {
+            return compiler;
+        }
 
         rg::RasterPass draw(const RenderShader &shader,
                             const RenderBatch &batch,
                             std::vector<Attachment> attachments,
                             std::unordered_map<std::string, rg::ShaderPrimitive> parameters,
                             std::unordered_map<std::string, Binding> storageBuffers,
-                            std::unordered_map<std::string, std::vector<rg::TextureBinding> > textureArrays) override;
+                            std::unordered_map<std::string, std::vector<rg::TextureBinding> > textureArrays) override {
+        }
+
+    private:
+        RenderShaderCompilerIndirect compiler;
     };
 }
 

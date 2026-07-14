@@ -24,17 +24,17 @@
 namespace xng {
     class RenderBatchIndirect final : public RenderBatch {
     public:
-        ~RenderBatchIndirect() override;
+        ~RenderBatchIndirect() override = default;
 
         DrawID add(const RenderObjectHandle<RenderTransform> &transform,
                    const RenderObjectHandle<RenderMaterial> &material,
-                   const std::vector<RenderObjectHandle<RenderMesh> > &meshes) override;
+                   const std::vector<RenderObjectHandle<RenderMesh> > &meshes,
+                   bool receiveShadows,
+                   int sortPriority) override {
+        }
 
-        DrawID add(const RenderObjectHandle<RenderTransform> &transform,
-                   const RenderObjectHandle<RenderPaint> &paint,
-                   const RenderObjectHandle<RenderMesh> &mesh) override;
-
-        void remove(DrawID id) override;
+        void remove(DrawID id) override {
+        }
 
         void setPointLights(const std::vector<RenderObjectHandle<RenderPointLight> > &lights) override;
 

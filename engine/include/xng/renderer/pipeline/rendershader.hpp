@@ -33,34 +33,54 @@ namespace xng {
      */
     class RenderShader {
     public:
-        enum Attribute : int {
+        /**
+         * Per draw attributes.
+         */
+        enum InstanceAttribute : int {
+            TRANSFORM_MODEL_VIEW_PROJECTION = 0,
+            TRANSFORM_MODEL,
+            TRANSFORM_VIEW,
+            TRANSFORM_PROJECTION,
+
             // Either sampled material textures or material color.
-            MATERIAL_ALBEDO = 0,
+            MATERIAL_ALBEDO,
             MATERIAL_METALLIC,
             MATERIAL_ROUGHNESS,
             MATERIAL_AMBIENT_OCCLUSION,
+            MATERIAL_EMISSIVE,
+            MATERIAL_HEIGHT_MAP,
             MATERIAL_NORMAL,
-
-            // In the fragment stage either vertex normal or transformed texture normal is used, and with current abstraction the vertex -> fragment data is user-controlled.
             MATERIAL_HAS_NORMAL,
 
-            // Either sampled paint texture with color mixed in or the paint color.
-            PAINT_COLOR,
+            RECEIVE_SHADOWS,
+        };
 
-            TRANSFORM_MODEL_VIEW_PROJECTION,
+        /**
+         * Pipeline invocation wide attributes.
+         */
+        enum GlobalAttribute : int {
+            CONFIG_GAMMA = 0,
+
+            CAMERA_POSITION,
 
             POINT_LIGHT_COUNT,
             DIRECTIONAL_LIGHT_COUNT,
             SPOT_LIGHT_COUNT,
+        };
 
-            // Indexed attributes
+        /**
+         * Pipeline invocation wide indexed attributes
+         */
+        enum IndexedAttribute : int {
             POINT_LIGHT_COLOR,
             POINT_LIGHT_POSITION,
+            POINT_LIGHT_CAST_SHADOW,
             POINT_LIGHT_SHADOW_FAR_PLANE,
             POINT_LIGHT_SHADOW_PROJECTION, // Array[6] of mat4
 
             DIRECTIONAL_LIGHT_COLOR,
             DIRECTIONAL_LIGHT_DIRECTION,
+            DIRECTIONAL_LIGHT_CAST_SHADOW,
             DIRECTIONAL_LIGHT_SHADOW_FAR_PLANE,
             DIRECTIONAL_LIGHT_SHADOW_PROJECTION, // mat4
 
@@ -72,6 +92,7 @@ namespace xng {
             SPOT_LIGHT_OUTER_CUT_OFF,
             SPOT_LIGHT_CONSTANT,
             SPOT_LIGHT_LINEAR,
+            SPOT_LIGHT_CAST_SHADOW,
             SPOT_LIGHT_SHADOW_FAR_PLANE,
             SPOT_LIGHT_SHADOW_PROJECTION, // mat4
         };
@@ -88,13 +109,17 @@ namespace xng {
         RenderShader(rg::PipelineCache &cache,
                      const rg::PipelineCache::Handle pipeline,
                      std::vector<Attachment> _attachments,
-                     std::unordered_set<Attribute> _attributes,
-                     std::unordered_set<VertexAttribute> _vertexAttributes)
+                     std::unordered_set<VertexAttribute> _vertexAttributes,
+                     std::unordered_set<InstanceAttribute> _instanceAttributes,
+                     std::unordered_set<GlobalAttribute> _globalAttributes,
+                     std::unordered_set<IndexedAttribute> _indexedAttributes)
             : cache(cache),
               pipeline(pipeline),
               attachments(std::move(_attachments)),
-              attributes(std::move(_attributes)),
-              vertexAttributes(std::move(_vertexAttributes)) {
+              vertexAttributes(std::move(_vertexAttributes)),
+              instanceAttributes(std::move(_instanceAttributes)),
+              globalAttributes(std::move(_globalAttributes)),
+              indexedAttributes(std::move(_indexedAttributes)) {
         }
 
         ~RenderShader() {
@@ -106,8 +131,12 @@ namespace xng {
         rg::PipelineCache::Handle pipeline;
 
         std::vector<Attachment> attachments;
-        std::unordered_set<Attribute> attributes;
+
         std::unordered_set<VertexAttribute> vertexAttributes;
+
+        std::unordered_set<InstanceAttribute> instanceAttributes;
+        std::unordered_set<GlobalAttribute> globalAttributes;
+        std::unordered_set<IndexedAttribute> indexedAttributes;
     };
 }
 

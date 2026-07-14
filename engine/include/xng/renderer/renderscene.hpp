@@ -26,6 +26,7 @@
 #include "xng/renderer/pipeline/rendershader.hpp"
 #include "xng/renderer/pipeline/renderbatch.hpp"
 
+#include "xng/renderer/renderallocator.hpp"
 #include "xng/renderer/renderpath.hpp"
 #include "xng/renderer/shadingmodel.hpp"
 #include "xng/renderer/camera.hpp"
@@ -145,7 +146,22 @@ namespace xng {
                   const float rotation = 0) {
                 transform = allocator.createTransform(MatrixMath::rotate(Vec3f(0, 0, rotation))
                                                       * MatrixMath::translate(Vec3f(center.x, center.y, 0)));
-                paint = allocator.createPaint(color, {}, {}, {}, {});
+                material = allocator.createMaterial(color,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    false,
+                                                    {},
+                                                    {},
+                                                    {},
+                                                    {},
+                                                    {},
+                                                    {},
+                                                    {},
+                                                    {},
+                                                    {},
+                                                    {});
                 Mesh m;
                 m.primitive = Mesh::TRIANGLES;
                 m.positions.emplace_back(start.x, start.y, 1);
@@ -170,7 +186,22 @@ namespace xng {
                   const ColorRGBA &color) {
                 transform = allocator.createTransform(MatrixMath::scale(Vec3f(size, size, 1))
                                                       * MatrixMath::translate(Vec3f(position.x, position.y, 0)));
-                paint = allocator.createPaint(color, {}, {}, {}, {});
+                material = allocator.createMaterial(color,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    false,
+                                                    {},
+                                                    {},
+                                                    {},
+                                                    {},
+                                                    {},
+                                                    {},
+                                                    {},
+                                                    {},
+                                                    {},
+                                                    {});
                 mesh = std::move(unitQuadMesh);
             }
 
@@ -195,7 +226,22 @@ namespace xng {
                     * MatrixMath::rotate(Vec3f(0, 0, rotation))
                     * MatrixMath::translate(Vec3f(center.x, center.y, 0))
                     * MatrixMath::scale(Vec3f(dstRect.dimensions.x, dstRect.dimensions.y, 1)));
-                paint = allocator.createPaint(color, {}, {}, {}, {});
+                material = allocator.createMaterial(color,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    false,
+                                                    {},
+                                                    {},
+                                                    {},
+                                                    {},
+                                                    {},
+                                                    {},
+                                                    {},
+                                                    {},
+                                                    {},
+                                                    {});
                 mesh = std::move(unitQuadMesh);
             }
 
@@ -204,23 +250,17 @@ namespace xng {
              *
              * @param allocator
              * @param unitQuadMesh
-             * @param srcRect
              * @param dstRect
              * @param texture
              * @param samplingProperties
-             * @param mix
-             * @param mixColor
              * @param center
              * @param rotation
              */
             Paint(RenderAllocator &allocator,
                   RenderObjectHandle<RenderMesh> unitQuadMesh,
-                  const Rectf &srcRect,
                   const Rectf &dstRect,
                   const RenderObjectHandle<RenderTexture> &texture,
                   const SamplingProperties &samplingProperties,
-                  const Vec4f mix = {},
-                  const ColorRGBA &mixColor = {},
                   const Vec2f &center = {},
                   const float rotation = 0) {
                 transform = allocator.createTransform(
@@ -228,11 +268,22 @@ namespace xng {
                     * MatrixMath::rotate(Vec3f(0, 0, rotation))
                     * MatrixMath::translate(Vec3f(center.x, center.y, 0))
                     * MatrixMath::scale(Vec3f(dstRect.dimensions.x, dstRect.dimensions.y, 1)));
-                paint = allocator.createPaint(mixColor,
-                                              texture,
-                                              samplingProperties,
-                                              mix,
-                                              srcRect);
+                material = allocator.createMaterial({},
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    false,
+                                                    texture,
+                                                    samplingProperties,
+                                                    {},
+                                                    {},
+                                                    {},
+                                                    {},
+                                                    {},
+                                                    {},
+                                                    {},
+                                                    {});
                 mesh = std::move(unitQuadMesh);
             }
 
@@ -240,8 +291,8 @@ namespace xng {
                 return transform;
             }
 
-            [[nodiscard]] RenderObjectHandle<RenderPaint> getPaint() const {
-                return paint;
+            [[nodiscard]] RenderObjectHandle<RenderMaterial> getMaterial() const {
+                return material;
             }
 
             [[nodiscard]] RenderObjectHandle<RenderMesh> getMesh() const {
@@ -250,7 +301,7 @@ namespace xng {
 
         private:
             RenderObjectHandle<RenderTransform> transform;
-            RenderObjectHandle<RenderPaint> paint;
+            RenderObjectHandle<RenderMaterial> material;
             RenderObjectHandle<RenderMesh> mesh;
         };
 
@@ -322,6 +373,8 @@ namespace xng {
         std::shared_ptr<RenderBatch> getPbrDeferredBatch();
 
         std::shared_ptr<RenderBatch> getPbrForwardBatch();
+
+        std::shared_ptr<RenderBatch> getShadowCastersBatch();
 
         std::vector<UserShadingBatch> getUserShadingBatches();
 

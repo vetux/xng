@@ -70,15 +70,15 @@ namespace xng {
 
         rg::ShaderInstruction getVertexAttribute(VertexAttribute attr) override;
 
-        rg::ShaderInstruction getAttribute(RenderShader::Attribute attr) override;
+        rg::ShaderInstruction getAttribute(RenderShader::InstanceAttribute attr) override;
 
-        rg::ShaderInstruction getAttribute(RenderShader::Attribute attr, const rg::ShaderInstruction &index) override;
+        rg::ShaderInstruction getAttribute(RenderShader::InstanceAttribute attr, const rg::ShaderInstruction &index) override;
 
         rg::ShaderInstruction writeAttachment(unsigned index, const rg::ShaderInstruction &color) override;
 
         std::shared_ptr<RenderShader> compile(const std::vector<rg::Shader> &stages,
                                               const std::vector<RenderShader::Attachment> &attachments,
-                                              const std::unordered_set<RenderShader::Attribute> &attributes,
+                                              const std::unordered_set<RenderShader::InstanceAttribute> &attributes,
                                               const std::unordered_set<VertexAttribute> &vertexAttributes) override;
     };
 }

@@ -26,8 +26,12 @@
 
 namespace xng {
     ShaderStruct(ShaderTexture,
-                 Vec4i, textureSize_textureID_maxMip,
-                 Vec4i, minFilter_magFilter_mipFilter_wrap)
+                 Vec4i, textureBacking_textureID_arrayLayer,
+                 Vec4i, textureSize_maxMip,
+                 Vec4i, minFilter_magFilter_mipFilter_wrap,
+                 Vec4f, mixColor,
+                 Vec4f, mix,
+                 Vec4f, srcRect)
 
     class RenderTexture final : public RenderObject {
     public:
@@ -116,14 +120,24 @@ namespace xng {
 
         [[nodiscard]] ShaderTexture::CPU getShaderData(const SamplingProperties &properties) const {
             ShaderTexture::CPU ret;
-            ret.textureSize_textureID_maxMip = Vec4i(size.x,
-                                                     size.y,
-                                                     static_cast<int>(textureHandle),
-                                                     static_cast<int>(maxMip));
+            ret.textureBacking_textureID_arrayLayer = Vec4i(backing,
+                                                            static_cast<int>(textureHandle),
+                                                            0,
+                                                            0);
+            ret.textureSize_maxMip = Vec4i(size.x,
+                                           size.y,
+                                           static_cast<int>(maxMip),
+                                           0);
             ret.minFilter_magFilter_mipFilter_wrap = Vec4i(properties.minFilter,
                                                            properties.magFilter,
                                                            properties.mipFilter,
                                                            properties.wrapping);
+            ret.mixColor = properties.mixColor.divide();
+            ret.mix = properties.mix;
+            ret.srcRect = Vec4f(properties.srcRect.position.x,
+                                properties.srcRect.position.y,
+                                properties.srcRect.dimensions.x,
+                                properties.srcRect.dimensions.y);
             return ret;
         }
 

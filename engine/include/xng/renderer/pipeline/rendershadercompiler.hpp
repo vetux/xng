@@ -40,22 +40,30 @@ namespace xng {
         virtual rg::ShaderInstruction getVertexAttribute(VertexAttribute attr) = 0;
 
         /**
-         * Retrieve non indexed attribute value.
+         * Retrieve instance attribute value.
          *
          * @param attr
          * @return
          */
-        virtual rg::ShaderInstruction getAttribute(RenderShader::Attribute attr) = 0;
+        virtual rg::ShaderInstruction getInstanceAttribute(RenderShader::InstanceAttribute attr) = 0;
 
         /**
-         * Retrieve the indexed attribute value.
+         * Retrieve global attribute value.
+         *
+         * @param attr
+         * @return
+         */
+        virtual rg::ShaderInstruction getGlobalAttribute(RenderShader::GlobalAttribute attr) = 0;
+
+        /**
+         * Retrieve indexed attribute value.
          *
          * @param attr
          * @param index
          * @return
          */
-        virtual rg::ShaderInstruction getAttribute(RenderShader::Attribute attr,
-                                                   const rg::ShaderInstruction &index) = 0;
+        virtual rg::ShaderInstruction getIndexedAttribute(RenderShader::IndexedAttribute attr,
+                                                          const rg::ShaderInstruction &index) = 0;
 
         /**
          * Write the specified color value to the specified attachment.
@@ -73,13 +81,20 @@ namespace xng {
          *
          * @param stages The shader stages. Must form a valid raster pipeline.
          * @param attachments The format of the attachments.
-         * @param attributes The set of accessed attributes.
          * @param vertexAttributes The set of accessed vertex attributes.
+         * @param instanceAttributes The set of accessed attributes.
+         * @param globalAttributes
+         * @param indexedAttributes
          */
         virtual std::shared_ptr<RenderShader> compile(const std::vector<rg::Shader> &stages,
                                                       const std::vector<RenderShader::Attachment> &attachments,
-                                                      const std::unordered_set<RenderShader::Attribute> &attributes,
-                                                      const std::unordered_set<VertexAttribute> &vertexAttributes) = 0;
+                                                      const std::unordered_set<VertexAttribute> &vertexAttributes,
+                                                      const std::unordered_set<RenderShader::InstanceAttribute> &
+                                                      instanceAttributes,
+                                                      const std::unordered_set<RenderShader::GlobalAttribute> &
+                                                      globalAttributes,
+                                                      const std::unordered_set<RenderShader::IndexedAttribute> &
+                                                      indexedAttributes) = 0;
     };
 }
 

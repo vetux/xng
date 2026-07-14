@@ -39,16 +39,27 @@ namespace xng {
         rg::TextureFiltering mipFilter = rg::LINEAR;
         WrappingMethod wrapping = WRAP_CLAMP_TO_EDGE;
 
+        Rectf srcRect{};
+
+        ColorRGBA mixColor{};
+        Vec4f mix{};
+
         SamplingProperties() = default;
 
         SamplingProperties(const FilteringMethod minFilter,
                            const FilteringMethod magFilter,
                            const rg::TextureFiltering mipFilter,
-                           const WrappingMethod wrapping)
+                           const WrappingMethod wrapping,
+                           const Rectf &srcRect = {},
+                           const ColorRGBA &mixColor = {},
+                           const Vec4f &mix = {})
             : minFilter(minFilter),
               magFilter(magFilter),
               mipFilter(mipFilter),
-              wrapping(wrapping) {
+              wrapping(wrapping),
+              srcRect(srcRect),
+              mixColor(mixColor),
+              mix(mix) {
         }
     };
 }

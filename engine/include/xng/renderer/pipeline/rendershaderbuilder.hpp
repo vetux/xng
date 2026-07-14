@@ -35,15 +35,20 @@ namespace xng {
             return compiler.getVertexAttribute(attr);
         }
 
-        rg::ShaderInstruction getAttribute(const RenderShader::Attribute attr) {
-            attributes.insert(attr);
-            return compiler.getAttribute(attr);
+        rg::ShaderInstruction getInstanceAttribute(const RenderShader::InstanceAttribute attr) {
+            instanceAttributes.insert(attr);
+            return compiler.getInstanceAttribute(attr);
         }
 
-        rg::ShaderInstruction getAttribute(const RenderShader::Attribute attr,
-                                           const rg::ShaderInstruction &index) {
-            attributes.insert(attr);
-            return compiler.getAttribute(attr, index);
+        rg::ShaderInstruction getGlobalAttribute(const RenderShader::GlobalAttribute attr) {
+            globalAttributes.insert(attr);
+            return compiler.getGlobalAttribute(attr);
+        }
+
+        rg::ShaderInstruction getIndexedAttribute(const RenderShader::IndexedAttribute attr,
+                                                  const rg::ShaderInstruction &index) {
+            indexedAttributes.insert(attr);
+            return compiler.getIndexedAttribute(attr, index);
         }
 
         rg::ShaderInstruction writeAttachment(const unsigned int index, const rg::ShaderInstruction &color) const {
@@ -51,14 +56,21 @@ namespace xng {
         }
 
         std::shared_ptr<RenderShader> compile(const std::vector<rg::Shader> &stages) const {
-            return compiler.compile(stages, attachments, attributes, vertexAttributes);
+            return compiler.compile(stages,
+                                    attachments,
+                                    vertexAttributes,
+                                    instanceAttributes,
+                                    globalAttributes,
+                                    indexedAttributes);
         }
 
     private:
         RenderShaderCompiler &compiler;
         std::vector<RenderShader::Attachment> attachments;
-        std::unordered_set<RenderShader::Attribute> attributes;
         std::unordered_set<VertexAttribute> vertexAttributes;
+        std::unordered_set<RenderShader::InstanceAttribute> instanceAttributes;
+        std::unordered_set<RenderShader::GlobalAttribute> globalAttributes;
+        std::unordered_set<RenderShader::IndexedAttribute> indexedAttributes;
     };
 }
 
