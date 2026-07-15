@@ -28,6 +28,8 @@ namespace xng::rg {
         std::string typeName;
         std::vector<ShaderStructElement> elements;
 
+        ShaderStructDef() = default;
+
         ShaderStructDef(std::string name, const std::vector<ShaderStructElement> &elements)
             : typeName(std::move(name)), elements(elements) {
         }
