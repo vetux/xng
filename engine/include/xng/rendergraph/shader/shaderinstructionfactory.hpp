@@ -101,7 +101,7 @@ namespace xng::rg {
                                                       ShaderOperand z = {},
                                                       ShaderOperand w = {});
 
-        XENGINE_EXPORT ShaderInstruction createStruct(ShaderStructType typeName,
+        XENGINE_EXPORT ShaderInstruction createStruct(ShaderStructTypeName typeName,
                                                       std::vector<ShaderOperand> values = {});
 
         /**

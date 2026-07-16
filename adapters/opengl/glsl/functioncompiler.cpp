@@ -32,7 +32,7 @@ std::string compileFunction(const std::string &functionName,
         if (std::holds_alternative<ShaderPrimitiveType>(returnType.value().value)) {
             ret += getTypeName(std::get<ShaderPrimitiveType>(returnType.value().value));
         } else {
-            ret += std::get<ShaderStructType>(returnType.value().value);
+            ret += std::get<ShaderStructTypeName>(returnType.value().value);
         }
     } else {
         ret += "void";
@@ -53,7 +53,7 @@ std::string compileFunction(const std::string &functionName,
             if (std::holds_alternative<ShaderPrimitiveType>(arg.value)) {
                 ret += getTypeName(std::get<ShaderPrimitiveType>(arg.value)) + " " + param.name;
             } else {
-                ret += std::get<ShaderStructType>(arg.value) + " " + param.name;
+                ret += std::get<ShaderStructTypeName>(arg.value) + " " + param.name;
             }
         } else {
             auto arg = std::get<ShaderTexture>(param.type);

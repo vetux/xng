@@ -34,8 +34,8 @@ namespace xng {
 
         template<typename T>
         void set(const std::string &name, const T &value) {
-            assert(std::holds_alternative<rg::ShaderPrimitiveType>(layout.getStructDef().get(name).type.value));
-            if (layout.getStructDef().get(name).type.getPrimitive() != rg::ShaderPrimitive(value).getType()) {
+            assert(std::holds_alternative<rg::ShaderPrimitiveType>(layout.getStructType().get(name).type.value));
+            if (layout.getStructType().get(name).type.getPrimitive() != rg::ShaderPrimitive(value).getType()) {
                 throw std::runtime_error("Invalid member type for " + name);
             }
 

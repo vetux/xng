@@ -32,7 +32,7 @@ std::string generateElement(const std::string &name, const ShaderDataType &type,
     if (std::holds_alternative<ShaderPrimitiveType>(type.value)) {
         ret += getTypeName(std::get<ShaderPrimitiveType>(type.value));
     } else {
-        ret += std::get<ShaderStructType>(type.value);
+        ret += std::get<ShaderStructTypeName>(type.value);
     }
     ret += " " + name;
 
@@ -73,7 +73,7 @@ std::string generateHeader(const Shader &source, CompiledShader &compiledShader)
         auto binding = compiledShader.createShaderBufferBinding(pair.first);
         ret += "layout(binding = "
                 + std::to_string(binding);
-        if (std::holds_alternative<ShaderStructType>(pair.second.type.value)) {
+        if (std::holds_alternative<ShaderStructTypeName>(pair.second.type.value)) {
             ret += std::string(", std140");
         } else {
             ret += std::string(", std430");
@@ -82,8 +82,8 @@ std::string generateHeader(const Shader &source, CompiledShader &compiledShader)
                 + std::to_string(binding)
                 + " {\n"
                 + "\t";
-        if (std::holds_alternative<ShaderStructType>(pair.second.type.value)) {
-            ret += std::get<ShaderStructType>(pair.second.type.value) + " " + bufferArrayName;
+        if (std::holds_alternative<ShaderStructTypeName>(pair.second.type.value)) {
+            ret += std::get<ShaderStructTypeName>(pair.second.type.value) + " " + bufferArrayName;
         } else {
             ret += getTypeName(std::get<ShaderPrimitiveType>(pair.second.type.value)) + " " + bufferArrayName;
         }

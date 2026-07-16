@@ -72,7 +72,7 @@ namespace xng::ShaderScript {
             return false;
         }
 
-        void addTypeDefinition(rg::ShaderStructDef type) {
+        void addTypeDefinition(rg::ShaderStructType type) {
             for (auto &t: typeDefinitions) {
                 if (t.typeName == type.typeName) {
                     if (!(t == type)) {
@@ -205,7 +205,7 @@ namespace xng::ShaderScript {
         std::unordered_map<std::string, rg::ShaderBuffer> buffers{};
         std::unordered_map<std::string, rg::ShaderTextureArray> textureArrays{};
 
-        std::vector<rg::ShaderStructDef> typeDefinitions{};
+        std::vector<rg::ShaderStructType> typeDefinitions{};
 
         std::vector<rg::ShaderFunction> functions{};
 

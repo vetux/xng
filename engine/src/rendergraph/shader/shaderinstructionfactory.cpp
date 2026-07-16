@@ -238,7 +238,7 @@ namespace xng::rg::ShaderInstructionFactory {
         return ret;
     }
 
-    ShaderInstruction createStruct(ShaderStructType typeName, std::vector<ShaderOperand> values) {
+    ShaderInstruction createStruct(ShaderStructTypeName typeName, std::vector<ShaderOperand> values) {
         ShaderInstruction ret;
         ret.code = ShaderInstruction::CreateStruct;
         ret.operands = std::move(values);

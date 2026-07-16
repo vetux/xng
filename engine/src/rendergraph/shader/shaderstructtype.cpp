@@ -16,10 +16,10 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "xng/rendergraph/shader/shaderstructdef.hpp"
+#include "xng/rendergraph/shader/shaderstructtype.hpp"
 
 namespace xng::rg {
-    const ShaderStructElement &ShaderStructDef::get(const std::string &name) const {
+    const ShaderStructElement &ShaderStructType::get(const std::string &name) const {
         for (auto &element: elements) {
             if (element.name == name)
                 return element;

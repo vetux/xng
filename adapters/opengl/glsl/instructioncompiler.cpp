@@ -234,7 +234,7 @@ namespace InstructionCompiler {
             auto t = std::get<ShaderPrimitiveType>(type.value);
             ret += getTypeName(t) + " " + name;
         } else {
-            ret += std::get<ShaderStructType>(type.value) + " " + name;
+            ret += std::get<ShaderStructTypeName>(type.value) + " " + name;
         }
 
         if (type.count > 1) {
@@ -275,7 +275,7 @@ namespace InstructionCompiler {
                                     const Shader &source,
                                     const std::string &functionName,
                                     const std::string &indent) {
-        std::string ret = std::get<ShaderStructType>(instruction.data.at(0)) + "(";
+        std::string ret = std::get<ShaderStructTypeName>(instruction.data.at(0)) + "(";
         if (instruction.operands.size() > 0) {
             for (auto &operand: instruction.operands) {
                 ret += compileOperand(operand, source, functionName) + ", ";
@@ -311,7 +311,7 @@ namespace InstructionCompiler {
         if (std::holds_alternative<ShaderPrimitiveType>(type.value)) {
             ret += getTypeName(std::get<ShaderPrimitiveType>(type.value));
         } else {
-            ret += std::get<ShaderStructType>(type.value);
+            ret += std::get<ShaderStructTypeName>(type.value);
         }
         ret += "[](";
         for (auto &operand: instruction.operands) {

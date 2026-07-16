@@ -25,7 +25,7 @@
 #include "xng/shaderscript/shadertype.hpp"
 #include "xng/shaderscript/shaderscope.hpp"
 
-#include "xng/rendergraph/shader/shaderstructdef.hpp"
+#include "xng/rendergraph/shader/shaderstructtype.hpp"
 
 /**
  * This header defines macros to make shader struct definition simpler and cleaner and allow
@@ -515,7 +515,7 @@
  *  Object nesting is supported.
  *  Up to 50 member variables are supported.
  *
- *  The getShaderStruct() public static function can be used to retrieve the ShaderStructDef instance.
+ *  The getShaderStruct() public static function can be used to retrieve the ShaderStructType instance.
  *
  *  e.g.:
  *      DefineStruct(MvpBuffer, Mat4f, mvp)
@@ -534,16 +534,16 @@
         struct CPU {\
             GenerateCpuElementDeclaration(__VA_ARGS__)\
         };\
-        static inline xng::rg::ShaderDataType TYPE{static_cast<xng::rg::ShaderStructType>(#name), 1};\
-        static xng::rg::ShaderStructDef getShaderStructDef() {\
-            return xng::rg::ShaderStructDef(#name, {\
+        static inline xng::rg::ShaderDataType TYPE{static_cast<xng::rg::ShaderStructTypeName>(#name), 1};\
+        static xng::rg::ShaderStructType getShaderStructType() {\
+            return xng::rg::ShaderStructType(#name, {\
                 GenerateStructElements(__VA_ARGS__) \
             });\
         }\
         xng::ShaderScript::ShaderObject _object;\
         GenerateElementDeclaration(__VA_ARGS__)\
-        name() : _object(xng::ShaderScript::ShaderStructObject<_##name##_type, 1>()), GenerateConstructor(__VA_ARGS__) { xng::ShaderScript::ShaderScope::get().addTypeDefinition(getShaderStructDef()); }\
-        explicit name(const xng::ShaderScript::ShaderObject &buffer, bool b = false) : _object(buffer), GenerateConstructor(__VA_ARGS__) { xng::ShaderScript::ShaderScope::get().addTypeDefinition(getShaderStructDef()); }\
+        name() : _object(xng::ShaderScript::ShaderStructObject<_##name##_type, 1>()), GenerateConstructor(__VA_ARGS__) { xng::ShaderScript::ShaderScope::get().addTypeDefinition(getShaderStructType()); }\
+        explicit name(const xng::ShaderScript::ShaderObject &buffer, bool b = false) : _object(buffer), GenerateConstructor(__VA_ARGS__) { xng::ShaderScript::ShaderScope::get().addTypeDefinition(getShaderStructType()); }\
         name& operator=(const name& other) {\
             _object = other._object;\
             return *this;\

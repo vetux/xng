@@ -146,7 +146,7 @@
 #include "xng/rendergraph/shader/shaderfunction.hpp"
 #include "xng/rendergraph/shader/shaderinstruction.hpp"
 #include "xng/rendergraph/shader/shaderprimitive.hpp"
-#include "xng/rendergraph/shader/shaderstructdef.hpp"
+#include "xng/rendergraph/shader/shaderstructtype.hpp"
 #include "xng/crypto/sha.hpp"
 #include "xng/crypto/gzip.hpp"
 #include "xng/crypto/random.hpp"

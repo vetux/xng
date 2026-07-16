@@ -16,27 +16,27 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef XENGINE_RENDERGRAPH_SHADERSTRUCTDEF_HPP
-#define XENGINE_RENDERGRAPH_SHADERSTRUCTDEF_HPP
+#ifndef XENGINE_RENDERGRAPH_SHADERSTRUCTTYPE_HPP
+#define XENGINE_RENDERGRAPH_SHADERSTRUCTTYPE_HPP
 
 #include "xng/rendergraph/shader/shaderdatatype.hpp"
 
 namespace xng::rg {
     struct ShaderStructElement;
 
-    struct ShaderStructDef {
-        std::string typeName;
+    struct ShaderStructType {
+        ShaderStructTypeName typeName;
         std::vector<ShaderStructElement> elements;
 
-        ShaderStructDef() = default;
+        ShaderStructType() = default;
 
-        ShaderStructDef(std::string name, const std::vector<ShaderStructElement> &elements)
+        ShaderStructType(ShaderStructTypeName name, const std::vector<ShaderStructElement> &elements)
             : typeName(std::move(name)), elements(elements) {
         }
 
         const ShaderStructElement &get(const std::string &name) const;
 
-        bool operator==(const ShaderStructDef &o) const {
+        bool operator==(const ShaderStructType &o) const {
             return typeName == o.typeName && elements == o.elements;
         }
     };
@@ -58,4 +58,4 @@ namespace xng::rg {
     };
 }
 
-#endif //XENGINE_RENDERGRAPH_SHADERSTRUCTDEF_HPP
+#endif //XENGINE_RENDERGRAPH_SHADERSTRUCTTYPE_HPP

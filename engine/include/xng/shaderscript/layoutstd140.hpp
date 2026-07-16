@@ -23,7 +23,7 @@
 #include <unordered_map>
 #include <cstdint>
 
-#include "xng/rendergraph/shader/shaderstructdef.hpp"
+#include "xng/rendergraph/shader/shaderstructtype.hpp"
 #include "xng/shaderscript/std140.hpp"
 
 namespace xng {
@@ -167,14 +167,14 @@ namespace xng {
             return totalSize;
         }
 
-        const rg::ShaderStructDef &getStructDef() const {
+        const rg::ShaderStructType &getStructType() const {
             return structDef;
         }
 
     private:
         size_t totalSize = 0;
         std::unordered_map<std::string, size_t> offsets;
-        rg::ShaderStructDef structDef;
+        rg::ShaderStructType structDef;
     };
 }
 
