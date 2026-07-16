@@ -26,69 +26,64 @@ namespace xng {
     public:
         enum Attribute : RenderPipelineMaterial::AttributeID {
             MATERIAL_ALBEDO_COLOR = 0,
-            MATERIAL_ALBEDO_TEXTURE,
             MATERIAL_ALBEDO_HAS_TEXTURE,
 
             MATERIAL_METALLIC_COLOR,
-            MATERIAL_METALLIC_TEXTURE,
             MATERIAL_METALLIC_HAS_TEXTURE,
 
             MATERIAL_ROUGHNESS_COLOR,
-            MATERIAL_ROUGHNESS_TEXTURE,
             MATERIAL_ROUGHNESS_HAS_TEXTURE,
 
             MATERIAL_AMBIENT_OCCLUSION_COLOR,
-            MATERIAL_AMBIENT_OCCLUSION_TEXTURE,
             MATERIAL_AMBIENT_OCCLUSION_HAS_TEXTURE,
 
             MATERIAL_EMISSIVE_COLOR,
-            MATERIAL_EMISSIVE_TEXTURE,
             MATERIAL_EMISSIVE_HAS_TEXTURE,
 
-            MATERIAL_NORMAL_TEXTURE,
             MATERIAL_NORMAL_HAS_TEXTURE,
 
             RECEIVE_SHADOWS,
         };
 
+        enum Texture : RenderPipelineMaterial::TextureID {
+            MATERIAL_ALBEDO_TEXTURE,
+            MATERIAL_METALLIC_TEXTURE,
+            MATERIAL_ROUGHNESS_TEXTURE,
+            MATERIAL_AMBIENT_OCCLUSION_TEXTURE,
+            MATERIAL_EMISSIVE_TEXTURE,
+            MATERIAL_NORMAL_TEXTURE,
+        };
+
         static RenderPipeline::MaterialAttributes getAttributes() {
             RenderPipeline::MaterialAttributes ret;
 
-            ret[MATERIAL_ALBEDO_COLOR] = getPrimitive(rg::ShaderPrimitiveType::vec4());
-            ret[MATERIAL_ALBEDO_TEXTURE] = getTexture();
-            ret[MATERIAL_ALBEDO_HAS_TEXTURE] = getPrimitive(rg::ShaderPrimitiveType::Bool());
+            ret.attributes[MATERIAL_ALBEDO_COLOR] = rg::ShaderPrimitiveType::vec4();
+            ret.attributes[MATERIAL_ALBEDO_HAS_TEXTURE] = rg::ShaderPrimitiveType::Bool();
 
-            ret[MATERIAL_METALLIC_COLOR] = getPrimitive(rg::ShaderPrimitiveType::Float());
-            ret[MATERIAL_METALLIC_TEXTURE] = getTexture();
-            ret[MATERIAL_METALLIC_HAS_TEXTURE] = getPrimitive(rg::ShaderPrimitiveType::Bool());
+            ret.attributes[MATERIAL_METALLIC_COLOR] = rg::ShaderPrimitiveType::Float();
+            ret.attributes[MATERIAL_METALLIC_HAS_TEXTURE] = rg::ShaderPrimitiveType::Bool();
 
-            ret[MATERIAL_ROUGHNESS_COLOR] = getPrimitive(rg::ShaderPrimitiveType::Float());
-            ret[MATERIAL_ROUGHNESS_TEXTURE] = getTexture();
-            ret[MATERIAL_ROUGHNESS_HAS_TEXTURE] = getPrimitive(rg::ShaderPrimitiveType::Bool());
+            ret.attributes[MATERIAL_ROUGHNESS_COLOR] = rg::ShaderPrimitiveType::Float();
+            ret.attributes[MATERIAL_ROUGHNESS_HAS_TEXTURE] = rg::ShaderPrimitiveType::Bool();
 
-            ret[MATERIAL_AMBIENT_OCCLUSION_COLOR] = getPrimitive(
-                rg::ShaderPrimitiveType::Float());
-            ret[MATERIAL_AMBIENT_OCCLUSION_TEXTURE] = getTexture();
-            ret[MATERIAL_AMBIENT_OCCLUSION_HAS_TEXTURE] = getPrimitive(
-                rg::ShaderPrimitiveType::Bool());
+            ret.attributes[MATERIAL_AMBIENT_OCCLUSION_COLOR] = rg::ShaderPrimitiveType::Float();
+            ret.attributes[MATERIAL_AMBIENT_OCCLUSION_HAS_TEXTURE] = rg::ShaderPrimitiveType::Bool();
 
-            ret[MATERIAL_EMISSIVE_COLOR] = getPrimitive(rg::ShaderPrimitiveType::vec3());
-            ret[MATERIAL_EMISSIVE_TEXTURE] = getTexture();
-            ret[MATERIAL_EMISSIVE_HAS_TEXTURE] = getPrimitive(rg::ShaderPrimitiveType::Bool());
+            ret.attributes[MATERIAL_EMISSIVE_COLOR] = rg::ShaderPrimitiveType::vec3();
+            ret.attributes[MATERIAL_EMISSIVE_HAS_TEXTURE] = rg::ShaderPrimitiveType::Bool();
 
-            ret[MATERIAL_NORMAL_TEXTURE] = getTexture();
-            ret[MATERIAL_NORMAL_HAS_TEXTURE] = getPrimitive(rg::ShaderPrimitiveType::Bool());
+            ret.attributes[MATERIAL_NORMAL_HAS_TEXTURE] = rg::ShaderPrimitiveType::Bool();
+
+            ret.attributes[RECEIVE_SHADOWS] = rg::ShaderPrimitiveType::Bool();
+
+            ret.textures.insert(MATERIAL_ALBEDO_TEXTURE);
+            ret.textures.insert(MATERIAL_METALLIC_TEXTURE);
+            ret.textures.insert(MATERIAL_ROUGHNESS_TEXTURE);
+            ret.textures.insert(MATERIAL_AMBIENT_OCCLUSION_TEXTURE);
+            ret.textures.insert(MATERIAL_EMISSIVE_TEXTURE);
+            ret.textures.insert(MATERIAL_NORMAL_TEXTURE);
 
             return ret;
-        }
-
-    private:
-        static RenderPipelineMaterial::AttributeType getPrimitive(const rg::ShaderPrimitiveType type) {
-            return RenderPipelineMaterial::AttributeType::primitive(type);
-        }
-
-        static RenderPipelineMaterial::AttributeType getTexture() {
-            return RenderPipelineMaterial::AttributeType::texture();
         }
     };
 }

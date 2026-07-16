@@ -21,6 +21,8 @@
 
 #include "xng/rendergraph/textureproperties.hpp"
 
+#include "xng/math/rectangle.hpp"
+
 namespace xng {
     enum FilteringMethod : int {
         FILTER_NEAREST = 0,

@@ -58,6 +58,16 @@ namespace xng {
         virtual rg::ShaderOperand getMaterialAttribute(RenderPipelineMaterial::AttributeID attr) = 0;
 
         /**
+         * Sample a material texture.
+         *
+         * @param tex
+         * @param uv
+         * @return
+         */
+        virtual rg::ShaderOperand sampleMaterialTexture(RenderPipelineMaterial::TextureID tex,
+                                                        const rg::ShaderOperand &uv) = 0;
+
+        /**
          * Write the specified color value to the specified attachment.
          *
          * This wraps virtual texture write if the shader attachment is a virtual texture.
@@ -77,12 +87,15 @@ namespace xng {
          * @param attachments The format of the attachments.
          * @param vertexAttributes The set of accessed vertex attributes.
          * @param materialAttributes The set of accessed material attributes.
+         * @param materialTextures The set of accessed material textures.
          */
         virtual std::shared_ptr<RenderShader> compile(const rg::RasterPipeline &pipeline,
                                                       const std::vector<RenderShader::Attachment> &attachments,
                                                       const std::unordered_set<VertexAttribute> &vertexAttributes,
                                                       const std::unordered_set<RenderPipelineMaterial::AttributeID> &
-                                                      materialAttributes) = 0;
+                                                      materialAttributes,
+                                                      const std::unordered_set<RenderPipelineMaterial::TextureID> &
+                                                      materialTextures) = 0;
     };
 }
 

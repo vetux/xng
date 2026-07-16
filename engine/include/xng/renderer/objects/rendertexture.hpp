@@ -116,6 +116,10 @@ namespace xng {
             return maxMip;
         }
 
+        [[nodiscard]] TextureBacking getBacking() const {
+            return backing;
+        }
+
         [[nodiscard]] ShaderTexture::CPU getShaderData(const SamplingProperties &properties) const {
             ShaderTexture::CPU ret;
             ret.textureBacking_textureID_arrayLayer = Vec4i(backing,

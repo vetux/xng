@@ -32,35 +32,17 @@ namespace xng {
     public:
         typedef size_t AttributeID;
 
-        struct AttributeType {
-            enum Type : int {
-                ATTRIBUTE_TEXTURE = 0,
-                ATTRIBUTE_PRIMITIVE,
-            } type{};
-
-            rg::ShaderPrimitiveType primitiveType{};
-
-            static AttributeType texture() {
-                AttributeType ret;
-                ret.type = ATTRIBUTE_TEXTURE;
-                return ret;
-            }
-
-            static AttributeType primitive(const rg::ShaderPrimitiveType type) {
-                AttributeType ret;
-                ret.type = ATTRIBUTE_PRIMITIVE;
-                ret.primitiveType = type;
-                return ret;
-            }
-        };
+        typedef size_t TextureID;
 
         virtual ~RenderPipelineMaterial() = default;
 
-        virtual void setValue(AttributeID attribute, RenderObjectHandle<RenderTexture> texture) = 0;
+        virtual void setAttribute(AttributeID attribute, rg::ShaderPrimitive value) = 0;
 
-        virtual void setValue(AttributeID attribute, rg::ShaderPrimitive value) = 0;
+        virtual void setTexture(TextureID texture, RenderObjectHandle<RenderTexture> value) = 0;
 
-        virtual const std::unordered_map<AttributeID, AttributeType> &getAttributes() = 0;
+        virtual const std::unordered_map<AttributeID, rg::ShaderPrimitiveType> &getAttributes() = 0;
+
+        virtual const std::unordered_set<TextureID> &getTextures() = 0;
     };
 }
 

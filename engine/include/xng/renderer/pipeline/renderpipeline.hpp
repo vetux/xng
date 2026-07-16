@@ -50,10 +50,10 @@ namespace xng {
     public:
         typedef std::variant<rg::Attachment, RenderObjectHandle<RenderTexture> > Attachment;
 
-        typedef std::unordered_map<
-            RenderPipelineMaterial::AttributeID,
-            RenderPipelineMaterial::AttributeType
-        > MaterialAttributes;
+        struct MaterialAttributes {
+            std::unordered_map<RenderPipelineMaterial::AttributeID, rg::ShaderPrimitiveType> attributes;
+            std::unordered_set<RenderPipelineMaterial::TextureID> textures;
+        };
 
         struct BufferBinding {
             rg::Resource<rg::Buffer> buffer;
