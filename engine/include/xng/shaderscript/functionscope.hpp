@@ -181,6 +181,27 @@ namespace xng::ShaderScript {
             }
         }
 
+        template<typename T>
+        void setReturnType() {
+            if (returnType.has_value()) {
+                if (returnType.value() != T::TYPE) {
+                    throw std::runtime_error("Attempted to change return type");
+                }
+            } else {
+                returnType = T::TYPE;
+            }
+        }
+
+        void setReturnType(rg::ShaderDataType type) {
+            if (returnType.has_value()) {
+                if (returnType.value() != type) {
+                    throw std::runtime_error("Attempted to change return type");
+                }
+            } else {
+                returnType = type;
+            }
+        }
+
         rg::ShaderFunction build() {
             if (returnType.has_value())
                 return {name, arguments, block->buildInstructionStream(), returnType.value()};

@@ -29,6 +29,10 @@
 namespace xng {
     class LayoutStd140 {
     public:
+        explicit LayoutStd140(const std::string &typeName)
+            : structDef(typeName, {}) {
+        }
+
         template<typename T>
         void add(const std::string &name) {
             constexpr size_t alignment = alignof(Std140<T>);
