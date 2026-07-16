@@ -26,7 +26,8 @@
 
 namespace xng {
     /**
-     * A pipeline material is data that is per draw.
+     * A pipeline material represents the per-draw data.
+     * The format of a material is dynamically defined when instantiating a pipeline.
      */
     class RenderPipelineMaterial {
     public:
