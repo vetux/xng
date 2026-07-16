@@ -79,14 +79,14 @@ namespace xng {
 
         virtual std::shared_ptr<RenderPipelineMaterial> createMaterial();
 
-        virtual void setCamera(const Vec3f &position, const Mat4f &view, const Mat4f &projection) = 0;
-
         virtual DrawID addDrawCall(std::shared_ptr<RenderPipelineTransform> transform,
                                    std::shared_ptr<RenderPipelineMaterial> material,
                                    const std::vector<RenderObjectHandle<RenderMesh> > &meshes,
                                    int sortPriority);
 
         virtual void removeDrawCall(DrawID id) = 0;
+
+        virtual void setCamera(const Vec3f &position, const Mat4f &view, const Mat4f &projection) = 0;
 
         /**
          * The pipeline will sort draw calls by distance to the camera for draw calls with identical sortPriority when enabled.

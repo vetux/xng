@@ -31,11 +31,10 @@ namespace xng {
      *
      * TODO: Shader Permutations
      *
-     * This is where permutations would live based on material combinations including backing method and the pipeline
-     * can bind different sub shaders based on accessed attribute combination.
-     *
-     * This also means permutations are only at pipeline level and passes would have to define their own permutations
-     * separately but i think this is fine because permutations outside of the render object scope are pass specific anyway.
+     * The pipeline can here permutate based on texture and attachment types.
+     * So there would be 2 levels of permutations one handled by users for concepts outside pipeline scope such
+     * as "HAS_NORMAL_MAP" etc. and the pipeline would then permutate on the user permutated shader based on the
+     * texture types in the material.
      */
     class RenderShader {
     public:
