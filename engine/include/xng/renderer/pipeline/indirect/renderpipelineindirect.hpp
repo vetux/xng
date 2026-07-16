@@ -19,6 +19,8 @@
 #ifndef XENGINE_RENDERPIPELINEINDIRECT_HPP
 #define XENGINE_RENDERPIPELINEINDIRECT_HPP
 
+#include <utility>
+
 #include "xng/renderer/pipeline/renderpipeline.hpp"
 #include "xng/renderer/pipeline/indirect/rendershadercompilerindirect.hpp"
 
@@ -80,17 +82,19 @@ namespace xng {
 
         class RenderPipelineMaterialIndirect final : public RenderPipelineMaterial {
         public:
-            RenderPipelineMaterialIndirect(const LayoutStd140 &layout)
+            explicit RenderPipelineMaterialIndirect(const LayoutStd140 &layout)
                 : object(layout) {
             }
 
             ~RenderPipelineMaterialIndirect() override = default;
 
-            void setValue(AttributeID attribute, RenderObjectHandle<RenderTexture> texture) override;
+            void setAttribute(AttributeID attribute, rg::ShaderPrimitive value) override;
 
-            void setValue(AttributeID attribute, rg::ShaderPrimitive value) override;
+            void setTexture(TextureID texture, RenderObjectHandle<RenderTexture> value) override;
 
-            const std::unordered_map<AttributeID, AttributeType> &getAttributes() override;
+            const std::unordered_map<AttributeID, rg::ShaderPrimitiveType> &getAttributes() override;
+
+            const std::unordered_set<TextureID> &getTextures() override;
 
         private:
             ObjectStd140 object;
@@ -125,13 +129,14 @@ namespace xng {
         };
 
         static LayoutStd140 getMaterialLayout(const MaterialAttributes &attributes) {
-            LayoutStd140 ret;
-            for (auto &pair: attributes) {
-                if (pair.second.type == RenderPipelineMaterial::AttributeType::ATTRIBUTE_PRIMITIVE) {
-                    ret.add("attr" + std::to_string(pair.first), pair.second.primitiveType);
-                } else {
-                    addTexture("attr" + std::to_string(pair.first), ret);
-                }
+            LayoutStd140 ret("ShaderMaterial");
+            for (auto &pair: attributes.attributes) {
+                ret.add("attr" + std::to_string(pair.first), pair.second);
+            }
+            for (auto &texture: attributes.textures) {
+                RenderShaderCompilerIndirect::ShaderTexture::injectLayout(ret,
+                                                                          RenderShaderCompilerIndirect::materialTexturePrefix
+                                                                          + std::to_string(texture));
             }
             return ret;
         }
