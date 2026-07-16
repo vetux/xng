@@ -89,6 +89,10 @@ namespace xng::rg {
         ShaderFunction(ShaderFunction &&other) noexcept = default;
 
         ShaderFunction &operator=(ShaderFunction &&other) noexcept = default;
+
+        bool operator==(const ShaderFunction &other) const {
+            return name == other.name && arguments == other.arguments && body == other.body && returnType == other.returnType;
+        }
     };
 }
 

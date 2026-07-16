@@ -290,6 +290,10 @@ namespace xng::rg {
         }
 
         ShaderPrimitiveType getType() const;
+
+        bool operator==(const ShaderPrimitive &other) const {
+            return value == other.value;
+        }
     };
 }
 

@@ -185,6 +185,10 @@ namespace xng::rg {
 
         std::vector<ShaderOperand> operands{}; // Operand types can be dynamic depending on the instruction format.
         std::vector<ShaderInstructionData> data{}; // Data types are statically defined by the instruction format.
+
+        bool operator==(const ShaderInstruction &rhs) const {
+            return code == rhs.code && operands == rhs.operands && data == rhs.data;
+        }
     };
 
     struct ShaderOperand {
@@ -251,6 +255,10 @@ namespace xng::rg {
 
         bool isAssigned() const {
             return type != None;
+        }
+
+        bool operator==(const ShaderOperand &rhs) const {
+            return type == rhs.type && value == rhs.value;
         }
     };
 }
