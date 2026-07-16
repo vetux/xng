@@ -52,7 +52,7 @@ namespace xng {
         std::shared_ptr<RenderPipelineMaterial> createMaterial() override;
 
         DrawID addDrawCall(std::shared_ptr<RenderPipelineTransform> transform,
-                           std::shared_ptr<RenderPipelineMaterial> instanceAttributes,
+                           std::shared_ptr<RenderPipelineMaterial> material,
                            const std::vector<RenderObjectHandle<RenderMesh> > &mesh,
                            int sortPriority) override;
 
