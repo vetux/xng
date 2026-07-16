@@ -35,9 +35,9 @@ namespace xng {
             return compiler.getVertexAttribute(attr);
         }
 
-        rg::ShaderOperand getMaterialAttribute(const RenderPipelineMaterial::AttributeID attr) {
-            materialAttributes.insert(attr);
-            return compiler.getMaterialAttribute(attr);
+        rg::ShaderOperand getMaterialProperty(const RenderPipelineMaterial::PropertyID attr) {
+            materialProperties.insert(attr);
+            return compiler.getMaterialProperty(attr);
         }
 
         rg::ShaderOperand sampleMaterialTexture(const RenderPipelineMaterial::TextureID tex,
@@ -54,7 +54,7 @@ namespace xng {
             return compiler.compile(pipeline,
                                     attachments,
                                     vertexAttributes,
-                                    materialAttributes,
+                                    materialProperties,
                                     materialTextures);
         }
 
@@ -62,7 +62,7 @@ namespace xng {
         RenderShaderCompiler &compiler;
         std::vector<RenderShader::Attachment> attachments;
         std::unordered_set<VertexAttribute> vertexAttributes;
-        std::unordered_set<RenderPipelineMaterial::AttributeID> materialAttributes;
+        std::unordered_set<RenderPipelineMaterial::PropertyID> materialProperties;
         std::unordered_set<RenderPipelineMaterial::TextureID> materialTextures;
     };
 }

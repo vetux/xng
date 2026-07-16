@@ -51,12 +51,14 @@ namespace xng {
                      const rg::PipelineCache::Handle pipeline,
                      std::vector<Attachment> _attachments,
                      std::unordered_set<VertexAttribute> _vertexAttributes,
-                     std::unordered_set<RenderPipelineMaterial::AttributeID> _materialAttributes)
+                     std::unordered_set<RenderPipelineMaterial::PropertyID> _materialProperties,
+                     std::unordered_set<RenderPipelineMaterial::TextureID> _materialTextures)
             : cache(cache),
               pipeline(pipeline),
               attachments(std::move(_attachments)),
               vertexAttributes(std::move(_vertexAttributes)),
-              materialAttributes(std::move(_materialAttributes)) {
+              materialProperties(std::move(_materialProperties)),
+              materialTextures(std::move(_materialTextures)) {
         }
 
         ~RenderShader() {
@@ -70,7 +72,8 @@ namespace xng {
         std::vector<Attachment> attachments;
 
         std::unordered_set<VertexAttribute> vertexAttributes{};
-        std::unordered_set<RenderPipelineMaterial::AttributeID> materialAttributes{};
+        std::unordered_set<RenderPipelineMaterial::PropertyID> materialProperties{};
+        std::unordered_set<RenderPipelineMaterial::TextureID> materialTextures{};
     };
 }
 

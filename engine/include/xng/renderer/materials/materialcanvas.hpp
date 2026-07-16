@@ -24,21 +24,24 @@
 namespace xng {
     class MaterialCanvas {
     public:
-        enum InstanceAttributes : RenderPipelineMaterial::AttributeID {
+        enum Property : RenderPipelineMaterial::PropertyID {
             PAINT_COLOR = 0,
-            PAINT_TEXTURE,
             PAINT_HAS_TEXTURE,
             PAINT_MIX,
             PAINT_MIX_COLOR,
         };
 
-        static RenderPipeline::MaterialAttributes getAttributes() {
-            RenderPipeline::MaterialAttributes ret;
-            ret[PAINT_COLOR] = RenderPipelineMaterial::AttributeType::primitive(rg::ShaderPrimitiveType::vec4());
-            ret[PAINT_TEXTURE] = RenderPipelineMaterial::AttributeType::texture();
-            ret[PAINT_HAS_TEXTURE] = RenderPipelineMaterial::AttributeType::primitive(rg::ShaderPrimitiveType::Bool());
-            ret[PAINT_MIX] = RenderPipelineMaterial::AttributeType::primitive(rg::ShaderPrimitiveType::vec4());
-            ret[PAINT_MIX_COLOR] = RenderPipelineMaterial::AttributeType::primitive(rg::ShaderPrimitiveType::vec4());
+        enum Texture : RenderPipelineMaterial::TextureID {
+            PAINT_TEXTURE,
+        };
+
+        static RenderPipeline::MaterialLayout getLayout() {
+            RenderPipeline::MaterialLayout ret;
+            ret.properties[PAINT_COLOR] = rg::ShaderPrimitiveType::vec4();
+            ret.properties[PAINT_HAS_TEXTURE] = rg::ShaderPrimitiveType::Bool();
+            ret.properties[PAINT_MIX] = rg::ShaderPrimitiveType::vec4();
+            ret.properties[PAINT_MIX_COLOR] = rg::ShaderPrimitiveType::vec4();
+            ret.textures.insert(PAINT_TEXTURE);
             return ret;
         }
     };

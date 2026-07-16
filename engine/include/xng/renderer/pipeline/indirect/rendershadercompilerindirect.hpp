@@ -194,7 +194,7 @@ namespace xng {
 
         static constexpr auto materialBufferName = "_materialBuffer";
 
-        static constexpr auto materialAttributePrefix = "attribute_";
+        static constexpr auto materialPropertyPrefix = "property_";
 
         static constexpr auto materialTexturePrefix = "texture_";
 
@@ -220,9 +220,10 @@ namespace xng {
 
         static constexpr auto virtualMaxAnisotropyName = "_virtualMaxAnisotropy";
 
-        explicit RenderShaderCompilerIndirect(const RenderPipeline::MaterialAttributes &attributes,
+        explicit RenderShaderCompilerIndirect(rg::PipelineCache &cache,
+                                              const RenderPipeline::MaterialLayout &attributes,
                                               const LayoutStd140 &layout)
-            : attributes(attributes), layout(layout) {
+            : cache(cache), materialLayout(attributes), layout(layout) {
         }
 
         ~RenderShaderCompilerIndirect() override = default;
@@ -251,8 +252,8 @@ namespace xng {
             return rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::call("getModelViewProjection", {}));
         }
 
-        rg::ShaderOperand getMaterialAttribute(const RenderPipelineMaterial::AttributeID attr) override {
-            return rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::call("getMaterialAttribute"
+        rg::ShaderOperand getMaterialProperty(const RenderPipelineMaterial::PropertyID attr) override {
+            return rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::call("getMaterialProperty"
                     + std::to_string(attr), {}));
         }
 
@@ -269,32 +270,32 @@ namespace xng {
         std::shared_ptr<RenderShader> compile(const rg::RasterPipeline &pipeline,
                                               const std::vector<RenderShader::Attachment> &attachments,
                                               const std::unordered_set<VertexAttribute> &vertexAttributes,
-                                              const std::unordered_set<RenderPipelineMaterial::AttributeID> &
-                                              materialAttributes,
+                                              const std::unordered_set<RenderPipelineMaterial::PropertyID> &
+                                              accessedProperties,
                                               const std::unordered_set<RenderPipelineMaterial::TextureID> &
-                                              materialTextures) override {
+                                              accessedTextures) override {
             rg::RasterPipeline pip = pipeline;
             for (auto &shader: pip.shaders) {
                 ShaderScript::ShaderScope scope(shader.stage);
 
-                scope.addTypeDefinition(ShaderCamera::getShaderStructDef());
+                scope.addTypeDefinition(ShaderCamera::getShaderStructType());
                 scope.addBuffer(cameraBufferName,
                                 rg::ShaderBuffer(true,
                                                  false,
-                                                 ShaderCamera::getShaderStructDef().typeName));
+                                                 ShaderCamera::getShaderStructType().typeName));
 
                 scope.addBuffer(transformBufferName,
                                 rg::ShaderBuffer(true,
                                                  true,
                                                  rg::ShaderPrimitiveType::mat4()));
 
-                scope.addTypeDefinition(layout.getStructDef());
+                scope.addTypeDefinition(layout.getStructType());
                 scope.addBuffer(materialBufferName,
                                 rg::ShaderBuffer(true,
                                                  true,
-                                                 layout.getStructDef().typeName));
+                                                 layout.getStructType().typeName));
 
-                scope.addTypeDefinition(ShaderDrawCall::getShaderStructDef());
+                scope.addTypeDefinition(ShaderDrawCall::getShaderStructType());
                 scope.addBuffer(drawMeshBufferName,
                                 rg::ShaderBuffer(true,
                                                  true,
@@ -305,10 +306,10 @@ namespace xng {
                 compileGetView(scope);
                 compileGetProjection(scope);
                 compileGetModelViewProjection(scope);
-                for (auto &attr: materialAttributes) {
-                    compileGetMaterialAttribute(scope, attr, attributes.attributes.at(attr));
+                for (auto &attr: accessedProperties) {
+                    compileGetMaterialProperty(scope, attr, materialLayout.properties.at(attr));
                 }
-                for (auto &tex: materialTextures) {
+                for (auto &tex: accessedTextures) {
                     compileSampleMaterialTexture(scope, tex);
                 }
                 for (auto i = 0; i < attachments.size(); i++) {
@@ -382,7 +383,12 @@ namespace xng {
                     }
                 }
             }
-            return nullptr;
+            return std::make_shared<RenderShader>(cache,
+                                                  cache.create(pip),
+                                                  attachments,
+                                                  vertexAttributes,
+                                                  accessedProperties,
+                                                  accessedTextures);
         }
 
         static void compileGetCameraPosition(ShaderScript::ShaderScope &scope);
@@ -395,9 +401,9 @@ namespace xng {
 
         static void compileGetModelViewProjection(ShaderScript::ShaderScope &scope);
 
-        static void compileGetMaterialAttribute(ShaderScript::ShaderScope &scope,
-                                                RenderPipelineMaterial::AttributeID attr,
-                                                rg::ShaderPrimitiveType type);
+        static void compileGetMaterialProperty(ShaderScript::ShaderScope &scope,
+                                               RenderPipelineMaterial::PropertyID prop,
+                                               rg::ShaderPrimitiveType type);
 
         static void compileSampleMaterialTexture(ShaderScript::ShaderScope &scope,
                                                  RenderPipelineMaterial::TextureID tex);
@@ -407,7 +413,8 @@ namespace xng {
                                            const RenderShader::Attachment &attachment);
 
     private:
-        const RenderPipeline::MaterialAttributes &attributes;
+        rg::PipelineCache &cache;
+        const RenderPipeline::MaterialLayout &materialLayout;
         const LayoutStd140 &layout;
     };
 }

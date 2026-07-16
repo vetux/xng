@@ -32,10 +32,10 @@ namespace xng {
     public:
         RenderPipelineIndirect(rg::Heap &heap,
                                ChunkStreamer &chunkStreamer,
-                               MaterialAttributes _attributes)
+                               MaterialLayout _layout)
             : heap(heap),
-              attributes(std::move(_attributes)),
-              materialLayout(getMaterialLayout(attributes)),
+              layout(std::move(_layout)),
+              materialLayout(getMaterialLayout(layout)),
               materialStream(heap,
                              chunkStreamer,
                              materialLayout.getTotalSize()) {
@@ -43,7 +43,7 @@ namespace xng {
 
         ~RenderPipelineIndirect() override;
 
-        const MaterialAttributes &getMaterialAttributes() override;
+        const MaterialLayout &getMaterialLayout() override;
 
         RenderShaderCompiler &getCompiler() override;
 
@@ -88,11 +88,11 @@ namespace xng {
 
             ~RenderPipelineMaterialIndirect() override = default;
 
-            void setAttribute(AttributeID attribute, rg::ShaderPrimitive value) override;
+            void setProperty(PropertyID attribute, rg::ShaderPrimitive value) override;
 
             void setTexture(TextureID texture, RenderObjectHandle<RenderTexture> value) override;
 
-            const std::unordered_map<AttributeID, rg::ShaderPrimitiveType> &getAttributes() override;
+            const std::unordered_map<PropertyID, rg::ShaderPrimitiveType> &getAttributes() override;
 
             const std::unordered_set<TextureID> &getTextures() override;
 
@@ -128,12 +128,12 @@ namespace xng {
             std::vector<size_t> textureAccesses;
         };
 
-        static LayoutStd140 getMaterialLayout(const MaterialAttributes &attributes) {
+        static LayoutStd140 getMaterialLayout(const MaterialLayout &layout) {
             LayoutStd140 ret("ShaderMaterial");
-            for (auto &pair: attributes.attributes) {
+            for (auto &pair: layout.properties) {
                 ret.add("attr" + std::to_string(pair.first), pair.second);
             }
-            for (auto &texture: attributes.textures) {
+            for (auto &texture: layout.textures) {
                 RenderShaderCompilerIndirect::ShaderTexture::injectLayout(ret,
                                                                           RenderShaderCompilerIndirect::materialTexturePrefix
                                                                           + std::to_string(texture));
@@ -143,7 +143,7 @@ namespace xng {
 
         rg::Heap &heap;
 
-        const MaterialAttributes attributes;
+        const MaterialLayout layout;
 
         LayoutStd140 materialLayout;
         GenericBufferStreamer materialStream;

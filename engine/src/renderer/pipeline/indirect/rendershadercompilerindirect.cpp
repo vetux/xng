@@ -88,9 +88,9 @@ namespace xng {
         scope.addFunction(fScope.build());
     }
 
-    void RenderShaderCompilerIndirect::compileGetMaterialAttribute(
+    void RenderShaderCompilerIndirect::compileGetMaterialProperty(
         ShaderScope &scope,
-        RenderPipelineMaterial::AttributeID attr,
+        RenderPipelineMaterial::PropertyID prop,
         rg::ShaderPrimitiveType type
     ) {
         FunctionScope fScope("getMaterialAttribute");
@@ -102,7 +102,7 @@ namespace xng {
 
         auto material = materialBuffer[drawMesh["materialIndex"]];
 
-        const auto attributeName = std::string(materialAttributePrefix) + std::to_string(attr);
+        const auto attributeName = std::string(materialPropertyPrefix) + std::to_string(prop);
 
         fScope.setReturnType(rg::ShaderDataType(type));
         Return(material[attributeName.c_str()]);

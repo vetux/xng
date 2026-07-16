@@ -31,17 +31,17 @@ namespace xng {
      */
     class RenderPipelineMaterial {
     public:
-        typedef size_t AttributeID;
+        typedef size_t PropertyID;
 
         typedef size_t TextureID;
 
         virtual ~RenderPipelineMaterial() = default;
 
-        virtual void setAttribute(AttributeID attribute, rg::ShaderPrimitive value) = 0;
+        virtual void setProperty(PropertyID attribute, rg::ShaderPrimitive value) = 0;
 
         virtual void setTexture(TextureID texture, RenderObjectHandle<RenderTexture> value) = 0;
 
-        virtual const std::unordered_map<AttributeID, rg::ShaderPrimitiveType> &getAttributes() = 0;
+        virtual const std::unordered_map<PropertyID, rg::ShaderPrimitiveType> &getAttributes() = 0;
 
         virtual const std::unordered_set<TextureID> &getTextures() = 0;
     };

@@ -50,8 +50,8 @@ namespace xng {
     public:
         typedef std::variant<rg::Attachment, RenderObjectHandle<RenderTexture> > Attachment;
 
-        struct MaterialAttributes {
-            std::unordered_map<RenderPipelineMaterial::AttributeID, rg::ShaderPrimitiveType> attributes;
+        struct MaterialLayout {
+            std::unordered_map<RenderPipelineMaterial::PropertyID, rg::ShaderPrimitiveType> properties;
             std::unordered_set<RenderPipelineMaterial::TextureID> textures;
         };
 
@@ -66,9 +66,9 @@ namespace xng {
         virtual ~RenderPipeline() = default;
 
         /**
-         * @return The material attributes available in this pipeline.
+         * @return The material properties and textures available in this pipeline.
          */
-        virtual const MaterialAttributes &getMaterialAttributes();
+        virtual const MaterialLayout &getMaterialLayout();
 
         /**
          * @return The shader compiler for this pipeline.
