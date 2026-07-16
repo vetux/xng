@@ -29,8 +29,6 @@ namespace xng {
                  Vec4i, textureBacking_textureID_arrayLayer,
                  Vec4i, textureSize_maxMip,
                  Vec4i, minFilter_magFilter_mipFilter_wrap,
-                 Vec4f, mixColor,
-                 Vec4f, mix,
                  Vec4f, srcRect)
 
     class RenderTexture final : public RenderObject {
@@ -132,8 +130,6 @@ namespace xng {
                                                            properties.magFilter,
                                                            properties.mipFilter,
                                                            properties.wrapping);
-            ret.mixColor = properties.mixColor.divide();
-            ret.mix = properties.mix;
             ret.srcRect = Vec4f(properties.srcRect.position.x,
                                 properties.srcRect.position.y,
                                 properties.srcRect.dimensions.x,

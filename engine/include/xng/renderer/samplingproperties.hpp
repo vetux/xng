@@ -41,25 +41,18 @@ namespace xng {
 
         Rectf srcRect{};
 
-        ColorRGBA mixColor{};
-        Vec4f mix{};
-
         SamplingProperties() = default;
 
         SamplingProperties(const FilteringMethod minFilter,
                            const FilteringMethod magFilter,
                            const rg::TextureFiltering mipFilter,
                            const WrappingMethod wrapping,
-                           const Rectf &srcRect = {},
-                           const ColorRGBA &mixColor = {},
-                           const Vec4f &mix = {})
+                           const Rectf &srcRect = {})
             : minFilter(minFilter),
               magFilter(magFilter),
               mipFilter(mipFilter),
               wrapping(wrapping),
-              srcRect(srcRect),
-              mixColor(mixColor),
-              mix(mix) {
+              srcRect(srcRect) {
         }
     };
 }

@@ -19,7 +19,7 @@
 #ifndef XENGINE_BUFFERSTREAMER_HPP
 #define XENGINE_BUFFERSTREAMER_HPP
 
-#include "xng/renderer/stream/streambuffer.hpp"
+#include "xng/renderer/stream/genericbufferstreamer.hpp"
 
 namespace xng {
     /**
@@ -36,76 +36,39 @@ namespace xng {
         typedef unsigned int Slot;
 
         explicit BufferStreamer(rg::Heap &heap, ChunkStreamer &chunkStreamer)
-            : buffer(heap, chunkStreamer, rg::Buffer::CAPABILITY_STORAGE) {
+            : streamer(heap, chunkStreamer, sizeof(T)) {
         }
 
         Slot create() {
-            if (!freeSlots.empty()) {
-                const auto ret = freeSlots.back();
-                freeSlots.pop_back();
-                return ret;
-            }
-            return nextSlot++;
+            return streamer.create();
         }
 
-        void destroy(Slot slot) {
-            auto it = regions.find(slot);
-            if (it != regions.end()) {
-                buffer.release(it->second.handle);
-            }
-            regions.erase(slot);
-            freeSlots.push_back(slot);
+        void destroy(const Slot slot) {
+            return streamer.destroy(slot);
         }
 
         void upload(const Slot slot, const T &data) {
-            auto it = regions.find(slot);
-            if (it != regions.end()) {
-                buffer.release(it->second.handle);
-                regions.erase(slot);
-            }
-            const auto handle = buffer.upload(reinterpret_cast<const uint8_t *>(&data),
-                          sizeof(T),
-                          slot * sizeof(T));
-            regions.insert(std::pair(slot, Region{handle}));
+            return streamer.upload(slot, &data, sizeof(T));
         }
 
-        bool isUploadComplete(Slot slot) {
-            auto it = regions.find(slot);
-            if (it == regions.end()) return true;
-            return buffer.isUploadComplete(it->second.handle);
+        bool isUploadComplete(const Slot slot) {
+            return streamer.isUploadComplete(slot);
         }
 
-        void flush(Slot slot) {
-            auto it = regions.find(slot);
-            if (it == regions.end()) return;
-            auto &pendingUpload = it->second;
-            if (!pendingUpload.flushed) {
-                buffer.flush(pendingUpload.handle);
-                pendingUpload.flushed = true;
-            }
+        void flush(const Slot slot) {
+            return streamer.flush(slot);
         }
 
         std::vector<rg::TransferPass> commit(rg::GraphBuilder &graph) {
-            auto ret = buffer.commit(graph);
-            return ret;
+            return streamer.commit(graph);
         }
 
         rg::HeapResource<rg::Buffer> getBuffer() const {
-            return buffer.getBuffer();
+            return streamer.getBuffer();
         }
 
     private:
-        struct Region {
-            StreamBuffer::Handle handle;
-            bool flushed = false;
-        };
-
-        StreamBuffer buffer;
-
-        Slot nextSlot = 0;
-        std::vector<Slot> freeSlots;
-
-        std::unordered_map<Slot, Region> regions;
+        GenericBufferStreamer streamer;
     };
 }
 

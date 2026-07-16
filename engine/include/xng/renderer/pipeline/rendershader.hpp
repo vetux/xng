@@ -20,6 +20,7 @@
 #define XENGINE_RENDERSHADER_HPP
 
 #include "xng/rendergraph/pipelinecache.hpp"
+#include "xng/renderer/pipeline/renderpipelinematerial.hpp"
 
 namespace xng {
     /**
@@ -38,14 +39,6 @@ namespace xng {
      */
     class RenderShader {
     public:
-        typedef size_t InstanceAttributeID;
-
-        typedef size_t GlobalAttributeID;
-
-        typedef size_t ArrayID;
-
-        typedef size_t ArrayAttributeID;
-
         struct Attachment {
             enum Type : int {
                 ATTACHMENT_NATIVE = 0, // rg::Attachment
@@ -59,16 +52,12 @@ namespace xng {
                      const rg::PipelineCache::Handle pipeline,
                      std::vector<Attachment> _attachments,
                      std::unordered_set<VertexAttribute> _vertexAttributes,
-                     std::unordered_set<InstanceAttributeID> _instanceAttributes,
-                     std::unordered_set<GlobalAttributeID> _globalAttributes,
-                     std::unordered_set<ArrayID> _indexedAttributes)
+                     std::unordered_set<RenderPipelineMaterial::AttributeID> _materialAttributes)
             : cache(cache),
               pipeline(pipeline),
               attachments(std::move(_attachments)),
               vertexAttributes(std::move(_vertexAttributes)),
-              instanceAttributes(std::move(_instanceAttributes)),
-              globalAttributes(std::move(_globalAttributes)),
-              indexedAttributes(std::move(_indexedAttributes)) {
+              materialAttributes(std::move(_materialAttributes)) {
         }
 
         ~RenderShader() {
@@ -81,11 +70,8 @@ namespace xng {
 
         std::vector<Attachment> attachments;
 
-        std::unordered_set<VertexAttribute> vertexAttributes;
-
-        std::unordered_set<InstanceAttributeID> instanceAttributes;
-        std::unordered_set<GlobalAttributeID> globalAttributes;
-        std::unordered_set<ArrayID> indexedAttributes;
+        std::unordered_set<VertexAttribute> vertexAttributes{};
+        std::unordered_set<RenderPipelineMaterial::AttributeID> materialAttributes{};
     };
 }
 

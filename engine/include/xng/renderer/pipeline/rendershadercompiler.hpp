@@ -37,17 +37,17 @@ namespace xng {
          * @param attr
          * @return
          */
-        virtual rg::ShaderInstruction getVertexAttribute(VertexAttribute attr) = 0;
+        virtual rg::ShaderOperand getVertexAttribute(VertexAttribute attr) = 0;
 
-        virtual rg::ShaderInstruction getCameraPosition() = 0;
+        virtual rg::ShaderOperand getCameraPosition() = 0;
 
-        virtual rg::ShaderInstruction getModel() = 0;
+        virtual rg::ShaderOperand getModel() = 0;
 
-        virtual rg::ShaderInstruction getView() = 0;
+        virtual rg::ShaderOperand getView() = 0;
 
-        virtual rg::ShaderInstruction getProjection() = 0;
+        virtual rg::ShaderOperand getProjection() = 0;
 
-        virtual rg::ShaderInstruction getModelViewProjection() = 0;
+        virtual rg::ShaderOperand getModelViewProjection() = 0;
 
         /**
          * Retrieve instance attribute value.
@@ -55,21 +55,7 @@ namespace xng {
          * @param attr
          * @return
          */
-        virtual rg::ShaderInstruction getInstanceAttribute(RenderShader::InstanceAttributeID attr) = 0;
-
-        /**
-         * Retrieve global attribute value.
-         *
-         * @param attr
-         * @return
-         */
-        virtual rg::ShaderInstruction getGlobalAttribute(RenderShader::GlobalAttributeID attr) = 0;
-
-        virtual rg::ShaderInstruction getArrayLength(RenderShader::ArrayID array) = 0;
-
-        virtual rg::ShaderInstruction getArrayAttribute(RenderShader::ArrayID array,
-                                                        RenderShader::ArrayAttributeID attr,
-                                                        const rg::ShaderInstruction &index) = 0;
+        virtual rg::ShaderOperand getMaterialAttribute(RenderPipelineMaterial::AttributeID attr) = 0;
 
         /**
          * Write the specified color value to the specified attachment.
@@ -80,7 +66,7 @@ namespace xng {
          * @param color
          * @return
          */
-        virtual rg::ShaderInstruction writeAttachment(unsigned int index, const rg::ShaderInstruction &color) = 0;
+        virtual rg::ShaderInstruction writeAttachment(unsigned int index, const rg::ShaderOperand &color) = 0;
 
         /**
          * Inject the pipeline dependent required bindings, parameters, functions and vertex layout into the passed shaders.
@@ -90,19 +76,13 @@ namespace xng {
          * @param pipeline The pipeline containing the shader stages and pipeline configuration. Attachments and vertex layout are overridden.
          * @param attachments The format of the attachments.
          * @param vertexAttributes The set of accessed vertex attributes.
-         * @param instanceAttributes The set of accessed attributes.
-         * @param globalAttributes
-         * @param indexedAttributes
+         * @param materialAttributes The set of accessed material attributes.
          */
         virtual std::shared_ptr<RenderShader> compile(const rg::RasterPipeline &pipeline,
                                                       const std::vector<RenderShader::Attachment> &attachments,
                                                       const std::unordered_set<VertexAttribute> &vertexAttributes,
-                                                      const std::unordered_set<RenderShader::InstanceAttributeID> &
-                                                      instanceAttributes,
-                                                      const std::unordered_set<RenderShader::GlobalAttributeID> &
-                                                      globalAttributes,
-                                                      const std::unordered_set<RenderShader::ArrayID> &
-                                                      indexedAttributes) = 0;
+                                                      const std::unordered_set<RenderPipelineMaterial::AttributeID> &
+                                                      materialAttributes) = 0;
     };
 }
 

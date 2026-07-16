@@ -19,7 +19,7 @@
 #ifndef XENGINE_RENDERSHADERBUILDER_HPP
 #define XENGINE_RENDERSHADERBUILDER_HPP
 
-#include "rendershadercompiler.hpp"
+#include "xng/renderer/pipeline/rendershadercompiler.hpp"
 
 namespace xng {
     class RenderShaderBuilder {
@@ -30,28 +30,17 @@ namespace xng {
               attachments(std::move(attachments)) {
         }
 
-        rg::ShaderInstruction getVertexAttribute(const VertexAttribute attr) {
+        rg::ShaderOperand getVertexAttribute(const VertexAttribute attr) {
             vertexAttributes.insert(attr);
             return compiler.getVertexAttribute(attr);
         }
 
-        rg::ShaderInstruction getInstanceAttribute(const RenderShader::InstanceAttribute attr) {
-            instanceAttributes.insert(attr);
-            return compiler.getInstanceAttribute(attr);
+        rg::ShaderOperand getMaterialAttribute(const RenderPipelineMaterial::AttributeID attr) {
+            materialAttributes.insert(attr);
+            return compiler.getMaterialAttribute(attr);
         }
 
-        rg::ShaderInstruction getGlobalAttribute(const RenderShader::GlobalAttribute attr) {
-            globalAttributes.insert(attr);
-            return compiler.getGlobalAttribute(attr);
-        }
-
-        rg::ShaderInstruction getIndexedAttribute(const RenderShader::IndexedAttribute attr,
-                                                  const rg::ShaderInstruction &index) {
-            indexedAttributes.insert(attr);
-            return compiler.getIndexedAttribute(attr, index);
-        }
-
-        rg::ShaderInstruction writeAttachment(const unsigned int index, const rg::ShaderInstruction &color) const {
+        rg::ShaderInstruction writeAttachment(const unsigned int index, const rg::ShaderOperand &color) const {
             return compiler.writeAttachment(index, color);
         }
 
@@ -59,18 +48,14 @@ namespace xng {
             return compiler.compile(pipeline,
                                     attachments,
                                     vertexAttributes,
-                                    instanceAttributes,
-                                    globalAttributes,
-                                    indexedAttributes);
+                                    materialAttributes);
         }
 
     private:
         RenderShaderCompiler &compiler;
         std::vector<RenderShader::Attachment> attachments;
         std::unordered_set<VertexAttribute> vertexAttributes;
-        std::unordered_set<RenderShader::InstanceAttribute> instanceAttributes;
-        std::unordered_set<RenderShader::GlobalAttribute> globalAttributes;
-        std::unordered_set<RenderShader::IndexedAttribute> indexedAttributes;
+        std::unordered_set<RenderPipelineMaterial::AttributeID> materialAttributes;
     };
 }
 

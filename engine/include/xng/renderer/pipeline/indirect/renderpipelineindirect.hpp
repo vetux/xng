@@ -20,50 +20,86 @@
 #define XENGINE_RENDERPIPELINEINDIRECT_HPP
 
 #include "xng/renderer/pipeline/renderpipeline.hpp"
-
 #include "xng/renderer/pipeline/indirect/rendershadercompilerindirect.hpp"
+
+#include "xng/renderer/stream/bufferstreamer.hpp"
+#include "xng/shaderscript/objectstd140.hpp"
 
 namespace xng {
     class RenderPipelineIndirect final : public RenderPipeline {
     public:
-        explicit RenderPipelineIndirect(rg::Heap &heap);
+        RenderPipelineIndirect(rg::Heap &heap,
+                               ChunkStreamer &chunkStreamer,
+                               MaterialAttributes _attributes)
+            : heap(heap),
+              attributes(std::move(_attributes)),
+              materialLayout(getMaterialLayout(attributes)),
+              materialStream(heap,
+                             chunkStreamer,
+                             materialLayout.getTotalSize()) {
+        }
 
         ~RenderPipelineIndirect() override;
 
-        DrawID addDrawCall(const RenderObjectHandle<RenderTransform> &transform,
-                           const RenderObjectHandle<RenderMaterial> &material,
-                           const std::vector<RenderObjectHandle<RenderMesh> > &meshes,
-                           bool receiveShadows,
+        const MaterialAttributes &getMaterialAttributes() override;
+
+        RenderShaderCompiler &getCompiler() override;
+
+        std::shared_ptr<RenderPipelineTransform> createTransform() override;
+
+        std::shared_ptr<RenderPipelineMaterial> createMaterial() override;
+
+        DrawID addDrawCall(std::shared_ptr<RenderPipelineTransform> transform,
+                           std::shared_ptr<RenderPipelineMaterial> instanceAttributes,
+                           const std::vector<RenderObjectHandle<RenderMesh> > &mesh,
                            int sortPriority) override;
 
         void removeDrawCall(DrawID id) override;
 
-        void setPointLights(const std::vector<RenderObjectHandle<RenderPointLight> > &lights) override;
-
-        void setDirectionalLights(const std::vector<RenderObjectHandle<RenderDirectionalLight> > &lights) override;
-
-        void setSpotLights(const std::vector<RenderObjectHandle<RenderSpotLight> > &lights) override;
-
         void setCamera(const Vec3f &position, const Mat4f &view, const Mat4f &projection) override;
-
-        void setGamma(float gamma) override;
 
         void setEnableDistanceSort(bool enable) override;
 
-        void prepare(rg::Graph &graph) override;
+        void prepare(rg::GraphBuilder &graph) override;
 
-        void execute(rg::Graph &graph,
+        void execute(rg::GraphBuilder &graph,
                      const RenderShader &shader,
+                     const Recti &viewport,
                      std::vector<Attachment> attachments,
                      std::unordered_map<std::string, rg::ShaderPrimitive> parameters,
                      std::unordered_map<std::string, BufferBinding> storageBuffers,
                      std::unordered_map<std::string, std::vector<rg::TextureBinding> > textureArrays) override;
 
     private:
-        ShaderStruct(ShaderDrawCall,
-                     unsigned int, transformIndex,
-                     unsigned int, materialIndex,
-                     Vec4i, receiveShadows)
+        class RenderPipelineTransformIndirect final : public RenderPipelineTransform {
+        public:
+            ~RenderPipelineTransformIndirect() override;
+
+            void setTransform(const Transform &t) override;
+        };
+
+        class RenderPipelineMaterialIndirect final : public RenderPipelineMaterial {
+        public:
+            RenderPipelineMaterialIndirect(const LayoutStd140 &layout)
+                : object(layout) {
+            }
+
+            ~RenderPipelineMaterialIndirect() override = default;
+
+            void setValue(AttributeID attribute, RenderObjectHandle<RenderTexture> texture) override;
+
+            void setValue(AttributeID attribute, rg::ShaderPrimitive value) override;
+
+            const std::unordered_map<AttributeID, AttributeType> &getAttributes() override;
+
+        private:
+            ObjectStd140 object;
+        };
+
+        struct DrawLocation {
+            int sortPriority;
+            BufferStreamer<RenderShaderCompilerIndirect::ShaderDrawCall::CPU>::Slot slot;
+        };
 
         struct BufferAccessRange {
             size_t offset;
@@ -71,7 +107,7 @@ namespace xng {
         };
 
         struct DrawList {
-            BufferStreamer<ShaderDrawCall> drawCallBuffer;
+            BufferStreamer<RenderShaderCompilerIndirect::ShaderDrawCall::CPU> drawCallBuffer;
 
             rg::HeapResource<rg::Buffer> indirectBuffer;
             size_t indirectBufferOffset;
@@ -88,10 +124,29 @@ namespace xng {
             std::vector<size_t> textureAccesses;
         };
 
+        static LayoutStd140 getMaterialLayout(const MaterialAttributes &attributes) {
+            LayoutStd140 ret;
+            for (auto &pair: attributes) {
+                if (pair.second.type == RenderPipelineMaterial::AttributeType::ATTRIBUTE_PRIMITIVE) {
+                    ret.add("attr" + std::to_string(pair.first), pair.second.primitiveType);
+                } else {
+                    addTexture("attr" + std::to_string(pair.first), ret);
+                }
+            }
+            return ret;
+        }
+
         rg::Heap &heap;
 
+        const MaterialAttributes attributes;
+
+        LayoutStd140 materialLayout;
+        GenericBufferStreamer materialStream;
+
         // Per sortPriority draw lists which are drawn in order and each draw list is additionally sorted in prepass based on camera distance.
-        std::map<int, DrawList> drawLists;
+        std::map<int, DrawList> drawLists{};
+
+        std::unordered_map<DrawID, DrawLocation> drawLocations{};
     };
 }
 

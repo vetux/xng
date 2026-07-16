@@ -20,34 +20,40 @@
 #define XENGINE_RENDERPIPELINE_HPP
 
 #include "xng/renderer/objects/rendertexture.hpp"
-#include "xng/renderer/objects/renderpointlight.hpp"
-#include "xng/renderer/objects/renderdirectionallight.hpp"
-#include "xng/renderer/objects/renderspotlight.hpp"
 #include "xng/renderer/objects/rendermesh.hpp"
-#include "xng/renderer/objects/rendertransform.hpp"
-#include "xng/renderer/objects/rendermaterial.hpp"
 
 #include "xng/renderer/pipeline/rendershadercompiler.hpp"
+#include "xng/renderer/pipeline/renderpipelinematerial.hpp"
+#include "xng/renderer/pipeline/renderpipelinetransform.hpp"
 
 namespace xng {
     /**
-     * The RenderPipeline represents the rendering technique for RenderObjects.
-     * This allows swapping the rendering technique at runtime (E.g. No Indirect draw on mobile platforms)
+     * The RenderPipeline defines a fixed-function-like pipeline interface for drawing high-level objects.
      *
-     * Each pipeline manages persistent state such as indirect draw buffers, shader storage buffers, etc.
+     * The pipeline internally automates instancing based on mesh references and may perform more advanced drawing
+     * techniques such as indirect drawing where the pipeline will never iterate the draws on cpu.
      *
-     * The renderer transforms / directs user-supplied render objects to the appropriate pipeline.
+     * The pipeline handles culling and optionally distance-based sorting.
      *
-     * Ideally, with indirect draw the cpu only iterates batches and never models.
+     * It will for now have 2 implementations:
+     * - High-performance indirect gpu-driven implementation
+     * - Array / instanced-based implementation for platforms where indirect draw is not available / stable.
      *
-     * The pipeline also must handle draw call sorting internally based on sort priority and distance to the camera.
+     * Materials define the data available per draw instance and are dynamically configurable at runtime,
+     * which allows users to write shaders against custom material data while still using the full optimized
+     * batched render path.
      *
-     * Essentially, the RenderPipeline interface extends the concept of a pipeline in the RenderGraph (Which represents
-     * a hardware pipeline) to the full render path from scene to shader.
+     * Users can bind other global data via custom bindings such as light arrays or global configuration data like gamma
+     * the pipeline only manages the link between materials and meshes.
      */
     class RenderPipeline {
     public:
         typedef std::variant<rg::Attachment, RenderObjectHandle<RenderTexture> > Attachment;
+
+        typedef std::unordered_map<
+            RenderPipelineMaterial::AttributeID,
+            RenderPipelineMaterial::AttributeType
+        > MaterialAttributes;
 
         struct BufferBinding {
             rg::Resource<rg::Buffer> buffer;
@@ -55,67 +61,32 @@ namespace xng {
             size_t size{};
         };
 
-        // Each attribute is either a RenderTexture object or a primitive
-        typedef std::variant<RenderObjectHandle<RenderTexture>, rg::ShaderPrimitive> AttributeValue;
-
-        struct Attribute {
-            std::optional<rg::ShaderPrimitiveType> type;
-        };
-
-        struct ArrayAttribute {
-            std::unordered_map<RenderShader::ArrayAttributeID, Attribute> attributes;
-        };
-
-        // Each pipeline instance configures a single set of available attributes
-        // All global attributes are grouped in one ssbo or parameters
-        // One struct containing all indexed attributes
-        // For instance attributes user creates persistent and pass handle in draw but problem is transform
-        // But transform is also needed in prepass for culling and sorting so cant be abstracted
-        struct Attributes {
-            std::unordered_map<RenderShader::InstanceAttributeID, Attribute> instanceAttributeTypes;
-            std::unordered_map<RenderShader::GlobalAttributeID, Attribute> globalAttributesTypes;
-            std::unordered_map<RenderShader::ArrayID, ArrayAttribute> arrayAttributeTypes;
-        };
-
-        class InstanceAttributes {
-        public:
-            virtual ~InstanceAttributes() = default;
-
-            virtual void setValue(RenderShader::InstanceAttributeID attribute, AttributeValue value);
-        };
-
-        class Transform {
-        public:
-            virtual ~Transform() = default;
-
-            virtual void setTransform(const Mat4f &mat) = 0;
-        };
-
         typedef size_t DrawID;
 
         virtual ~RenderPipeline() = default;
 
+        /**
+         * @return The material attributes available in this pipeline.
+         */
+        virtual const MaterialAttributes &getMaterialAttributes();
+
+        /**
+         * @return The shader compiler for this pipeline.
+         */
         virtual RenderShaderCompiler &getCompiler();
 
-        virtual std::shared_ptr<Transform> createTransform();
+        virtual std::shared_ptr<RenderPipelineTransform> createTransform();
 
-        virtual std::shared_ptr<InstanceAttributes> createInstanceAttributes(
-            std::unordered_map<RenderShader::InstanceAttributeID, AttributeValue> values);
+        virtual std::shared_ptr<RenderPipelineMaterial> createMaterial();
 
-        virtual void setGlobalAttribute(RenderShader::GlobalAttributeID attr, AttributeValue value);
+        virtual void setCamera(const Vec3f &position, const Mat4f &view, const Mat4f &projection) = 0;
 
-        virtual void setArrayAttribute(RenderShader::ArrayID array,
-                                       std::vector<std::unordered_map<RenderShader::ArrayAttributeID, AttributeValue> >
-                                       values);
-
-        virtual DrawID addDrawCall(std::shared_ptr<Transform> transform,
-                                   std::shared_ptr<InstanceAttributes> instanceAttributes,
-                                   RenderObjectHandle<RenderMesh> mesh,
+        virtual DrawID addDrawCall(std::shared_ptr<RenderPipelineTransform> transform,
+                                   std::shared_ptr<RenderPipelineMaterial> material,
+                                   const std::vector<RenderObjectHandle<RenderMesh> > &meshes,
                                    int sortPriority);
 
         virtual void removeDrawCall(DrawID id) = 0;
-
-        virtual void setCamera(const Vec3f &position, const Mat4f &view, const Mat4f &projection) = 0;
 
         /**
          * The pipeline will sort draw calls by distance to the camera for draw calls with identical sortPriority when enabled.
@@ -138,6 +109,7 @@ namespace xng {
          *
          * @param graph The graph to record the draw invocations into.
          * @param shader The shader to use for drawing.
+         * @param viewport The viewport to set.
          * @param attachments The Attachments to bind. (Type / Format must match the format in the shader)
          * @param parameters Optional user-supplied shader parameters.
          * @param storageBuffers Optional user-supplied storage buffer bindings.
@@ -145,6 +117,7 @@ namespace xng {
          */
         virtual void execute(rg::GraphBuilder &graph,
                              const RenderShader &shader,
+                             const Recti &viewport,
                              std::vector<Attachment> attachments,
                              std::unordered_map<std::string, rg::ShaderPrimitive> parameters,
                              std::unordered_map<std::string, BufferBinding> storageBuffers,
