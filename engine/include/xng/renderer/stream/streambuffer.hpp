@@ -130,7 +130,7 @@ namespace xng {
             // With this model the graphics queue will never wait on the transfer queue at the cost of the overhead
             // of copying the finished chunks from backBuffer to buffer. However, this copy can be overlapped
             // with other operations on the graphics queue because the runtime can use range granular pipeline barriers
-            // because the copy is intra queue.
+            // as the copy happens completely intra queue.
 
             if (buffer.getDescription().size != bufferSize) {
                 const auto staleBuffer = buffer;
