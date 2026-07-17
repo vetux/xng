@@ -48,7 +48,7 @@ namespace xng {
         }
 
         void upload(const Slot slot, const T &data) {
-            return streamer.upload(slot, &data, sizeof(T));
+            return streamer.upload(slot, reinterpret_cast<const uint8_t *>(&data), sizeof(T));
         }
 
         bool isUploadComplete(const Slot slot) {
