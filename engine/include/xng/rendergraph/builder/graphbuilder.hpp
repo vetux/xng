@@ -54,18 +54,18 @@ namespace xng::rg {
             return ret;
         }
 
-        GraphBuilder &addPass(const TransferPass &pass) {
-            passes.emplace_back(pass);
+        GraphBuilder &addPass(TransferPass pass) {
+            passes.emplace_back(std::move(pass));
             return *this;
         }
 
-        GraphBuilder &addPass(const RenderPass &pass) {
-            passes.emplace_back(pass);
+        GraphBuilder &addPass(RenderPass pass) {
+            passes.emplace_back(std::move(pass));
             return *this;
         }
 
-        GraphBuilder &addPass(const ComputePass &pass) {
-            passes.emplace_back(pass);
+        GraphBuilder &addPass(ComputePass pass) {
+            passes.emplace_back(std::move(pass));
             return *this;
         }
 
