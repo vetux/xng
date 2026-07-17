@@ -53,8 +53,6 @@ namespace xng::rg {
         virtual std::shared_ptr<Surface> createSurface(std::shared_ptr<Window> window, size_t swapCount) = 0;
 
         /**
-         * Destroying a heap resource currently referenced by a compiled graph is forbidden.
-         *
          * @return The resource heap.
          */
         virtual Heap &getResourceHeap() = 0;
@@ -83,6 +81,8 @@ namespace xng::rg {
          *
          * Passes run in parallel where possible, and executions may overlap.
          *
+         * Heap Resources referenced in the graph are internally pinned until the graph finished execution.
+         *
          * The runtime guarantees resource access synchronization correctness at all times based on
          * graph ordering rules and execute() invocation order.
          *
@@ -107,6 +107,8 @@ namespace xng::rg {
          *
          * Graphs may cross-reference heap resources in which case the graph order defines the semantic execution order
          * and the runtime inserts barriers where needed for synchronization correctness.
+         *
+         * Heap Resources referenced in the graphs are internally pinned until the graphs finished execution.
          *
          * Passes run in parallel where possible, and executions may overlap.
          *
