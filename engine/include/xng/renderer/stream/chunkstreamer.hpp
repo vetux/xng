@@ -33,14 +33,14 @@ namespace xng {
     /**
      * There should only be one instance of a chunk streamer shared among all streamers.
      *
-     * chunkSize * pinnedChunks is the expected streaming budget.
+     * chunkSize * chunkCount is the expected streaming budget.
      * The budget is never exceeded without flushing.
      *
      * Flushed uploads can cause the chunk streamer to allocate new chunks and exceed the streaming budget.
      *
      * This allows hard flushes at the cost of dynamic allocation of staging buffers on budget overflow.
      *
-     * A large chunkSize means bigger staging buffer allocations if a flushed upload requires new chunks beyond pinnedChunks.
+     * A large chunkSize means bigger chunk buffer allocations if a flushed upload requires new chunks beyond pinnedChunks.
      * A small chunkSize means more copy commands per upload but more granular streaming priority because the
      * non⁻flushed transfers from previous frames may complete faster and become available for flushed transfers.
      *
@@ -49,9 +49,20 @@ namespace xng {
      * and from back buffers to the target buffer.
      *
      * A chunk flows like so:
-     * RAM -> Staging Buffer -> Chunk Buffer -> Target Buffer
      *
-     * The chunk buffers are per chunk and allow the graphics queue to copy the streamed data without stalling on
+     * RAM -> Staging Buffer
+     *  - Cpu Copy into driver managed memory
+     *
+     * Staging Buffer -> Back Buffer
+     *  - Hardware Copy in transfer context (Dedicated Transfer Queue on vulkan)
+     *
+     * Back Buffer -> Target Buffer
+     *  - Hardware Copy in render context (Dedicated Graphics Queue on vulkan)
+     *      The Graphics queue submission will here wait on a semaphore signaled by the Staging -> BackBuffer copy and
+     *      perform the ownership transfer. As this copy is only ever started once the Staging -> BackBuffer copy has
+     *      finished (Except Flushed uploads) there is no stall on the graphics queue.
+     *
+     * Each chunk gets their own back buffer and thus allows the graphics queue to copy the streamed data without stalling on
      * in flight uploads.
      *
      * TODO: Implement ChunkStreamer upload priorities
