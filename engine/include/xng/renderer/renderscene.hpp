@@ -21,7 +21,7 @@
 
 #include "xng/renderer/objects/rendertransform.hpp"
 #include "xng/renderer/objects/rendermaterial.hpp"
-#include "xng/renderer/objects/rendermesh.hpp"
+#include "rendermesh.hpp"
 
 #include "xng/renderer/pipeline/renderpipeline.hpp"
 

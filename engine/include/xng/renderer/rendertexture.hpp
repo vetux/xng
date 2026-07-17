@@ -19,7 +19,6 @@
 #ifndef XENGINE_RENDERTEXTURE_HPP
 #define XENGINE_RENDERTEXTURE_HPP
 
-#include "xng/renderer/renderobject.hpp"
 #include "xng/renderer/virtualtexture/imagetileloader.hpp"
 #include "xng/renderer/virtualtexture/virtualtexturestreamer.hpp"
 #include "xng/shaderscript/macro/shaderstruct.hpp"
@@ -31,7 +30,7 @@ namespace xng {
                  Vec4i, minFilter_magFilter_mipFilter_wrap,
                  Vec4f, srcRect)
 
-    class RenderTexture final : public RenderObject {
+    class RenderTexture final {
     public:
         //TODO: Multiple backing techniques for textures
         enum TextureBacking : int {
@@ -45,13 +44,11 @@ namespace xng {
             TEXTURE_BACKING_TEXTURE,
         };
 
-        RenderTexture(const Id id,
-                      VirtualTextureStreamer &textureStreamer,
+        RenderTexture(VirtualTextureStreamer &textureStreamer,
                       rg::Heap &heap,
                       const ImageRGBA &image,
                       const WrappingMethod wrapping = WRAP_REPEAT)
-            : RenderObject(OBJECT_TEXTURE, id),
-              backing(TEXTURE_BACKING_VIRTUAL_TEXTURE),
+            : backing(TEXTURE_BACKING_VIRTUAL_TEXTURE),
               textureStreamer(textureStreamer) {
             size = image.getResolution().convert<int>();
             maxMip = rg::Texture::calculateMipLevels(image.getResolution()) - 1;
@@ -63,14 +60,12 @@ namespace xng {
                 heap));
         }
 
-        RenderTexture(const Id id,
-                      VirtualTextureStreamer &textureStreamer,
+        RenderTexture(VirtualTextureStreamer &textureStreamer,
                       rg::Heap &heap,
                       const ImageRGBA &image,
                       const WrappingMethod wrapping,
                       const unsigned int mipLevels)
-            : RenderObject(OBJECT_TEXTURE, id),
-              backing(TEXTURE_BACKING_VIRTUAL_TEXTURE),
+            : backing(TEXTURE_BACKING_VIRTUAL_TEXTURE),
               textureStreamer(textureStreamer),
               maxMip(mipLevels - 1) {
             size = image.getResolution().convert<int>();
@@ -82,18 +77,16 @@ namespace xng {
                 heap));
         }
 
-        RenderTexture(const Id id,
-                      VirtualTextureStreamer &textureStreamer,
+        RenderTexture(VirtualTextureStreamer &textureStreamer,
                       const std::shared_ptr<TileLoader> &tileLoader)
-            : RenderObject(OBJECT_TEXTURE, id),
-              backing(TEXTURE_BACKING_VIRTUAL_TEXTURE),
+            : backing(TEXTURE_BACKING_VIRTUAL_TEXTURE),
               textureStreamer(textureStreamer) {
             size = tileLoader->getSize().convert<int>();
             maxMip = tileLoader->getMipLevels() - 1;
             textureHandle = textureStreamer.create(tileLoader);
         }
 
-        ~RenderTexture() override {
+        ~RenderTexture() {
             textureStreamer.destroy(textureHandle);
         }
 
@@ -101,11 +94,8 @@ namespace xng {
             return textureHandle;
         }
 
-        bool isUploadComplete() override {
+        bool isUploadComplete() {
             return textureStreamer.isUploadComplete(textureHandle);
-        }
-
-        void flush() override {
         }
 
         Vec2i getSize() const {

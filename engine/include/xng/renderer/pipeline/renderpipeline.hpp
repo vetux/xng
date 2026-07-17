@@ -19,8 +19,8 @@
 #ifndef XENGINE_RENDERPIPELINE_HPP
 #define XENGINE_RENDERPIPELINE_HPP
 
-#include "xng/renderer/objects/rendertexture.hpp"
-#include "xng/renderer/objects/rendermesh.hpp"
+#include "xng/renderer/rendertexture.hpp"
+#include "xng/renderer/rendermesh.hpp"
 
 #include "xng/renderer/pipeline/rendershadercompiler.hpp"
 #include "xng/renderer/pipeline/renderpipelinematerial.hpp"
@@ -48,7 +48,7 @@ namespace xng {
      */
     class RenderPipeline {
     public:
-        typedef std::variant<rg::Attachment, RenderObjectHandle<RenderTexture> > Attachment;
+        typedef std::variant<rg::Attachment, std::shared_ptr<RenderTexture> > Attachment;
 
         struct MaterialLayout {
             std::unordered_map<RenderPipelineMaterial::PropertyID, rg::ShaderPrimitiveType> properties;
@@ -81,7 +81,7 @@ namespace xng {
 
         virtual DrawID addDrawCall(std::shared_ptr<RenderPipelineTransform> transform,
                                    std::shared_ptr<RenderPipelineMaterial> material,
-                                   const std::vector<RenderObjectHandle<RenderMesh> > &meshes,
+                                   const std::vector<std::shared_ptr<RenderMesh> > &meshes,
                                    int sortPriority);
 
         virtual void removeDrawCall(DrawID id) = 0;

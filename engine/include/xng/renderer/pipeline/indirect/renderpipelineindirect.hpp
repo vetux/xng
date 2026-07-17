@@ -53,7 +53,7 @@ namespace xng {
 
         DrawID addDrawCall(std::shared_ptr<RenderPipelineTransform> transform,
                            std::shared_ptr<RenderPipelineMaterial> material,
-                           const std::vector<RenderObjectHandle<RenderMesh> > &mesh,
+                           const std::vector<std::shared_ptr<RenderMesh> > &mesh,
                            int sortPriority) override;
 
         void removeDrawCall(DrawID id) override;
@@ -75,14 +75,29 @@ namespace xng {
     private:
         class RenderPipelineTransformIndirect final : public RenderPipelineTransform {
         public:
-            ~RenderPipelineTransformIndirect() override;
+            RenderPipelineTransformIndirect(BufferStreamer<Mat4f> &buffer,
+                                            const BufferStreamer<Mat4f>::Slot slot)
+                : buffer(buffer), slot(slot) {
+            }
 
-            void setTransform(const Transform &t) override;
+            ~RenderPipelineTransformIndirect() override {
+                buffer.destroy(slot);
+            }
+
+            void setTransform(const Transform &t) override {
+                buffer.upload(slot, t.model());
+            }
+
+        private:
+            BufferStreamer<Mat4f> &buffer;
+            BufferStreamer<Mat4f>::Slot slot;
         };
 
         class RenderPipelineMaterialIndirect final : public RenderPipelineMaterial {
         public:
-            explicit RenderPipelineMaterialIndirect(const LayoutStd140 &layout)
+            explicit RenderPipelineMaterialIndirect(GenericBufferStreamer &buffer,
+                                                    const GenericBufferStreamer::Slot slot,
+                                                    const LayoutStd140 &layout)
                 : object(layout) {
             }
 
@@ -90,14 +105,16 @@ namespace xng {
 
             void setProperty(PropertyID attribute, rg::ShaderPrimitive value) override;
 
-            void setTexture(TextureID texture, RenderObjectHandle<RenderTexture> value) override;
+            void setTexture(TextureID texture, std::shared_ptr<RenderTexture> value) override;
 
-            const std::unordered_map<PropertyID, rg::ShaderPrimitiveType> &getAttributes() override;
+            const std::unordered_map<PropertyID, rg::ShaderPrimitiveType> &getProperties() override;
 
             const std::unordered_set<TextureID> &getTextures() override;
 
         private:
             ObjectStd140 object;
+            GenericBufferStreamer &buffer;
+            GenericBufferStreamer::Slot slot;
         };
 
         struct DrawLocation {
@@ -147,6 +164,8 @@ namespace xng {
 
         LayoutStd140 materialLayout;
         GenericBufferStreamer materialStream;
+
+        BufferStreamer<Mat4f> transformBuffer;
 
         // Per sortPriority draw lists which are drawn in order and each draw list is additionally sorted in prepass based on camera distance.
         std::map<int, DrawList> drawLists{};

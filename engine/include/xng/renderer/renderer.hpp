@@ -48,8 +48,6 @@ namespace xng {
                  const rg::Shader &skinningShader,
                  const rg::Shader &scenePrepassShader);
 
-        RenderAllocator &getAllocator();
-
         std::shared_ptr<RenderScene> createScene();
 
         void setPasses(std::vector<std::shared_ptr<RenderPass> > passes);
@@ -60,27 +58,18 @@ namespace xng {
 
     private:
         static constexpr int skinningLocalSize = 64;
-        static constexpr int prePassLocalSize = 256;
 
-        rg::ComputePass recordSkinningPass(const RenderDrawList &drawList,
-                                           const RenderAllocator::Buffers &buffers) const;
-
-        rg::ComputePass recordScenePrePass(rg::GraphBuilder &graphBuilder,
-                                           rg::Heap &heap,
-                                           const RenderDrawList &drawList,
-                                           const RenderAllocator::Buffers &buffers,
-                                           RenderScene &scene);
+        rg::ComputePass recordSkinningPass(const RenderScene &scene) const;
 
         rg::Runtime &runtime;
-        RenderAllocator allocator;
         std::vector<std::shared_ptr<RenderPass> > passes;
 
         rg::PipelineCache::Handle skinningPipeline;
-        rg::PipelineCache::Handle scenePrepassPipeline;
 
-        rg::HeapResource<rg::Buffer> configBuffer;
-        rg::HeapResource<rg::Buffer> cameraBuffer;
-        rg::HeapResource<rg::Buffer> meshIndicesBuffer;
+        ChunkStreamer chunkStreamer;
+        SkeletonStreamer skeletonStreamer;
+        MeshStreamer meshStreamer;
+        VirtualTextureStreamer virtualTextureStreamer;
     };
 }
 

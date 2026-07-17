@@ -20,16 +20,15 @@
 #define XENGINE_RENDERMESH_HPP
 
 #include "xng/renderer/stream/meshstreamer.hpp"
-#include "xng/renderer/objects/renderskeleton.hpp"
+#include "renderskeleton.hpp"
 
 namespace xng {
-    class RenderMesh final : public RenderObject {
+    class RenderMesh final {
     public:
-        RenderMesh(const Id id,
-                   MeshStreamer &meshStream,
+        RenderMesh(MeshStreamer &meshStream,
                    const Mesh &mesh,
-                   RenderObjectHandle<RenderSkeleton> _skeleton)
-            : RenderObject(OBJECT_MESH, id), meshStream(meshStream), skeleton(std::move(_skeleton)) {
+                   std::shared_ptr<RenderSkeleton> _skeleton)
+            : meshStream(meshStream), skeleton(std::move(_skeleton)) {
             if (skeleton) {
                 meshHandle = meshStream.create(mesh, skeleton->getOffsets());
             } else {
@@ -37,7 +36,7 @@ namespace xng {
             }
         }
 
-        ~RenderMesh() override {
+        ~RenderMesh() {
             meshStream.destroy(meshHandle);
         }
 
@@ -49,18 +48,18 @@ namespace xng {
             return meshStream.getAllocation(meshHandle);
         }
 
-        [[nodiscard]] RenderObjectHandle<RenderSkeleton> getSkeleton() const {
+        [[nodiscard]] std::shared_ptr<RenderSkeleton> getSkeleton() const {
             return skeleton;
         }
 
-        bool isUploadComplete() override {
+        bool isUploadComplete() {
             if (skeleton && !skeleton->isUploadComplete()) {
                 return false;
             }
             return meshStream.isUploadComplete(meshHandle);
         }
 
-        void flush() override {
+        void flush() {
             if (skeleton) {
                 skeleton->flush();
             }
@@ -71,7 +70,7 @@ namespace xng {
         MeshStreamer &meshStream;
         MeshStreamer::Handle meshHandle;
 
-        RenderObjectHandle<RenderSkeleton> skeleton{};
+        std::shared_ptr<RenderSkeleton> skeleton{};
     };
 }
 

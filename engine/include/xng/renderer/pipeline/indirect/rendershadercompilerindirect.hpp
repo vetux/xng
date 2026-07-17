@@ -21,7 +21,7 @@
 
 #include "xng/renderer/pipeline/rendershadercompiler.hpp"
 #include "xng/renderer/pipeline/renderpipeline.hpp"
-#include "xng/renderer/objects/rendertexture.hpp"
+#include "../../rendertexture.hpp"
 
 #include "xng/shaderscript/objectstd140.hpp"
 #include "xng/shaderscript/shaderscript.hpp"
