@@ -37,9 +37,26 @@ namespace xng::rg {
         virtual ~RasterContext() = default;
 
         /**
+         * Begin a render pass.
+         *
+         * @param colorAttachments
+         * @param depthStencilAttachment
+         */
+        virtual void beginRenderPass(const std::vector<Attachment> &colorAttachments,
+                                     const Attachment &depthStencilAttachment);
+
+        virtual void beginRenderPass(const std::vector<Attachment> &colorAttachments,
+                                     const std::optional<Attachment> &depthAttachment,
+                                     const std::optional<Attachment> &stencilAttachment);
+
+        virtual void endRenderPass();
+
+        /**
          * Bind a pipeline.
          *
          * Resets previous bindings.
+         *
+         * Can only be called after beginPass.
          *
          * @param pipeline
          */

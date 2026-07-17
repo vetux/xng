@@ -58,6 +58,8 @@ namespace xng::rg {
 
     struct TextureAccess {
         enum Type {
+            TextureAttachmentColor,
+            TextureAttachmentDepthStencil,
             TextureSampledRead,
             TextureStorageRead,
             TextureStorageWrite,
@@ -86,17 +88,25 @@ namespace xng::rg {
     };
 
     template<typename T>
-    struct RasterResourceAccess {
+    struct RenderResourceAccess {
         struct Entry {
             T access; // The access description
-            std::unordered_set<Shader::Stage> stage; // The raster pipeline stages in which the access happens.
+            std::unordered_set<Shader::Stage> stages; // The pipeline stages in which the access happens.
 
             Entry(std::unordered_set<Shader::Stage> stage, T access)
-                : access(std::move(access)), stage(std::move(stage)) {
+                : access(std::move(access)), stages(std::move(stage)) {
             }
 
             Entry(const Shader::Stage stage, T access)
-                : access(std::move(access)), stage({stage}) {
+                : access(std::move(access)), stages({stage}) {
+            }
+
+            /**
+             * For *Transfer* accesses and TextureAttachment* accesses no stages are declared.
+             * @param access
+             */
+            explicit Entry(T access)
+                : access(std::move(access)) {
             }
         };
 
@@ -104,7 +114,8 @@ namespace xng::rg {
     };
 
     /**
-     * Transfer passes can only perform *Transfer* accesses.
+     * Transfer passes can only perform *Transfer* accesses
+     * and run on a dedicated transfer queue if available.
      */
     struct TransferPass {
         std::string name;
@@ -115,36 +126,8 @@ namespace xng::rg {
     };
 
     /**
-     * Raster passes can only perform *Read, *Write and TextureSampledRead accesses.
-     */
-    struct RasterPass {
-        struct DepthStencilAttachment {
-            std::optional<Attachment> depthAttachment;
-            std::optional<Attachment> stencilAttachment;
-        };
-
-        std::string name;
-        std::function<void(RasterContext &)> callback; // May be invoked on a different thread.
-
-        std::unordered_map<ResourceId, RasterResourceAccess<BufferAccess>, ResourceIdHash> bufferUsages;
-        std::unordered_map<ResourceId, RasterResourceAccess<TextureAccess>, ResourceIdHash> textureUsages;
-
-        /**
-         * The attachments.
-         *
-         * Attachment target textures cannot be defined in textureUsage simultaneously.
-         *
-         * Each attachment target must be unique.
-         * For layered attachments there may not be any other attachment target overlapping with the layered attachment.
-         *
-         * Combined depth stencil attachment is provided by a single Attachment object.
-         */
-        std::vector<Attachment> colorAttachments;
-        std::optional<std::variant<Attachment, DepthStencilAttachment> > depthStencilAttachment;
-    };
-
-    /**
-     * Compute passes can only perform *Read, *Write and *StorageRead/Write accesses.
+     * Compute passes can only perform *Read, *Write and *StorageRead/Write accesses
+     * and run on a dedicated compute queue if available.
      */
     struct ComputePass {
         std::string name;
@@ -154,7 +137,24 @@ namespace xng::rg {
         std::unordered_map<ResourceId, ResourceAccess<TextureAccess>, ResourceIdHash> textureUsages;
     };
 
-    typedef std::variant<TransferPass, RasterPass, ComputePass> Pass;
+    /**
+     * Render passes can perform all available operations
+     * and run on a dedicated graphics queue if available.
+     */
+    struct RenderPass {
+        //TODO: Sub Render Pass interface (Mobile Tiling)
+
+        std::string name;
+        std::function<void(RasterContext &,
+                           TransferContext &,
+                           ComputeContext &)> callback; // May be invoked on a different thread.
+
+        std::unordered_map<ResourceId, RenderResourceAccess<BufferAccess>, ResourceIdHash> bufferUsages;
+        std::unordered_map<ResourceId, RenderResourceAccess<TextureAccess>, ResourceIdHash> textureUsages;
+        std::unordered_map<std::shared_ptr<Surface>, ResourceAccess<TextureAccess> > surfaceUsages;
+    };
+
+    typedef std::variant<TransferPass, ComputePass, RenderPass> Pass;
 }
 
 #endif //XENGINE_RENDERGRAPH_PASS_HPP

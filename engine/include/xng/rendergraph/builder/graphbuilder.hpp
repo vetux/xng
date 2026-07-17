@@ -59,7 +59,7 @@ namespace xng::rg {
             return *this;
         }
 
-        GraphBuilder &addPass(const RasterPass &pass) {
+        GraphBuilder &addPass(const RenderPass &pass) {
             passes.emplace_back(pass);
             return *this;
         }

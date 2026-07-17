@@ -46,150 +46,11 @@ namespace xng::opengl {
         std::unordered_map<Buffer, std::vector<std::shared_ptr<BufferGL> >, BufferHash> cachedBuffers{};
         std::unordered_map<Texture, std::vector<std::shared_ptr<TextureGL> >, TextureHash> cachedTextures{};
 
-        Framebuffer framebuffer;
-
         std::unordered_set<ColorFormat> supportedColorFormats;
     };
 
-    static Vec2u bindAttachments(Framebuffer &framebuffer,
-                                 const rg::RasterPass &pass,
-                                 const PassResources &passResources) {
-        oglDebugStartGroup("Runtime::bindAttachments");
-
-        framebuffer.bind(GL_DRAW_FRAMEBUFFER);
-
-        std::vector<GLenum> drawBuffers;
-
-        Vec2u ret(0);
-        for (auto i = 0; i < pass.colorAttachments.size(); ++i) {
-            auto &attachment = pass.colorAttachments.at(i);
-
-            // Get the attachment texture.
-            const TextureGL *tex = nullptr;
-            if (std::holds_alternative<std::shared_ptr<Surface> >(attachment.target)) {
-                auto &surface = std::get<std::shared_ptr<Surface> >(attachment.target);
-                auto &surfaceGL = down_cast<SurfaceGL &>(*surface.get());
-
-                // Per OpenGL spec this backBufferColor texture should be shareable between the surface context and the global context.
-                tex = surfaceGL.backBufferColor.get();
-            } else {
-                tex = &passResources.getTexture(std::get<Resource<Texture> >(attachment.target));
-            }
-            assert(tex != nullptr);
-
-            auto &texture = *tex;
-            if (ret.x + ret.y > 0 && ret != texture.desc.size) {
-                throw std::runtime_error("All attachments must have the same size");
-            } else {
-                ret = texture.desc.size;
-            }
-            if (attachment.clearValue.has_value()) {
-                TransferContextGL::clearTexture(texture, attachment.targetSubResource, attachment.clearValue.value());
-            }
-            framebuffer.attach(GL_COLOR_ATTACHMENT0 + i, texture, attachment.targetSubResource);
-            drawBuffers.emplace_back(GL_COLOR_ATTACHMENT0 + i);
-        }
-
-        glDrawBuffers(static_cast<GLsizei>(drawBuffers.size()), drawBuffers.data());
-
-        if (pass.depthStencilAttachment.has_value()) {
-            if (std::holds_alternative<RasterPass::DepthStencilAttachment>(pass.depthStencilAttachment.value())) {
-                // Separate depth / stencil attachments
-                auto &attachments = std::get<RasterPass::DepthStencilAttachment>(pass.depthStencilAttachment.value());
-
-                // Depth Attachment
-                if (attachments.depthAttachment.has_value()) {
-                    auto &attachment = attachments.depthAttachment.value();
-                    if (std::holds_alternative<std::shared_ptr<Surface> >(attachment.target)) {
-                        throw std::runtime_error("Depth attachment cannot be a surface");
-                    }
-                    const auto &texture = passResources.getTexture(std::get<Resource<Texture> >(attachment.target));
-                    if (ret.x + ret.y > 0 && ret != texture.desc.size) {
-                        throw std::runtime_error("All attachments must have the same size");
-                    } else {
-                        ret = texture.desc.size;
-                    }
-                    if (attachment.clearValue.has_value()) {
-                        TransferContextGL::clearTexture(texture,
-                                                        attachment.targetSubResource,
-                                                        attachment.clearValue.value());
-                    }
-                    framebuffer.attach(GL_DEPTH_ATTACHMENT, texture, attachment.targetSubResource);
-                }
-
-                // Stencil Attachment
-                if (attachments.stencilAttachment.has_value()) {
-                    auto &attachment = attachments.stencilAttachment.value();
-                    if (std::holds_alternative<std::shared_ptr<Surface> >(attachment.target)) {
-                        throw std::runtime_error("Stencil attachment cannot be a surface");
-                    }
-                    const auto &texture = passResources.getTexture(std::get<Resource<Texture> >(attachment.target));
-                    if (ret.x + ret.y > 0 && ret != texture.desc.size) {
-                        throw std::runtime_error("All attachments must have the same size");
-                    } else {
-                        ret = texture.desc.size;
-                    }
-                    if (attachment.clearValue.has_value()) {
-                        TransferContextGL::clearTexture(texture,
-                                                        attachment.targetSubResource,
-                                                        attachment.clearValue.value());
-                    }
-                    framebuffer.attach(GL_STENCIL_ATTACHMENT, texture, attachment.targetSubResource);
-                }
-            } else {
-                // Combined depth / stencil attachment
-                auto &attachment = std::get<Attachment>(pass.depthStencilAttachment.value());
-
-                if (std::holds_alternative<std::shared_ptr<Surface> >(attachment.target)) {
-                    throw std::runtime_error("DepthStencil attachment cannot be a surface");
-                }
-                const auto &texture = passResources.getTexture(std::get<Resource<Texture> >(attachment.target));
-                if (ret.x + ret.y > 0 && ret != texture.desc.size) {
-                    throw std::runtime_error("All attachments must have the same size");
-                } else {
-                    ret = texture.desc.size;
-                }
-                if (attachment.clearValue.has_value()) {
-                    TransferContextGL::clearTexture(texture,
-                                                    attachment.targetSubResource,
-                                                    attachment.clearValue.value());
-                }
-                framebuffer.attach(GL_DEPTH_STENCIL_ATTACHMENT, texture, attachment.targetSubResource);
-            }
-        }
-
-        auto fstatus = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
-        if (fstatus != GL_FRAMEBUFFER_COMPLETE) {
-            const char *msg = "UNKNOWN";
-            switch (fstatus) {
-                case GL_FRAMEBUFFER_UNDEFINED: msg = "UNDEFINED";
-                    break;
-                case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: msg = "INCOMPLETE_ATTACHMENT";
-                    break;
-                case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: msg = "MISSING_ATTACHMENT";
-                    break;
-                case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER: msg = "INCOMPLETE_DRAW_BUFFER";
-                    break;
-                case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER: msg = "INCOMPLETE_READ_BUFFER";
-                    break;
-                case GL_FRAMEBUFFER_UNSUPPORTED: msg = "UNSUPPORTED";
-                    break;
-                case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: msg = "INCOMPLETE_MULTISAMPLE";
-                    break;
-                case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS: msg = "INCOMPLETE_LAYER_TARGETS";
-                    break;
-            }
-            throw std::runtime_error(std::string("Framebuffer is incomplete ") + msg);
-        }
-        oglCheckError();
-
-        oglDebugEndGroup();
-
-        return ret;
-    }
-
     //TODO: Implement DAG based barrier insertion.
-    static void insertBarrier(const RasterPass &pass) {
+    static void insertBarrier(const RenderPass &pass) {
         for (auto &pair: pass.bufferUsages) {
             for (auto &entry: pair.second.entries) {
                 switch (entry.access.type) {
@@ -349,15 +210,14 @@ namespace xng::opengl {
         for (auto &pass: graph.passes) {
             switch (pass.index()) {
                 case 1: {
-                    auto p = std::get<RasterPass>(pass);
-                    for (auto &att: p.colorAttachments) {
-                        if (std::holds_alternative<std::shared_ptr<Surface> >(att.target)) {
-                            surfaces.insert(down_cast<SurfaceGL *>(
-                                std::get<std::shared_ptr<Surface> >(att.target).get()));
-                        }
+                    auto p = std::get<RenderPass>(pass);
+                    for (auto &pair: p.surfaceUsages) {
+                        surfaces.insert(down_cast<SurfaceGL *>(pair.first.get()));
                     }
                     break;
                 }
+                default:
+                    continue;
             }
         }
 
@@ -399,16 +259,14 @@ namespace xng::opengl {
                     break;
                 }
                 case 1: {
-                    auto p = std::get<RasterPass>(pass);
-                    auto dimensions = bindAttachments(data->framebuffer, p, passResources);
-                    rasterContext.setFrameBufferHeight(static_cast<int>(dimensions.y));
-                    p.callback(rasterContext);
+                    auto p = std::get<ComputePass>(pass);
+                    p.callback(computeContext);
                     insertBarrier(p);
                     break;
                 }
                 case 2: {
-                    auto p = std::get<ComputePass>(pass);
-                    p.callback(computeContext);
+                    auto p = std::get<RenderPass>(pass);
+                    p.callback(rasterContext, transferContext, computeContext);
                     insertBarrier(p);
                     break;
                 }

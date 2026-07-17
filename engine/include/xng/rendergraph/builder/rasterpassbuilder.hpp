@@ -24,125 +24,171 @@
 #include "xng/rendergraph/pass.hpp"
 
 namespace xng::rg {
-    class RasterPassBuilder {
+    class RenderPassBuilder {
     public:
-        explicit RasterPassBuilder(std::string name) {
+        explicit RenderPassBuilder(std::string name) {
             pass.name = std::move(name);
         }
 
-        RasterPassBuilder &vertexRead(const Resource<Buffer> &buffer,
+        RenderPassBuilder &vertexRead(const Resource<Buffer> &buffer,
                                       const size_t offset = 0,
                                       const size_t size = 0) {
             const auto access = BufferAccess(BufferAccess::VertexRead, offset, size);
-            const auto entry = RasterResourceAccess<BufferAccess>::Entry(Shader::VERTEX, access);
+            const auto entry = RenderResourceAccess<BufferAccess>::Entry(Shader::VERTEX, access);
             pass.bufferUsages[buffer].entries.emplace_back(entry);
             return *this;
         }
 
-        RasterPassBuilder &indexRead(const Resource<Buffer> &buffer,
+        RenderPassBuilder &indexRead(const Resource<Buffer> &buffer,
                                      const size_t offset = 0,
                                      const size_t size = 0) {
             const auto access = BufferAccess(BufferAccess::IndexRead, offset, size);
-            const auto entry = RasterResourceAccess<BufferAccess>::Entry(Shader::VERTEX, access);
+            const auto entry = RenderResourceAccess<BufferAccess>::Entry(Shader::VERTEX, access);
             pass.bufferUsages[buffer].entries.emplace_back(entry);
             return *this;
         }
 
-        RasterPassBuilder &storageRead(const Resource<Buffer> &buffer,
+        RenderPassBuilder &storageRead(const Resource<Buffer> &buffer,
                                        std::unordered_set<Shader::Stage> stages,
                                        const size_t offset = 0,
                                        const size_t size = 0) {
             const auto access = BufferAccess(BufferAccess::StorageRead, offset, size);
-            const auto entry = RasterResourceAccess<BufferAccess>::Entry(std::move(stages), access);
+            const auto entry = RenderResourceAccess<BufferAccess>::Entry(std::move(stages), access);
             pass.bufferUsages[buffer].entries.emplace_back(entry);
             return *this;
         }
 
-        RasterPassBuilder &storageWrite(const Resource<Buffer> &buffer,
+        RenderPassBuilder &storageWrite(const Resource<Buffer> &buffer,
                                         std::unordered_set<Shader::Stage> stages,
                                         const size_t offset = 0,
                                         const size_t size = 0) {
             const auto access = BufferAccess(BufferAccess::StorageWrite, offset, size);
-            const auto entry = RasterResourceAccess<BufferAccess>::Entry(std::move(stages), access);
+            const auto entry = RenderResourceAccess<BufferAccess>::Entry(std::move(stages), access);
             pass.bufferUsages[buffer].entries.emplace_back(entry);
             return *this;
         }
 
-        RasterPassBuilder &textureStorageRead(const Resource<Texture> &texture,
+        RenderPassBuilder &textureStorageRead(const Resource<Texture> &texture,
                                               std::unordered_set<Shader::Stage> stages,
                                               const TextureBinding::Range range = {},
                                               const TextureBinding::Aspect aspect = TextureBinding::Automatic) {
             const auto access = TextureAccess(TextureAccess::TextureStorageRead,
                                               range,
                                               aspect);
-            const auto entry = RasterResourceAccess<TextureAccess>::Entry(std::move(stages), access);
+            const auto entry = RenderResourceAccess<TextureAccess>::Entry(std::move(stages), access);
             pass.textureUsages[texture].entries.emplace_back(entry);
             return *this;
         }
 
-        RasterPassBuilder &textureStorageWrite(const Resource<Texture> &texture,
+        RenderPassBuilder &textureStorageWrite(const Resource<Texture> &texture,
                                                std::unordered_set<Shader::Stage> stages,
                                                const TextureBinding::Range range = {},
                                                const TextureBinding::Aspect aspect = TextureBinding::Automatic) {
             const auto access = TextureAccess(TextureAccess::TextureStorageWrite,
                                               range,
                                               aspect);
-            const auto entry = RasterResourceAccess<TextureAccess>::Entry(std::move(stages), access);
+            const auto entry = RenderResourceAccess<TextureAccess>::Entry(std::move(stages), access);
             pass.textureUsages[texture].entries.emplace_back(entry);
             return *this;
         }
 
-        RasterPassBuilder &textureSampledRead(const Resource<Texture> &texture,
+        RenderPassBuilder &textureSampledRead(const Resource<Texture> &texture,
                                               std::unordered_set<Shader::Stage> stages,
                                               const TextureBinding::Range range = {},
                                               const TextureBinding::Aspect aspect = TextureBinding::Automatic) {
             const auto access = TextureAccess(TextureAccess::TextureSampledRead,
                                               range,
                                               aspect);
-            const auto entry = RasterResourceAccess<TextureAccess>::Entry(std::move(stages), access);
+            const auto entry = RenderResourceAccess<TextureAccess>::Entry(std::move(stages), access);
             pass.textureUsages[texture].entries.emplace_back(entry);
             return *this;
         }
 
-        RasterPassBuilder &attachColor(Attachment attachment) {
-            pass.colorAttachments.emplace_back(std::move(attachment));
+        RenderPassBuilder &textureAttachmentColor(const Resource<Texture> &texture,
+                                                  const TextureBinding::Range range = {},
+                                                  const TextureBinding::Aspect aspect = TextureBinding::Automatic) {
+            const auto access = TextureAccess(TextureAccess::TextureAttachmentColor,
+                                              range,
+                                              aspect);
+            const auto entry = RenderResourceAccess<TextureAccess>::Entry({Shader::VERTEX, Shader::FRAGMENT},
+                                                                          access);
+            pass.textureUsages[texture].entries.emplace_back(entry);
             return *this;
         }
 
-        RasterPassBuilder &attachDepthStencil(Attachment attachment) {
-            pass.depthStencilAttachment = attachment;
+        RenderPassBuilder &textureAttachmentDepthStencil(const Resource<Texture> &texture,
+                                                         const TextureBinding::Range range = {},
+                                                         const TextureBinding::Aspect aspect =
+                                                                 TextureBinding::Automatic) {
+            const auto access = TextureAccess(TextureAccess::TextureAttachmentDepthStencil,
+                                              range,
+                                              aspect);
+            const auto entry = RenderResourceAccess<TextureAccess>::Entry({Shader::VERTEX, Shader::FRAGMENT},
+                                                                          access);
+            pass.textureUsages[texture].entries.emplace_back(entry);
             return *this;
         }
 
-        RasterPassBuilder &attachDepth(const Attachment &attachment) {
-            if (!pass.depthStencilAttachment.has_value()
-                || !std::holds_alternative<
-                    RasterPass::DepthStencilAttachment>(pass.depthStencilAttachment.value())) {
-                pass.depthStencilAttachment = RasterPass::DepthStencilAttachment{{}, {}};
-            }
-            std::get<RasterPass::DepthStencilAttachment>(pass.depthStencilAttachment.value())
-                    .depthAttachment = attachment;
+        RenderPassBuilder &surfaceAttachmentColor(const std::shared_ptr<Surface> &surface) {
+            const auto access = TextureAccess(TextureAccess::TextureAttachmentColor,
+                                              {},
+                                              TextureBinding::Automatic);
+            pass.surfaceUsages[surface].entries.emplace_back(access);
             return *this;
         }
 
-        RasterPassBuilder &attachStencil(const Attachment &attachment) {
-            if (!pass.depthStencilAttachment.has_value()
-                || !std::holds_alternative<
-                    RasterPass::DepthStencilAttachment>(pass.depthStencilAttachment.value())) {
-                pass.depthStencilAttachment = RasterPass::DepthStencilAttachment{{}, {}};
-            }
-            std::get<RasterPass::DepthStencilAttachment>(pass.depthStencilAttachment.value())
-                    .stencilAttachment = attachment;
+        RenderPassBuilder &surfaceAttachmentDepthStencil(const std::shared_ptr<Surface> &surface) {
+            const auto access = TextureAccess(TextureAccess::TextureAttachmentDepthStencil,
+                                              {},
+                                              TextureBinding::Automatic);
+            pass.surfaceUsages[surface].entries.emplace_back(access);
             return *this;
         }
 
-        const RasterPass &execute(std::function<void(RasterContext &)> callback) {
+        RenderPassBuilder &transferRead(const Resource<Buffer> &buffer,
+                                        const size_t offset = 0,
+                                        const size_t size = 0) {
+            const auto access = BufferAccess(BufferAccess::TransferSrc, offset, size);
+            pass.bufferUsages[buffer].entries.emplace_back(access);
+            return *this;
+        }
+
+        RenderPassBuilder &transferWrite(const Resource<Buffer> &buffer, const size_t offset = 0,
+                                         const size_t size = 0) {
+            const auto access = BufferAccess(BufferAccess::TransferDst, offset, size);
+            pass.bufferUsages[buffer].entries.emplace_back(access);
+            return *this;
+        }
+
+        RenderPassBuilder &transferRead(const Resource<Texture> &texture,
+                                        const TextureBinding::Range range = {},
+                                        const TextureBinding::Aspect aspect = TextureBinding::Automatic) {
+            const auto access = TextureAccess(TextureAccess::TextureTransferSrc,
+                                              range,
+                                              aspect);
+            pass.textureUsages[texture].entries.emplace_back(access);
+            return *this;
+        }
+
+        RenderPassBuilder &transferWrite(const Resource<Texture> &texture,
+                                         const TextureBinding::Range range = {},
+                                         const TextureBinding::Aspect aspect = TextureBinding::Automatic) {
+            const auto access = TextureAccess(TextureAccess::TextureTransferDst,
+                                              range,
+                                              aspect);
+            pass.textureUsages[texture].entries.emplace_back(access);
+            return *this;
+        }
+
+        const RenderPass &execute(std::function<void(RasterContext &,
+                                                     TransferContext &,
+                                                     ComputeContext &)> callback) {
             pass.callback = std::move(callback);
             return pass;
         }
 
     private:
-        RasterPass pass;
+        RenderPass pass;
     };
 }
 

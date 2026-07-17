@@ -36,6 +36,42 @@ namespace xng::opengl {
 
         ~RasterContextGL() override = default;
 
+        void beginRenderPass(const std::vector<Attachment> &colorAttachments,
+                             const Attachment &depthStencilAttachment) override {
+            oglDebugStartGroup("RasterContextGL::beginRenderPass");
+
+            framebuffer.bind(GL_DRAW_FRAMEBUFFER);
+            bindColorAttachments(colorAttachments);
+            bindDepthStencilAttachment(depthStencilAttachment);
+            checkFramebufferStatus();
+            oglCheckError();
+
+            oglDebugEndGroup();
+        }
+
+        void beginRenderPass(const std::vector<Attachment> &colorAttachments,
+                             const std::optional<Attachment> &depthAttachment,
+                             const std::optional<Attachment> &stencilAttachment) override {
+            oglDebugStartGroup("RasterContextGL::beginRenderPass");
+
+            framebuffer.bind(GL_DRAW_FRAMEBUFFER);
+            bindColorAttachments(colorAttachments);
+            bindDepthStencilAttachments(depthAttachment, stencilAttachment);
+            checkFramebufferStatus();
+            oglCheckError();
+
+            oglDebugEndGroup();
+        }
+
+        void endRenderPass() override {
+            oglDebugStartGroup("RasterContextGL::endRenderPass");
+
+            framebuffer.bind(0);
+            oglCheckError();
+
+            oglDebugEndGroup();
+        }
+
         void bindPipeline(const PipelineCache::Handle &handle) override {
             oglDebugStartGroup("RasterContextGL::bindPipeline");
 
@@ -457,7 +493,7 @@ namespace xng::opengl {
             oglDebugStartGroup("RasterContextGL::setViewport");
 
             glViewport(static_cast<GLint>(viewportOffset.x),
-                       static_cast<GLint>(frameBufferHeight - (viewportOffset.y + viewportSize.y)),
+                       static_cast<GLint>(frameBufferSize.y - (viewportOffset.y + viewportSize.y)),
                        static_cast<GLsizei>(viewportSize.x),
                        static_cast<GLsizei>(viewportSize.y));
             oglCheckError();
@@ -830,11 +866,137 @@ namespace xng::opengl {
             oglDebugEndGroup();
         }
 
-        void setFrameBufferHeight(const int height) {
-            frameBufferHeight = height;
+    private:
+        void bindColorAttachments(const std::vector<Attachment> &colorAttachments) {
+            std::vector<GLenum> drawBuffers;
+
+            frameBufferSize = Vec2u(0, 0);
+            for (auto i = 0; i < colorAttachments.size(); ++i) {
+                auto &attachment = colorAttachments.at(i);
+
+                // Get the attachment texture.
+                const TextureGL *tex = nullptr;
+                if (std::holds_alternative<std::shared_ptr<Surface> >(attachment.target)) {
+                    auto &surface = std::get<std::shared_ptr<Surface> >(attachment.target);
+                    auto &surfaceGL = down_cast<SurfaceGL &>(*surface.get());
+
+                    // Per OpenGL spec this backBufferColor texture should be shareable between the surface context and the global context.
+                    tex = surfaceGL.backBufferColor.get();
+                } else {
+                    tex = &resources.getTexture(std::get<Resource<Texture> >(attachment.target));
+                }
+                assert(tex != nullptr);
+
+                auto &texture = *tex;
+                if (frameBufferSize.length() > 0 && frameBufferSize != texture.desc.size) {
+                    throw std::runtime_error("All attachments must have the same size");
+                }
+                frameBufferSize = texture.desc.size;
+                if (attachment.clearValue.has_value()) {
+                    TransferContextGL::clearTexture(texture, attachment.targetSubResource,
+                                                    attachment.clearValue.value());
+                }
+                framebuffer.attach(GL_COLOR_ATTACHMENT0 + i, texture, attachment.targetSubResource);
+                drawBuffers.emplace_back(GL_COLOR_ATTACHMENT0 + i);
+            }
+
+            glDrawBuffers(static_cast<GLsizei>(drawBuffers.size()), drawBuffers.data());
         }
 
-    private:
+        void bindDepthStencilAttachment(const Attachment &depthStencilAttachment) {
+            // Combined depth / stencil attachment
+            if (std::holds_alternative<std::shared_ptr<Surface> >(depthStencilAttachment.target)) {
+                throw std::runtime_error("DepthStencil attachment cannot be a surface");
+            }
+
+            const auto &texture = resources.getTexture(std::get<Resource<Texture> >(depthStencilAttachment.target));
+
+            if (frameBufferSize.length() != 0 && texture.desc.size != frameBufferSize) {
+                throw std::runtime_error("All attachments must have the same size");
+            }
+
+            frameBufferSize = texture.desc.size;
+
+            if (depthStencilAttachment.clearValue.has_value()) {
+                TransferContextGL::clearTexture(texture,
+                                                depthStencilAttachment.targetSubResource,
+                                                depthStencilAttachment.clearValue.value());
+            }
+            framebuffer.attach(GL_DEPTH_STENCIL_ATTACHMENT, texture, depthStencilAttachment.targetSubResource);
+        }
+
+        void bindDepthStencilAttachments(const std::optional<Attachment> &depthAttachment,
+                                         const std::optional<Attachment> &stencilAttachment) {
+            // Depth Attachment
+            if (depthAttachment.has_value()) {
+                auto &attachment = depthAttachment.value();
+                if (std::holds_alternative<std::shared_ptr<Surface> >(attachment.target)) {
+                    throw std::runtime_error("Depth attachment cannot be a surface");
+                }
+
+                const auto &texture = resources.getTexture(std::get<Resource<Texture> >(attachment.target));
+
+                if (frameBufferSize.length() != 0 && texture.desc.size != frameBufferSize) {
+                    throw std::runtime_error("All attachments must have the same size");
+                }
+                frameBufferSize = texture.desc.size;
+
+                if (attachment.clearValue.has_value()) {
+                    TransferContextGL::clearTexture(texture,
+                                                    attachment.targetSubResource,
+                                                    attachment.clearValue.value());
+                }
+                framebuffer.attach(GL_DEPTH_ATTACHMENT, texture, attachment.targetSubResource);
+            }
+
+            // Stencil Attachment
+            if (stencilAttachment.has_value()) {
+                auto &attachment = stencilAttachment.value();
+                if (std::holds_alternative<std::shared_ptr<Surface> >(attachment.target)) {
+                    throw std::runtime_error("Stencil attachment cannot be a surface");
+                }
+                const auto &texture = resources.getTexture(std::get<Resource<Texture> >(attachment.target));
+
+                if (frameBufferSize.length() != 0 && texture.desc.size != frameBufferSize) {
+                    throw std::runtime_error("All attachments must have the same size");
+                }
+                frameBufferSize = texture.desc.size;
+
+                if (attachment.clearValue.has_value()) {
+                    TransferContextGL::clearTexture(texture,
+                                                    attachment.targetSubResource,
+                                                    attachment.clearValue.value());
+                }
+                framebuffer.attach(GL_STENCIL_ATTACHMENT, texture, attachment.targetSubResource);
+            }
+        }
+
+        void checkFramebufferStatus() {
+            auto fstatus = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
+            if (fstatus != GL_FRAMEBUFFER_COMPLETE) {
+                const char *msg = "UNKNOWN";
+                switch (fstatus) {
+                    case GL_FRAMEBUFFER_UNDEFINED: msg = "UNDEFINED";
+                        break;
+                    case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: msg = "INCOMPLETE_ATTACHMENT";
+                        break;
+                    case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: msg = "MISSING_ATTACHMENT";
+                        break;
+                    case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER: msg = "INCOMPLETE_DRAW_BUFFER";
+                        break;
+                    case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER: msg = "INCOMPLETE_READ_BUFFER";
+                        break;
+                    case GL_FRAMEBUFFER_UNSUPPORTED: msg = "UNSUPPORTED";
+                        break;
+                    case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: msg = "INCOMPLETE_MULTISAMPLE";
+                        break;
+                    case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS: msg = "INCOMPLETE_LAYER_TARGETS";
+                        break;
+                }
+                throw std::runtime_error(std::string("Framebuffer is incomplete ") + msg);
+            }
+        }
+
         const PassResources &resources;
         PipelineCacheGL &pipelineCache;
 
@@ -843,9 +1005,11 @@ namespace xng::opengl {
         VertexArrayObject vertexArray;
         BufferGL emptySSBO;
 
-        int frameBufferHeight = 0;
+        Vec2u frameBufferSize{};
 
         IndexFormat indexFormat = INDEX_UNDEFINED;
+
+        Framebuffer framebuffer{};
 
         static bool isIntegerFormat(const ShaderPrimitiveType::Component component) {
             return component <= ShaderPrimitiveType::SIGNED_INT;
