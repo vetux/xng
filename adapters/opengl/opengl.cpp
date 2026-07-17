@@ -22,6 +22,7 @@
 #include "pipelinecachegl.hpp"
 #include "heapgl.hpp"
 #include "passresources.hpp"
+#include "semaphoregl.hpp"
 
 #include "context/computecontextgl.hpp"
 #include "context/rastercontextgl.hpp"
@@ -296,11 +297,7 @@ namespace xng::opengl {
 
     Runtime::Runtime(DisplayEnvironment &env)
         : data(std::make_unique<MemberData>()) {
-        auto wndAttr = WindowAttributes();
-        wndAttr.visible = false;
-        auto wnd = env.createWindow("XNG_HeapContext", Vec2i(1, 1), wndAttr);
-        down_cast<WindowGl &>(*wnd).unbindContext();
-        data->heap = std::make_unique<HeapGL>(std::move(wnd));
+        data->heap = std::make_unique<HeapGL>();
 
         data->vendor = std::string(reinterpret_cast<const char *>(glGetString(GL_VENDOR)));
         data->renderer = std::string(reinterpret_cast<const char *>(glGetString(GL_RENDERER)));
@@ -349,6 +346,21 @@ namespace xng::opengl {
     std::unique_ptr<Semaphore> Runtime::execute(const rg::Graph &graph) {
         std::unordered_set<SurfaceGL *> surfaces;
 
+        for (auto &pass: graph.passes) {
+            switch (pass.index()) {
+                case 1: {
+                    auto p = std::get<RasterPass>(pass);
+                    for (auto &att: p.colorAttachments) {
+                        if (std::holds_alternative<std::shared_ptr<Surface> >(att.target)) {
+                            surfaces.insert(down_cast<SurfaceGL *>(
+                                std::get<std::shared_ptr<Surface> >(att.target).get()));
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
         // TODO: Transient Aliasing
         ResourceScope transientResources;
         for (auto &alloc: graph.bufferAllocations) {
@@ -368,83 +380,6 @@ namespace xng::opengl {
                 it->second.pop_back();
             } else {
                 transientResources.textures.emplace(alloc.first.getHandle(), std::make_shared<TextureGL>(alloc.second));
-            }
-        }
-
-        // Sync Referenced Heap Resource Accesses
-        for (auto &pass: graph.passes) {
-            switch (pass.index()) {
-                case 0: {
-                    auto p = std::get<TransferPass>(pass);
-                    std::unordered_map<ResourceId, std::vector<BufferAccess>, ResourceIdHash> bufferAccesses;
-                    for (auto &usage: p.bufferUsages) {
-                        if (usage.first.getNameSpace() == ResourceId::HEAP) {
-                            data->heap->getTransferContextGL().waitForTransfers(usage.first.getHandle(),
-                                usage.second.entries,
-                                std::chrono::milliseconds::max());
-                        }
-                    }
-                    for (auto &usage: p.textureUsages) {
-                        if (usage.first.getNameSpace() == ResourceId::HEAP) {
-                            data->heap->getTransferContextGL().waitForTransfers(usage.first.getHandle(),
-                                usage.second.entries,
-                                std::chrono::milliseconds::max());
-                        }
-                    }
-                    break;
-                }
-                case 1: {
-                    auto p = std::get<RasterPass>(pass);
-                    for (auto &usage: p.bufferUsages) {
-                        if (usage.first.getNameSpace() == ResourceId::HEAP) {
-                            std::vector<BufferAccess> entries;
-                            for (auto &entry: usage.second.entries) {
-                                entries.emplace_back(entry.access);
-                            }
-                            data->heap->getTransferContextGL().waitForTransfers(usage.first.getHandle(),
-                                entries,
-                                std::chrono::milliseconds::max());
-                        }
-                    }
-                    for (auto &usage: p.textureUsages) {
-                        if (usage.first.getNameSpace() == ResourceId::HEAP) {
-                            std::vector<TextureAccess> entries;
-                            for (auto &entry: usage.second.entries) {
-                                entries.emplace_back(entry.access);
-                            }
-                            data->heap->getTransferContextGL().waitForTransfers(usage.first.getHandle(),
-                                entries,
-                                std::chrono::milliseconds::max());
-                        }
-                    }
-                    for (auto &att: p.colorAttachments) {
-                        if (std::holds_alternative<std::shared_ptr<Surface> >(att.target)) {
-                            surfaces.insert(down_cast<SurfaceGL *>(
-                                std::get<std::shared_ptr<Surface> >(att.target).get()));
-                        }
-                    }
-                    break;
-                }
-                case 2: {
-                    auto p = std::get<ComputePass>(pass);
-                    for (auto &usage: p.bufferUsages) {
-                        if (usage.first.getNameSpace() == ResourceId::HEAP) {
-                            data->heap->getTransferContextGL().waitForTransfers(usage.first.getHandle(),
-                                usage.second.entries,
-                                std::chrono::milliseconds::max());
-                        }
-                    }
-                    for (auto &usage: p.textureUsages) {
-                        if (usage.first.getNameSpace() == ResourceId::HEAP) {
-                            data->heap->getTransferContextGL().waitForTransfers(usage.first.getHandle(),
-                                usage.second.entries,
-                                std::chrono::milliseconds::max());
-                        }
-                    }
-                    break;
-                }
-                default:
-                    throw std::runtime_error("Invalid pass type");
             }
         }
 
@@ -483,6 +418,8 @@ namespace xng::opengl {
         }
 
         for (auto &surface: surfaces) {
+            // TODO: Verify surface synchronization
+            // Here might be the cause of the occasional ghosting because the commands might not have finished before blitting the texture to the framebuffer.
             surface->bindContext();
             surface->present();
             surface->update();
@@ -500,17 +437,13 @@ namespace xng::opengl {
             data->cachedTextures[tex.second->desc].emplace_back(std::move(tex.second));
         }
 
-        auto sync = std::make_shared<HeapTransferSync>();
-        sync->fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-        return std::make_unique<SemaphoreGL>(sync);
+        return std::make_unique<SemaphoreGL>();
     }
 
     std::unique_ptr<Semaphore> Runtime::execute(const std::vector<rg::Graph> &graphs) {
         for (auto &graph: graphs) {
             execute(graph);
         }
-        auto sync = std::make_shared<HeapTransferSync>();
-        sync->fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-        return std::make_unique<SemaphoreGL>(sync);
+        return std::make_unique<SemaphoreGL>();
     }
 }

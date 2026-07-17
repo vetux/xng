@@ -20,37 +20,35 @@
 
 #include "heapmappinggl.hpp"
 #include "passresources.hpp"
-#include "context/heaptransfercontextgl.hpp"
+#include "semaphoregl.hpp"
 
 namespace xng::opengl {
-    HeapGL::HeapGL(std::unique_ptr<Window> heapWindow)
-        : transferContext(std::make_unique<HeapTransferContextGL>(std::move(heapWindow), *this)) {
+    HeapGL::HeapGL()
+        : context(std::make_unique<TransferContextGL>()) {
     }
 
     HeapGL::~HeapGL() = default;
 
     HeapResource<Buffer> HeapGL::allocateBuffer(const Buffer &desc) {
-        return HeapResource(transferContext->allocateBuffer(desc), desc, *this);
+        auto ret = HeapResource(allocateHandle(), desc, *this);
+        context->getResources().getHeap().buffers[ret.getHandle()] = std::make_shared<BufferGL>(desc);
+        return ret;
     }
 
     HeapResource<Texture> HeapGL::allocateTexture(const Texture &desc) {
-        return HeapResource(transferContext->allocateTexture(desc), desc, *this);
+        auto ret = HeapResource(allocateHandle(), desc, *this);
+        context->getResources().getHeap().textures[ret.getHandle()] = std::make_shared<TextureGL>(desc);
+        return ret;
     }
 
     std::unique_ptr<HeapMapping> HeapGL::map(const HeapResource<Buffer> &target) {
-        return std::make_unique<HeapMappingGL>(target, transferContext->getBuffer(target.getHandle()));
-    }
-
-    std::unique_ptr<Semaphore> HeapGL::transfer(const std::vector<TransferPass> &passes) {
-        for (auto &pass: passes) {
-            pass.callback(*transferContext);
-        }
-        return transferContext->finishTransfer();
+        return std::make_unique<HeapMappingGL>(target,
+                                               *context->getResources().getHeap().buffers.at(target.getHandle()));
     }
 
     void HeapGL::decrementReference(const ResourceId &handle) {
         if (refCounter.dec(handle.getHandle())) {
-            transferContext->free(handle.getHandle());
+            context->getResources().getHeap().buffers.erase(handle.getHandle());
         }
     }
 }

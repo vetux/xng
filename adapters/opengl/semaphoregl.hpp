@@ -29,41 +29,38 @@
 
 namespace xng::opengl {
     struct HeapTransferSync {
-        std::mutex mutex;
-        std::condition_variable cv;
         GLsync fence = nullptr;
-        bool done = false;
     };
 
     class SemaphoreGL final : public rg::Semaphore {
     public:
-        explicit SemaphoreGL(std::shared_ptr<HeapTransferSync> sync)
-            : sync(std::move(sync)) {}
+        explicit SemaphoreGL() {
+            fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+        }
+
+        ~SemaphoreGL() override {
+            glDeleteSync(fence);
+        }
 
         bool isSignaled() override {
             return wait(0);
         }
 
         bool wait(const size_t timeOut) override {
-            if (sync->done) return true;
-
-            std::unique_lock lock(sync->mutex);
-            sync->cv.wait(lock, [this] { return sync->fence != nullptr || sync->done; });
-
-            if (sync->done) return true;
-
-            const auto result = glClientWaitSync(sync->fence, GL_SYNC_FLUSH_COMMANDS_BIT, timeOut);
-            if (result == GL_ALREADY_SIGNALED || result == GL_CONDITION_SATISFIED) {
-                glDeleteSync(sync->fence);
-                sync->fence = nullptr;
-                sync->done = true;
+            if (done) {
                 return true;
             }
-            return false;
+
+            const auto result = glClientWaitSync(fence, GL_SYNC_FLUSH_COMMANDS_BIT, timeOut);
+            if (result == GL_ALREADY_SIGNALED || result == GL_CONDITION_SATISFIED) {
+                done = true;
+            }
+            return done;
         }
 
     private:
-        std::shared_ptr<HeapTransferSync> sync;
+        GLsync fence;
+        bool done = false;
     };
 }
 

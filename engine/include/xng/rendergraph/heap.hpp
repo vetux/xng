@@ -38,12 +38,7 @@ namespace xng::rg {
      *
      * The heap exposes the mapping api for MEMORY_CPU_TO_GPU / MEMORY_GPU_TO_CPU buffers.
      *
-     * Heap resources transfers can either be performed asynchronously through transfer() or inside a TransferPass submitted to Runtime::execute.
-     *
      * The implementation controls the physical memory layout.
-     *
-     * On OpenGL this is implemented using a separate thread with a subcontext + glFenceSync / glClientWaitSync.
-     * On Vulkan this is implemented using transfer queues + semaphores / fences.
      */
     class Heap {
     public:
@@ -88,39 +83,6 @@ namespace xng::rg {
          * @return
          */
         virtual std::unique_ptr<HeapMapping> map(const HeapResource<Buffer> &target) = 0;
-
-        //TODO: Drop Heap::transfer() in favour of Runtime::execute()
-        /**
-         * Perform transfer operations on heap resources in the heap transfer context.
-         *
-         * Heap transfer operations run asynchronously and can be checked for completion via the returned transfer handle.
-         *
-         * The runtime internally pins resources referenced in the pass until the transfer has finished.
-         *
-         * For the passes the ordering and callback rules from the graph apply.
-         * The runtime will treat a heap transfer submission like any other Runtime::execute() submission
-         * and order / synchronize / overlap separate invocations accordingly.
-         *
-         * On Vulkan all resources are EXCLUSIVE ownership.
-         *
-         * This means if a resource is being accessed in a transfer pass on the heap, the runtime
-         * may perform an ownership transfer of the resource when it is referenced in a graph.
-         *
-         * Therefore, for streaming resources to the heap for consumption by graphs the best approach is:
-         *
-         * Staging Buffer on Heap (MEMORY_CPU_TO_GPU)
-         *  -> Upload data to the staging buffer from cpu
-         * Intermediate Buffer on Heap (MEMORY_GPU_ONLY, Contains data currently being streamed (Double Buffered))
-         *  -> Copy Staging buffer to intermediate buffer in heap transfer pass
-         * Big Stable Buffer on Heap (MEMORY_GPU_ONLY, Contains all the streamed data)
-         *  -> Copy Intermediate Buffer to stable buffer in runtime transfer pass. (Only when the copy from staging to intermediate has finished)
-         *
-         * The double buffering of the intermediate buffer ensures that the runtime can overlap streaming with graph execution.
-         *
-         * @param passes The passes containing the transfer operations
-         * @return The semaphore representing the pending transfer operations.
-         */
-        virtual std::unique_ptr<Semaphore> transfer(const std::vector<TransferPass> &passes) = 0;
 
     private:
         virtual void incrementReference(const ResourceId &handle) = 0;

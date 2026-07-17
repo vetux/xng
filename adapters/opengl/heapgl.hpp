@@ -33,14 +33,14 @@
 #include "resource/framebuffer.hpp"
 
 #include "glsl/shadercompilerglsl.hpp"
-#include "context/heaptransfercontextgl.hpp"
+#include "context/transfercontextgl.hpp"
 
 namespace xng::opengl {
     class HeapTransferContextGL;
 
     class HeapGL final : public Heap {
     public:
-        explicit HeapGL(std::unique_ptr<Window> heapWindow);
+        explicit HeapGL();
 
         ~HeapGL() override;
 
@@ -50,26 +50,34 @@ namespace xng::opengl {
 
         std::unique_ptr<HeapMapping> map(const HeapResource<Buffer> &target) override;
 
-        std::unique_ptr<Semaphore> transfer(const std::vector<TransferPass> &passes) override;
-
         void incrementReference(const ResourceId &handle) override {
             refCounter.inc(handle.getHandle());
         }
 
         void decrementReference(const ResourceId &handle) override;
 
-        ResourceScope getResources() const {
-            return transferContext->getResources();
-        }
-
-        HeapTransferContextGL& getTransferContextGL() const {
-            return *transferContext;
+        const ResourceScope &getResources() const {
+            return context->getResources().getHeap();
         }
 
     private:
+        ResourceId::Handle allocateHandle() {
+            if (freeHandles.empty()) return nextHandle++;
+            const auto ret = freeHandles.back();
+            freeHandles.pop_back();
+            return ret;
+        }
+
+        void freeHandle(const ResourceId::Handle handle) {
+            freeHandles.push_back(handle);
+        }
+
+        ResourceId::Handle nextHandle = 0;
+        std::vector<ResourceId::Handle> freeHandles{};
+
         RefCounter<ResourceId::Handle, size_t> refCounter{};
 
-        std::unique_ptr<HeapTransferContextGL> transferContext;
+        std::unique_ptr<TransferContextGL> context{};
     };
 }
 

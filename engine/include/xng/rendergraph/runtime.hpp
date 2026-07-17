@@ -94,6 +94,8 @@ namespace xng::rg {
          * What exactly is drawn in the screen buffer if a swap chain / framebuffer size doesn't match
          * is not clearly defined in the graphic apis.
          *
+         * On Vulkan the passes internally run concurrently on their corresponding queues if available (On Modern platforms one queue per context type)
+         *
          * @param graph
          *
          * @return The semaphore representing this submission.

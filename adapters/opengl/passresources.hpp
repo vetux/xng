@@ -49,6 +49,10 @@ namespace xng::opengl {
             }
         }
 
+        ResourceScope &getStack() { return stack; }
+
+        ResourceScope &getHeap() { return heap; }
+
     private:
         ResourceScope stack;
         ResourceScope heap;

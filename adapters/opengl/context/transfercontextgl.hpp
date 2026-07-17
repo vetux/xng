@@ -193,6 +193,10 @@ namespace xng::opengl {
             resources = res;
         }
 
+        PassResources &getResources() {
+            return resources;
+        }
+
         void copyBuffer(const Resource<Buffer> &target,
                         const Resource<Buffer> &source,
                         const size_t targetOffset,
