@@ -105,6 +105,9 @@ namespace xng::rg {
         /**
          * Execute multiple graphs.
          *
+         * Graphs may cross-reference heap resources in which case the graph order defines the semantic execution order
+         * and the runtime inserts barriers where needed for synchronization correctness.
+         *
          * Passes run in parallel where possible, and executions may overlap.
          *
          * The runtime guarantees resource access synchronization correctness at all times based on
