@@ -117,15 +117,22 @@ namespace xng {
         void commit(rg::GraphBuilder &graph) {
             std::vector<rg::TransferPass> ret;
 
-            // On Resize the chunk streamer might have chunks in flight writing to the stale buffer
-            // The copy of staleBackBuffer -> new backBuffer synchronizes the in flight chunks
-            // By setting a new target buffer on the chunk streamer the ChunkStreamer::commit then
-            // submits new chunks to the new target buffer, and the copy syncs in flight transfers.
-            // Chunk streamer commit must be called after all stream buffer commits.
+            // On resize all previous chunk transfers have already been submitted on the graphics queue because
+            // the copies from backBuffer -> buffer happen in the main graph in RenderPasses and thus on the graphics queue.
+
+            // This means the resize only stalls on previously submitted copies on the graphics queue
+            // which are already considered "finished" but not on any other concurrent transfers.
+
+            // A streaming transfer is considered "finished" when it has passed the boundary of staging -> backBuffer
+            // and the copy from backBuffer -> buffer is considered frame overhead because it cannot be overlapped
+            // with both queues if exclusive queue ownership is assumed.
+
+            // With this model the graphics queue will never wait on the transfer queue at the cost of the overhead
+            // of copying the finished chunks from backBuffer to buffer. However, this copy can be overlapped
+            // with other operations on the graphics queue because the runtime can use range granular pipeline barriers
+            // because the copy is intra queue.
+
             if (buffer.getDescription().size != bufferSize) {
-                // This will stall the graph execution on all in flight chunk uploads on the backBuffer
-                // and may issue a queue ownership transfer if the runtime executes the graph transfer passes
-                // on the graphics queue.
                 const auto staleBuffer = buffer;
                 buffer = heap.allocateBuffer(rg::Buffer(bufferSize,
                                                         buffer.getDescription().capabilityFlags,
