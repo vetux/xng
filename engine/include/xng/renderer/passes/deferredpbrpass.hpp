@@ -62,7 +62,7 @@ namespace xng {
 
             registry.set(RenderPassRegistry::PBR_COLOR_DEFERRED, colorTexture);
 
-            builder.addPass(rg::RasterPassBuilder("DeferredPBRPass")
+            builder.addPass(rg::RenderPassBuilder("DeferredPBRPass")
                 .attachColor(rg::Attachment(colorTexture, Vec4f(0)))
                 .attachDepthStencil(rg::Attachment(gDepth))
                 .storageRead(scene.cameraBuffer, {rg::Shader::FRAGMENT})

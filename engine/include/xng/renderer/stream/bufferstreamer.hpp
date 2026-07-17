@@ -59,8 +59,8 @@ namespace xng {
             return streamer.flush(slot);
         }
 
-        std::vector<rg::TransferPass> commit(rg::GraphBuilder &graph) {
-            return streamer.commit(graph);
+        void commit(rg::GraphBuilder &graph) {
+            streamer.commit(graph);
         }
 
         rg::HeapResource<rg::Buffer> getBuffer() const {

@@ -45,7 +45,7 @@ namespace xng {
                     const std::shared_ptr<rg::Surface> surface,
                     RenderPassRegistry &registry,
                     const RenderScene &scene) override {
-            auto pass = rg::RasterPassBuilder("CompositingPass")
+            auto pass = rg::RenderPassBuilder("CompositingPass")
                     .attachColor(rg::Attachment(surface, Vec4f(0)))
                     .vertexRead(scene.vertexBuffers.at(POSITION))
                     .vertexRead(scene.vertexBuffers.at(UV))

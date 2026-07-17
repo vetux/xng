@@ -120,13 +120,10 @@ namespace xng {
             textures.at(handle.level).flush(handle.slot);
         }
 
-        std::vector<rg::TransferPass> commit(rg::GraphBuilder &ctx) {
-            std::vector<rg::TransferPass> ret;
+        void commit(rg::GraphBuilder &ctx) {
             for (auto &pair: textures) {
-                auto passes = pair.second.commit(ctx);
-                ret.insert(ret.end(), passes.begin(), passes.end());
+                pair.second.commit(ctx);
             }
-            return ret;
         }
 
         std::unordered_map<TextureResolution, rg::HeapResource<rg::Texture> > getTextures() const {

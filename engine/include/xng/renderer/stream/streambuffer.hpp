@@ -23,12 +23,8 @@
 
 namespace xng {
     /**
-     * The stream buffer is double-buffered to avoid queue resource ownership transfer stalls.
-     *
      * The stream buffer dynamically grows in size if flushed uploads exceed targetSize and dynamically shrinks back to targetSize.
      *
-     * TODO: Implement dynamic double buffer size (Instead of full size double buffer)
-     * TODO: Redesign sync flow between StreamBuffer / ChunkStreamer.
      * TODO: Efficient stream buffer shrinking
      */
     class StreamBuffer {
@@ -46,10 +42,6 @@ namespace xng {
                                                     | rg::Buffer::CAPABILITY_TRANSFER_SRC
                                                     | rg::Buffer::CAPABILITY_TRANSFER_DST,
                                                     rg::Buffer::MEMORY_GPU_ONLY))),
-              backBuffer(heap.allocateBuffer(rg::Buffer(targetSize,
-                                                        rg::Buffer::CAPABILITY_TRANSFER_SRC
-                                                        | rg::Buffer::CAPABILITY_TRANSFER_DST,
-                                                        rg::Buffer::MEMORY_GPU_ONLY))),
               targetSize(targetSize),
               bufferSize(targetSize) {
         }
@@ -73,7 +65,7 @@ namespace xng {
         Handle upload(const uint8_t *data, const size_t dataSize, const size_t offset) {
             bufferSize = std::max(bufferSize, offset + dataSize);
             bufferSize = std::max(bufferSize, targetSize);
-            const auto ret = chunkStreamer.upload(data, dataSize, backBuffer, offset);
+            const auto ret = chunkStreamer.upload(data, dataSize, buffer, offset);
             uploads.emplace(ret, PendingUpload{offset, dataSize});
             pendingUploads.insert(ret);
             return ret;
@@ -122,7 +114,7 @@ namespace xng {
          * @param graph
          * @return The handle to the buffer.
          */
-        std::vector<rg::TransferPass> commit(rg::GraphBuilder &graph) {
+        void commit(rg::GraphBuilder &graph) {
             std::vector<rg::TransferPass> ret;
 
             // On Resize the chunk streamer might have chunks in flight writing to the stale buffer
@@ -139,69 +131,49 @@ namespace xng {
                                                         buffer.getDescription().capabilityFlags,
                                                         buffer.getDescription().memoryType));
 
-                const auto staleBackBuffer = backBuffer;
-                backBuffer = heap.allocateBuffer(rg::Buffer(bufferSize,
-                                                            backBuffer.getDescription().capabilityFlags,
-                                                            backBuffer.getDescription().memoryType));
-
                 const auto copySize = std::min(staleBuffer.getDescription().size, buffer.getDescription().size);
 
-                const auto pass = rg::TransferPassBuilder("StreamBuffer/Resize")
-                        .read(staleBuffer, 0, staleBuffer.getDescription().size)
-                        .write(buffer, 0, staleBuffer.getDescription().size)
-                        .read(staleBackBuffer, 0, staleBackBuffer.getDescription().size)
-                        .write(backBuffer, 0, staleBackBuffer.getDescription().size)
-                        .execute([this, staleBuffer, staleBackBuffer, copySize](rg::TransferContext &ctx) {
+                auto pass = rg::RenderPassBuilder("StreamBuffer/Resize")
+                        .transferRead(staleBuffer, 0, staleBuffer.getDescription().size)
+                        .transferWrite(buffer, 0, staleBuffer.getDescription().size)
+                        .execute([this, staleBuffer, copySize](rg::RasterContext &,
+                                                               rg::TransferContext &ctx,
+                                                               rg::ComputeContext &) {
+                            // The stale buffers are pinned via HeapResource references in the lambda and
+                            // the runtime will pin the stale buffers additionally until the graph finished execution.
                             ctx.copyBuffer(buffer, staleBuffer, 0, 0, copySize);
-                            ctx.copyBuffer(backBuffer, staleBackBuffer, 0, 0, copySize);
                         });
 
-                //TODO: Find clean performant solution to resize.
-                if (!heap.transfer({pass})->wait(timeOut)) {
-                    throw std::runtime_error("Failed to resize stream buffer");
-                }
+                graph.addPass(std::move(pass));
 
+                // Chunk Streamer inserts copies from chunk buffers to target after stream buffer commit
+                // and all previous copies from chunk buffers to target buffer are synchronized on the graphics queue
+                // which means all copies from chunk buffers to target happening this frame will write to the newly
+                // allocated buffer and the copy from stale to new happens before the chunk buffer copy.
                 for (auto &upload: pendingUploads) {
-                    chunkStreamer.setTargetBuffer(upload, backBuffer);
+                    chunkStreamer.setTargetBuffer(upload, buffer);
                 }
             }
 
-            std::unordered_map<Handle, PendingUpload> frameUploads;
+            std::unordered_set<Handle> frameUploads;
+            for (auto &upload : flushedUploads) {
+                pendingUploads.erase(upload);
+                finishedUploads.insert(upload);
+                frameUploads.insert(upload);
+            }
+
             for (auto &upload: pendingUploads) {
-                if (flushedUploads.find(upload) != flushedUploads.end() || chunkStreamer.isUploadComplete(upload)) {
-                    frameUploads.emplace(upload, uploads.at(upload));
+                if (chunkStreamer.isUploadComplete(upload)) {
                     flushedUploads.erase(upload);
                     finishedUploads.insert(upload);
+                    frameUploads.insert(upload);
                 }
             }
 
-            // Perform copies of the finished uploads in the heap context.
-            // This means subsequent RasterPasses stall only on the ownership transfer of the buffer after the copy is finished
-            // while in the copy pass the queue synchronizes on the range granular copies from staging -> backBuffer -> buffer
-            if (!frameUploads.empty()) {
-                auto builder = rg::TransferPassBuilder("StreamBuffer/Copy");
-                for (auto &upload: frameUploads) {
-                    builder.read(backBuffer, upload.second.offset, upload.second.size);
-                    builder.write(buffer, upload.second.offset, upload.second.size);
-                    pendingUploads.erase(upload.first);
-                }
-                auto pass = builder.execute([this, frameUploads](rg::TransferContext &ctx) {
-                    for (auto &upload: frameUploads) {
-                        ctx.copyBuffer(buffer,
-                                       backBuffer,
-                                       upload.second.offset,
-                                       upload.second.offset,
-                                       upload.second.size);
-                    }
-                });
-                /**
-                 * This is a WAR hazard if the chunk streamer commit passes are not submitted before this pass
-                 * because the flushed uploads to the backBuffer must complete before copying them to the stable buffer.
-                 * To solve this the heap transfer dispatch is deferred to the caller.
-                 */
-                ret.emplace_back(std::move(pass));
+            for (auto &upload : frameUploads) {
+                pendingUploads.erase(upload);
+                flushedUploads.erase(upload);
             }
-            return ret;
         }
 
         rg::HeapResource<rg::Buffer> getBuffer() const {
@@ -224,7 +196,6 @@ namespace xng {
         ChunkStreamer &chunkStreamer;
 
         rg::HeapResource<rg::Buffer> buffer;
-        rg::HeapResource<rg::Buffer> backBuffer;
 
         size_t targetSize = 0;
         size_t bufferSize = 0;

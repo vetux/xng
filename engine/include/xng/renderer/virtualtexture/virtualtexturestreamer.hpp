@@ -86,13 +86,9 @@ namespace xng {
             }
         }
 
-        std::vector<rg::TransferPass> commit(rg::GraphBuilder &graph) {
-            std::vector<rg::TransferPass> ret;
-            auto passes = tileStreamer.commit(graph);
-            ret.insert(ret.end(), passes.begin(), passes.end());
-            passes = atlas.commit(graph);
-            ret.insert(ret.end(), passes.begin(), passes.end());
-            return ret;
+        void commit(rg::GraphBuilder &graph) {
+            tileStreamer.commit(graph);
+            atlas.commit(graph);
         }
 
         bool isUploadComplete(const TextureID textureID) const {

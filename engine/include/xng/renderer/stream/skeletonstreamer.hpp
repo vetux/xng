@@ -83,8 +83,8 @@ namespace xng {
             }
         }
 
-        std::vector<rg::TransferPass> commit(rg::GraphBuilder &graph) {
-            return buffer.commit(graph);
+        void commit(rg::GraphBuilder &graph) {
+            buffer.commit(graph);
         }
 
         rg::HeapResource<rg::Buffer> getBuffer() const {

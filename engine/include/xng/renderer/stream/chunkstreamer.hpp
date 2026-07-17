@@ -16,13 +16,14 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef XENGINE_UPLOADBUFFER_HPP
-#define XENGINE_UPLOADBUFFER_HPP
+#ifndef XENGINE_CHUNKSTREAMER_HPP
+#define XENGINE_CHUNKSTREAMER_HPP
 
 #include <cstddef>
 #include <cstdint>
 #include <utility>
 
+#include "xng/renderer/streamerqueue.hpp"
 #include "xng/rendergraph/heap.hpp"
 #include "xng/rendergraph/builder/graphbuilder.hpp"
 #include "xng/rendergraph/resource/buffer.hpp"
@@ -44,29 +45,39 @@ namespace xng {
      * non⁻flushed transfers from previous frames may complete faster and become available for flushed transfers.
      *
      * Upload works by splitting the uploaded data into fixed size chunks in ram and then uploading individual chunks
-     * by copying into fixed size (chunkSize) staging buffers and from staging buffers to the target buffer.
+     * by copying into fixed size (chunkSize) staging buffers and from staging buffers to chunk sized back buffers
+     * and from back buffers to the target buffer.
+     *
+     * A chunk flows like so:
+     * RAM -> Staging Buffer -> Chunk Buffer -> Target Buffer
+     *
+     * The chunk buffers are per chunk and allow the graphics queue to copy the streamed data without stalling on
+     * in flight uploads.
      *
      * TODO: Implement ChunkStreamer upload priorities
-     * TODO: Replace pinnedChunks with a single fixed size staging buffer + chunk sized dynamically allocated overflow buffers
+     * TODO: (Maybe) Sub Chunk allocation
      */
     class ChunkStreamer {
     public:
         typedef size_t Handle;
 
         ChunkStreamer(const ChunkStreamer &other) = delete;
+
         ChunkStreamer &operator=(const ChunkStreamer &other) = delete;
 
         /**
          * @param heap The heap to use for streaming
          * @param chunkSize The size of one streaming chunk.
-         * @param pinnedChunks The minimum number of chunks that are kept pinned.
+         * @param chunkCount The minimum number of chunk buffers to keep allocated. (Flushing can allocate new chunks)
          */
-        ChunkStreamer(rg::Heap &heap, const size_t chunkSize, const size_t pinnedChunks)
+        ChunkStreamer(rg::Heap &heap,
+                      const size_t chunkSize,
+                      const size_t chunkCount)
             : heap(heap),
               chunkSize(chunkSize),
-              pinnedChunks(pinnedChunks) {
-            for (auto i = 0; i < pinnedChunks; i++) {
-                stagingBuffers.emplace_back(heap, chunkSize);
+              pinnedChunkBuffers(chunkCount) {
+            for (auto i = 0; i < pinnedChunkBuffers; i++) {
+                freeChunkBuffers.emplace_back(heap, chunkSize);
             }
         }
 
@@ -91,24 +102,39 @@ namespace xng {
                 if (remainder > 0) {
                     for (auto i = 0; i < nChunks - 1; i++) {
                         const auto chunkOffset = i * chunkSize;
-                        uploadChunks[ret].emplace_back(UploadChunk{
-                            ret, chunkOffset, chunkSize, targetOffset + chunkOffset
+                        pendingChunks[ret].insert({
+                            pendingChunks[ret].size(),
+                            UploadChunk{
+                                targetOffset + chunkOffset,
+                                chunkOffset,
+                                chunkSize
+                            }
                         });
                     }
                     const auto chunkOffset = (nChunks - 1) * chunkSize;
-                    uploadChunks[ret].emplace_back(UploadChunk{
-                        ret, chunkOffset, remainder, targetOffset + chunkOffset
+                    pendingChunks[ret].insert({
+                        pendingChunks[ret].size(),
+                        UploadChunk{
+                            targetOffset + chunkOffset,
+                            chunkOffset,
+                            remainder
+                        }
                     });
                 } else {
                     for (auto i = 0; i < nChunks; i++) {
                         const auto chunkOffset = i * chunkSize;
-                        uploadChunks[ret].emplace_back(UploadChunk{
-                            ret, chunkOffset, chunkSize, targetOffset + chunkOffset
+                        pendingChunks[ret].insert({
+                            pendingChunks[ret].size(),
+                            UploadChunk{
+                                targetOffset + chunkOffset,
+                                chunkOffset,
+                                chunkSize
+                            }
                         });
                     }
                 }
             } else {
-                uploadChunks[ret].emplace_back(UploadChunk{ret, 0, dataSize, targetOffset});
+                pendingChunks[ret].insert({pendingChunks[ret].size(), UploadChunk{targetOffset, 0, dataSize}});
             }
 
             uploadData[ret] = std::vector(data, data + dataSize);
@@ -119,42 +145,39 @@ namespace xng {
         }
 
         void release(const Handle handle) {
-            uploadChunks.erase(handle);
+            targetBuffers.erase(handle);
             uploadData.erase(handle);
+            pendingChunks.erase(handle);
             flushedUploads.erase(handle);
-            inFlightUploads.erase(handle);
+
+            const auto it = pendingChunkBuffers.find(handle);
+            if (it != pendingChunkBuffers.end()) {
+                for (auto &buffer: it->second) {
+                    if (freeChunkBuffers.size() >= pinnedChunkBuffers) {
+                        break;
+                    }
+                    buffer.pendingTransfer = nullptr;
+                    freeChunkBuffers.emplace_back(std::move(buffer));
+                }
+                pendingChunkBuffers.erase(handle);
+            }
+
             freeHandles.push_back(handle);
         }
 
         bool isUploadComplete(const Handle handle) {
-            auto it = inFlightUploads.find(handle);
-            if (it != inFlightUploads.end()) {
-                auto copy = it->second;
-                it->second.clear();
-                for (auto &transfer: copy) {
-                    if (!transfer->isSignaled()) {
-                        it->second.insert(transfer);
-                    }
-                }
-                if (!it->second.empty()) {
-                    return false;
-                }
-            }
-            return uploadChunks.find(handle) == uploadChunks.end();
+            return flushedUploads.find(handle) != flushedUploads.end()
+                   || pendingChunks.find(handle) == pendingChunks.end();
         }
 
         void flush(const Handle handle) {
-            if (uploadChunks.find(handle) != uploadChunks.end()) {
+            if (pendingChunks.find(handle) != pendingChunks.end()) {
                 flushedUploads.insert(handle);
             }
         }
 
         /**
          * Set the target buffer of the given upload handle for the next commit() invocation.
-         *
-         * There may be chunks in flight from previous commit invocations when calling this method.
-         * Users must insert a copy from the stale to the new buffer in the graph before calling commit().
-         * This ensures the in flight chunks are present on the new buffer.
          *
          * @param handle The handle for which to set the target buffer
          * @param targetBuffer The target buffer to set
@@ -163,207 +186,177 @@ namespace xng {
             targetBuffers[handle] = targetBuffer;
         }
 
-        void commit(std::vector<rg::TransferPass> passes) {
-            const size_t budget = chunkSize * pinnedChunks;
-
-            // Prune finished transfers and accumulate in flight size
-            size_t inFlightSize = 0;
-            std::vector stagingBuffersCopy = std::move(stagingBuffers);
-            stagingBuffers.reserve(stagingBuffersCopy.size());
-            for (auto &stagingBuffer: stagingBuffersCopy) {
-                auto pendingCopy = stagingBuffer.pendingTransfers;
-                for (auto &transfer: pendingCopy) {
-                    if (transfer.first->isSignaled()) {
-                        for (auto &chunk: transfer.second) {
-                            stagingBuffer.allocator.free(chunk.offset, chunk.size);
-                        }
-                        stagingBuffer.pendingTransfers.erase(transfer.first);
-                    } else {
-                        for (auto &chunk: transfer.second) {
-                            inFlightSize += chunk.size;
+        void commit(rg::GraphBuilder &graph, StreamerQueue &queue) {
+            for (auto handle: flushedUploads) {
+                const auto it = pendingChunks.find(handle);
+                if (it != pendingChunks.end()) {
+                    for (auto &pair: it->second) {
+                        if (freeChunkBuffers.empty()) {
+                            ChunkBuffer buffer(heap, chunkSize);
+                            buffer.upload(queue,
+                                          handle,
+                                          uploadData.at(handle),
+                                          pair.second.targetOffset,
+                                          pair.second.chunkOffset,
+                                          pair.second.dataSize);
+                            pendingChunkBuffers[handle].emplace_back(std::move(buffer));
+                        } else {
+                            auto &buffer = freeChunkBuffers.back();
+                            freeChunkBuffers.pop_back();
+                            buffer.upload(queue,
+                                          handle,
+                                          uploadData.at(handle),
+                                          pair.second.targetOffset,
+                                          pair.second.chunkOffset,
+                                          pair.second.dataSize);
+                            pendingChunkBuffers[handle].emplace_back(std::move(buffer));
                         }
                     }
-                }
-                if (!stagingBuffer.pendingTransfers.empty()
-                    || stagingBuffers.size() < pinnedChunks) {
-                    stagingBuffers.emplace_back(std::move(stagingBuffer));
+                    it->second.clear();
                 }
             }
 
-            // Gather Frame Upload Chunks
-            std::vector<UploadChunk> frameChunks;
-            for (auto &handle: flushedUploads) {
-                for (auto &chunk: uploadChunks.at(handle)) {
-                    inFlightSize += chunk.dataSize;
-                    frameChunks.emplace_back(chunk);
+            auto stalePendingChunks = std::move(pendingChunks);
+            pendingChunks.reserve(stalePendingChunks.size());
+            for (auto &hPair: stalePendingChunks) {
+                std::unordered_set<size_t> frameChunks;
+                for (auto &pair: hPair.second) {
+                    if (freeChunkBuffers.empty()) {
+                        break;
+                    }
+                    auto &buffer = freeChunkBuffers.back();
+                    freeChunkBuffers.pop_back();
+                    buffer.upload(queue,
+                                  hPair.first,
+                                  uploadData.at(hPair.first),
+                                  pair.second.targetOffset,
+                                  pair.second.chunkOffset,
+                                  pair.second.dataSize);
+                    pendingChunkBuffers[hPair.first].emplace_back(std::move(buffer));
+                    frameChunks.insert(pair.first);
                 }
-                uploadChunks.erase(handle);
+                for (auto &index: frameChunks) {
+                    hPair.second.erase(index);
+                }
+                if (!hPair.second.empty()) {
+                    pendingChunks[hPair.first] = std::move(hPair.second);
+                }
             }
-            flushedUploads.clear();
 
-            auto uploads = std::move(uploadChunks);
-            uploadChunks.reserve(uploads.size());
-            for (auto &pair: uploads) {
-                if (inFlightSize < budget && stagingBuffers.size() <= pinnedChunks) {
-                    auto chunks = std::move(pair.second);
-                    pair.second.clear();
-                    for (auto &chunk: chunks) {
-                        // Check if the chunk fits in budget
-                        if (inFlightSize + chunk.dataSize <= budget) {
-                            inFlightSize += chunk.dataSize;
-                            frameChunks.emplace_back(chunk);
-                        } else {
-                            pair.second.emplace_back(chunk);
+            // Copy finished chunks
+            auto stalePendingChunkBuffers = std::move(pendingChunkBuffers);
+            pendingChunkBuffers.reserve(stalePendingChunkBuffers.size());
+            for (auto &pair: stalePendingChunkBuffers) {
+                auto staleBuffers = std::move(pair.second);
+                pair.second.reserve(staleBuffers.size());
+                for (auto &buffer: staleBuffers) {
+                    assert(buffer.pendingTransfer != nullptr);
+                    if (flushedUploads.find(buffer.pendingTransferHandle) != flushedUploads.end()
+                        || buffer.pendingTransfer->isSignaled()) {
+                        // Copy to target on graph
+                        const auto sourceBuffer = buffer.backBuffer;
+                        const auto targetBuffer = targetBuffers.at(buffer.pendingTransferHandle);
+                        const auto offset = buffer.pendingTransferOffset;
+                        const auto size = buffer.pendingTransferSize;
+
+                        // This will stall on the transfer queue for flushed uploads.
+                        auto pass = rg::RenderPassBuilder("ChunkStreamer/Copy")
+                                .transferRead(buffer.backBuffer, 0, buffer.pendingTransferSize)
+                                .transferWrite(targetBuffer, buffer.pendingTransferOffset, buffer.pendingTransferSize)
+                                .execute([sourceBuffer, targetBuffer, offset, size](rg::RasterContext &,
+                                rg::TransferContext &ctx,
+                                rg::ComputeContext &) {
+                                        ctx.copyBuffer(targetBuffer, sourceBuffer, offset, 0, size);
+                                    });
+
+                        graph.addPass(std::move(pass));
+
+                        if (freeChunkBuffers.size() < pinnedChunkBuffers) {
+                            buffer.pendingTransfer = nullptr;
+                            freeChunkBuffers.emplace_back(std::move(buffer));
                         }
+                    } else {
+                        pair.second.emplace_back(std::move(buffer));
                     }
                 }
                 if (!pair.second.empty()) {
-                    uploadChunks.emplace(pair.first, std::move(pair.second));
+                    pendingChunkBuffers[pair.first] = std::move(pair.second);
                 }
             }
 
-            // Upload Chunks
-            std::vector<ChunkUpload> chunkUploads;
-            for (auto &chunk: frameChunks) {
-                size_t frameChunkSize = chunk.dataSize;
-
-                size_t stagingOffset = 0;
-                auto stagingIndex = getStagingBuffer(frameChunkSize, stagingOffset);
-                auto &stagingBuffer = stagingBuffers.at(stagingIndex);
-
-                auto &chunkData = uploadData.at(chunk.handle);
-
-                stagingBuffer.mapping->copyFrom(chunkData, chunk.dataOffset, stagingOffset, chunk.dataSize);
-
-                chunkUploads.emplace_back(stagingIndex,
-                                          stagingOffset,
-                                          chunk.chunkOffset,
-                                          chunk.dataSize,
-                                          chunk.handle,
-                                          targetBuffers.at(chunk.handle));
-            }
-
-            auto builder = rg::TransferPassBuilder("ChunkStreamer/Upload");
-
-            for (auto &upload: chunkUploads) {
-                builder.read(stagingBuffers.at(upload.stagingIndex).buffer, upload.stagingOffset, upload.chunkSize);
-                builder.write(upload.targetBuffer, upload.chunkOffset, upload.chunkSize);
-            }
-
-            auto pass = builder.execute(
-                [this, chunkUploads](rg::TransferContext &ctx) {
-                    for (auto &upload: chunkUploads) {
-                        ctx.copyBuffer(upload.targetBuffer,
-                                       stagingBuffers.at(upload.stagingIndex).buffer,
-                                       upload.chunkOffset,
-                                       upload.stagingOffset,
-                                       upload.chunkSize);
-                    }
-                });
-
-            passes.insert(passes.begin(), std::move(pass));
-
-            auto transferHandle = std::shared_ptr(std::move(heap.transfer(passes)));
-
-            for (auto &upload: chunkUploads) {
-                stagingBuffers.at(upload.stagingIndex).pendingTransfers[transferHandle].emplace_back(upload.stagingOffset, upload.chunkSize);
-                inFlightUploads[upload.handle].insert(transferHandle);
-            }
+            flushedUploads.clear();
         }
 
     private:
         struct UploadChunk {
-            Handle handle;
-            size_t dataOffset;
-            size_t dataSize;
-            size_t chunkOffset; // The offset into buffer
-        };
-
-        struct ChunkTransfer {
-            size_t offset; // The offset into the staging buffer
-            size_t size; // The size of the transfer
-
-            ChunkTransfer(const size_t offset, const size_t size)
-                : offset(offset), size(size) {
-            }
-        };
-
-        struct StagingBuffer {
-            rg::HeapResource<rg::Buffer> buffer;
-            std::unique_ptr<rg::HeapMapping> mapping;
-            std::unordered_map<std::shared_ptr<rg::Semaphore>, std::vector<ChunkTransfer>> pendingTransfers;
-
-            RangeAllocator allocator;
-
-            StagingBuffer(rg::Heap &heap, const size_t chunkSize)
-                : buffer(heap.allocateBuffer(rg::Buffer(chunkSize,
-                                                        rg::Buffer::CAPABILITY_TRANSFER_SRC,
-                                                        rg::Buffer::MEMORY_CPU_TO_GPU))),
-                  mapping(heap.map(buffer)),
-                  allocator(chunkSize) {
-            }
-        };
-
-        struct ChunkUpload {
-            size_t stagingIndex;
-            size_t stagingOffset;
+            size_t targetOffset;
             size_t chunkOffset;
-            size_t chunkSize;
-            Handle handle;
-            rg::HeapResource<rg::Buffer> targetBuffer;
-
-            ChunkUpload(const size_t stagingIndex,
-                        const size_t stagingOffset,
-                        const size_t chunkOffset,
-                        const size_t chunkSize,
-                        const Handle handle,
-                        rg::HeapResource<rg::Buffer> targetBuffer)
-                : stagingIndex(stagingIndex),
-                  stagingOffset(stagingOffset),
-                  chunkOffset(chunkOffset),
-                  chunkSize(chunkSize),
-                  handle(handle),
-                  targetBuffer(std::move(targetBuffer)) {
-            }
+            size_t dataSize;
         };
 
-        size_t getStagingBuffer(const size_t size, size_t &offset) {
-            assert(size <= chunkSize);
+        struct ChunkBuffer {
+            rg::HeapResource<rg::Buffer> stagingBuffer;
+            rg::HeapResource<rg::Buffer> backBuffer;
 
-            for (auto i = 0; i < stagingBuffers.size(); i++) {
-                auto &stagingBuffer = stagingBuffers.at(i);
-                if (stagingBuffer.allocator.allocate(size, offset)) {
-                    return i;
-                }
+            std::unique_ptr<rg::HeapMapping> mapping;
+
+            std::shared_ptr<StreamerQueue::SubmitSemaphore> pendingTransfer{};
+            Handle pendingTransferHandle{};
+            size_t pendingTransferOffset{};
+            size_t pendingTransferSize{};
+
+            ChunkBuffer(rg::Heap &heap, const size_t chunkSize)
+                : stagingBuffer(heap.allocateBuffer(rg::Buffer(chunkSize,
+                                                               rg::Buffer::CAPABILITY_TRANSFER_SRC,
+                                                               rg::Buffer::MEMORY_CPU_TO_GPU))),
+                  backBuffer(heap.allocateBuffer(rg::Buffer(chunkSize,
+                                                            rg::Buffer::CAPABILITY_TRANSFER_DST,
+                                                            rg::Buffer::MEMORY_GPU_ONLY))) {
+                mapping = heap.map(stagingBuffer);
             }
 
-            StagingBuffer stagingBuffer(heap, chunkSize);
+            void upload(StreamerQueue &queue,
+                        const Handle handle,
+                        const std::vector<uint8_t> &data,
+                        const size_t targetOffset,
+                        const size_t chunkOffset,
+                        const size_t size) {
+                assert(pendingTransfer == nullptr);
 
-            const auto allocated = stagingBuffer.allocator.allocate(size, offset);
-            assert(allocated);
+                mapping->copyFrom(data, chunkOffset, 0, size);
 
-            stagingBuffers.emplace_back(std::move(stagingBuffer));
-
-            return stagingBuffers.size() - 1;
-        }
+                auto pass = rg::TransferPassBuilder("ChunkStreamer/Upload")
+                        .read(stagingBuffer, 0, size)
+                        .write(backBuffer, 0, size)
+                        .execute([this, size](rg::TransferContext &ctx) {
+                            ctx.copyBuffer(backBuffer, stagingBuffer, 0, 0, size);
+                        });
+                pendingTransfer = queue.addPass(std::move(pass));
+                pendingTransferHandle = handle;
+                pendingTransferOffset = targetOffset;
+                pendingTransferSize = size;
+            }
+        };
 
         rg::Heap &heap;
 
         const size_t chunkSize = 0;
-        const size_t pinnedChunks = 0;
+        const size_t pinnedChunkBuffers = 0;
 
         std::unordered_map<Handle, rg::HeapResource<rg::Buffer> > targetBuffers;
         std::unordered_map<Handle, std::vector<uint8_t> > uploadData;
-        std::unordered_map<Handle, std::vector<UploadChunk> > uploadChunks;
+
+        std::unordered_map<Handle, std::unordered_map<size_t, UploadChunk> > pendingChunks;
+
+        std::unordered_map<Handle, std::vector<ChunkBuffer> > pendingChunkBuffers;
+
         std::unordered_set<Handle> flushedUploads;
 
-        std::unordered_map<Handle, std::unordered_set<std::shared_ptr<rg::Semaphore> > > inFlightUploads;
-
-        std::vector<StagingBuffer> stagingBuffers; // Each staging buffer is sized chunkSize
+        std::vector<ChunkBuffer> freeChunkBuffers;
 
         Handle nextHandle = 0;
         std::vector<Handle> freeHandles;
     };
 }
 
-#endif //XENGINE_UPLOADBUFFER_HPP
+#endif //XENGINE_CHUNKSTREAMER_HPP

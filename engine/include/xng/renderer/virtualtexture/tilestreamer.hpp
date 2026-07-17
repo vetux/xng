@@ -107,28 +107,28 @@ namespace xng {
             }
         };
 
-        TileStreamer(rg::Heap &heap,
+        TileStreamer(rg::Runtime &runtime,
                      ChunkStreamer &chunkStreamer,
                      TextureAtlas &atlas,
                      ThreadPool &pool,
                      const unsigned int tileSize)
-            : heap(heap),
+            : runtime(runtime),
               atlas(atlas),
               pool(pool),
               tileSize(tileSize),
-              tileMapOffsetsBuffer(heap, chunkStreamer, rg::Buffer::CAPABILITY_STORAGE),
-              tileMapBuffer(heap, chunkStreamer, rg::Buffer::CAPABILITY_STORAGE),
-              residencyMapOffsetsBuffer(heap, chunkStreamer, rg::Buffer::CAPABILITY_STORAGE),
-              residencyMapBuffer(heap, chunkStreamer, rg::Buffer::CAPABILITY_STORAGE) {
-            readbackBuffer = heap.allocateBuffer(rg::Buffer(1,
-                                                            rg::Buffer::CAPABILITY_STORAGE,
-                                                            rg::Buffer::MEMORY_GPU_ONLY));
-            readbackHostBuffer = heap.allocateBuffer(rg::Buffer(1,
-                                                                rg::Buffer::CAPABILITY_STORAGE,
-                                                                rg::Buffer::MEMORY_GPU_TO_CPU));
-            readbackClearBuffer = heap.allocateBuffer(rg::Buffer(1,
-                                                                 rg::Buffer::CAPABILITY_STORAGE,
-                                                                 rg::Buffer::MEMORY_CPU_TO_GPU));
+              tileMapOffsetsBuffer(runtime.getResourceHeap(), chunkStreamer, rg::Buffer::CAPABILITY_STORAGE),
+              tileMapBuffer(runtime.getResourceHeap(), chunkStreamer, rg::Buffer::CAPABILITY_STORAGE),
+              residencyMapOffsetsBuffer(runtime.getResourceHeap(), chunkStreamer, rg::Buffer::CAPABILITY_STORAGE),
+              residencyMapBuffer(runtime.getResourceHeap(), chunkStreamer, rg::Buffer::CAPABILITY_STORAGE) {
+            readbackBuffer = runtime.getResourceHeap().allocateBuffer(rg::Buffer(1,
+                rg::Buffer::CAPABILITY_STORAGE,
+                rg::Buffer::MEMORY_GPU_ONLY));
+            readbackHostBuffer = runtime.getResourceHeap().allocateBuffer(rg::Buffer(1,
+                rg::Buffer::CAPABILITY_STORAGE,
+                rg::Buffer::MEMORY_GPU_TO_CPU));
+            readbackClearBuffer = runtime.getResourceHeap().allocateBuffer(rg::Buffer(1,
+                rg::Buffer::CAPABILITY_STORAGE,
+                rg::Buffer::MEMORY_CPU_TO_GPU));
         }
 
         ~TileStreamer() = default;
@@ -377,18 +377,21 @@ namespace xng {
             // of read binding but executes live without errors. GL_INVALID_OPERATION in glMapBufferRange(buffer does not allow write access)
             // On Win32 the process crashes while capturing.
 
-            const auto sem = heap.transfer({rg::TransferPassBuilder("TileStreamer/Readback")
-            .read(readbackBuffer)
-            .write(readbackHostBuffer)
-            .execute([this](rg::TransferContext &ctx) {
-                ctx.copyBuffer(readbackHostBuffer, readbackBuffer, 0, 0, readbackBuffer.getDescription().size);
-            })});
+            const auto sem = runtime.execute(rg::GraphBuilder().addPass({
+                rg::RenderPassBuilder("TileStreamer/Readback")
+                .transferRead(readbackBuffer)
+                .transferWrite(readbackHostBuffer)
+                .execute([this](rg::RasterContext &, rg::TransferContext &ctx, rg::ComputeContext &) {
+                    ctx.copyBuffer(readbackHostBuffer, readbackBuffer, 0, 0, readbackBuffer.getDescription().size);
+                })
+            }).build());
 
+            // TODO: Find better solution for readback technique.
             if (!sem->wait(timeOut)) {
                 throw std::runtime_error("TileStreamer readback timed out.");
             }
 
-            const auto mapping = heap.map(readbackHostBuffer);
+            const auto mapping = runtime.getResourceHeap().map(readbackHostBuffer);
             const auto ptr = reinterpret_cast<unsigned int *>(mapping->data());
             for (auto &pair: textures) {
                 if (newTextures.find(pair.first) != newTextures.end()) {
@@ -488,32 +491,25 @@ namespace xng {
             }
             updatedMips.clear();
 
-            auto passes = tileMapOffsetsBuffer.commit(graph);
-            ret.insert(ret.end(), passes.begin(), passes.end());
-
-            passes = tileMapBuffer.commit(graph);
-            ret.insert(ret.end(), passes.begin(), passes.end());
-
-            passes = residencyMapOffsetsBuffer.commit(graph);
-            ret.insert(ret.end(), passes.begin(), passes.end());
-
-            passes = residencyMapBuffer.commit(graph);
-            ret.insert(ret.end(), passes.begin(), passes.end());
+            tileMapOffsetsBuffer.commit(graph);
+            tileMapBuffer.commit(graph);
+            residencyMapOffsetsBuffer.commit(graph);
+            residencyMapBuffer.commit(graph);
 
             if (readbackBuffer.getDescription().size != tileMapBuffer.getBuffer().getDescription().size) {
                 auto desc = readbackBuffer.getDescription();
                 desc.size = tileMapBuffer.getBuffer().getDescription().size;
-                readbackBuffer = heap.allocateBuffer(desc);
+                readbackBuffer = runtime.getResourceHeap().allocateBuffer(desc);
 
                 desc = readbackHostBuffer.getDescription();
                 desc.size = tileMapBuffer.getBuffer().getDescription().size;
-                readbackHostBuffer = heap.allocateBuffer(desc);
+                readbackHostBuffer = runtime.getResourceHeap().allocateBuffer(desc);
 
                 desc = readbackClearBuffer.getDescription();
                 desc.size = tileMapBuffer.getBuffer().getDescription().size;
-                readbackClearBuffer = heap.allocateBuffer(desc);
+                readbackClearBuffer = runtime.getResourceHeap().allocateBuffer(desc);
                 {
-                    const auto mapping = heap.map(readbackClearBuffer);
+                    const auto mapping = runtime.getResourceHeap().map(readbackClearBuffer);
                     std::memset(mapping->data(), 0, mapping->size());
                 }
             }
@@ -661,7 +657,7 @@ namespace xng {
 
         static constexpr size_t timeOut = 10'000'000'000ULL;
 
-        rg::Heap &heap;
+        rg::Runtime &runtime;
         TextureAtlas &atlas;
         ThreadPool &pool;
 

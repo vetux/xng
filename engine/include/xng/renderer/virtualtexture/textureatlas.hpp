@@ -126,9 +126,7 @@ namespace xng {
             return true;
         }
 
-        std::vector<rg::TransferPass> commit(rg::GraphBuilder &graph) {
-            std::vector<rg::TransferPass> ret;
-
+        void commit(rg::GraphBuilder &graph) {
             staleTexture = {};
 
             const auto totalOffset = getOffset(slotAllocator.getSize());
@@ -137,10 +135,14 @@ namespace xng {
                 auto desc = texture.getDescription();
                 desc.arrayLayers = totalOffset.z + 1;
                 texture = runtime.getResourceHeap().allocateTexture(desc);
-                ret.emplace_back(rg::TransferPassBuilder("TextureAtlas/Copy")
-                    .read(staleTexture, rg::TextureBinding::Range(0, 1, 0, staleTexture.getDescription().arrayLayers))
-                    .write(texture, rg::TextureBinding::Range(0, 1, 0, staleTexture.getDescription().arrayLayers))
-                    .execute([this](rg::TransferContext &ctx) {
+                graph.addPass(rg::RenderPassBuilder("TextureAtlas/Copy")
+                    .transferRead(staleTexture,
+                                  rg::TextureBinding::Range(0, 1, 0, staleTexture.getDescription().arrayLayers))
+                    .transferWrite(
+                        texture, rg::TextureBinding::Range(0, 1, 0, staleTexture.getDescription().arrayLayers))
+                    .execute([this](rg::RasterContext &,
+                                    rg::TransferContext &ctx,
+                                    rg::ComputeContext &) {
                         rg::TransferContext::TextureCopyRegion region;
                         region.src = rg::Texture::SubResource(0);
                         region.dst = rg::Texture::SubResource(0);
@@ -207,23 +209,24 @@ namespace xng {
                 }
             }
 
-            auto passes = buffer.commit(graph);
-            ret.insert(ret.end(), passes.begin(), passes.end());
+            buffer.commit(graph);
 
-            auto pass = rg::TransferPassBuilder("TextureAtlas/Copy");
+            auto pass = rg::RenderPassBuilder("TextureAtlas/Copy");
 
             for (auto slot: frameCopies) {
                 const auto &upload = pendingUploads.at(slot);
-                pass.read(buffer.getBuffer(),
-                          upload.bufferSlot * atlasTileBytes,
-                          atlasTileBytes);
-                pass.write(texture, rg::TextureBinding::Range(0, 1, upload.offset.z, 1));
+                pass.transferRead(buffer.getBuffer(),
+                                  upload.bufferSlot * atlasTileBytes,
+                                  atlasTileBytes);
+                pass.transferWrite(texture, rg::TextureBinding::Range(0, 1, upload.offset.z, 1));
 
                 copiedUploadQueues[pendingUploadPriorities.at(slot)].insert(slot);
                 pendingUploadQueues.at(pendingUploadPriorities.at(slot)).erase(slot);
             }
 
-            ret.emplace_back(pass.execute([this, frameCopies](rg::TransferContext &ctx) {
+            graph.addPass(pass.execute([this, frameCopies](rg::RasterContext &,
+                                                           rg::TransferContext &ctx,
+                                                           rg::ComputeContext &) {
                 for (auto slot: frameCopies) {
                     const auto &upload = pendingUploads.at(slot);
                     ctx.copyBufferToTexture(texture,
@@ -235,8 +238,6 @@ namespace xng {
                                             rg::RGBA8);
                 }
             }));
-
-            return ret;
         }
 
         rg::HeapResource<rg::Texture> getTexture() const {
