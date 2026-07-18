@@ -80,65 +80,65 @@ namespace xng::opengl {
 
             glUseProgram(shaderProgram.programHandle);
 
-            if (pipeline.properties.multisample)
+            if (pipeline.configuration.multisample)
                 glEnable(GL_MULTISAMPLE);
             else
                 glDisable(GL_MULTISAMPLE);
 
-            if (pipeline.properties.multiSampleEnableFrequency)
+            if (pipeline.configuration.multiSampleEnableFrequency)
                 glEnable(GL_SAMPLE_COVERAGE);
             else
                 glDisable(GL_SAMPLE_COVERAGE);
 
-            glSampleCoverage(pipeline.properties.multiSampleFrequency, GL_TRUE);
+            glSampleCoverage(pipeline.configuration.multiSampleFrequency, GL_TRUE);
 
-            glDepthFunc(convert(pipeline.properties.depthTestMode));
+            glDepthFunc(convert(pipeline.configuration.depthTestMode));
 
-            if (pipeline.properties.depthTestWrite)
+            if (pipeline.configuration.depthTestWrite)
                 glDepthMask(GL_TRUE);
             else
                 glDepthMask(GL_FALSE);
 
-            if (pipeline.properties.enableDepthTest) {
+            if (pipeline.configuration.enableDepthTest) {
                 glEnable(GL_DEPTH_TEST);
             } else {
                 glDisable(GL_DEPTH_TEST);
             }
 
-            glStencilMask(pipeline.properties.stencilTestMask);
-            glStencilFunc(convert(pipeline.properties.stencilMode),
-                          pipeline.properties.stencilReference,
-                          pipeline.properties.stencilFunctionMask);
-            glStencilOp(convert(pipeline.properties.stencilFail),
-                        convert(pipeline.properties.stencilDepthFail),
-                        convert(pipeline.properties.stencilPass));
+            glStencilMask(pipeline.configuration.stencilTestMask);
+            glStencilFunc(convert(pipeline.configuration.stencilMode),
+                          pipeline.configuration.stencilReference,
+                          pipeline.configuration.stencilFunctionMask);
+            glStencilOp(convert(pipeline.configuration.stencilFail),
+                        convert(pipeline.configuration.stencilDepthFail),
+                        convert(pipeline.configuration.stencilPass));
 
-            if (pipeline.properties.enableStencilTest) {
+            if (pipeline.configuration.enableStencilTest) {
                 glEnable(GL_STENCIL_TEST);
             } else {
                 glDisable(GL_STENCIL_TEST);
             }
 
-            glCullFace(convert(pipeline.properties.faceCullMode));
-            if (pipeline.properties.faceCullWinding == RasterPipeline::CLOCKWISE)
+            glCullFace(convert(pipeline.configuration.faceCullMode));
+            if (pipeline.configuration.faceCullWinding == RasterPipeline::CLOCKWISE)
                 glFrontFace(GL_CW);
             else
                 glFrontFace(GL_CCW);
 
-            if (pipeline.properties.enableFaceCulling) {
+            if (pipeline.configuration.enableFaceCulling) {
                 glEnable(GL_CULL_FACE);
             } else {
                 glDisable(GL_CULL_FACE);
             }
 
-            glBlendFuncSeparate(convert(pipeline.properties.colorBlendSourceMode),
-                                convert(pipeline.properties.colorBlendDestinationMode),
-                                convert(pipeline.properties.alphaBlendSourceMode),
-                                convert(pipeline.properties.alphaBlendDestinationMode));
-            glBlendEquationSeparate(convert(pipeline.properties.colorBlendEquation),
-                                    convert(pipeline.properties.alphaBlendEquation));
+            glBlendFuncSeparate(convert(pipeline.configuration.colorBlendSourceMode),
+                                convert(pipeline.configuration.colorBlendDestinationMode),
+                                convert(pipeline.configuration.alphaBlendSourceMode),
+                                convert(pipeline.configuration.alphaBlendDestinationMode));
+            glBlendEquationSeparate(convert(pipeline.configuration.colorBlendEquation),
+                                    convert(pipeline.configuration.alphaBlendEquation));
 
-            if (pipeline.properties.enableBlending) {
+            if (pipeline.configuration.enableBlending) {
                 glEnable(GL_BLEND);
             } else {
                 glDisable(GL_BLEND);
@@ -508,15 +508,15 @@ namespace xng::opengl {
 
             const auto &pipeline = pipelineCache.getRasterPipeline(boundPipeline.value());
 
-            if (!pipeline.properties.enableDynamicStencilReference) {
+            if (!pipeline.configuration.enableDynamicStencilReference) {
                 throw std::runtime_error("Dynamic stencil reference not enabled.");
             }
 
             oglDebugStartGroup("RasterContextGL::setStencilReference");
 
-            glStencilFunc(convert(pipeline.properties.stencilMode),
+            glStencilFunc(convert(pipeline.configuration.stencilMode),
                           value,
-                          pipeline.properties.stencilFunctionMask);
+                          pipeline.configuration.stencilFunctionMask);
             oglCheckError();
 
             oglDebugEndGroup();
