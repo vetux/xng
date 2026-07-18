@@ -16,19 +16,22 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef XENGINE_MODELOBJECT_HPP
-#define XENGINE_MODELOBJECT_HPP
+#ifndef XENGINE_RENDERMODEL_HPP
+#define XENGINE_RENDERMODEL_HPP
+
+#include "xng/renderer/objects/rendertexture.hpp"
+#include "xng/renderer/objects/rendermesh.hpp"
 
 namespace xng {
-    class ModelObject {
+    class RenderModel {
     public:
-        ModelObject(RenderObjectHandle<RenderTransform> transform,
-              RenderObjectHandle<RenderMaterial> material,
-              std::vector<RenderObjectHandle<RenderMesh> > meshes,
-              const RenderPath renderPath,
-              const bool castShadows,
-              const ShadingModel shadingModel,
-              const bool receiveShadows)
+        RenderModel(RenderObjectHandle<RenderTransform> transform,
+                    RenderObjectHandle<RenderMaterial> material,
+                    std::vector<RenderObjectHandle<RenderMesh> > meshes,
+                    const RenderPath renderPath,
+                    const bool castShadows,
+                    const ShadingModel shadingModel,
+                    const bool receiveShadows)
             : transform(std::move(transform)),
               material(std::move(material)),
               meshes(std::move(meshes)),
@@ -79,4 +82,4 @@ namespace xng {
     };
 }
 
-#endif //XENGINE_MODELOBJECT_HPP
+#endif //XENGINE_RENDERMODEL_HPP

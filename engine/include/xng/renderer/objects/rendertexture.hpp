@@ -19,6 +19,7 @@
 #ifndef XENGINE_RENDERTEXTURE_HPP
 #define XENGINE_RENDERTEXTURE_HPP
 
+#include "xng/renderer/renderobject.hpp"
 #include "xng/renderer/virtualtexture/imagetileloader.hpp"
 #include "xng/renderer/virtualtexture/virtualtexturestreamer.hpp"
 #include "xng/shaderscript/macro/shaderstruct.hpp"
@@ -30,7 +31,7 @@ namespace xng {
                  Vec4i, minFilter_magFilter_mipFilter_wrap,
                  Vec4f, srcRect)
 
-    class RenderTexture final {
+    class RenderTexture final : public RenderObject {
     public:
         //TODO: Multiple backing techniques for textures
         enum TextureBacking : int {

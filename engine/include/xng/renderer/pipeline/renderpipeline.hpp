@@ -19,8 +19,8 @@
 #ifndef XENGINE_RENDERPIPELINE_HPP
 #define XENGINE_RENDERPIPELINE_HPP
 
-#include "xng/renderer/rendertexture.hpp"
-#include "xng/renderer/rendermesh.hpp"
+#include "xng/renderer/objects/rendertexture.hpp"
+#include "xng/renderer/objects/rendermesh.hpp"
 
 #include "xng/renderer/pipeline/rendershadercompiler.hpp"
 #include "xng/renderer/pipeline/renderpipelinematerial.hpp"
@@ -28,7 +28,9 @@
 
 namespace xng {
     /**
-     * The RenderPipeline defines a fixed-function-like pipeline interface for drawing high-level objects.
+     * The RenderPipeline defines a fixed-function-like pipeline interface for drawing high-level scene objects.
+     *
+     * Each pipeline is owned by a scene and references objects in that scene via ID.
      *
      * The pipeline internally automates instancing based on mesh references and may perform more advanced drawing
      * techniques such as indirect drawing where the pipeline will never iterate the draws on cpu.
@@ -48,7 +50,10 @@ namespace xng {
      */
     class RenderPipeline {
     public:
-        typedef std::variant<rg::Attachment, std::shared_ptr<RenderTexture> > Attachment;
+        /**
+         * An attachment can either be a RenderGraph attachment or a RenderTexture
+         */
+        typedef std::variant<rg::Attachment, RenderObject::ID> Attachment;
 
         struct MaterialLayout {
             std::unordered_map<RenderPipelineMaterial::PropertyID, rg::ShaderPrimitiveType> properties;
@@ -81,7 +86,7 @@ namespace xng {
 
         virtual DrawID addDrawCall(std::shared_ptr<RenderPipelineTransform> transform,
                                    std::shared_ptr<RenderPipelineMaterial> material,
-                                   const std::vector<std::shared_ptr<RenderMesh> > &meshes,
+                                   const std::vector<RenderObject::ID> &meshes,
                                    int sortPriority);
 
         virtual void removeDrawCall(DrawID id) = 0;

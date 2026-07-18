@@ -19,10 +19,11 @@
 #ifndef XENGINE_RENDERSKELETON_HPP
 #define XENGINE_RENDERSKELETON_HPP
 
+#include "xng/renderer/renderobject.hpp"
 #include "xng/renderer/stream/skeletonstreamer.hpp"
 
 namespace xng {
-    class RenderSkeleton final {
+    class RenderSkeleton final : public RenderObject {
     public:
         RenderSkeleton(SkeletonStreamer &boneStream,
                        const std::vector<std::string> &boneNames)
@@ -33,7 +34,7 @@ namespace xng {
             }
         }
 
-        ~RenderSkeleton() {
+        ~RenderSkeleton() override {
             skeletonStream.destroy(skeletonHandle);
         }
 
@@ -60,11 +61,11 @@ namespace xng {
             return boneOffsets;
         }
 
-        bool isUploadComplete() {
+        bool isUploadComplete() override {
             return skeletonStream.isUploadComplete(skeletonHandle);
         }
 
-        void flush() {
+        void flush() override {
             skeletonStream.flush(skeletonHandle);
         }
 

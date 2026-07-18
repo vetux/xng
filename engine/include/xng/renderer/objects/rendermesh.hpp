@@ -19,11 +19,12 @@
 #ifndef XENGINE_RENDERMESH_HPP
 #define XENGINE_RENDERMESH_HPP
 
+#include "xng/renderer/renderobject.hpp"
 #include "xng/renderer/stream/meshstreamer.hpp"
-#include "renderskeleton.hpp"
+#include "xng/renderer/objects/renderskeleton.hpp"
 
 namespace xng {
-    class RenderMesh final {
+    class RenderMesh final : public RenderObject {
     public:
         RenderMesh(MeshStreamer &meshStream,
                    const Mesh &mesh,
@@ -36,7 +37,7 @@ namespace xng {
             }
         }
 
-        ~RenderMesh() {
+        ~RenderMesh() override {
             meshStream.destroy(meshHandle);
         }
 
@@ -52,14 +53,14 @@ namespace xng {
             return skeleton;
         }
 
-        bool isUploadComplete() {
+        bool isUploadComplete() override {
             if (skeleton && !skeleton->isUploadComplete()) {
                 return false;
             }
             return meshStream.isUploadComplete(meshHandle);
         }
 
-        void flush() {
+        void flush() override {
             if (skeleton) {
                 skeleton->flush();
             }

@@ -21,7 +21,6 @@
 
 #include "xng/rendergraph/runtime.hpp"
 
-#include "xng/renderer/renderallocator.hpp"
 #include "xng/renderer/renderscene.hpp"
 #include "xng/renderer/renderpass.hpp"
 #include "xng/renderer/rendererstatistics.hpp"
@@ -65,11 +64,6 @@ namespace xng {
         std::vector<std::shared_ptr<RenderPass> > passes;
 
         rg::PipelineCache::Handle skinningPipeline;
-
-        ChunkStreamer chunkStreamer;
-        SkeletonStreamer skeletonStreamer;
-        MeshStreamer meshStreamer;
-        VirtualTextureStreamer virtualTextureStreamer;
     };
 }
 

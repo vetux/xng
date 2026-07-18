@@ -22,7 +22,7 @@
 #include <cstdint>
 #include <variant>
 
-#include "xng/renderer/rendertexture.hpp"
+#include "xng/renderer/objects/rendertexture.hpp"
 
 namespace xng {
     /**
@@ -38,7 +38,7 @@ namespace xng {
         virtual ~RenderPipelineMaterial() = default;
 
         virtual void update(const std::unordered_map<PropertyID, rg::ShaderPrimitive> &properties,
-                            const std::unordered_map<TextureID, std::shared_ptr<RenderTexture> > &textures) = 0;
+                            const std::unordered_map<TextureID, RenderObject::ID> &textures) = 0;
 
         virtual const std::unordered_map<PropertyID, rg::ShaderPrimitiveType> &getProperties() = 0;
 
