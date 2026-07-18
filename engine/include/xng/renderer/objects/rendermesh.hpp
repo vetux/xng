@@ -24,6 +24,7 @@
 #include "xng/renderer/objects/renderskeleton.hpp"
 
 namespace xng {
+    //TODO: Design meshlet integration technique (For Meshlet volume based culling)
     class RenderMesh final : public RenderObject {
     public:
         RenderMesh(MeshStreamer &meshStream,
