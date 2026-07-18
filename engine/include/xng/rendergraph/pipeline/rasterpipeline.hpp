@@ -138,7 +138,7 @@ namespace xng::rg {
             }
         };
 
-        struct Properties {
+        struct Configuration {
             bool multisample = false;
             bool multiSampleEnableFrequency = false;
             float multiSampleFrequency = 1;
@@ -189,7 +189,7 @@ namespace xng::rg {
         Primitive primitive = TRIANGLES;
         VertexFormat vertexFormat;
 
-        Properties properties;
+        Configuration configuration;
     };
 }
 
