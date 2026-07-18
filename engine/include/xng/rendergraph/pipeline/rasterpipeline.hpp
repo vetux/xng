@@ -114,7 +114,8 @@ namespace xng::rg {
              * @param _bindingPoints The binding points of each attribute
              * @param _offsets The relative offsets of each attribute
              */
-            VertexFormat(ShaderAttributeLayout _layout, std::vector<size_t> _bindingPoints, std::vector<size_t> _offsets)
+            VertexFormat(ShaderAttributeLayout _layout, std::vector<size_t> _bindingPoints,
+                         std::vector<size_t> _offsets)
                 : layout(std::move(_layout)), bindingPoints(std::move(_bindingPoints)), offsets(std::move(_offsets)) {
                 if (layout.getElements().size() != offsets.size()) {
                     throw std::runtime_error("Vertex layout and offsets must have the same number of elements");
@@ -129,7 +130,7 @@ namespace xng::rg {
             explicit VertexFormat(ShaderAttributeLayout layout)
                 : layout(std::move(layout)) {
                 size_t offset = 0;
-                for (auto &element : this->layout.getElements()) {
+                for (auto &element: this->layout.getElements()) {
                     offsets.emplace_back(offset);
                     bindingPoints.emplace_back(0);
                     offset += element.getSize();
@@ -137,7 +138,40 @@ namespace xng::rg {
             }
         };
 
-        //TODO: Split pipeline configuration into separate struct
+        struct Properties {
+            bool multisample = false;
+            bool multiSampleEnableFrequency = false;
+            float multiSampleFrequency = 1;
+
+            bool enableDepthTest = false;
+            bool depthTestWrite = false;
+
+            DepthTestMode depthTestMode = DEPTH_TEST_LESS;
+
+            bool enableStencilTest = false;
+            // Enables reference updates via RasterContext::setStencilReference.
+            bool enableDynamicStencilReference = true;
+            unsigned int stencilTestMask = 0xFF;
+            StencilMode stencilMode = STENCIL_ALWAYS;
+            int stencilReference = 1;
+            unsigned int stencilFunctionMask = 0xFF;
+            StencilAction stencilFail = STENCIL_KEEP;
+            StencilAction stencilDepthFail = STENCIL_KEEP;
+            StencilAction stencilPass = STENCIL_KEEP;
+
+            bool enableFaceCulling = false;
+            FaceCullingMode faceCullMode = CULL_BACK;
+            FaceCullingWinding faceCullWinding = COUNTER_CLOCKWISE;
+
+            bool enableBlending = false;
+            BlendMode colorBlendSourceMode = SRC_ALPHA;
+            BlendMode colorBlendDestinationMode = ONE_MINUS_SRC_ALPHA;
+            BlendMode alphaBlendSourceMode = SRC_ALPHA;
+            BlendMode alphaBlendDestinationMode = ONE_MINUS_SRC_ALPHA;
+            BlendEquation colorBlendEquation = BLEND_ADD;
+            BlendEquation alphaBlendEquation = BLEND_ADD;
+        };
+
         std::vector<Shader> shaders;
 
         std::vector<ColorFormat> colorAttachments;
@@ -149,42 +183,13 @@ namespace xng::rg {
          * The pipeline specification only specifies the formats of the depth / stencil attachments
          * whether the same texture is bound to the attachments is not declared here.
          */
-        std::optional<ColorFormat> depthAttachment;// Specifies the format of the texture bound as the depth attachment.
-        std::optional<ColorFormat> stencilAttachment;// Specifies the format of the texture bound as the stencil attachment.
+        std::optional<ColorFormat> depthAttachment;
+        std::optional<ColorFormat> stencilAttachment;
 
         Primitive primitive = TRIANGLES;
-        bool multisample = false;
-        bool multiSampleEnableFrequency = false;
-        float multiSampleFrequency = 1;
-
-        bool enableDepthTest = false;
-        bool depthTestWrite = false;
-
-        DepthTestMode depthTestMode = DEPTH_TEST_LESS;
-
-        bool enableStencilTest = false;
-        bool enableDynamicStencilReference = true; // Enables reference updates via RasterContext::setStencilReference.
-        unsigned int stencilTestMask = 0xFF;
-        StencilMode stencilMode = STENCIL_ALWAYS;
-        int stencilReference = 1;
-        unsigned int stencilFunctionMask = 0xFF;
-        StencilAction stencilFail = STENCIL_KEEP;
-        StencilAction stencilDepthFail = STENCIL_KEEP;
-        StencilAction stencilPass = STENCIL_KEEP;
-
-        bool enableFaceCulling = false;
-        FaceCullingMode faceCullMode = CULL_BACK;
-        FaceCullingWinding faceCullWinding = COUNTER_CLOCKWISE;
-
-        bool enableBlending = false;
-        BlendMode colorBlendSourceMode = SRC_ALPHA;
-        BlendMode colorBlendDestinationMode = ONE_MINUS_SRC_ALPHA;
-        BlendMode alphaBlendSourceMode = SRC_ALPHA;
-        BlendMode alphaBlendDestinationMode = ONE_MINUS_SRC_ALPHA;
-        BlendEquation colorBlendEquation = BLEND_ADD;
-        BlendEquation alphaBlendEquation = BLEND_ADD;
-
         VertexFormat vertexFormat;
+
+        Properties properties;
     };
 }
 
