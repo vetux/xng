@@ -311,7 +311,7 @@ namespace xng {
 
             std::unique_ptr<rg::HeapMapping> mapping;
 
-            std::shared_ptr<StreamerQueue::SubmitSemaphore> pendingTransfer{};
+            std::shared_ptr<StreamerQueue::SubmitFence> pendingTransfer{};
             Handle pendingTransferHandle{};
             size_t pendingTransferOffset{};
             size_t pendingTransferSize{};

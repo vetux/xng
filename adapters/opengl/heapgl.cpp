@@ -20,7 +20,6 @@
 
 #include "heapmappinggl.hpp"
 #include "passresources.hpp"
-#include "semaphoregl.hpp"
 
 namespace xng::opengl {
     HeapGL::HeapGL()

@@ -199,11 +199,11 @@ namespace xng::vulkan {
         throw std::runtime_error("Not Implemented");
     }
 
-    std::unique_ptr<rg::Semaphore> Runtime::execute(const rg::Graph &graph) {
+    std::unique_ptr<rg::Fence> Runtime::execute(const rg::Graph &graph) {
         throw std::runtime_error("Not Implemented");
     }
 
-    std::unique_ptr<rg::Semaphore> Runtime::execute(const std::vector<rg::Graph> &graphs) {
+    std::unique_ptr<rg::Fence> Runtime::execute(const std::vector<rg::Graph> &graphs) {
         throw std::runtime_error("Not Implemented");
     }
 }

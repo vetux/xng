@@ -24,7 +24,7 @@
 #include "xng/rendergraph/heap.hpp"
 #include "xng/rendergraph/pipelinecache.hpp"
 #include "xng/rendergraph/graph.hpp"
-#include "xng/rendergraph/semaphore.hpp"
+#include "xng/rendergraph/fence.hpp"
 #include "xng/rendergraph/textureformatlimits.hpp"
 
 /**
@@ -98,9 +98,9 @@ namespace xng::rg {
          *
          * @param graph
          *
-         * @return The semaphore representing this submission.
+         * @return The fence representing this submission.
          */
-        virtual std::unique_ptr<Semaphore> execute(const Graph &graph) = 0;
+        virtual std::unique_ptr<Fence> execute(const Graph &graph) = 0;
 
         /**
          * Execute multiple graphs.
@@ -125,9 +125,9 @@ namespace xng::rg {
          *
          * @param graphs
          *
-         * @return The semaphore representing this submission.
+         * @return The fence representing this submission.
          */
-        virtual std::unique_ptr<Semaphore> execute(const std::vector<Graph> &graphs) = 0;
+        virtual std::unique_ptr<Fence> execute(const std::vector<Graph> &graphs) = 0;
     };
 }
 

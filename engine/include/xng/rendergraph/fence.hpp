@@ -16,24 +16,32 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef XENGINE_HEAPTRANSFER_HPP
-#define XENGINE_HEAPTRANSFER_HPP
+#ifndef XENGINE_FENCE_HPP
+#define XENGINE_FENCE_HPP
 
 #include <cstddef>
 
 namespace xng::rg {
-    class Semaphore {
+    /**
+     * A fence is a cpu awaitable synchronization primitive.
+     *
+     * The RenderGraph runtime internally always ensures synchronization correctness where possible.
+     *
+     * Fences are provided for users to express semantic correctness in the case where the user wants to wait
+     * on an operation to finish or check if the operation has finished. (For example, streaming or frames in flight)
+     */
+    class Fence {
     public:
-        virtual ~Semaphore() = default;
+        virtual ~Fence() = default;
 
         virtual bool isSignaled() = 0;
 
         /**
          * @param timeOut Time timeout in nanoseconds.
-         * @return Whether the semaphore was signaled.
+         * @return Whether the fence was signaled.
          */
         virtual bool wait(size_t timeOut) = 0;
     };
 }
 
-#endif //XENGINE_HEAPTRANSFER_HPP
+#endif //XENGINE_FENCE_HPP

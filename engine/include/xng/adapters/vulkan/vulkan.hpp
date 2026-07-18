@@ -40,9 +40,9 @@ namespace xng::vulkan {
                                                        rg::ColorFormat colorFormat,
                                                        rg::Texture::Capability capabilities) override;
 
-        std::unique_ptr<rg::Semaphore> execute(const rg::Graph &graph) override;
+        std::unique_ptr<rg::Fence> execute(const rg::Graph &graph) override;
 
-        std::unique_ptr<rg::Semaphore> execute(const std::vector<rg::Graph> &graphs) override;
+        std::unique_ptr<rg::Fence> execute(const std::vector<rg::Graph> &graphs) override;
     };
 }
 

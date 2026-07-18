@@ -35,18 +35,18 @@ namespace xng {
      */
     class StreamerQueue {
     public:
-        class SubmitSemaphore {
+        class SubmitFence {
         public:
             [[nodiscard]] bool isSignaled() const {
-                return semaphore && semaphore->isSignaled();
+                return fence && fence->isSignaled();
             }
 
             [[nodiscard]] bool wait(const size_t timeout) const {
-                return semaphore && semaphore->wait(timeout);
+                return fence && fence->wait(timeout);
             }
 
         protected:
-            std::shared_ptr<rg::Semaphore> semaphore = nullptr;
+            std::shared_ptr<rg::Fence> fence = nullptr;
 
             friend class StreamerQueue;
         };
@@ -54,8 +54,8 @@ namespace xng {
         explicit StreamerQueue(rg::Runtime &runtime) : runtime(runtime) {
         }
 
-        std::shared_ptr<SubmitSemaphore> addPass(rg::TransferPass pass) {
-            auto sem = std::make_shared<SubmitSemaphore>();
+        std::shared_ptr<SubmitFence> addPass(rg::TransferPass pass) {
+            auto sem = std::make_shared<SubmitFence>();
             passes.emplace_back(std::move(pass), sem);
             return sem;
         }
@@ -67,7 +67,7 @@ namespace xng {
             }
             const std::shared_ptr sem = std::move(runtime.execute(graph));
             for (const auto &submit: passes) {
-                submit.semaphore->semaphore = sem;
+                submit.fence->fence = sem;
             }
             passes.clear();
         }
@@ -75,10 +75,10 @@ namespace xng {
     private:
         struct PassSubmit {
             rg::TransferPass pass;
-            std::shared_ptr<SubmitSemaphore> semaphore;
+            std::shared_ptr<SubmitFence> fence;
 
-            PassSubmit(rg::TransferPass pass, const std::shared_ptr<SubmitSemaphore> &semaphore)
-                : pass(std::move(pass)), semaphore(semaphore) {
+            PassSubmit(rg::TransferPass pass, const std::shared_ptr<SubmitFence> &fence)
+                : pass(std::move(pass)), fence(fence) {
             }
         };
 

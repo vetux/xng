@@ -22,7 +22,7 @@
 #include "pipelinecachegl.hpp"
 #include "heapgl.hpp"
 #include "passresources.hpp"
-#include "semaphoregl.hpp"
+#include "fencegl.hpp"
 
 #include "context/computecontextgl.hpp"
 #include "context/rastercontextgl.hpp"
@@ -204,7 +204,7 @@ namespace xng::opengl {
         return TextureFormatLimits(Vec2u(16384, 16384), 15, 2048);
     }
 
-    std::unique_ptr<Semaphore> Runtime::execute(const rg::Graph &graph) {
+    std::unique_ptr<Fence> Runtime::execute(const rg::Graph &graph) {
         std::unordered_set<SurfaceGL *> surfaces;
 
         for (auto &pass: graph.passes) {
@@ -295,13 +295,13 @@ namespace xng::opengl {
             data->cachedTextures[tex.second->desc].emplace_back(std::move(tex.second));
         }
 
-        return std::make_unique<SemaphoreGL>();
+        return std::make_unique<FenceGL>();
     }
 
-    std::unique_ptr<Semaphore> Runtime::execute(const std::vector<rg::Graph> &graphs) {
+    std::unique_ptr<Fence> Runtime::execute(const std::vector<rg::Graph> &graphs) {
         for (auto &graph: graphs) {
             execute(graph);
         }
-        return std::make_unique<SemaphoreGL>();
+        return std::make_unique<FenceGL>();
     }
 }

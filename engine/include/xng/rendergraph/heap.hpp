@@ -21,7 +21,6 @@
 
 #include "xng/rendergraph/resourceid.hpp"
 #include "xng/rendergraph/heapmapping.hpp"
-#include "xng/rendergraph/semaphore.hpp"
 #include "xng/rendergraph/pass.hpp"
 
 #include "xng/rendergraph/resource/buffer.hpp"

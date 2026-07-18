@@ -16,8 +16,8 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef XENGINE_HEAPTRANSFERGL_HPP
-#define XENGINE_HEAPTRANSFERGL_HPP
+#ifndef XENGINE_FENCEGL_HPP
+#define XENGINE_FENCEGL_HPP
 
 #include <memory>
 #include <mutex>
@@ -25,20 +25,20 @@
 
 #include "glad/glad.h"
 
-#include "xng/rendergraph/semaphore.hpp"
+#include "xng/rendergraph/fence.hpp"
 
 namespace xng::opengl {
     struct HeapTransferSync {
         GLsync fence = nullptr;
     };
 
-    class SemaphoreGL final : public rg::Semaphore {
+    class FenceGL final : public rg::Fence {
     public:
-        explicit SemaphoreGL() {
+        explicit FenceGL() {
             fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
         }
 
-        ~SemaphoreGL() override {
+        ~FenceGL() override {
             glDeleteSync(fence);
         }
 
@@ -64,4 +64,4 @@ namespace xng::opengl {
     };
 }
 
-#endif //XENGINE_HEAPTRANSFERGL_HPP
+#endif //XENGINE_FENCEGL_HPP
