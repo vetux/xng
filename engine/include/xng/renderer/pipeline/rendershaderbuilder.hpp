@@ -27,7 +27,7 @@ namespace xng {
         RenderShaderBuilder(RenderShaderCompiler &compiler,
                             std::vector<RenderShader::Attachment> attachments)
             : compiler(compiler),
-              attachments(std::move(attachments)) {
+              colorAttachments(std::move(attachments)) {
         }
 
         rg::ShaderOperand getVertexAttribute(const VertexAttribute attr) {
@@ -50,9 +50,13 @@ namespace xng {
             return compiler.writeAttachment(index, color);
         }
 
-        std::shared_ptr<RenderShader> compile(const rg::RasterPipeline &pipeline) const {
-            return compiler.compile(pipeline,
-                                    attachments,
+        std::shared_ptr<RenderShader> compile(const std::vector<rg::Shader> &shaders,
+                                              const rg::RasterPipeline::Configuration &pipelineConfig) const {
+            return compiler.compile(shaders,
+                                    pipelineConfig,
+                                    colorAttachments,
+                                    depthAttachmentFormat,
+                                    stencilAttachmentFormat,
                                     vertexAttributes,
                                     materialProperties,
                                     materialTextures);
@@ -60,7 +64,9 @@ namespace xng {
 
     private:
         RenderShaderCompiler &compiler;
-        std::vector<RenderShader::Attachment> attachments;
+        std::vector<RenderShader::Attachment> colorAttachments;
+        std::optional<rg::ColorFormat> depthAttachmentFormat;
+        std::optional<rg::ColorFormat> stencilAttachmentFormat;
         std::unordered_set<VertexAttribute> vertexAttributes;
         std::unordered_set<RenderPipelineMaterial::PropertyID> materialProperties;
         std::unordered_set<RenderPipelineMaterial::TextureID> materialTextures;

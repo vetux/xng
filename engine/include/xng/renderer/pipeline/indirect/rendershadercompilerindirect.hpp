@@ -267,15 +267,20 @@ namespace xng {
             return rg::ShaderInstructionFactory::call("writeAttachment" + std::to_string(index), {color});
         }
 
-        std::shared_ptr<RenderShader> compile(const rg::RasterPipeline &pipeline,
-                                              const std::vector<RenderShader::Attachment> &attachments,
+        std::shared_ptr<RenderShader> compile(const std::vector<rg::Shader> &shaders,
+                                              const rg::RasterPipeline::Configuration &pipelineConfig,
+                                              const std::vector<RenderShader::Attachment> &colorAttachments,
+                                              const std::optional<rg::ColorFormat> &depthAttachment,
+                                              const std::optional<rg::ColorFormat> &stencilAttachment,
                                               const std::unordered_set<VertexAttribute> &vertexAttributes,
                                               const std::unordered_set<RenderPipelineMaterial::PropertyID> &
                                               accessedProperties,
                                               const std::unordered_set<RenderPipelineMaterial::TextureID> &
                                               accessedTextures) override {
-            rg::RasterPipeline pip = pipeline;
-            for (auto &shader: pip.shaders) {
+            rg::RasterPipeline pipeline;
+            pipeline.shaders = shaders;
+            pipeline.configuration = pipelineConfig;
+            for (auto &shader: pipeline.shaders) {
                 ShaderScript::ShaderScope scope(shader.stage);
 
                 scope.addTypeDefinition(ShaderCamera::getShaderStructType());
@@ -312,8 +317,8 @@ namespace xng {
                 for (auto &tex: accessedTextures) {
                     compileSampleMaterialTexture(scope, tex);
                 }
-                for (auto i = 0; i < attachments.size(); i++) {
-                    const auto &att = attachments.at(i);
+                for (auto i = 0; i < colorAttachments.size(); i++) {
+                    const auto &att = colorAttachments.at(i);
                     compileWriteAttachment(scope, i, att);
                 }
 
@@ -374,8 +379,8 @@ namespace xng {
                 // Inject fragment output layout
                 if (shader.stage == rg::Shader::FRAGMENT) {
                     shader.outputLayout = {};
-                    for (auto i = 0; i < attachments.size(); i++) {
-                        const auto &att = attachments.at(i);
+                    for (auto i = 0; i < colorAttachments.size(); i++) {
+                        const auto &att = colorAttachments.at(i);
                         if (att.type == RenderShader::Attachment::ATTACHMENT_NATIVE) {
                             shader.outputLayout.addElement(attachmentPrefix + std::to_string(i),
                                                            att.value);
@@ -383,9 +388,21 @@ namespace xng {
                     }
                 }
             }
+
+            for (auto &attachment : colorAttachments) {
+                if (attachment.type == RenderShader::Attachment::ATTACHMENT_NATIVE) {
+                    pipeline.colorAttachments.emplace_back(attachment.format);
+                }
+            }
+            pipeline.depthAttachment = depthAttachment;
+            pipeline.stencilAttachment = stencilAttachment;
+
+            // TODO: Pipeline vertex format definition
+            pipeline.vertexFormat.bindingPoints;
+
             return std::make_shared<RenderShader>(cache,
-                                                  cache.create(pip),
-                                                  attachments,
+                                                  cache.create(pipeline),
+                                                  colorAttachments,
                                                   vertexAttributes,
                                                   accessedProperties,
                                                   accessedTextures);

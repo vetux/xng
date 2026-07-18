@@ -45,6 +45,7 @@ namespace xng {
             } type{};
 
             rg::ShaderPrimitiveType value{};
+            rg::ColorFormat format{};
         };
 
         RenderShader(rg::PipelineCache &cache,

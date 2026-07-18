@@ -83,14 +83,20 @@ namespace xng {
          *
          * Users are free to do anything between vertex input and fragment output such as geometry stage etc. and may bind and access custom data.
          *
-         * @param pipeline The pipeline containing the shader stages and pipeline configuration. Attachments and vertex layout are overridden.
-         * @param attachments The format of the attachments.
+         * @param shaders The pipeline shaders.
+         * @param pipelineConfig The pipeline configuration.
+         * @param colorAttachments The format of the attachments.
+         * @param depthAttachmentFormat
+         * @param stencilAttachmentFormat
          * @param vertexAttributes The set of accessed vertex attributes.
          * @param materialProperties The set of accessed material properties.
          * @param materialTextures The set of accessed material textures.
          */
-        virtual std::shared_ptr<RenderShader> compile(const rg::RasterPipeline &pipeline,
-                                                      const std::vector<RenderShader::Attachment> &attachments,
+        virtual std::shared_ptr<RenderShader> compile(const std::vector<rg::Shader> &shaders,
+                                                      const rg::RasterPipeline::Configuration &pipelineConfig,
+                                                      const std::vector<RenderShader::Attachment> &colorAttachments,
+                                                      const std::optional<rg::ColorFormat> &depthAttachmentFormat,
+                                                      const std::optional<rg::ColorFormat> &stencilAttachmentFormat,
                                                       const std::unordered_set<VertexAttribute> &vertexAttributes,
                                                       const std::unordered_set<RenderPipelineMaterial::PropertyID> &
                                                       materialProperties,
