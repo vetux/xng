@@ -26,32 +26,31 @@
 namespace xng::rg {
     class Timeline {
     public:
-        typedef unsigned int TimeStamp;
-
         /**
-         * A timeline slice containing the start / end time stamps of a pass on the gpu timeline.
+         * A timeline slice containing the start / end time stamps of a pass on the device timeline.
          */
         struct Slice {
             std::string passName;
-            TimeStamp start{};
-            TimeStamp end{};
+            std::chrono::nanoseconds start{};
+            std::chrono::nanoseconds end{};
 
             Slice() = default;
 
             Slice(std::string passName,
-                  const TimeStamp start,
-                  const TimeStamp end)
+                  const std::chrono::nanoseconds start,
+                  const std::chrono::nanoseconds end)
                 : passName(std::move(passName)), start(start), end(end) {
             }
         };
 
-        // The time point in the gpu time domain at which this timeline was submitted to the gpu.
-        TimeStamp submitTime;
+        // The time point in the host time domain at which the first slice was submitted.
+        // This is exposed here because on certain platforms it might be possible to fetch both host and device time atomically.
+        std::chrono::high_resolution_clock::time_point submitTimeHost;
 
-        // The time point in the gpu time domain at which this timeline finished execution.
-        TimeStamp finishTime;
+        // The time point in the device time domain at which the first slice was submitted. (Slices can span multiple submissions)
+        std::chrono::nanoseconds submitTimeDevice;
 
-        // The time stamps.
+        // The time stamps in the device time domain.
         std::vector<Slice> slices{};
     };
 }

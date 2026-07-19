@@ -85,13 +85,11 @@ namespace xng::opengl {
                 GLuint64 startTime, endTime;
                 glGetQueryObjectui64v(query.queries[0], GL_QUERY_RESULT, &startTime);
                 glGetQueryObjectui64v(query.queries[1], GL_QUERY_RESULT, &endTime);
-                timeline.slices.emplace_back(query.passName, startTime, endTime);
+                timeline.slices.emplace_back(query.passName,
+                                             std::chrono::nanoseconds(startTime),
+                                             std::chrono::nanoseconds(endTime));
             }
             queries.clear();
-
-            GLint64 gpuNow;
-            glGetInteger64v(GL_TIMESTAMP, &gpuNow);
-            timeline.finishTime = gpuNow;
 
             timelineFetched = true;
 

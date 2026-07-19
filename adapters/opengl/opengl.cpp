@@ -275,7 +275,8 @@ namespace xng::opengl {
         if (data->enableTimers) {
             GLint64 gpuNow;
             glGetInteger64v(GL_TIMESTAMP, &gpuNow);
-            timeline.submitTime = gpuNow;
+            timeline.submitTimeDevice = std::chrono::nanoseconds(gpuNow);
+            timeline.submitTimeHost = std::chrono::high_resolution_clock::now();
         }
 
         std::vector<Query> queries;
@@ -372,7 +373,8 @@ namespace xng::opengl {
         if (data->enableTimers) {
             GLint64 gpuNow;
             glGetInteger64v(GL_TIMESTAMP, &gpuNow);
-            timeline.submitTime = gpuNow;
+            timeline.submitTimeDevice = std::chrono::nanoseconds(gpuNow);
+            timeline.submitTimeHost = std::chrono::high_resolution_clock::now();
         }
 
         std::vector<Query> queries;
