@@ -39,14 +39,10 @@ namespace xng::opengl {
 
         PipelineCacheGL pipelineCache;
 
-        std::string vendor;
-        std::string renderer;
-        std::string version;
-
         std::unordered_map<Buffer, std::vector<std::shared_ptr<BufferGL> >, BufferHash> cachedBuffers{};
         std::unordered_map<Texture, std::vector<std::shared_ptr<TextureGL> >, TextureHash> cachedTextures{};
 
-        Capabilities caps;
+        DeviceInformation deviceInfo;
 
         bool enableTimers = false;
     };
@@ -162,37 +158,37 @@ namespace xng::opengl {
         : data(std::make_unique<MemberData>()) {
         data->heap = std::make_unique<HeapGL>();
 
-        data->vendor = std::string(reinterpret_cast<const char *>(glGetString(GL_VENDOR)));
-        data->renderer = std::string(reinterpret_cast<const char *>(glGetString(GL_RENDERER)));
-        data->version = std::string(reinterpret_cast<const char *>(glGetString(GL_VERSION)));
+        data->deviceInfo.vendor = std::string(reinterpret_cast<const char *>(glGetString(GL_VENDOR)));
+        data->deviceInfo.name = std::string(reinterpret_cast<const char *>(glGetString(GL_RENDERER)));
+        data->deviceInfo.version = std::string(reinterpret_cast<const char *>(glGetString(GL_VERSION)));
 
         for (auto format = COLOR_FORMAT_BEGIN; format != COLOR_FORMAT_COMPRESSED_START;
              format = static_cast<rg::ColorFormat>(format + 1)) {
-            data->caps.supportedColorFormats.insert(format);
+            data->deviceInfo.capabilities.supportedColorFormats.insert(format);
         }
 
-        data->caps.supportedColorFormats.insert(RGBA_BC7);
-        data->caps.supportedColorFormats.insert(RGBA_BC7_SRGB);
-        data->caps.supportedColorFormats.insert(RGB_BC6H_SFLOAT);
-        data->caps.supportedColorFormats.insert(RGB_BC6H_UFLOAT);
-        data->caps.supportedColorFormats.insert(RG_BC5_SNORM);
-        data->caps.supportedColorFormats.insert(RG_BC5_UNORM);
-        data->caps.supportedColorFormats.insert(R_BC4_SNORM);
-        data->caps.supportedColorFormats.insert(R_BC4_UNORM);
+        data->deviceInfo.capabilities.supportedColorFormats.insert(RGBA_BC7);
+        data->deviceInfo.capabilities.supportedColorFormats.insert(RGBA_BC7_SRGB);
+        data->deviceInfo.capabilities.supportedColorFormats.insert(RGB_BC6H_SFLOAT);
+        data->deviceInfo.capabilities.supportedColorFormats.insert(RGB_BC6H_UFLOAT);
+        data->deviceInfo.capabilities.supportedColorFormats.insert(RG_BC5_SNORM);
+        data->deviceInfo.capabilities.supportedColorFormats.insert(RG_BC5_UNORM);
+        data->deviceInfo.capabilities.supportedColorFormats.insert(R_BC4_SNORM);
+        data->deviceInfo.capabilities.supportedColorFormats.insert(R_BC4_UNORM);
 
         GLint maxUboBindings = 0;
         GLint maxUboSize = 0;
         glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &maxUboBindings);
         glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &maxUboSize);
-        data->caps.maxUniformBufferBindings = static_cast<size_t>(maxUboBindings);
-        data->caps.maxUniformBufferSize = static_cast<size_t>(maxUboSize);
+        data->deviceInfo.capabilities.maxUniformBufferBindings = static_cast<size_t>(maxUboBindings);
+        data->deviceInfo.capabilities.maxUniformBufferSize = static_cast<size_t>(maxUboSize);
 
         GLint maxSsboBindings = 0;
         GLint64 maxSsboSize = 0;
         glGetIntegerv(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS, &maxSsboBindings);
         glGetInteger64v(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &maxSsboSize);
-        data->caps.maxStorageBufferBindings = static_cast<size_t>(maxSsboBindings);
-        data->caps.maxStorageBufferSize = static_cast<size_t>(maxSsboSize);
+        data->deviceInfo.capabilities.maxStorageBufferBindings = static_cast<size_t>(maxSsboBindings);
+        data->deviceInfo.capabilities.maxStorageBufferSize = static_cast<size_t>(maxSsboSize);
     }
 
     Runtime::~Runtime() = default;
@@ -213,8 +209,8 @@ namespace xng::opengl {
         return data->pipelineCache;
     }
 
-    const Runtime::Capabilities & Runtime::getCapabilities() {
-        return data->caps;
+    const Runtime::DeviceInformation & Runtime::getDeviceInformation() {
+        return data->deviceInfo;
     }
 
     rg::TextureFormatLimits Runtime::getTextureFormatLimits(rg::TextureType type,

@@ -47,6 +47,17 @@ namespace xng::rg {
             size_t maxTextureBindings;
         };
 
+        /**
+         * For platforms which allow selecting different devices, the runtime adapter implementation constructor will
+         * expose the api for selecting a device.
+         */
+        struct DeviceInformation {
+            std::string name; // Device name
+            std::string vendor; // Device vendor
+            std::string version; // Driver version
+            Capabilities capabilities;
+        };
+
         virtual ~Runtime() = default;
 
         /**
@@ -76,9 +87,9 @@ namespace xng::rg {
         virtual PipelineCache &getPipelineCache() = 0;
 
         /**
-         * @return The list of capabilities for the runtime implementation.
+         * @return The device information for the runtime instance.
          */
-        virtual const Capabilities &getCapabilities() = 0;
+        virtual const DeviceInformation &getDeviceInformation() = 0;
 
         /**
          * @return The limits for the given type / colorFormat / capabilities combination.

@@ -44,7 +44,7 @@ namespace xng::opengl {
 
         rg::PipelineCache &getPipelineCache() override;
 
-        const Capabilities &getCapabilities() override;
+        const DeviceInformation &getDeviceInformation() override;
 
         rg::TextureFormatLimits getTextureFormatLimits(rg::TextureType type,
                                                        rg::ColorFormat colorFormat,
