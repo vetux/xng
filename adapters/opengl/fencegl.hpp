@@ -28,13 +28,31 @@
 #include "xng/rendergraph/fence.hpp"
 
 namespace xng::opengl {
-    struct HeapTransferSync {
-        GLsync fence = nullptr;
+    struct Query {
+        std::string passName;
+        GLuint queries[2]{};
+
+        explicit Query(std::string passName)
+            : passName(std::move(passName)) {
+            glGenQueries(2, queries);
+        }
+
+        ~Query() {
+            glDeleteQueries(2, queries);
+        }
     };
 
     class FenceGL final : public rg::Fence {
     public:
-        explicit FenceGL() {
+        FenceGL()
+            : timelineFetched(true) {
+            fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+        }
+
+        explicit FenceGL(Timeline timeline, std::vector<Query> queries)
+            : timeline(std::move(timeline)),
+              queries(std::move(queries)),
+              timelineFetched(false) {
             fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
         }
 
@@ -58,9 +76,35 @@ namespace xng::opengl {
             return done;
         }
 
+        const Timeline &getTimeline() override {
+            if (timelineFetched) {
+                return timeline;
+            }
+
+            for (const auto &query: queries) {
+                GLuint64 startTime, endTime;
+                glGetQueryObjectui64v(query.queries[0], GL_QUERY_RESULT, &startTime);
+                glGetQueryObjectui64v(query.queries[1], GL_QUERY_RESULT, &endTime);
+                timeline.slices.emplace_back(query.passName, startTime, endTime);
+            }
+            queries.clear();
+
+            GLint64 gpuNow;
+            glGetInteger64v(GL_TIMESTAMP, &gpuNow);
+            timeline.finishTime = gpuNow;
+
+            timelineFetched = true;
+
+            return timeline;
+        }
+
     private:
         GLsync fence;
         bool done = false;
+
+        Timeline timeline{};
+        std::vector<Query> queries;
+        bool timelineFetched;
     };
 }
 

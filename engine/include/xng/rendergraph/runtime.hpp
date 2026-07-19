@@ -77,6 +77,11 @@ namespace xng::rg {
                                                            Texture::Capability capabilities) = 0;
 
         /**
+         * @param enableTimers Whether to enable timers. (rg::Fence::getTimeline())
+         */
+        virtual void setEnableTimers(bool enableTimers) = 0;
+
+        /**
          * Execute a single graph.
          *
          * Passes run in parallel where possible, and executions may overlap.

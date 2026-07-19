@@ -47,6 +47,8 @@ namespace xng::opengl {
         std::unordered_map<Texture, std::vector<std::shared_ptr<TextureGL> >, TextureHash> cachedTextures{};
 
         std::unordered_set<ColorFormat> supportedColorFormats;
+
+        bool enableTimers = false;
     };
 
     //TODO: Implement DAG based barrier insertion.
@@ -185,6 +187,10 @@ namespace xng::opengl {
         return std::make_shared<SurfaceGL>(std::move(window));
     }
 
+    void Runtime::setEnableTimers(const bool enableTimers) {
+        data->enableTimers = enableTimers;
+    }
+
     rg::Heap &Runtime::getResourceHeap() {
         return *data->heap;
     }
@@ -251,27 +257,71 @@ namespace xng::opengl {
         RasterContextGL rasterContext(passResources, data->pipelineCache);
         ComputeContextGL computeContext(passResources, data->pipelineCache);
 
-        for (auto &pass: graph.passes) {
-            switch (pass.index()) {
-                case 0: {
-                    auto p = std::get<TransferPass>(pass);
-                    p.callback(transferContext);
-                    break;
+        Timeline timeline;
+        if (data->enableTimers) {
+            GLint64 gpuNow;
+            glGetInteger64v(GL_TIMESTAMP, &gpuNow);
+            timeline.submitTime = gpuNow;
+        }
+
+        std::vector<Query> queries;
+
+        if (data->enableTimers) {
+            for (auto &pass: graph.passes) {
+                switch (pass.index()) {
+                    case 0: {
+                        auto p = std::get<TransferPass>(pass);
+                        queries.emplace_back(p.name);
+                        glQueryCounter(queries.back().queries[0], GL_TIMESTAMP);
+                        p.callback(transferContext);
+                        glQueryCounter(queries.back().queries[1], GL_TIMESTAMP);
+                        break;
+                    }
+                    case 1: {
+                        auto p = std::get<ComputePass>(pass);
+                        queries.emplace_back(p.name);
+                        glQueryCounter(queries.back().queries[0], GL_TIMESTAMP);
+                        p.callback(computeContext);
+                        insertBarrier(p);
+                        glQueryCounter(queries.back().queries[1], GL_TIMESTAMP);
+                        break;
+                    }
+                    case 2: {
+                        auto p = std::get<RenderPass>(pass);
+                        queries.emplace_back(p.name);
+                        glQueryCounter(queries.back().queries[0], GL_TIMESTAMP);
+                        p.callback(rasterContext, transferContext, computeContext);
+                        insertBarrier(p);
+                        glQueryCounter(queries.back().queries[1], GL_TIMESTAMP);
+                        break;
+                    }
+                    default:
+                        throw std::runtime_error("Invalid pass type");
                 }
-                case 1: {
-                    auto p = std::get<ComputePass>(pass);
-                    p.callback(computeContext);
-                    insertBarrier(p);
-                    break;
+            }
+        } else {
+            for (auto &pass: graph.passes) {
+                switch (pass.index()) {
+                    case 0: {
+                        auto p = std::get<TransferPass>(pass);
+                        p.callback(transferContext);
+                        break;
+                    }
+                    case 1: {
+                        auto p = std::get<ComputePass>(pass);
+                        p.callback(computeContext);
+                        insertBarrier(p);
+                        break;
+                    }
+                    case 2: {
+                        auto p = std::get<RenderPass>(pass);
+                        p.callback(rasterContext, transferContext, computeContext);
+                        insertBarrier(p);
+                        break;
+                    }
+                    default:
+                        throw std::runtime_error("Invalid pass type");
                 }
-                case 2: {
-                    auto p = std::get<RenderPass>(pass);
-                    p.callback(rasterContext, transferContext, computeContext);
-                    insertBarrier(p);
-                    break;
-                }
-                default:
-                    throw std::runtime_error("Invalid pass type");
             }
         }
 
@@ -295,12 +345,153 @@ namespace xng::opengl {
             data->cachedTextures[tex.second->desc].emplace_back(std::move(tex.second));
         }
 
+        if (data->enableTimers) {
+            return std::make_unique<FenceGL>(std::move(timeline), std::move(queries));
+        }
         return std::make_unique<FenceGL>();
     }
 
     std::unique_ptr<Fence> Runtime::execute(const std::vector<rg::Graph> &graphs) {
+        std::unordered_set<SurfaceGL *> surfaces;
+
+        Timeline timeline;
+        if (data->enableTimers) {
+            GLint64 gpuNow;
+            glGetInteger64v(GL_TIMESTAMP, &gpuNow);
+            timeline.submitTime = gpuNow;
+        }
+
+        std::vector<Query> queries;
+
         for (auto &graph: graphs) {
-            execute(graph);
+            for (auto &pass: graph.passes) {
+                switch (pass.index()) {
+                    case 1: {
+                        auto p = std::get<RenderPass>(pass);
+                        for (auto &pair: p.surfaceUsages) {
+                            surfaces.insert(down_cast<SurfaceGL *>(pair.first.get()));
+                        }
+                        break;
+                    }
+                    default:
+                        continue;
+                }
+            }
+
+            // TODO: Transient Aliasing
+            ResourceScope transientResources;
+            for (auto &alloc: graph.bufferAllocations) {
+                auto it = data->cachedBuffers.find(alloc.second);
+                if (it != data->cachedBuffers.end()) {
+                    transientResources.buffers.emplace(alloc.first.getHandle(), it->second.back());
+                    it->second.pop_back();
+                } else {
+                    transientResources.buffers.emplace(alloc.first.getHandle(),
+                                                       std::make_shared<BufferGL>(alloc.second));
+                }
+            }
+
+            for (auto &alloc: graph.textureAllocations) {
+                auto it = data->cachedTextures.find(alloc.second);
+                if (it != data->cachedTextures.end()) {
+                    transientResources.textures.emplace(alloc.first.getHandle(), it->second.back());
+                    it->second.pop_back();
+                } else {
+                    transientResources.textures.emplace(alloc.first.getHandle(),
+                                                        std::make_shared<TextureGL>(alloc.second));
+                }
+            }
+
+            auto heapResources = data->heap->getResources();
+
+            auto passResources = PassResources(transientResources, heapResources);
+
+            TransferContextGL transferContext(passResources);
+            RasterContextGL rasterContext(passResources, data->pipelineCache);
+            ComputeContextGL computeContext(passResources, data->pipelineCache);
+
+            if (data->enableTimers) {
+                for (auto &pass: graph.passes) {
+                    switch (pass.index()) {
+                        case 0: {
+                            auto p = std::get<TransferPass>(pass);
+                            queries.emplace_back(p.name);
+                            glQueryCounter(queries.back().queries[0], GL_TIMESTAMP);
+                            p.callback(transferContext);
+                            glQueryCounter(queries.back().queries[1], GL_TIMESTAMP);
+                            break;
+                        }
+                        case 1: {
+                            auto p = std::get<ComputePass>(pass);
+                            queries.emplace_back(p.name);
+                            glQueryCounter(queries.back().queries[0], GL_TIMESTAMP);
+                            p.callback(computeContext);
+                            insertBarrier(p);
+                            glQueryCounter(queries.back().queries[1], GL_TIMESTAMP);
+                            break;
+                        }
+                        case 2: {
+                            auto p = std::get<RenderPass>(pass);
+                            queries.emplace_back(p.name);
+                            glQueryCounter(queries.back().queries[0], GL_TIMESTAMP);
+                            p.callback(rasterContext, transferContext, computeContext);
+                            insertBarrier(p);
+                            glQueryCounter(queries.back().queries[1], GL_TIMESTAMP);
+                            break;
+                        }
+                        default:
+                            throw std::runtime_error("Invalid pass type");
+                    }
+                }
+            } else {
+                for (auto &pass: graph.passes) {
+                    switch (pass.index()) {
+                        case 0: {
+                            auto p = std::get<TransferPass>(pass);
+                            p.callback(transferContext);
+                            break;
+                        }
+                        case 1: {
+                            auto p = std::get<ComputePass>(pass);
+                            p.callback(computeContext);
+                            insertBarrier(p);
+                            break;
+                        }
+                        case 2: {
+                            auto p = std::get<RenderPass>(pass);
+                            p.callback(rasterContext, transferContext, computeContext);
+                            insertBarrier(p);
+                            break;
+                        }
+                        default:
+                            throw std::runtime_error("Invalid pass type");
+                    }
+                }
+            }
+
+            for (auto &surface: surfaces) {
+                // TODO: Verify surface synchronization
+                // Here might be the cause of the occasional ghosting because the commands might not have finished before blitting the texture to the framebuffer.
+                surface->bindContext();
+                surface->present();
+                surface->update();
+                surface->unbindContext();
+            }
+
+            data->cachedBuffers.clear();
+            data->cachedTextures.clear();
+
+            for (auto &buf: transientResources.buffers) {
+                data->cachedBuffers[buf.second->desc].emplace_back(std::move(buf.second));
+            }
+
+            for (auto &tex: transientResources.textures) {
+                data->cachedTextures[tex.second->desc].emplace_back(std::move(tex.second));
+            }
+        }
+
+        if (data->enableTimers) {
+            return std::make_unique<FenceGL>(std::move(timeline), std::move(queries));
         }
         return std::make_unique<FenceGL>();
     }

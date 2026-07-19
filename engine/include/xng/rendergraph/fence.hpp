@@ -19,11 +19,16 @@
 #ifndef XENGINE_FENCE_HPP
 #define XENGINE_FENCE_HPP
 
+#include <chrono>
 #include <cstddef>
+
+#include "xng/rendergraph/timeline.hpp"
 
 namespace xng::rg {
     /**
      * A fence is a cpu awaitable synchronization primitive.
+     *
+     * It also provides the api for retrieving the timers for a given graph invocation if the runtime has timers enabled.
      *
      * The RenderGraph runtime internally always ensures synchronization correctness where possible.
      *
@@ -41,6 +46,13 @@ namespace xng::rg {
          * @return Whether the fence was signaled.
          */
         virtual bool wait(size_t timeOut) = 0;
+
+        /**
+         * This function will wait on the fence and then return the corresponding timeline.
+         *
+         * @return The timeline for the execute() invocation that this fence represents.
+         */
+        virtual const Timeline &getTimeline() = 0;
     };
 }
 

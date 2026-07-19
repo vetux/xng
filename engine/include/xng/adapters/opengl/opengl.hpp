@@ -38,6 +38,8 @@ namespace xng::opengl {
 
         std::shared_ptr<rg::Surface> createSurface(std::shared_ptr<Window> window, size_t swapCount) override;
 
+        void setEnableTimers(bool enableTimers) override;
+
         rg::Heap &getResourceHeap() override;
 
         rg::PipelineCache &getPipelineCache() override;
