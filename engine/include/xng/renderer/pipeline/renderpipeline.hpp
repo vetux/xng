@@ -53,11 +53,15 @@ namespace xng {
         /**
          * An attachment can either be a RenderGraph attachment or a RenderTexture
          */
-        typedef std::variant<rg::Attachment, RenderObject::ID> Attachment;
+        typedef std::variant<rg::Attachment, RenderObjectHandle<RenderTexture> > Attachment;
 
         struct MaterialLayout {
             std::unordered_map<RenderPipelineMaterial::PropertyID, rg::ShaderPrimitiveType> properties;
             std::unordered_set<RenderPipelineMaterial::TextureID> textures;
+
+            bool operator==(const MaterialLayout &other) const {
+                return properties == other.properties && textures == other.textures;
+            }
         };
 
         struct BufferBinding {
@@ -86,7 +90,7 @@ namespace xng {
 
         virtual DrawID addDrawCall(std::shared_ptr<RenderPipelineTransform> transform,
                                    std::shared_ptr<RenderPipelineMaterial> material,
-                                   const std::vector<RenderObject::ID> &meshes,
+                                   const std::vector<RenderObjectHandle<RenderMesh> > &meshes,
                                    int sortPriority);
 
         virtual void removeDrawCall(DrawID id) = 0;

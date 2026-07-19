@@ -27,19 +27,14 @@ namespace xng {
     //TODO: Design meshlet integration technique (For Meshlet volume based culling)
     class RenderMesh final : public RenderObject {
     public:
-        RenderMesh(MeshStreamer &meshStream,
-                   const Mesh &mesh,
-                   std::shared_ptr<RenderSkeleton> _skeleton)
-            : meshStream(meshStream), skeleton(std::move(_skeleton)) {
-            if (skeleton) {
-                meshHandle = meshStream.create(mesh, skeleton->getOffsets());
-            } else {
-                meshHandle = meshStream.create(mesh, {});
-            }
-        }
+        RenderMesh() = default;
 
-        ~RenderMesh() override {
-            meshStream.destroy(meshHandle);
+        RenderMesh(MeshStreamer &mesh_stream,
+                   const MeshStreamer::Handle mesh_handle,
+                   RenderObjectHandle<RenderSkeleton> skeleton)
+            : meshStream(&mesh_stream),
+              meshHandle(mesh_handle),
+              skeleton(std::move(skeleton)) {
         }
 
         [[nodiscard]] MeshStreamer::Handle getHandle() const {
@@ -47,32 +42,40 @@ namespace xng {
         }
 
         [[nodiscard]] const MeshStreamer::Allocation &getAllocation() const {
-            return meshStream.getAllocation(meshHandle);
+            if (!meshStream) {
+                throw std::runtime_error("Uninitialized RenderMesh");
+            }
+            return meshStream->getAllocation(meshHandle);
         }
 
-        [[nodiscard]] std::shared_ptr<RenderSkeleton> getSkeleton() const {
+        [[nodiscard]] const RenderObjectHandle<RenderSkeleton> &getSkeleton() const {
             return skeleton;
         }
 
         bool isUploadComplete() override {
-            if (skeleton && !skeleton->isUploadComplete()) {
+            if (!meshStream) {
+                throw std::runtime_error("Uninitialized RenderMesh");
+            }
+            if (skeleton.isAssigned() && !skeleton.get().isUploadComplete()) {
                 return false;
             }
-            return meshStream.isUploadComplete(meshHandle);
+            return meshStream->isUploadComplete(meshHandle);
         }
 
         void flush() override {
-            if (skeleton) {
-                skeleton->flush();
+            if (!meshStream) {
+                throw std::runtime_error("Uninitialized RenderMesh");
             }
-            meshStream.flush(meshHandle);
+            if (skeleton.isAssigned()) {
+                skeleton.get().flush();
+            }
+            meshStream->flush(meshHandle);
         }
 
     private:
-        MeshStreamer &meshStream;
+        MeshStreamer *meshStream;
         MeshStreamer::Handle meshHandle;
-
-        std::shared_ptr<RenderSkeleton> skeleton{};
+        RenderObjectHandle<RenderSkeleton> skeleton{};
     };
 }
 

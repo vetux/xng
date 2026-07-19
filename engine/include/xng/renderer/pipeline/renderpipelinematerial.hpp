@@ -35,10 +35,15 @@ namespace xng {
 
         typedef size_t TextureID;
 
+        struct TextureSampler {
+            RenderObjectHandle<RenderTexture> texture;
+            SamplingProperties samplingProperties;
+        };
+
         virtual ~RenderPipelineMaterial() = default;
 
-        virtual void update(const std::unordered_map<PropertyID, rg::ShaderPrimitive> &properties,
-                            const std::unordered_map<TextureID, RenderObject::ID> &textures) = 0;
+        virtual void update(std::unordered_map<PropertyID, rg::ShaderPrimitive> properties,
+                            std::unordered_map<TextureID, TextureSampler> textures) = 0;
 
         virtual const std::unordered_map<PropertyID, rg::ShaderPrimitiveType> &getProperties() = 0;
 

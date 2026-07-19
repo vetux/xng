@@ -19,34 +19,24 @@
 #ifndef XENGINE_RENDERMATERIAL_HPP
 #define XENGINE_RENDERMATERIAL_HPP
 
-
 #include "xng/renderer/shadingmodel.hpp"
 
+#include "xng/renderer/objects/rendertexture.hpp"
+#include "xng/renderer/pipeline/renderpipeline.hpp"
+
 namespace xng {
-    class MaterialObject {
+    class RenderMaterial {
     public:
-        MaterialObject(ColorRGBA albedoColor,
-                       float metallicColor,
-                       float roughnessColor,
-                       float ambientOcclusionColor,
-                       RenderObjectHandle<RenderTexture> _albedo,
-                       const SamplingProperties &albedoProperties,
-                       RenderObjectHandle<RenderTexture> _metallic,
-                       const SamplingProperties &metallicProperties,
-                       RenderObjectHandle<RenderTexture> _roughness,
-                       const SamplingProperties &roughnessProperties,
-                       RenderObjectHandle<RenderTexture> _ambientOcclusion,
-                       const SamplingProperties &ambientOcclusionProperties,
-                       RenderObjectHandle<RenderTexture> _normal,
-                       const SamplingProperties &normalProperties,
-                       const float normalIntensity,
-                       const bool flipNormal,
-                       const bool receiveShadows);
+        explicit RenderMaterial(std::shared_ptr<RenderPipelineMaterial> materialHandle)
+            : materialHandle(std::move(materialHandle)) {
+        }
 
-
+        RenderPipelineMaterial &getHandle() const {
+            return *materialHandle;
+        }
 
     private:
-        ShadingModel shadingModel;
+        std::shared_ptr<RenderPipelineMaterial> materialHandle;
     };
 }
 

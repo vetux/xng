@@ -53,7 +53,7 @@ namespace xng {
 
         DrawID addDrawCall(std::shared_ptr<RenderPipelineTransform> transform,
                            std::shared_ptr<RenderPipelineMaterial> material,
-                           const std::vector<std::shared_ptr<RenderMesh> > &mesh,
+                           const std::vector<RenderObjectHandle<RenderMesh> > &mesh,
                            int sortPriority) override;
 
         void removeDrawCall(DrawID id) override;
@@ -103,9 +103,8 @@ namespace xng {
 
             ~RenderPipelineMaterialIndirect() override = default;
 
-            void setProperty(PropertyID attribute, rg::ShaderPrimitive value) override;
-
-            void setTexture(TextureID texture, std::shared_ptr<RenderTexture> value) override;
+            void update(std::unordered_map<PropertyID, rg::ShaderPrimitive> properties,
+                        std::unordered_map<TextureID, TextureSampler> textures) override;
 
             const std::unordered_map<PropertyID, rg::ShaderPrimitiveType> &getProperties() override;
 

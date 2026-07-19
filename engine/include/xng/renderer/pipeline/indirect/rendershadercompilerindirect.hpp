@@ -285,24 +285,24 @@ namespace xng {
 
                 scope.addTypeDefinition(ShaderCamera::getShaderStructType());
                 scope.addStorageBuffer(cameraBufferName,
-                                rg::ShaderBuffer(true,
+                                rg::ShaderStorageBuffer(true,
                                                  false,
                                                  ShaderCamera::getShaderStructType().typeName));
 
                 scope.addStorageBuffer(transformBufferName,
-                                rg::ShaderBuffer(true,
+                                rg::ShaderStorageBuffer(true,
                                                  true,
                                                  rg::ShaderPrimitiveType::mat4()));
 
                 scope.addTypeDefinition(layout.getStructType());
                 scope.addStorageBuffer(materialBufferName,
-                                rg::ShaderBuffer(true,
+                                rg::ShaderStorageBuffer(true,
                                                  true,
                                                  layout.getStructType().typeName));
 
                 scope.addTypeDefinition(ShaderDrawCall::getShaderStructType());
                 scope.addStorageBuffer(drawMeshBufferName,
-                                rg::ShaderBuffer(true,
+                                rg::ShaderStorageBuffer(true,
                                                  true,
                                                  std::string(ShaderDrawMesh::_ShaderDrawMesh_type)));
 

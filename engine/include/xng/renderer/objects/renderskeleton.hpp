@@ -25,17 +25,14 @@
 namespace xng {
     class RenderSkeleton final : public RenderObject {
     public:
-        RenderSkeleton(SkeletonStreamer &boneStream,
-                       const std::vector<std::string> &boneNames)
-            : skeletonStream(boneStream),
-              skeletonHandle(skeletonStream.create(boneNames.size())) {
-            for (size_t i = 0; i < boneNames.size(); i++) {
-                boneOffsets[boneNames.at(i)] = static_cast<unsigned int>(i);
-            }
-        }
+        RenderSkeleton() = default;
 
-        ~RenderSkeleton() override {
-            skeletonStream.destroy(skeletonHandle);
+        RenderSkeleton(SkeletonStreamer &skeletonStream,
+                       const SkeletonStreamer::BaseBone skeletonHandle,
+                       std::unordered_map<std::string, unsigned int> bone_offsets)
+            : skeletonStream(&skeletonStream),
+              skeletonHandle(skeletonHandle),
+              boneOffsets(std::move(bone_offsets)) {
         }
 
         /**
@@ -45,12 +42,15 @@ namespace xng {
          * @param bones The absolute transforms (animated) of the bones.
          */
         void setBones(const std::unordered_map<std::string, Mat4f> &bones) const {
+            if (!skeletonStream) {
+                throw std::runtime_error("Uninitialized RenderSkeleton");
+            }
             std::vector<Mat4f> boneMatrices;
             boneMatrices.resize(boneOffsets.size());
             for (const auto &pair: boneOffsets) {
                 boneMatrices[pair.second] = bones.at(pair.first);
             }
-            skeletonStream.upload(skeletonHandle, boneMatrices);
+            skeletonStream->upload(skeletonHandle, boneMatrices);
         }
 
         SkeletonStreamer::BaseBone getBaseBone() const {
@@ -62,15 +62,21 @@ namespace xng {
         }
 
         bool isUploadComplete() override {
-            return skeletonStream.isUploadComplete(skeletonHandle);
+            if (!skeletonStream) {
+                throw std::runtime_error("Uninitialized RenderSkeleton");
+            }
+            return skeletonStream->isUploadComplete(skeletonHandle);
         }
 
         void flush() override {
-            skeletonStream.flush(skeletonHandle);
+            if (!skeletonStream) {
+                throw std::runtime_error("Uninitialized RenderSkeleton");
+            }
+            skeletonStream->flush(skeletonHandle);
         }
 
     private:
-        SkeletonStreamer &skeletonStream;
+        SkeletonStreamer *skeletonStream = nullptr;
         SkeletonStreamer::BaseBone skeletonHandle;
         std::unordered_map<std::string, unsigned int> boneOffsets; // Indices into the skeleton buffer relative to base
     };

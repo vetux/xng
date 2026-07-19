@@ -25,12 +25,6 @@
 #include "xng/shaderscript/macro/shaderstruct.hpp"
 
 namespace xng {
-    ShaderStruct(ShaderTexture,
-                 Vec4i, textureBacking_textureID_arrayLayer,
-                 Vec4i, textureSize_maxMip,
-                 Vec4i, minFilter_magFilter_mipFilter_wrap,
-                 Vec4f, srcRect)
-
     class RenderTexture final : public RenderObject {
     public:
         //TODO: Multiple backing techniques for textures
@@ -45,61 +39,31 @@ namespace xng {
             TEXTURE_BACKING_TEXTURE,
         };
 
-        RenderTexture(VirtualTextureStreamer &textureStreamer,
-                      rg::Heap &heap,
-                      const ImageRGBA &image,
-                      const WrappingMethod wrapping = WRAP_REPEAT)
-            : backing(TEXTURE_BACKING_VIRTUAL_TEXTURE),
-              textureStreamer(textureStreamer) {
-            size = image.getResolution().convert<int>();
-            maxMip = rg::Texture::calculateMipLevels(image.getResolution()) - 1;
-            textureHandle = textureStreamer.create(std::make_shared<ImageTileLoader>(image,
-                maxMip + 1,
-                textureStreamer.getTileSize(),
-                textureStreamer.getTileBorder(),
-                wrapping,
-                heap));
-        }
+        RenderTexture() = default;
 
         RenderTexture(VirtualTextureStreamer &textureStreamer,
-                      rg::Heap &heap,
-                      const ImageRGBA &image,
-                      const WrappingMethod wrapping,
-                      const unsigned int mipLevels)
+                      const VirtualTextureStreamer::TextureID textureHandle,
+                      Vec2u size,
+                      const unsigned int maxMip)
             : backing(TEXTURE_BACKING_VIRTUAL_TEXTURE),
-              textureStreamer(textureStreamer),
-              maxMip(mipLevels - 1) {
-            size = image.getResolution().convert<int>();
-            textureHandle = textureStreamer.create(std::make_shared<ImageTileLoader>(image,
-                mipLevels,
-                textureStreamer.getTileSize(),
-                textureStreamer.getTileBorder(),
-                wrapping,
-                heap));
-        }
-
-        RenderTexture(VirtualTextureStreamer &textureStreamer,
-                      const std::shared_ptr<TileLoader> &tileLoader)
-            : backing(TEXTURE_BACKING_VIRTUAL_TEXTURE),
-              textureStreamer(textureStreamer) {
-            size = tileLoader->getSize().convert<int>();
-            maxMip = tileLoader->getMipLevels() - 1;
-            textureHandle = textureStreamer.create(tileLoader);
-        }
-
-        ~RenderTexture() {
-            textureStreamer.destroy(textureHandle);
+              textureStreamer(&textureStreamer),
+              textureHandle(textureHandle),
+              size(std::move(size)),
+              maxMip(maxMip) {
         }
 
         [[nodiscard]] VirtualTextureStreamer::TextureID getHandle() const {
             return textureHandle;
         }
 
-        bool isUploadComplete() {
-            return textureStreamer.isUploadComplete(textureHandle);
+        bool isUploadComplete() override {
+            if (!textureStreamer) {
+                throw std::runtime_error("Uninitialized RenderTexture");
+            }
+            return textureStreamer->isUploadComplete(textureHandle);
         }
 
-        Vec2i getSize() const {
+        Vec2u getSize() const {
             return size;
         }
 
@@ -111,34 +75,13 @@ namespace xng {
             return backing;
         }
 
-        [[nodiscard]] ShaderTexture::CPU getShaderData(const SamplingProperties &properties) const {
-            ShaderTexture::CPU ret;
-            ret.textureBacking_textureID_arrayLayer = Vec4i(backing,
-                                                            static_cast<int>(textureHandle),
-                                                            0,
-                                                            0);
-            ret.textureSize_maxMip = Vec4i(size.x,
-                                           size.y,
-                                           static_cast<int>(maxMip),
-                                           0);
-            ret.minFilter_magFilter_mipFilter_wrap = Vec4i(properties.minFilter,
-                                                           properties.magFilter,
-                                                           properties.mipFilter,
-                                                           properties.wrapping);
-            ret.srcRect = Vec4f(properties.srcRect.position.x,
-                                properties.srcRect.position.y,
-                                properties.srcRect.dimensions.x,
-                                properties.srcRect.dimensions.y);
-            return ret;
-        }
-
     private:
         TextureBacking backing{};
 
-        VirtualTextureStreamer &textureStreamer;
+        VirtualTextureStreamer *textureStreamer = nullptr;
         VirtualTextureStreamer::TextureID textureHandle{};
 
-        Vec2i size;
+        Vec2u size;
         unsigned int maxMip;
     };
 }

@@ -19,13 +19,35 @@
 #ifndef XENGINE_RENDEROBJECT_HPP
 #define XENGINE_RENDEROBJECT_HPP
 
+#include <cstring>
+
 namespace xng {
     /**
-     * The scene will use ID-based explicit destruction to avoid pointer chasing for RenderObjects.
+     * Render object allocations are RAII ref counted via RenderObjectHandle.
+     *
+     * All render objects types are copy constructable and do not own their allocation state.
+     *
+     * The scene owns the render object allocation state, and render objects hold a reference to the scene.
+     *
+     * Thus, all references to objects in a scene must be destroyed before destroying the scene itself.
      */
     class RenderObject {
     public:
         typedef size_t ID;
+
+        static constexpr ID UNASSIGNED_ID = 0;
+
+        enum Type : int {
+            RENDER_TEXTURE = 0,
+            RENDER_SKELETON,
+            RENDER_MESH,
+            RENDER_MODEL,
+            RENDER_LIGHT_POINT,
+            RENDER_LIGHT_DIRECTIONAL,
+            RENDER_LIGHT_SPOT,
+            RENDER_CANVAS,
+            RENDER_PAINT
+        };
 
         virtual ~RenderObject() = default;
 
@@ -35,6 +57,91 @@ namespace xng {
 
         virtual void flush() {
         }
+    };
+
+    class RenderObjectRefCounter {
+    public:
+        virtual ~RenderObjectRefCounter() = default;
+
+        virtual void incrementReference(RenderObject::ID id) = 0;
+
+        virtual void decrementReference(RenderObject::ID id) = 0;
+    };
+
+    template<typename T>
+    class XENGINE_EXPORT RenderObjectHandle {
+    public:
+        RenderObjectHandle() = default;
+
+        RenderObjectHandle(RenderObjectRefCounter *refCounter,
+                           const RenderObject::ID id,
+                           T instance)
+            : refCounter(refCounter),
+              id(id),
+              instance(std::move(instance)) {
+            refCounter->incrementReference(id);
+        }
+
+        RenderObjectHandle(const RenderObjectHandle &other) {
+            refCounter = other.refCounter;
+            id = other.id;
+            instance = other.instance;
+
+            if (refCounter) {
+                refCounter->incrementReference(id);
+            }
+        }
+
+        RenderObjectHandle &operator=(const RenderObjectHandle &other) {
+            if (this == &other) {
+                return *this;
+            }
+            refCounter = other.refCounter;
+            id = other.id;
+            instance = other.instance;
+            return *this;
+        }
+
+        RenderObjectHandle(RenderObjectHandle &&other) noexcept {
+            refCounter = other.refCounter;
+            id = other.id;
+            instance = std::move(other.instance);
+            other.refCounter = nullptr;
+        }
+
+        RenderObjectHandle &operator=(RenderObjectHandle &&other) noexcept {
+            if (this == &other) {
+                return *this;
+            }
+            refCounter = other.refCounter;
+            id = other.id;
+            instance = std::move(other.instance);
+            other.refCounter = nullptr;
+            return *this;
+        }
+
+        ~RenderObjectHandle() {
+            if (refCounter) {
+                refCounter->decrementReference(id);
+            }
+        }
+
+        [[nodiscard]] bool isAssigned() const {
+            return refCounter != nullptr;
+        }
+
+        T &get() {
+            return instance;
+        }
+
+        const T &get() const {
+            return instance;
+        }
+
+    private:
+        RenderObjectRefCounter *refCounter = nullptr;
+        RenderObject::ID id = RenderObject::UNASSIGNED_ID;
+        T instance{};
     };
 }
 

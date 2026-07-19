@@ -58,54 +58,48 @@ namespace xng {
      *
      * Multiple scenes can be used for something like a loading screen or main menu.
      *
-     * Multiple scenes can exist simultaneously and also be drawn simultaneously.
+     * Multiple scenes can exist simultaneously.
      * Objects cannot be shared between scenes.
      * This also allows drawing separate scenes or the same scene to separate windows.
      */
-    class RenderScene {
+    class XENGINE_EXPORT RenderScene final : public RenderObjectRefCounter {
     public:
-        RenderTexture &createTexture();
-
-        RenderSkeleton &createSkeleton();
-
-        RenderMesh &createMesh();
-
-        RenderModel &createModel();
-
-        RenderPointLight &createPointLight();
-
-        RenderDirectionalLight &createDirectionalLight();
-
-        RenderSpotLight &createSpotLight();
-
-        RenderCanvas &createCanvas();
-
-        RenderPaint &createPaint();
-
-        void destroy(RenderObject::ID id);
+        RenderScene(rg::Runtime &runtime,
+                    size_t chunkSize,
+                    size_t chunkCount,
+                    size_t tileSize,
+                    size_t tileBorder,
+                    float maxAnisotropy);
 
         void setCamera(const Camera &camera);
 
+        RenderObjectHandle<RenderTexture> createTexture(const ImageRGBA &image,
+                                                        WrappingMethod wrapping,
+                                                        unsigned int mipLevels);
+
+        RenderObjectHandle<RenderTexture> createTexture(const ImageRGBA &image, WrappingMethod wrapping);
+
+        RenderObjectHandle<RenderTexture> createTexture(const std::shared_ptr<TileLoader> &tileLoader);
+
+        RenderObjectHandle<RenderSkeleton> createSkeleton(const std::vector<std::string> &boneNames);
+
+        RenderObjectHandle<RenderMesh> createMesh(const Mesh &mesh);
+
+        RenderObjectHandle<RenderMesh> createMesh(const Mesh &mesh, RenderObjectHandle<RenderSkeleton> skeleton);
+
+        RenderObjectHandle<RenderModel> createModel();
+
+        RenderObjectHandle<RenderPointLight> createPointLight();
+
+        RenderObjectHandle<RenderDirectionalLight> createDirectionalLight();
+
+        RenderObjectHandle<RenderSpotLight> createSpotLight();
+
+        RenderObjectHandle<RenderCanvas> createCanvas();
+
+        RenderObjectHandle<RenderPaint> createPaint();
+
         // Const interface naturally defines the intent that passes do not modify the scene.
-
-        const std::unordered_map<RenderObject::ID, RenderTexture> &getTextures() const;
-
-        const std::unordered_map<RenderObject::ID, RenderSkeleton> &getSkeletons() const;
-
-        const std::unordered_map<RenderObject::ID, RenderMesh> &getMeshes() const;
-
-        const std::unordered_map<RenderObject::ID, RenderModel> &getModels() const;
-
-        const std::unordered_map<RenderObject::ID, RenderPointLight> &getPointLights() const;
-
-        const std::unordered_map<RenderObject::ID, RenderDirectionalLight> &getDirectionalLights() const;
-
-        const std::unordered_map<RenderObject::ID, RenderSpotLight> &getSpotLights() const;
-
-        const std::unordered_map<RenderObject::ID, RenderCanvas> &getCanvases() const;
-
-        const std::unordered_map<RenderObject::ID, RenderPaint> &getPaints() const;
-
         void drawPbrDeferred(rg::GraphBuilder &graph,
                              const RenderShader &shader,
                              std::vector<RenderPipeline::Attachment> attachments,
@@ -146,7 +140,104 @@ namespace xng {
                                  std::unordered_map<std::string, RenderPipeline::BufferBinding> storageBuffers,
                                  std::unordered_map<std::string, std::vector<rg::TextureBinding> > textureArrays) const;
 
+        const std::unordered_map<RenderObject::ID, RenderTexture> &getTextures() const {
+            return textures;
+        }
+
+        const std::unordered_map<RenderObject::ID, RenderSkeleton> &getSkeletons() const {
+            return skeletons;
+        }
+
+        const std::unordered_map<RenderObject::ID, RenderMesh> &getMeshes() const {
+            return meshes;
+        }
+
+        const std::unordered_map<RenderObject::ID, RenderModel> &getModels() const {
+            return models;
+        }
+
+        const std::unordered_map<RenderObject::ID, RenderPointLight> &getPointLights() const {
+            return pointLights;
+        }
+
+        const std::unordered_map<RenderObject::ID, RenderDirectionalLight> &getDirectionalLights() const {
+            return directionalLights;
+        }
+
+        const std::unordered_map<RenderObject::ID, RenderSpotLight> &getSpotLights() const {
+            return spotLights;
+        }
+
+        const std::unordered_map<RenderObject::ID, RenderCanvas> &getCanvases() const {
+            return canvases;
+        }
+
+        const std::unordered_map<RenderObject::ID, RenderPaint> &getPaints() const {
+            return paints;
+        }
+
+        const VirtualTextureStreamer &getVirtualTextureStreamer() const {
+            return virtualTextureStreamer;
+        }
+
+        const SkeletonStreamer &getSkeletonStreamer() const {
+            return skeletonStreamer;
+        }
+
+        const MeshStreamer &getMeshStreamer() const {
+            return meshStreamer;
+        }
+
+        const RenderObjectHandle<RenderMesh> &getUnitQuadMesh() const {
+            return unitQuadMesh;
+        }
+
+        const RenderObjectHandle<RenderMesh> &getUnitCubeMesh() const {
+            return unitCubeMesh;
+        }
+
     private:
+        void incrementReference(RenderObject::ID id) override;
+
+        void decrementReference(RenderObject::ID id) override;
+
+        void destroyTexture(RenderObject::ID id);
+
+        void destroySkeleton(RenderObject::ID id);
+
+        void destroyMesh(RenderObject::ID id);
+
+        void destroyModel(RenderObject::ID id);
+
+        void destroyPointLight(RenderObject::ID id);
+
+        void destroyDirectionalLight(RenderObject::ID id);
+
+        void destroySpotLight(RenderObject::ID id);
+
+        void destroyCanvas(RenderObject::ID id);
+
+        void destroyPaint(RenderObject::ID id);
+
+        RenderObject::ID allocateID() {
+            if (freeIDs.empty()) {
+                return nextID++;
+            }
+
+            const auto ret = freeIDs.back();
+            freeIDs.pop_back();
+            return ret;
+        }
+
+        void freeID(const RenderObject::ID id) {
+            freeIDs.push_back(id);
+        }
+
+        RenderObject::ID nextID = RenderObject::UNASSIGNED_ID + 1;
+        std::vector<RenderObject::ID> freeIDs;
+
+        rg::Runtime &runtime;
+
         ChunkStreamer chunkStreamer;
         SkeletonStreamer skeletonStreamer;
         MeshStreamer meshStreamer;
@@ -166,8 +257,11 @@ namespace xng {
         std::unordered_map<RenderObject::ID, RenderCanvas> canvases;
         std::unordered_map<RenderObject::ID, RenderPaint> paints;
 
-        RenderMesh unitQuadMesh;
-        RenderMesh unitCubeMesh;
+        std::unordered_map<RenderObject::ID, size_t> refCounts;
+        std::unordered_map<RenderObject::ID, RenderObject::Type> types;
+
+        RenderObjectHandle<RenderMesh> unitQuadMesh;
+        RenderObjectHandle<RenderMesh> unitCubeMesh;
 
         std::unique_ptr<RenderPipeline> pbrDeferredPipeline;
         std::unique_ptr<RenderPipeline> pbrForwardPipeline;
