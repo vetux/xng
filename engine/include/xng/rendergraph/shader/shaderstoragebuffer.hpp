@@ -16,8 +16,8 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef XENGINE_RENDERGRAPH_SHADERBUFFER_HPP
-#define XENGINE_RENDERGRAPH_SHADERBUFFER_HPP
+#ifndef XENGINE_RENDERGRAPH_SHADERSTORAGEBUFFER_HPP
+#define XENGINE_RENDERGRAPH_SHADERSTORAGEBUFFER_HPP
 
 #include "xng/rendergraph/shader/shaderdatatype.hpp"
 
@@ -28,8 +28,9 @@ namespace xng::rg {
      * Shaders can access dynamic buffers without knowing the exact count of the elements this is useful
      * for dynamic data such as lights.
      */
-    struct ShaderBuffer {
-        bool readOnly = true; // Whether shaders are allowed to write to the buffer
+    struct ShaderStorageBuffer {
+        // Whether shaders are allowed to write to the buffer
+        bool readOnly = true;
 
         // If true, this buffer is a dynamic buffer and elements can be accessed by subscripting the buffer object
         bool dynamic = false;
@@ -39,19 +40,19 @@ namespace xng::rg {
         // If the type is a primitive, the buffer is read in std430 layout.
         ShaderDataType type;
 
-        ShaderBuffer() = default;
+        ShaderStorageBuffer() = default;
 
-        ShaderBuffer(const bool read_only, const bool dynamic, ShaderDataType _type)
+        ShaderStorageBuffer(const bool read_only, const bool dynamic, ShaderDataType _type)
             : readOnly(read_only),
               dynamic(dynamic),
               type(std::move(_type)) {
         }
 
-        bool operator==(const ShaderBuffer& other) const
+        bool operator==(const ShaderStorageBuffer& other) const
         {
             return readOnly == other.readOnly && dynamic == other.dynamic && type == other.type;
         }
     };
 }
 
-#endif //XENGINE_RENDERGRAPH_SHADERBUFFER_HPP
+#endif //XENGINE_RENDERGRAPH_SHADERSTORAGEBUFFER_HPP

@@ -80,11 +80,13 @@
 
 #define Parameter(type, name) xng::ShaderScript::ShaderScope::get().addParameter(#name, xng::rg::ShaderPrimitiveType::type()); xng::ShaderScript::ShaderObject name = xng::ShaderScript::parameter(#name);
 
-#define Buffer(bufferType, bufferName) xng::ShaderScript::ShaderScope::get().addBuffer(#bufferName, xng::rg::ShaderBuffer(false, false, bufferType::TYPE)); bufferType bufferName(xng::ShaderScript::buffer(#bufferName));
-#define DynamicBuffer(bufferType, bufferName) xng::ShaderScript::ShaderScope::get().addBuffer(#bufferName, xng::rg::ShaderBuffer(false, true, bufferType::TYPE)); xng::ShaderScript::DynamicBufferWrapper<bufferType> bufferName(xng::ShaderScript::buffer(#bufferName));
+#define UniformBuffer(bufferType, bufferName) xng::ShaderScript::ShaderScope::get().addUniformBuffer(#bufferName, xng::rg::ShaderUniformBuffer(bufferType::TYPE)); bufferType bufferName(xng::ShaderScript::uniformBuffer(#bufferName));
 
-#define BufferRW(bufferType, bufferName) xng::ShaderScript::ShaderScope::get().addBuffer(#bufferName, xng::rg::ShaderBuffer(true, false, bufferType::TYPE)); bufferType bufferName(xng::ShaderScript::buffer(#bufferName));
-#define DynamicBufferRW(bufferType, bufferName) xng::ShaderScript::ShaderScope::get().addBuffer(#bufferName, xng::rg::ShaderBuffer(true, true, bufferType::TYPE)); xng::ShaderScript::DynamicBufferWrapper<bufferType> bufferName(xng::ShaderScript::buffer(#bufferName));
+#define StorageBuffer(bufferType, bufferName) xng::ShaderScript::ShaderScope::get().addStorageBuffer(#bufferName, xng::rg::ShaderStorageBuffer(false, false, bufferType::TYPE)); bufferType bufferName(xng::ShaderScript::storageBuffer(#bufferName));
+#define StorageBufferDynamic(bufferType, bufferName) xng::ShaderScript::ShaderScope::get().addStorageBuffer(#bufferName, xng::rg::ShaderStorageBuffer(false, true, bufferType::TYPE)); xng::ShaderScript::StorageBufferWrapper<bufferType> bufferName(xng::ShaderScript::storageBuffer(#bufferName));
+
+#define StorageBufferRW(bufferType, bufferName) xng::ShaderScript::ShaderScope::get().addStorageBuffer(#bufferName, xng::rg::ShaderStorageBuffer(true, false, bufferType::TYPE)); bufferType bufferName(xng::ShaderScript::storageBuffer(#bufferName));
+#define StorageBufferDynamicRW(bufferType, bufferName) xng::ShaderScript::ShaderScope::get().addStorageBuffer(#bufferName, xng::rg::ShaderStorageBuffer(true, true, bufferType::TYPE)); xng::ShaderScript::StorageBufferWrapper<bufferType> bufferName(xng::ShaderScript::storageBuffer(#bufferName));
 
 #define Texture(type, format, name) xng::ShaderScript::ShaderScope::get().addTextureArray(#name, xng::rg::ShaderTextureArray(xng::rg::ShaderTexture(type, format))); xng::ShaderScript::ShaderObject name = xng::ShaderScript::textureSampler(#name)[Int(0)];
 #define TextureArray(type, format, count, name) xng::ShaderScript::ShaderScope::get().addTextureArray(#name, xng::rg::ShaderTextureArray(xng::rg::ShaderTexture(type, format), count)); xng::ShaderScript::ShaderObject name = xng::ShaderScript::textureSampler(#name);

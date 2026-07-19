@@ -69,12 +69,12 @@ namespace xng {
         Texture(rg::TEXTURE_2D, rg::RGBA8, gRoughnessMetallicAO)
         Texture(rg::TEXTURE_2D, rg::RGBA8, gObjectIdReceiveShadows)
 
-        Buffer(ShaderCamera, camera)
-        Buffer(ShaderConfiguration, config)
+        StorageBuffer(ShaderCamera, camera)
+        StorageBuffer(ShaderConfiguration, config)
 
-        DynamicBuffer(ShaderPointLight, pointLights)
-        DynamicBuffer(ShaderDirectionalLight, directionalLights)
-        DynamicBuffer(ShaderSpotLight, spotLights)
+        StorageBufferDynamic(ShaderPointLight, pointLights)
+        StorageBufferDynamic(ShaderDirectionalLight, directionalLights)
+        StorageBufferDynamic(ShaderSpotLight, spotLights)
 
         vec3 position = textureSample(gPosition, fUv).xyz();
         vec3 normal = textureSample(gNormal, fUv).xyz();

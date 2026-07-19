@@ -284,24 +284,24 @@ namespace xng {
                 ShaderScript::ShaderScope scope(shader.stage);
 
                 scope.addTypeDefinition(ShaderCamera::getShaderStructType());
-                scope.addBuffer(cameraBufferName,
+                scope.addStorageBuffer(cameraBufferName,
                                 rg::ShaderBuffer(true,
                                                  false,
                                                  ShaderCamera::getShaderStructType().typeName));
 
-                scope.addBuffer(transformBufferName,
+                scope.addStorageBuffer(transformBufferName,
                                 rg::ShaderBuffer(true,
                                                  true,
                                                  rg::ShaderPrimitiveType::mat4()));
 
                 scope.addTypeDefinition(layout.getStructType());
-                scope.addBuffer(materialBufferName,
+                scope.addStorageBuffer(materialBufferName,
                                 rg::ShaderBuffer(true,
                                                  true,
                                                  layout.getStructType().typeName));
 
                 scope.addTypeDefinition(ShaderDrawCall::getShaderStructType());
-                scope.addBuffer(drawMeshBufferName,
+                scope.addStorageBuffer(drawMeshBufferName,
                                 rg::ShaderBuffer(true,
                                                  true,
                                                  std::string(ShaderDrawMesh::_ShaderDrawMesh_type)));
@@ -353,8 +353,8 @@ namespace xng {
                 }
 
                 // Inject Buffers
-                for (auto &buffer: cShader.buffers) {
-                    for (auto &existingBuffer: shader.buffers) {
+                for (auto &buffer: cShader.storageBuffers) {
+                    for (auto &existingBuffer: shader.storageBuffers) {
                         if (existingBuffer == buffer) {
                             continue;
                         }

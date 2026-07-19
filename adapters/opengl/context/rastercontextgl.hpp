@@ -31,7 +31,8 @@ namespace xng::opengl {
         RasterContextGL(const PassResources &resources, PipelineCacheGL &pipelineCache)
             : resources(resources),
               pipelineCache(pipelineCache),
-              emptySSBO(Buffer(1, Buffer::CAPABILITY_STORAGE, Buffer::MEMORY_GPU_ONLY)) {
+              emptySSBO(Buffer(1, Buffer::CAPABILITY_STORAGE, Buffer::MEMORY_GPU_ONLY)),
+              emptyUBO(Buffer(1, Buffer::CAPABILITY_UNIFORM, Buffer::MEMORY_GPU_ONLY)) {
         }
 
         ~RasterContextGL() override = default;
@@ -237,6 +238,54 @@ namespace xng::opengl {
             indexFormat = format;
         }
 
+
+        void bindUniformBuffer(const std::string &target,
+                               const Resource<Buffer> &buffer,
+                               const size_t offset,
+                               const size_t size) override {
+            if (!boundPipeline.has_value()) {
+                throw std::runtime_error("Must bind pipeline before binding uniform buffer");
+            }
+
+            if (!buffer.isAssigned()) {
+                throw std::runtime_error("Unassigned buffer resource");
+            }
+
+            if (!(buffer.getDescription().capabilityFlags & Buffer::CAPABILITY_UNIFORM)) {
+                throw std::runtime_error("Buffer must have CAPABILITY_UNIFORM");
+            }
+
+            oglDebugStartGroup("RasterContextGL::bindUniformBuffer");
+
+            const auto binding = pipelineCache.getCompiledShader(boundPipeline.value()).getStorageBufferBinding(target);
+
+            const auto &buf = resources.getBuffer(buffer);
+            if (size == 0) {
+                if (buf.desc.size == 0) {
+                    // Bind UBO with a size of one byte to avoid undefined behavior
+                    // caused by binding a UBO with size = 0 per OpenGL spec.
+                    // On AMD this was handled by the driver, but the Intel driver breaks if UBO size is 0
+                    glBindBufferRange(GL_UNIFORM_BUFFER, static_cast<GLuint>(binding), emptyUBO.handle, 0, 1);
+                } else {
+                    glBindBufferRange(GL_UNIFORM_BUFFER,
+                                      static_cast<GLuint>(binding),
+                                      buf.handle,
+                                      static_cast<GLintptr>(offset),
+                                      static_cast<GLsizeiptr>(buf.desc.size - offset));
+                }
+            } else {
+                glBindBufferRange(GL_UNIFORM_BUFFER,
+                                  static_cast<GLuint>(binding),
+                                  buf.handle,
+                                  static_cast<GLintptr>(offset),
+                                  static_cast<GLsizeiptr>(size));
+            }
+
+            oglCheckError();
+
+            oglDebugEndGroup();
+        }
+
         void bindStorageBuffer(const std::string &target,
                                const Resource<Buffer> &buffer,
                                const size_t offset,
@@ -255,7 +304,7 @@ namespace xng::opengl {
 
             oglDebugStartGroup("RasterContextGL::bindStorageBuffer");
 
-            const auto binding = pipelineCache.getCompiledShader(boundPipeline.value()).getShaderBufferBinding(target);
+            const auto binding = pipelineCache.getCompiledShader(boundPipeline.value()).getStorageBufferBinding(target);
 
             const auto &buf = resources.getBuffer(buffer);
             if (size == 0) {
@@ -1004,6 +1053,7 @@ namespace xng::opengl {
 
         VertexArrayObject vertexArray;
         BufferGL emptySSBO;
+        BufferGL emptyUBO;
 
         Vec2u frameBufferSize{};
 

@@ -117,15 +117,26 @@ namespace xng::ShaderScript {
             parameters.emplace(name, type);
         }
 
-        void addBuffer(const std::string &name, const rg::ShaderBuffer &buffer) {
-            auto it = buffers.find(name);
-            if (it != buffers.end()) {
+        void addStorageBuffer(const std::string &name, const rg::ShaderStorageBuffer &buffer) {
+            auto it = storageBuffers.find(name);
+            if (it != storageBuffers.end()) {
                 if (it->second == buffer) {
                     return;
                 }
                 throw std::runtime_error("Buffer redefinition with different type");
             }
-            buffers.emplace(name, buffer);
+            storageBuffers.emplace(name, buffer);
+        }
+
+        void addUniformBuffer(const std::string &name, const rg::ShaderUniformBuffer &buffer) {
+            auto it = uniformBuffers.find(name);
+            if (it != uniformBuffers.end()) {
+                if (it->second == buffer) {
+                    return;
+                }
+                throw std::runtime_error("Uniform Buffer redefinition with different type");
+            }
+            uniformBuffers.emplace(name, buffer);
         }
 
         void addTextureArray(const std::string &name, const rg::ShaderTextureArray &textureArray) {
@@ -157,7 +168,7 @@ namespace xng::ShaderScript {
         void setComputeLocalSize(unsigned int x, unsigned int y, unsigned int z) {
             if (stage != rg::Shader::COMPUTE) {
                 throw std::runtime_error(
-                       "Attempted to set compute local size in non compute stage");
+                    "Attempted to set compute local size in non compute stage");
             }
             computeLocalSize = Vec3u(x, y, z);
         }
@@ -181,7 +192,8 @@ namespace xng::ShaderScript {
                 inputLayout,
                 outputLayout,
                 parameters,
-                buffers,
+                uniformBuffers,
+                storageBuffers,
                 textureArrays,
                 typeDefinitions,
                 main.body,
@@ -202,7 +214,10 @@ namespace xng::ShaderScript {
         rg::ShaderAttributeLayout outputLayout;
 
         std::unordered_map<std::string, rg::ShaderPrimitiveType> parameters{};
-        std::unordered_map<std::string, rg::ShaderBuffer> buffers{};
+
+        std::unordered_map<std::string, rg::ShaderUniformBuffer> uniformBuffers{};
+        std::unordered_map<std::string, rg::ShaderStorageBuffer> storageBuffers{};
+
         std::unordered_map<std::string, rg::ShaderTextureArray> textureArrays{};
 
         std::vector<rg::ShaderStructType> typeDefinitions{};

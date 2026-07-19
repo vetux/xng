@@ -29,7 +29,7 @@ namespace xng {
     void RenderShaderCompilerIndirect::compileGetCameraPosition(ShaderScope &scope) {
         FunctionScope fScope("getCameraPosition");
 
-        ShaderObject cameraBuffer(rg::ShaderOperand::buffer(cameraBufferName));
+        ShaderObject cameraBuffer(rg::ShaderOperand::storageBuffer(cameraBufferName));
 
         fScope.setReturnType<vec3>();
         Return(cameraBuffer["position"]);
@@ -40,8 +40,8 @@ namespace xng {
     void RenderShaderCompilerIndirect::compileGetModel(ShaderScope &scope) {
         FunctionScope fScope("getModel");
 
-        ShaderObject drawMeshBuffer(rg::ShaderOperand::buffer(drawMeshBufferName));
-        ShaderObject transformBuffer(rg::ShaderOperand::buffer(transformBufferName));
+        ShaderObject drawMeshBuffer(rg::ShaderOperand::storageBuffer(drawMeshBufferName));
+        ShaderObject transformBuffer(rg::ShaderOperand::storageBuffer(transformBufferName));
 
         Int index = getBaseInstance() + getDrawID() + getInstanceID();
 
@@ -56,7 +56,7 @@ namespace xng {
     void RenderShaderCompilerIndirect::compileGetView(ShaderScope &scope) {
         FunctionScope fScope("getView");
 
-        ShaderObject cameraBuffer(rg::ShaderOperand::buffer(cameraBufferName));
+        ShaderObject cameraBuffer(rg::ShaderOperand::storageBuffer(cameraBufferName));
 
         fScope.setReturnType<mat4>();
         Return(cameraBuffer["view"]);
@@ -67,7 +67,7 @@ namespace xng {
     void RenderShaderCompilerIndirect::compileGetProjection(ShaderScope &scope) {
         FunctionScope fScope("getProjection");
 
-        ShaderObject cameraBuffer(rg::ShaderOperand::buffer(cameraBufferName));
+        ShaderObject cameraBuffer(rg::ShaderOperand::storageBuffer(cameraBufferName));
 
         fScope.setReturnType<mat4>();
         Return(cameraBuffer["projection"]);
@@ -78,7 +78,7 @@ namespace xng {
     void RenderShaderCompilerIndirect::compileGetModelViewProjection(ShaderScope &scope) {
         FunctionScope fScope("getModelViewProjection");
 
-        ShaderObject drawMeshBuffer(rg::ShaderOperand::buffer(drawMeshBufferName));
+        ShaderObject drawMeshBuffer(rg::ShaderOperand::storageBuffer(drawMeshBufferName));
 
         auto drawMesh = drawMeshBuffer[getBaseInstance() + getDrawID() + getInstanceID()];
 
@@ -95,8 +95,8 @@ namespace xng {
     ) {
         FunctionScope fScope("getMaterialAttribute");
 
-        ShaderObject drawMeshBuffer(rg::ShaderOperand::buffer(drawMeshBufferName));
-        ShaderObject materialBuffer(rg::ShaderOperand::buffer(materialBufferName));
+        ShaderObject drawMeshBuffer(rg::ShaderOperand::storageBuffer(drawMeshBufferName));
+        ShaderObject materialBuffer(rg::ShaderOperand::storageBuffer(materialBufferName));
 
         auto drawMesh = drawMeshBuffer[getBaseInstance() + getDrawID() + getInstanceID()];
 
@@ -115,19 +115,19 @@ namespace xng {
         Param<vec2> uv(parameter("uv"));
         FunctionScope fScope("sampleMaterialTexture");
 
-        ShaderObject drawMeshBuffer(rg::ShaderOperand::buffer(drawMeshBufferName));
-        ShaderObject materialBuffer(rg::ShaderOperand::buffer(materialBufferName));
+        ShaderObject drawMeshBuffer(rg::ShaderOperand::storageBuffer(drawMeshBufferName));
+        ShaderObject materialBuffer(rg::ShaderOperand::storageBuffer(materialBufferName));
 
         ShaderObject atlasSize(rg::ShaderOperand::parameter(virtualAtlasSizeName));
         ShaderObject tileSize(rg::ShaderOperand::parameter(virtualTileSizeName));
         ShaderObject tileBorder(rg::ShaderOperand::parameter(virtualTileBorderName));
         ShaderObject maxAnisotropy(rg::ShaderOperand::parameter(virtualMaxAnisotropyName));
 
-        DynamicBufferWrapper<UInt> tileMapOffsets(rg::ShaderOperand::buffer(virtualTileMapOffsetsName));
-        DynamicBufferWrapper<UInt> tileMap(rg::ShaderOperand::buffer(virtualTileMapName));
-        DynamicBufferWrapper<UInt> residencyMapOffsets(rg::ShaderOperand::buffer(virtualResidencyMapOffsetsName));
-        DynamicBufferWrapper<UInt> residencyMap(rg::ShaderOperand::buffer(virtualResidencyMapName));
-        DynamicBufferWrapper<UInt> readbackBuffer(rg::ShaderOperand::buffer(virtualReadbackBufferName));
+        StorageBufferWrapper<UInt> tileMapOffsets(rg::ShaderOperand::storageBuffer(virtualTileMapOffsetsName));
+        StorageBufferWrapper<UInt> tileMap(rg::ShaderOperand::storageBuffer(virtualTileMapName));
+        StorageBufferWrapper<UInt> residencyMapOffsets(rg::ShaderOperand::storageBuffer(virtualResidencyMapOffsetsName));
+        StorageBufferWrapper<UInt> residencyMap(rg::ShaderOperand::storageBuffer(virtualResidencyMapName));
+        StorageBufferWrapper<UInt> readbackBuffer(rg::ShaderOperand::storageBuffer(virtualReadbackBufferName));
 
         ShaderObject atlasTexture(rg::ShaderOperand::texture(virtualAtlasTextureName));
 

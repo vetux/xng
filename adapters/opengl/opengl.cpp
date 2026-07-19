@@ -46,7 +46,7 @@ namespace xng::opengl {
         std::unordered_map<Buffer, std::vector<std::shared_ptr<BufferGL> >, BufferHash> cachedBuffers{};
         std::unordered_map<Texture, std::vector<std::shared_ptr<TextureGL> >, TextureHash> cachedTextures{};
 
-        std::unordered_set<ColorFormat> supportedColorFormats;
+        Capabilities caps;
 
         bool enableTimers = false;
     };
@@ -168,17 +168,31 @@ namespace xng::opengl {
 
         for (auto format = COLOR_FORMAT_BEGIN; format != COLOR_FORMAT_COMPRESSED_START;
              format = static_cast<rg::ColorFormat>(format + 1)) {
-            data->supportedColorFormats.insert(format);
+            data->caps.supportedColorFormats.insert(format);
         }
 
-        data->supportedColorFormats.insert(RGBA_BC7);
-        data->supportedColorFormats.insert(RGBA_BC7_SRGB);
-        data->supportedColorFormats.insert(RGB_BC6H_SFLOAT);
-        data->supportedColorFormats.insert(RGB_BC6H_UFLOAT);
-        data->supportedColorFormats.insert(RG_BC5_SNORM);
-        data->supportedColorFormats.insert(RG_BC5_UNORM);
-        data->supportedColorFormats.insert(R_BC4_SNORM);
-        data->supportedColorFormats.insert(R_BC4_UNORM);
+        data->caps.supportedColorFormats.insert(RGBA_BC7);
+        data->caps.supportedColorFormats.insert(RGBA_BC7_SRGB);
+        data->caps.supportedColorFormats.insert(RGB_BC6H_SFLOAT);
+        data->caps.supportedColorFormats.insert(RGB_BC6H_UFLOAT);
+        data->caps.supportedColorFormats.insert(RG_BC5_SNORM);
+        data->caps.supportedColorFormats.insert(RG_BC5_UNORM);
+        data->caps.supportedColorFormats.insert(R_BC4_SNORM);
+        data->caps.supportedColorFormats.insert(R_BC4_UNORM);
+
+        GLint maxUboBindings = 0;
+        GLint maxUboSize = 0;
+        glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &maxUboBindings);
+        glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &maxUboSize);
+        data->caps.maxUniformBufferBindings = static_cast<size_t>(maxUboBindings);
+        data->caps.maxUniformBufferSize = static_cast<size_t>(maxUboSize);
+
+        GLint maxSsboBindings = 0;
+        GLint64 maxSsboSize = 0;
+        glGetIntegerv(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS, &maxSsboBindings);
+        glGetInteger64v(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &maxSsboSize);
+        data->caps.maxStorageBufferBindings = static_cast<size_t>(maxSsboBindings);
+        data->caps.maxStorageBufferSize = static_cast<size_t>(maxSsboSize);
     }
 
     Runtime::~Runtime() = default;
@@ -199,8 +213,8 @@ namespace xng::opengl {
         return data->pipelineCache;
     }
 
-    std::unordered_set<rg::ColorFormat> Runtime::getSupportedColorFormats() {
-        return data->supportedColorFormats;
+    const Runtime::Capabilities & Runtime::getCapabilities() {
+        return data->caps;
     }
 
     rg::TextureFormatLimits Runtime::getTextureFormatLimits(rg::TextureType type,

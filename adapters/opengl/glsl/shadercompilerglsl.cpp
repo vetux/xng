@@ -69,8 +69,8 @@ std::string generateHeader(const Shader &source, CompiledShader &compiledShader)
         ret += "};\n\n";
     }
 
-    for (const auto &pair: source.buffers) {
-        auto binding = compiledShader.createShaderBufferBinding(pair.first);
+    for (const auto &pair: source.uniformBuffers) {
+        auto binding = compiledShader.createUniformBufferBinding(pair.first);
         ret += "layout(binding = "
                 + std::to_string(binding);
         if (std::holds_alternative<ShaderStructTypeName>(pair.second.type.value)) {
@@ -78,7 +78,35 @@ std::string generateHeader(const Shader &source, CompiledShader &compiledShader)
         } else {
             ret += std::string(", std430");
         }
-        ret += std::string(") buffer ShaderBuffer")
+        ret += std::string(") uniform UniformBuffer")
+                + std::to_string(binding)
+                + " {\n"
+                + "\t";
+        if (std::holds_alternative<ShaderStructTypeName>(pair.second.type.value)) {
+            ret += std::get<ShaderStructTypeName>(pair.second.type.value) + " " + bufferArrayName;
+        } else {
+            ret += getTypeName(std::get<ShaderPrimitiveType>(pair.second.type.value)) + " " + bufferArrayName;
+        }
+        if (pair.second.type.count > 1) {
+            ret += "[" + std::to_string(pair.second.type.count) + "]";
+        }
+        ret += ";\n} ";
+        ret += uniformBufferPrefix
+                + pair.first
+                + ";\n";
+        ret += "\n";
+    }
+
+    for (const auto &pair: source.storageBuffers) {
+        auto binding = compiledShader.createStorageBufferBinding(pair.first);
+        ret += "layout(binding = "
+                + std::to_string(binding);
+        if (std::holds_alternative<ShaderStructTypeName>(pair.second.type.value)) {
+            ret += std::string(", std140");
+        } else {
+            ret += std::string(", std430");
+        }
+        ret += std::string(") buffer StorageBuffer")
                 + std::to_string(binding)
                 + " {\n"
                 + "\t";
@@ -91,7 +119,7 @@ std::string generateHeader(const Shader &source, CompiledShader &compiledShader)
             ret += "[]";
         }
         ret += ";\n} ";
-        ret += bufferPrefix
+        ret += storageBufferPrefix
                 + pair.first
                 + ";\n";
         ret += "\n";

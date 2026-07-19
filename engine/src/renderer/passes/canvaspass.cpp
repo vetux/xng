@@ -38,11 +38,11 @@ namespace xng {
         Output(vec2, fUv)
 
         Texture(TEXTURE_2D_ARRAY, RGBA8, atlasTexture)
-        DynamicBuffer(UInt, tileMap)
-        DynamicBuffer(UInt, tileMapOffsets)
-        DynamicBuffer(UInt, residencyMap)
-        DynamicBuffer(UInt, residencyMapOffsets)
-        DynamicBufferRW(UInt, readbackBuffer)
+        StorageBufferDynamic(UInt, tileMap)
+        StorageBufferDynamic(UInt, tileMapOffsets)
+        StorageBufferDynamic(UInt, residencyMap)
+        StorageBufferDynamic(UInt, residencyMapOffsets)
+        StorageBufferDynamicRW(UInt, readbackBuffer)
 
         Parameter(UInt, atlasSize)
         Parameter(UInt, tileSize)
@@ -76,11 +76,11 @@ namespace xng {
         Output(vec4, oColor)
 
         Texture(TEXTURE_2D_ARRAY, RGBA8, atlasTexture)
-        DynamicBuffer(UInt, tileMap)
-        DynamicBuffer(UInt, tileMapOffsets)
-        DynamicBuffer(UInt, residencyMap)
-        DynamicBuffer(UInt, residencyMapOffsets)
-        DynamicBufferRW(UInt, readbackBuffer)
+        StorageBufferDynamic(UInt, tileMap)
+        StorageBufferDynamic(UInt, tileMapOffsets)
+        StorageBufferDynamic(UInt, residencyMap)
+        StorageBufferDynamic(UInt, residencyMapOffsets)
+        StorageBufferDynamicRW(UInt, readbackBuffer)
 
         Parameter(UInt, atlasSize)
         Parameter(UInt, tileSize)

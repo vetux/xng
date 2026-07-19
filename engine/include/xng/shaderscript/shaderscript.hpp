@@ -254,8 +254,12 @@ namespace xng::ShaderScript {
         return ShaderObject(rg::ShaderOperand(rg::ShaderOperand::Parameter, name));
     }
 
-    inline ShaderObject buffer(const std::string &name) {
-        return ShaderObject(rg::ShaderOperand(rg::ShaderOperand::Buffer, name));
+    inline ShaderObject storageBuffer(const std::string &name) {
+        return ShaderObject(rg::ShaderOperand(rg::ShaderOperand::StorageBuffer, name));
+    }
+
+    inline ShaderObject uniformBuffer(const std::string &name) {
+        return ShaderObject(rg::ShaderOperand(rg::ShaderOperand::UniformBuffer, name));
     }
 
     inline ShaderObject textureSampler(const std::string &name) {
@@ -747,13 +751,13 @@ namespace xng::ShaderScript {
     }
 
     template<typename T>
-    struct DynamicBufferWrapper;
+    struct StorageBufferWrapper;
 
     template<typename T>
-    struct DynamicBufferWrapper {
+    struct StorageBufferWrapper {
         ShaderObject buffer;
 
-        explicit DynamicBufferWrapper(ShaderObject &&buffer) : buffer(buffer) {
+        explicit StorageBufferWrapper(ShaderObject &&buffer) : buffer(buffer) {
             // By instantiating the struct type here, all type definitions are registered with the shader scope recursively.
             T def_type;
         }
@@ -779,10 +783,10 @@ namespace xng::ShaderScript {
      * @tparam VALUE_COUNT
      */
     template<auto VALUE_TYPE, auto VALUE_COMPONENT, auto VALUE_COUNT>
-    struct DynamicBufferWrapper<ShaderDataObject<VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT> > {
+    struct StorageBufferWrapper<ShaderDataObject<VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT> > {
         ShaderObject buffer;
 
-        explicit DynamicBufferWrapper(ShaderObject &&buffer) : buffer(buffer) {
+        explicit StorageBufferWrapper(ShaderObject &&buffer) : buffer(buffer) {
         }
 
         ShaderObject operator[](const ShaderObject &index) {

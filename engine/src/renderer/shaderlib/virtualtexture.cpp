@@ -40,8 +40,8 @@ namespace xng::shaderlib::virtualtexture {
                         Param<UInt> atlasSize,
                         Param<UInt> tileSize,
                         Param<UInt> tileBorder,
-                        DynamicBufferWrapper<UInt> &tileMapOffsets,
-                        DynamicBufferWrapper<UInt> &tileMap) {
+                        StorageBufferWrapper<UInt> &tileMapOffsets,
+                        StorageBufferWrapper<UInt> &tileMap) {
         IRFunction
 
         ivec2 texel = ivec2(wrapped * mipSize);
@@ -81,8 +81,8 @@ namespace xng::shaderlib::virtualtexture {
                     Param<UInt> atlasSize,
                     Param<UInt> tileSize,
                     Param<UInt> tileBorder,
-                    DynamicBufferWrapper<UInt> &tileMapOffsets,
-                    DynamicBufferWrapper<UInt> &tileMap) {
+                    StorageBufferWrapper<UInt> &tileMapOffsets,
+                    StorageBufferWrapper<UInt> &tileMap) {
         IRFunction
 
         vec2 texel = wrapped * mipSize;
@@ -113,8 +113,8 @@ namespace xng::shaderlib::virtualtexture {
                          Param<vec2> wrapped,
                          Param<ivec2> imageSize,
                          Param<UInt> tileSize,
-                         DynamicBufferWrapper<UInt> &residencyMapOffsets,
-                         DynamicBufferWrapper<UInt> &residencyMap) {
+                         StorageBufferWrapper<UInt> &residencyMapOffsets,
+                         StorageBufferWrapper<UInt> &residencyMap) {
         IRFunction
 
         ivec2 mip0Texel = ivec2(wrapped * imageSize);
@@ -171,8 +171,8 @@ namespace xng::shaderlib::virtualtexture {
                  Param<UInt> imageMaxMip,
                  Param<UInt> tileSize,
                  Param<Float> maxAnisotropy,
-                 DynamicBufferWrapper<UInt> &residencyMapOffsets,
-                 DynamicBufferWrapper<UInt> &residencyMap) {
+                 StorageBufferWrapper<UInt> &residencyMapOffsets,
+                 StorageBufferWrapper<UInt> &residencyMap) {
         IRFunction
 
         Float minMip = getResidentMip(textureID,
@@ -233,11 +233,11 @@ namespace xng::shaderlib::virtualtexture {
                                  Param<UInt> tileSize,
                                  Param<UInt> tileBorder,
                                  Param<Float> maxAnisotropy,
-                                 DynamicBufferWrapper<UInt> &tileMapOffsets,
-                                 DynamicBufferWrapper<UInt> &tileMap,
-                                 DynamicBufferWrapper<UInt> &residencyMapOffsets,
-                                 DynamicBufferWrapper<UInt> &residencyMap,
-                                 DynamicBufferWrapper<UInt> &readback,
+                                 StorageBufferWrapper<UInt> &tileMapOffsets,
+                                 StorageBufferWrapper<UInt> &tileMap,
+                                 StorageBufferWrapper<UInt> &residencyMapOffsets,
+                                 StorageBufferWrapper<UInt> &residencyMap,
+                                 StorageBufferWrapper<UInt> &readback,
                                  ShaderObject &sampler) {
         IRFunction
         sideEffect(readback_sample(textureID,
@@ -284,10 +284,10 @@ namespace xng::shaderlib::virtualtexture {
                         Param<UInt> tileSize,
                         Param<UInt> tileBorder,
                         Param<Float> maxAnisotropy,
-                        DynamicBufferWrapper<UInt> &tileMapOffsets,
-                        DynamicBufferWrapper<UInt> &tileMap,
-                        DynamicBufferWrapper<UInt> &residencyMapOffsets,
-                        DynamicBufferWrapper<UInt> &residencyMap,
+                        StorageBufferWrapper<UInt> &tileMapOffsets,
+                        StorageBufferWrapper<UInt> &tileMap,
+                        StorageBufferWrapper<UInt> &residencyMapOffsets,
+                        StorageBufferWrapper<UInt> &residencyMap,
                         ShaderObject &sampler) {
         IRFunction
 
@@ -493,10 +493,10 @@ namespace xng::shaderlib::virtualtexture {
                         Param<Float> maxAnisotropy,
                         Param<vec2> dx,
                         Param<vec2> dy,
-                        DynamicBufferWrapper<UInt> &tileMapOffsets,
-                        DynamicBufferWrapper<UInt> &tileMap,
-                        DynamicBufferWrapper<UInt> &residencyMapOffsets,
-                        DynamicBufferWrapper<UInt> &residencyMap,
+                        StorageBufferWrapper<UInt> &tileMapOffsets,
+                        StorageBufferWrapper<UInt> &tileMap,
+                        StorageBufferWrapper<UInt> &residencyMapOffsets,
+                        StorageBufferWrapper<UInt> &residencyMap,
                         ShaderObject &sampler) {
         IRFunction
 
@@ -541,10 +541,10 @@ namespace xng::shaderlib::virtualtexture {
                                Param<Float> maxAnisotropy,
                                Param<vec2> dx,
                                Param<vec2> dy,
-                               DynamicBufferWrapper<UInt> &tileMapOffsets,
-                               DynamicBufferWrapper<UInt> &tileMap,
-                               DynamicBufferWrapper<UInt> &residencyMapOffsets,
-                               DynamicBufferWrapper<UInt> &residencyMap,
+                               StorageBufferWrapper<UInt> &tileMapOffsets,
+                               StorageBufferWrapper<UInt> &tileMap,
+                               StorageBufferWrapper<UInt> &residencyMapOffsets,
+                               StorageBufferWrapper<UInt> &residencyMap,
                                ShaderObject &sampler) {
         IRFunction
 
@@ -601,10 +601,10 @@ namespace xng::shaderlib::virtualtexture {
                          Param<Float> maxAnisotropy,
                          Param<vec2> dx,
                          Param<vec2> dy,
-                         DynamicBufferWrapper<UInt> &tileMapOffsets,
-                         DynamicBufferWrapper<UInt> &tileMap,
-                         DynamicBufferWrapper<UInt> &residencyMapOffsets,
-                         DynamicBufferWrapper<UInt> &residencyMap,
+                         StorageBufferWrapper<UInt> &tileMapOffsets,
+                         StorageBufferWrapper<UInt> &tileMap,
+                         StorageBufferWrapper<UInt> &residencyMapOffsets,
+                         StorageBufferWrapper<UInt> &residencyMap,
                          ShaderObject &sampler) {
         IRFunction
 
@@ -652,10 +652,10 @@ namespace xng::shaderlib::virtualtexture {
                           Param<Float> maxAnisotropy,
                           Param<vec2> dx,
                           Param<vec2> dy,
-                          DynamicBufferWrapper<UInt> &tileMapOffsets,
-                          DynamicBufferWrapper<UInt> &tileMap,
-                          DynamicBufferWrapper<UInt> &residencyMapOffsets,
-                          DynamicBufferWrapper<UInt> &residencyMap,
+                          StorageBufferWrapper<UInt> &tileMapOffsets,
+                          StorageBufferWrapper<UInt> &tileMap,
+                          StorageBufferWrapper<UInt> &residencyMapOffsets,
+                          StorageBufferWrapper<UInt> &residencyMap,
                           ShaderObject &sampler) {
         IRFunction
 
@@ -717,10 +717,10 @@ namespace xng::shaderlib::virtualtexture {
                         Param<Float> maxAnisotropy,
                         Param<vec2> dx,
                         Param<vec2> dy,
-                        DynamicBufferWrapper<UInt> &tileMapOffsets,
-                        DynamicBufferWrapper<UInt> &tileMap,
-                        DynamicBufferWrapper<UInt> &residencyMapOffsets,
-                        DynamicBufferWrapper<UInt> &residencyMap,
+                        StorageBufferWrapper<UInt> &tileMapOffsets,
+                        StorageBufferWrapper<UInt> &tileMap,
+                        StorageBufferWrapper<UInt> &residencyMapOffsets,
+                        StorageBufferWrapper<UInt> &residencyMap,
                         ShaderObject &sampler) {
         IRFunction
 
@@ -795,10 +795,10 @@ namespace xng::shaderlib::virtualtexture {
                                   Param<Float> maxAnisotropy,
                                   Param<vec2> dx,
                                   Param<vec2> dy,
-                                  DynamicBufferWrapper<UInt> &tileMapOffsets,
-                                  DynamicBufferWrapper<UInt> &tileMap,
-                                  DynamicBufferWrapper<UInt> &residencyMapOffsets,
-                                  DynamicBufferWrapper<UInt> &residencyMap,
+                                  StorageBufferWrapper<UInt> &tileMapOffsets,
+                                  StorageBufferWrapper<UInt> &tileMap,
+                                  StorageBufferWrapper<UInt> &residencyMapOffsets,
+                                  StorageBufferWrapper<UInt> &residencyMap,
                                   ShaderObject &sampler) {
         IRFunction
 
@@ -885,8 +885,8 @@ namespace xng::shaderlib::virtualtexture {
                          Param<UInt> imageMaxMip,
                          Param<UInt> tileSize,
                          Param<Float> maxAnisotropy,
-                         DynamicBufferWrapper<UInt> &readbackOffsets,
-                         DynamicBufferWrapper<UInt> &readback) {
+                         StorageBufferWrapper<UInt> &readbackOffsets,
+                         StorageBufferWrapper<UInt> &readback) {
         IRFunction
 
         vec2 dx = partialDerivativeX(uv);
@@ -1044,8 +1044,8 @@ namespace xng::shaderlib::virtualtexture {
                                  Param<Float> maxAnisotropy,
                                  Param<vec2> dx,
                                  Param<vec2> dy,
-                                 DynamicBufferWrapper<UInt> &readbackOffsets,
-                                 DynamicBufferWrapper<UInt> &readback) {
+                                 StorageBufferWrapper<UInt> &readbackOffsets,
+                                 StorageBufferWrapper<UInt> &readback) {
         IRFunction
 
         vec2 wrapped = wrapUV(uv, wrap);
@@ -1072,8 +1072,8 @@ namespace xng::shaderlib::virtualtexture {
                                         Param<Float> maxAnisotropy,
                                         Param<vec2> dx,
                                         Param<vec2> dy,
-                                        DynamicBufferWrapper<UInt> &readbackOffsets,
-                                        DynamicBufferWrapper<UInt> &readback) {
+                                        StorageBufferWrapper<UInt> &readbackOffsets,
+                                        StorageBufferWrapper<UInt> &readback) {
         IRFunction
 
         vec2 wrapped = wrapUV(uv, wrap);
@@ -1112,8 +1112,8 @@ namespace xng::shaderlib::virtualtexture {
                                   Param<Float> maxAnisotropy,
                                   Param<vec2> dx,
                                   Param<vec2> dy,
-                                  DynamicBufferWrapper<UInt> &readbackOffsets,
-                                  DynamicBufferWrapper<UInt> &readback) {
+                                  StorageBufferWrapper<UInt> &readbackOffsets,
+                                  StorageBufferWrapper<UInt> &readback) {
         IRFunction
 
         vec2 wrapped = wrapUV(uv, wrap);
@@ -1139,8 +1139,8 @@ namespace xng::shaderlib::virtualtexture {
                                    Param<Float> maxAnisotropy,
                                    Param<vec2> dx,
                                    Param<vec2> dy,
-                                   DynamicBufferWrapper<UInt> &readbackOffsets,
-                                   DynamicBufferWrapper<UInt> &readback) {
+                                   StorageBufferWrapper<UInt> &readbackOffsets,
+                                   StorageBufferWrapper<UInt> &readback) {
         IRFunction
 
         vec2 wrapped = wrapUV(uv, wrap);
@@ -1179,8 +1179,8 @@ namespace xng::shaderlib::virtualtexture {
                                  Param<Float> maxAnisotropy,
                                  Param<vec2> dx,
                                  Param<vec2> dy,
-                                 DynamicBufferWrapper<UInt> &readbackOffsets,
-                                 DynamicBufferWrapper<UInt> &readback) {
+                                 StorageBufferWrapper<UInt> &readbackOffsets,
+                                 StorageBufferWrapper<UInt> &readback) {
         IRFunction
 
         vec2 wrapped = wrapUV(uv, wrap);
@@ -1207,8 +1207,8 @@ namespace xng::shaderlib::virtualtexture {
                                            Param<Float> maxAnisotropy,
                                            Param<vec2> dx,
                                            Param<vec2> dy,
-                                           DynamicBufferWrapper<UInt> &readbackOffsets,
-                                           DynamicBufferWrapper<UInt> &readback) {
+                                           StorageBufferWrapper<UInt> &readbackOffsets,
+                                           StorageBufferWrapper<UInt> &readback) {
         IRFunction
 
         vec2 wrapped = wrapUV(uv, wrap);

@@ -26,13 +26,12 @@
 #include "xng/rendergraph/shader/shaderattributelayout.hpp"
 #include "xng/rendergraph/shader/shaderfunction.hpp"
 #include "xng/rendergraph/shader/shaderdatatype.hpp"
-#include "xng/rendergraph/shader/shaderbuffer.hpp"
+#include "xng/rendergraph/shader/shaderstoragebuffer.hpp"
+#include "xng/rendergraph/shader/shaderuniformbuffer.hpp"
 #include "xng/rendergraph/shader/shadertexturearray.hpp"
 #include "xng/rendergraph/shader/shaderstructtype.hpp"
 
 namespace xng::rg {
-    struct ShaderBuffer;
-
     struct Shader {
         enum Stage {
             VERTEX = 0,
@@ -55,7 +54,10 @@ namespace xng::rg {
         ShaderAttributeLayout outputLayout;
 
         std::unordered_map<std::string, ShaderPrimitiveType> parameters{};
-        std::unordered_map<std::string, ShaderBuffer> buffers{};
+
+        std::unordered_map<std::string, ShaderUniformBuffer> uniformBuffers{};
+        std::unordered_map<std::string, ShaderStorageBuffer> storageBuffers{};
+
         std::unordered_map<std::string, ShaderTextureArray> textureArrays{};
 
         std::vector<ShaderStructType> typeDefinitions{};
@@ -74,11 +76,12 @@ namespace xng::rg {
                const Primitive geometry_input,
                const Primitive geometry_output,
                const size_t geometry_max_vertices,
-               const Vec3u &compute_local_size,
+               Vec3u compute_local_size,
                ShaderAttributeLayout input_layout,
                ShaderAttributeLayout output_layout,
                std::unordered_map<std::string, ShaderPrimitiveType> parameters,
-               std::unordered_map<std::string, ShaderBuffer> buffers,
+               std::unordered_map<std::string, ShaderUniformBuffer> uniformBuffers,
+               std::unordered_map<std::string, ShaderStorageBuffer> storageBuffers,
                std::unordered_map<std::string, ShaderTextureArray> textureArrays,
                std::vector<ShaderStructType> typeDefinitions,
                std::vector<ShaderInstruction> mainFunction,
@@ -87,11 +90,12 @@ namespace xng::rg {
               geometryInput(geometry_input),
               geometryOutput(geometry_output),
               geometryMaxVertices(geometry_max_vertices),
-              computeLocalSize(compute_local_size),
+              computeLocalSize(std::move(compute_local_size)),
               inputLayout(std::move(input_layout)),
               outputLayout(std::move(output_layout)),
               parameters(std::move(parameters)),
-              buffers(std::move(buffers)),
+              uniformBuffers(std::move(uniformBuffers)),
+              storageBuffers(std::move(storageBuffers)),
               textureArrays(std::move(textureArrays)),
               typeDefinitions(std::move(typeDefinitions)),
               mainFunction(std::move(mainFunction)),

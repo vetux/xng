@@ -32,6 +32,10 @@ namespace xng::rg {
      *
      * Buffer resources are downcast-ed in the bind stage of the RasterContext
      * to enforce that the required capabilities are present.
+     *
+     * For shader input there are 2 buffer types available STORAGE and UNIFORM.
+     * STORAGE buffers map to SSBOs and should be used for random scattered access by shader threads.
+     * UNIFORM buffers map to UBOs and should be used for sequential uniform access by shader threads.
      */
     struct Buffer {
         /**
@@ -44,10 +48,11 @@ namespace xng::rg {
             CAPABILITY_NONE = 0,
             CAPABILITY_VERTEX = 1,
             CAPABILITY_INDEX = 2,
-            CAPABILITY_STORAGE = 4,
-            CAPABILITY_TRANSFER_SRC = 8,
-            CAPABILITY_TRANSFER_DST = 16,
-            CAPABILITY_INDIRECT = 32,
+            CAPABILITY_UNIFORM = 4,
+            CAPABILITY_STORAGE = 8,
+            CAPABILITY_TRANSFER_SRC = 16,
+            CAPABILITY_TRANSFER_DST = 32,
+            CAPABILITY_INDIRECT = 64,
         };
 
         /**

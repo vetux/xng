@@ -26,7 +26,8 @@ using namespace xng::rg;
 static const char *inputAttributePrefix = "in_";
 static const char *outputAttributePrefix = "out_";
 static const char *parameterPrefix = "param_";
-static const char *bufferPrefix = "buffer_";
+static const char *storageBufferPrefix = "storagebuffer_";
+static const char *uniformBufferPrefix = "uniformbuffer_";
 static const char *bufferArrayName = "data";
 static const char *texturePrefix = "texture_";
 

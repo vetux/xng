@@ -29,12 +29,12 @@ namespace xng {
 
         ComputeLocalSize(skinningLocalSize, 1, 1);
 
-        DynamicBuffer(ShaderTransform, bones)
-        DynamicBuffer(Float, positions)
-        DynamicBuffer(ivec4, boneIds)
-        DynamicBuffer(vec4, boneWeights)
+        StorageBufferDynamic(ShaderTransform, bones)
+        StorageBufferDynamic(Float, positions)
+        StorageBufferDynamic(ivec4, boneIds)
+        StorageBufferDynamic(vec4, boneWeights)
 
-        DynamicBufferRW(Float, skinnedPositions)
+        StorageBufferDynamicRW(Float, skinnedPositions)
 
         Parameter(UInt, vertexCount)
         Parameter(UInt, baseVertex)
@@ -97,14 +97,14 @@ namespace xng {
 
         ComputeLocalSize(prePassLocalSize, 1, 1);
 
-        Buffer(ShaderCamera, camera)
-        DynamicBuffer(ShaderTransform, transforms)
-        DynamicBuffer(ShaderMesh, meshBuffer)
-        DynamicBuffer(Int, meshIndices)
-        DynamicBufferRW(ShaderDrawMesh, drawBuffer)
+        StorageBuffer(ShaderCamera, camera)
+        StorageBufferDynamic(ShaderTransform, transforms)
+        StorageBufferDynamic(ShaderMesh, meshBuffer)
+        StorageBufferDynamic(Int, meshIndices)
+        StorageBufferDynamicRW(ShaderDrawMesh, drawBuffer)
 
-        DynamicBufferRW(ShaderDrawIndirectIndexed, commandBuffer)
-        DynamicBufferRW(Int, commandCountBuffer)
+        StorageBufferDynamicRW(ShaderDrawIndirectIndexed, commandBuffer)
+        StorageBufferDynamicRW(Int, commandCountBuffer)
 
         Parameter(Int, meshIndexOffset)
         Parameter(Int, batchSize)

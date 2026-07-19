@@ -26,7 +26,8 @@ using namespace xng::rg;
 struct CompiledShader {
     std::unordered_map<Shader::Stage, std::string> sourceCode;
 
-    std::vector<std::string> shaderBufferBindings;
+    std::vector<std::string> storageBufferBindings;
+    std::vector<std::string> uniformBufferBindings;
     std::vector<std::string> textureArrayBindings;
     std::vector<std::string> parameterBindings;
 
@@ -34,13 +35,22 @@ struct CompiledShader {
 
     std::unordered_map<std::string, size_t> textureArraySizes;
 
-    size_t getShaderBufferBinding(const std::string &name) const {
-        for (auto i = 0; i < shaderBufferBindings.size(); ++i) {
-            if (shaderBufferBindings.at(i) == name) {
+    size_t getStorageBufferBinding(const std::string &name) const {
+        for (auto i = 0; i < storageBufferBindings.size(); ++i) {
+            if (storageBufferBindings.at(i) == name) {
                 return i;
             }
         }
-        throw std::runtime_error("Shader buffer " + name + " not found");
+        throw std::runtime_error("Storage buffer " + name + " not found");
+    }
+
+    size_t getUniformBufferBinding(const std::string &name) const {
+        for (auto i = 0; i < uniformBufferBindings.size(); ++i) {
+            if (uniformBufferBindings.at(i) == name) {
+                return i;
+            }
+        }
+        throw std::runtime_error("Uniform buffer " + name + " not found");
     }
 
     size_t getTextureArrayBinding(const std::string &name) const {
@@ -63,15 +73,26 @@ struct CompiledShader {
         throw std::runtime_error("Parameter " + name + " not found");
     }
 
-    size_t createShaderBufferBinding(const std::string &name) {
-        for (auto i = 0; i < shaderBufferBindings.size(); ++i) {
-            auto &binding = shaderBufferBindings[i];
+    size_t createStorageBufferBinding(const std::string &name) {
+        for (auto i = 0; i < storageBufferBindings.size(); ++i) {
+            auto &binding = storageBufferBindings[i];
             if (name == binding) {
                 return i;
             }
         }
-        shaderBufferBindings.emplace_back(name);
-        return shaderBufferBindings.size() - 1;
+        storageBufferBindings.emplace_back(name);
+        return storageBufferBindings.size() - 1;
+    }
+
+    size_t createUniformBufferBinding(const std::string &name) {
+        for (auto i = 0; i < uniformBufferBindings.size(); ++i) {
+            auto &binding = uniformBufferBindings[i];
+            if (name == binding) {
+                return i;
+            }
+        }
+        uniformBufferBindings.emplace_back(name);
+        return uniformBufferBindings.size() - 1;
     }
 
     size_t createTextureArrayBinding(const std::string &name, size_t arraySize) {

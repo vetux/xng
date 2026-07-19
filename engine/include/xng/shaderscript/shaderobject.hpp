@@ -442,7 +442,7 @@ namespace xng::ShaderScript {
         }
 
         ShaderObject length() {
-            if (operand.type == rg::ShaderOperand::Buffer) {
+            if (operand.type == rg::ShaderOperand::StorageBuffer) {
                 return ShaderObject(rg::ShaderInstructionFactory::bufferSize(operand));
             }
             throw std::runtime_error("length() called on non buffer");

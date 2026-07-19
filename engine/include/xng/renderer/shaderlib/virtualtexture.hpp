@@ -51,11 +51,11 @@ namespace xng::shaderlib::virtualtexture {
                                                 Param<UInt> tileSize,
                                                 Param<UInt> tileBorder,
                                                 Param<Float> maxAnisotropy,
-                                                DynamicBufferWrapper<UInt> &tileMapOffsets,
-                                                DynamicBufferWrapper<UInt> &tileMap,
-                                                DynamicBufferWrapper<UInt> &residencyMapOffsets,
-                                                DynamicBufferWrapper<UInt> &residencyMap,
-                                                DynamicBufferWrapper<UInt> &readback,
+                                                StorageBufferWrapper<UInt> &tileMapOffsets,
+                                                StorageBufferWrapper<UInt> &tileMap,
+                                                StorageBufferWrapper<UInt> &residencyMapOffsets,
+                                                StorageBufferWrapper<UInt> &residencyMap,
+                                                StorageBufferWrapper<UInt> &readback,
                                                 ShaderObject &sampler);
 
     /**
@@ -141,10 +141,10 @@ namespace xng::shaderlib::virtualtexture {
                                        Param<UInt> tileSize,
                                        Param<UInt> tileBorder,
                                        Param<Float> maxAnisotropy,
-                                       DynamicBufferWrapper<UInt> &tileMapOffsets,
-                                       DynamicBufferWrapper<UInt> &tileMap,
-                                       DynamicBufferWrapper<UInt> &residencyMapOffsets,
-                                       DynamicBufferWrapper<UInt> &residencyMap,
+                                       StorageBufferWrapper<UInt> &tileMapOffsets,
+                                       StorageBufferWrapper<UInt> &tileMap,
+                                       StorageBufferWrapper<UInt> &residencyMapOffsets,
+                                       StorageBufferWrapper<UInt> &residencyMap,
                                        ShaderObject &sampler);
 
     XENGINE_EXPORT vec4 sample_nearest(Param<UInt> textureID,
@@ -158,10 +158,10 @@ namespace xng::shaderlib::virtualtexture {
                                        Param<Float> maxAnisotropy,
                                        Param<vec2> dx,
                                        Param<vec2> dy,
-                                       DynamicBufferWrapper<UInt> &tileMapOffsets,
-                                       DynamicBufferWrapper<UInt> &tileMap,
-                                       DynamicBufferWrapper<UInt> &residencyMapOffsets,
-                                       DynamicBufferWrapper<UInt> &residencyMap,
+                                       StorageBufferWrapper<UInt> &tileMapOffsets,
+                                       StorageBufferWrapper<UInt> &tileMap,
+                                       StorageBufferWrapper<UInt> &residencyMapOffsets,
+                                       StorageBufferWrapper<UInt> &residencyMap,
                                        ShaderObject &sampler);
 
     XENGINE_EXPORT vec4 sample_nearest_linear(Param<UInt> textureID,
@@ -175,10 +175,10 @@ namespace xng::shaderlib::virtualtexture {
                                               Param<Float> maxAnisotropy,
                                               Param<vec2> dx,
                                               Param<vec2> dy,
-                                              DynamicBufferWrapper<UInt> &tileMapOffsets,
-                                              DynamicBufferWrapper<UInt> &tileMap,
-                                              DynamicBufferWrapper<UInt> &residencyMapOffsets,
-                                              DynamicBufferWrapper<UInt> &residencyMap,
+                                              StorageBufferWrapper<UInt> &tileMapOffsets,
+                                              StorageBufferWrapper<UInt> &tileMap,
+                                              StorageBufferWrapper<UInt> &residencyMapOffsets,
+                                              StorageBufferWrapper<UInt> &residencyMap,
                                               ShaderObject &sampler);
 
     XENGINE_EXPORT vec4 sample_bilinear(Param<UInt> textureID,
@@ -192,10 +192,10 @@ namespace xng::shaderlib::virtualtexture {
                                         Param<Float> maxAnisotropy,
                                         Param<vec2> dx,
                                         Param<vec2> dy,
-                                        DynamicBufferWrapper<UInt> &tileMapOffsets,
-                                        DynamicBufferWrapper<UInt> &tileMap,
-                                        DynamicBufferWrapper<UInt> &residencyMapOffsets,
-                                        DynamicBufferWrapper<UInt> &residencyMap,
+                                        StorageBufferWrapper<UInt> &tileMapOffsets,
+                                        StorageBufferWrapper<UInt> &tileMap,
+                                        StorageBufferWrapper<UInt> &residencyMapOffsets,
+                                        StorageBufferWrapper<UInt> &residencyMap,
                                         ShaderObject &sampler);
 
     XENGINE_EXPORT vec4 sample_trilinear(Param<UInt> textureID,
@@ -209,10 +209,10 @@ namespace xng::shaderlib::virtualtexture {
                                          Param<Float> maxAnisotropy,
                                          Param<vec2> dx,
                                          Param<vec2> dy,
-                                         DynamicBufferWrapper<UInt> &tileMapOffsets,
-                                         DynamicBufferWrapper<UInt> &tileMap,
-                                         DynamicBufferWrapper<UInt> &residencyMapOffsets,
-                                         DynamicBufferWrapper<UInt> &residencyMap,
+                                         StorageBufferWrapper<UInt> &tileMapOffsets,
+                                         StorageBufferWrapper<UInt> &tileMap,
+                                         StorageBufferWrapper<UInt> &residencyMapOffsets,
+                                         StorageBufferWrapper<UInt> &residencyMap,
                                          ShaderObject &sampler);
 
     XENGINE_EXPORT vec4 sample_bicubic(Param<UInt> textureID,
@@ -226,10 +226,10 @@ namespace xng::shaderlib::virtualtexture {
                                        Param<Float> maxAnisotropy,
                                        Param<vec2> dx,
                                        Param<vec2> dy,
-                                       DynamicBufferWrapper<UInt> &tileMapOffsets,
-                                       DynamicBufferWrapper<UInt> &tileMap,
-                                       DynamicBufferWrapper<UInt> &residencyMapOffsets,
-                                       DynamicBufferWrapper<UInt> &residencyMap,
+                                       StorageBufferWrapper<UInt> &tileMapOffsets,
+                                       StorageBufferWrapper<UInt> &tileMap,
+                                       StorageBufferWrapper<UInt> &residencyMapOffsets,
+                                       StorageBufferWrapper<UInt> &residencyMap,
                                        ShaderObject &sampler);
 
     XENGINE_EXPORT vec4 sample_bicubic_trilinear(Param<UInt> textureID,
@@ -243,10 +243,10 @@ namespace xng::shaderlib::virtualtexture {
                                                  Param<Float> maxAnisotropy,
                                                  Param<vec2> dx,
                                                  Param<vec2> dy,
-                                                 DynamicBufferWrapper<UInt> &tileMapOffsets,
-                                                 DynamicBufferWrapper<UInt> &tileMap,
-                                                 DynamicBufferWrapper<UInt> &residencyMapOffsets,
-                                                 DynamicBufferWrapper<UInt> &residencyMap,
+                                                 StorageBufferWrapper<UInt> &tileMapOffsets,
+                                                 StorageBufferWrapper<UInt> &tileMap,
+                                                 StorageBufferWrapper<UInt> &residencyMapOffsets,
+                                                 StorageBufferWrapper<UInt> &residencyMap,
                                                  ShaderObject &sampler);
 
     /**
@@ -281,8 +281,8 @@ namespace xng::shaderlib::virtualtexture {
                                         Param<UInt> imageMaxMip,
                                         Param<UInt> tileSize,
                                         Param<Float> maxAnisotropy,
-                                        DynamicBufferWrapper<UInt> &readbackOffsets,
-                                        DynamicBufferWrapper<UInt> &readback);
+                                        StorageBufferWrapper<UInt> &readbackOffsets,
+                                        StorageBufferWrapper<UInt> &readback);
 
     XENGINE_EXPORT UInt readback_sample_nearest(Param<UInt> textureID,
                                                 Param<vec2> uv,
@@ -293,8 +293,8 @@ namespace xng::shaderlib::virtualtexture {
                                                 Param<Float> maxAnisotropy,
                                                 Param<vec2> dx,
                                                 Param<vec2> dy,
-                                                DynamicBufferWrapper<UInt> &readbackOffsets,
-                                                DynamicBufferWrapper<UInt> &readback);
+                                                StorageBufferWrapper<UInt> &readbackOffsets,
+                                                StorageBufferWrapper<UInt> &readback);
 
     XENGINE_EXPORT UInt readback_sample_nearest_linear(Param<UInt> textureID,
                                                        Param<vec2> uv,
@@ -305,8 +305,8 @@ namespace xng::shaderlib::virtualtexture {
                                                        Param<Float> maxAnisotropy,
                                                        Param<vec2> dx,
                                                        Param<vec2> dy,
-                                                       DynamicBufferWrapper<UInt> &readbackOffsets,
-                                                       DynamicBufferWrapper<UInt> &readback);
+                                                       StorageBufferWrapper<UInt> &readbackOffsets,
+                                                       StorageBufferWrapper<UInt> &readback);
 
     XENGINE_EXPORT UInt readback_sample_bilinear(Param<UInt> textureID,
                                                  Param<vec2> uv,
@@ -317,8 +317,8 @@ namespace xng::shaderlib::virtualtexture {
                                                  Param<Float> maxAnisotropy,
                                                  Param<vec2> dx,
                                                  Param<vec2> dy,
-                                                 DynamicBufferWrapper<UInt> &readbackOffsets,
-                                                 DynamicBufferWrapper<UInt> &readback);
+                                                 StorageBufferWrapper<UInt> &readbackOffsets,
+                                                 StorageBufferWrapper<UInt> &readback);
 
     XENGINE_EXPORT UInt readback_sample_trilinear(Param<UInt> textureID,
                                                   Param<vec2> uv,
@@ -329,8 +329,8 @@ namespace xng::shaderlib::virtualtexture {
                                                   Param<Float> maxAnisotropy,
                                                   Param<vec2> dx,
                                                   Param<vec2> dy,
-                                                  DynamicBufferWrapper<UInt> &readbackOffsets,
-                                                  DynamicBufferWrapper<UInt> &readback);
+                                                  StorageBufferWrapper<UInt> &readbackOffsets,
+                                                  StorageBufferWrapper<UInt> &readback);
 
     XENGINE_EXPORT UInt readback_sample_bicubic(Param<UInt> textureID,
                                                 Param<vec2> uv,
@@ -341,8 +341,8 @@ namespace xng::shaderlib::virtualtexture {
                                                 Param<Float> maxAnisotropy,
                                                 Param<vec2> dx,
                                                 Param<vec2> dy,
-                                                DynamicBufferWrapper<UInt> &readbackOffsets,
-                                                DynamicBufferWrapper<UInt> &readback);
+                                                StorageBufferWrapper<UInt> &readbackOffsets,
+                                                StorageBufferWrapper<UInt> &readback);
 
     XENGINE_EXPORT UInt readback_sample_bicubic_trilinear(Param<UInt> textureID,
                                                           Param<vec2> uv,
@@ -353,8 +353,8 @@ namespace xng::shaderlib::virtualtexture {
                                                           Param<Float> maxAnisotropy,
                                                           Param<vec2> dx,
                                                           Param<vec2> dy,
-                                                          DynamicBufferWrapper<UInt> &readbackOffsets,
-                                                          DynamicBufferWrapper<UInt> &readback);
+                                                          StorageBufferWrapper<UInt> &readbackOffsets,
+                                                          StorageBufferWrapper<UInt> &readback);
 }
 
 #endif //XENGINE_VIRTUALTEXTURE_HPP

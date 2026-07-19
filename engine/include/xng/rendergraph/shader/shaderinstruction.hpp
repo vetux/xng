@@ -195,7 +195,8 @@ namespace xng::rg {
         enum OperandType : int {
             None = 0,
             Instruction,
-            Buffer,
+            UniformBuffer,
+            StorageBuffer,
             Texture,
             Parameter,
             InputAttribute,
@@ -217,8 +218,12 @@ namespace xng::rg {
             return {Instruction, std::move(instruction)};
         }
 
-        static ShaderOperand buffer(std::string name) {
-            return {Buffer, std::move(name)};
+        static ShaderOperand storageBuffer(std::string name) {
+            return {StorageBuffer, std::move(name)};
+        }
+
+        static ShaderOperand uniformBuffer(std::string name) {
+            return {UniformBuffer, std::move(name)};
         }
 
         static ShaderOperand texture(std::string name) {

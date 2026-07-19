@@ -197,9 +197,12 @@ namespace InstructionCompiler {
                 throw std::runtime_error("Unassigned operand");
             case ShaderOperand::Instruction:
                 return compile(std::get<ShaderInstruction>(operand.value), source, functionName, {});
-            case ShaderOperand::Buffer:
+            case ShaderOperand::StorageBuffer:
                 name = std::get<std::string>(operand.value);
-                return bufferPrefix + name + "." + bufferArrayName;
+                return storageBufferPrefix + name + "." + bufferArrayName;
+            case ShaderOperand::UniformBuffer:
+                name = std::get<std::string>(operand.value);
+                return uniformBufferPrefix + name + "." + bufferArrayName;
             case ShaderOperand::Texture:
                 name = std::get<std::string>(operand.value);
                 return texturePrefix + name;

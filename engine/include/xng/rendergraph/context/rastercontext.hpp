@@ -88,9 +88,28 @@ namespace xng::rg {
         virtual void bindIndexBuffer(const Resource<Buffer> &buffer, IndexFormat format) = 0;
 
         /**
+         * Bind a region of a uniform buffer.
+         *
+         * Can only be called after a pipeline has been bound.
+         *
+         * Uniform buffer bindings cannot be aliased.
+         *
+         * @param target
+         * @param buffer
+         * @param offset
+         * @param size
+         */
+        virtual void bindUniformBuffer(const std::string &target,
+                                       const Resource<Buffer> &buffer,
+                                       size_t offset,
+                                       size_t size) = 0;
+
+        /**
          * Bind a region of a storage buffer.
          *
          * Can only be called after a pipeline has been bound.
+         *
+         * Storage buffer bindings can be aliased.
          *
          * @param target
          * @param buffer

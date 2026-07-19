@@ -34,6 +34,19 @@
 namespace xng::rg {
     class Runtime {
     public:
+        struct Capabilities {
+            // In practice all color formats except the compressed formats should be supported across all runtime implementations.
+            std::unordered_set<rg::ColorFormat> supportedColorFormats;
+
+            size_t maxUniformBufferSize;
+            size_t maxUniformBufferBindings;
+
+            size_t maxStorageBufferSize;
+            size_t maxStorageBufferBindings;
+
+            size_t maxTextureBindings;
+        };
+
         virtual ~Runtime() = default;
 
         /**
@@ -63,11 +76,9 @@ namespace xng::rg {
         virtual PipelineCache &getPipelineCache() = 0;
 
         /**
-         * In practice all color formats except the compressed formats should be supported across all runtime implementations.
-         *
-         * @return The list of supported color formats.
+         * @return The list of capabilities for the runtime implementation.
          */
-        virtual std::unordered_set<ColorFormat> getSupportedColorFormats() = 0;
+        virtual const Capabilities &getCapabilities() = 0;
 
         /**
          * @return The limits for the given type / colorFormat / capabilities combination.

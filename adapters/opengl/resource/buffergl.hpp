@@ -37,6 +37,8 @@ namespace xng::opengl {
             : desc(bufferDesc) {
             if (desc.capabilityFlags & Buffer::CAPABILITY_STORAGE) {
                 target = GL_SHADER_STORAGE_BUFFER;
+            } else if (desc.capabilityFlags & Buffer::CAPABILITY_UNIFORM) {
+                target = GL_UNIFORM_BUFFER;
             } else if (desc.capabilityFlags & Buffer::CAPABILITY_VERTEX) {
                 target = GL_ARRAY_BUFFER;
             } else if (desc.capabilityFlags & Buffer::CAPABILITY_INDEX) {

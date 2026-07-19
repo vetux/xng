@@ -44,7 +44,7 @@ namespace xng::opengl {
 
         rg::PipelineCache &getPipelineCache() override;
 
-        std::unordered_set<rg::ColorFormat> getSupportedColorFormats() override;
+        const Capabilities &getCapabilities() override;
 
         rg::TextureFormatLimits getTextureFormatLimits(rg::TextureType type,
                                                        rg::ColorFormat colorFormat,
