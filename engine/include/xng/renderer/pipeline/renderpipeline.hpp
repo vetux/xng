@@ -93,6 +93,10 @@ namespace xng {
                                    const std::vector<RenderObjectHandle<RenderMesh> > &meshes,
                                    int sortPriority);
 
+        virtual DrawID addDrawCall(std::shared_ptr<RenderPipelineTransform> transform,
+                                   const std::vector<RenderObjectHandle<RenderMesh> > &meshes,
+                                   int sortPriority);
+
         virtual void removeDrawCall(DrawID id) = 0;
 
         virtual void setCamera(const Vec3f &position, const Mat4f &view, const Mat4f &projection) = 0;
@@ -105,6 +109,16 @@ namespace xng {
          * @param enable
          */
         virtual void setEnableDistanceSort(bool enable) = 0;
+
+        /**
+         * The pipeline will cull draw calls in prepare() if enabled.
+         *
+         * Currently, this is just a stub because for proper draw culling mesh volumes are required.
+         * This will be properly implemented with meshlet support.
+         *
+         * @param enable Whether to enable draw call culling.
+         */
+        virtual void setEnableDrawCulling(bool enable) = 0;
 
         /**
          * Prepare the pipeline for execution. Must be called anytime the pipeline state changes before calling draw().
@@ -125,7 +139,7 @@ namespace xng {
          * @param textureArrays Optional user-supplied texture bindings.
          */
         virtual void execute(rg::GraphBuilder &graph,
-                             const RenderShader &shader,
+                             const RenderPipelineShader &shader,
                              const Recti &viewport,
                              std::vector<Attachment> attachments,
                              std::unordered_map<std::string, rg::ShaderPrimitive> parameters,

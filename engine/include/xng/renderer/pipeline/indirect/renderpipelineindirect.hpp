@@ -62,10 +62,12 @@ namespace xng {
 
         void setEnableDistanceSort(bool enable) override;
 
+        void setEnableDrawCulling(bool enable) override;
+
         void prepare(rg::GraphBuilder &graph) override;
 
         void execute(rg::GraphBuilder &graph,
-                     const RenderShader &shader,
+                     const RenderPipelineShader &shader,
                      const Recti &viewport,
                      std::vector<Attachment> attachments,
                      std::unordered_map<std::string, rg::ShaderPrimitive> parameters,

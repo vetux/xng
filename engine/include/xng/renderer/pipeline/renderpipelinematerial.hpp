@@ -42,8 +42,8 @@ namespace xng {
 
         virtual ~RenderPipelineMaterial() = default;
 
-        virtual void update(std::unordered_map<PropertyID, rg::ShaderPrimitive> properties,
-                            std::unordered_map<TextureID, TextureSampler> textures) = 0;
+        virtual void update(const std::unordered_map<PropertyID, rg::ShaderPrimitive> &properties,
+                            const std::unordered_map<TextureID, TextureSampler> &textures) = 0;
 
         virtual const std::unordered_map<PropertyID, rg::ShaderPrimitiveType> &getProperties() = 0;
 

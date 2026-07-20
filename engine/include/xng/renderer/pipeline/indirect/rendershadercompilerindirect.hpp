@@ -228,55 +228,12 @@ namespace xng {
 
         ~RenderShaderCompilerIndirect() override = default;
 
-        rg::ShaderOperand getVertexAttribute(const VertexAttribute attr) override {
-            return rg::ShaderOperand::inputAttribute(vertexAttributeToName(attr));
-        }
-
-        rg::ShaderOperand getCameraPosition() override {
-            return rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::call("getCameraPosition", {}));
-        }
-
-        rg::ShaderOperand getModel() override {
-            return rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::call("getModel", {}));
-        }
-
-        rg::ShaderOperand getView() override {
-            return rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::call("getView", {}));
-        }
-
-        rg::ShaderOperand getProjection() override {
-            return rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::call("getProjection", {}));
-        }
-
-        rg::ShaderOperand getModelViewProjection() override {
-            return rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::call("getModelViewProjection", {}));
-        }
-
-        rg::ShaderOperand getMaterialProperty(const RenderPipelineMaterial::PropertyID attr) override {
-            return rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::call("getMaterialProperty"
-                    + std::to_string(attr), {}));
-        }
-
-        rg::ShaderOperand sampleMaterialTexture(const RenderPipelineMaterial::TextureID tex,
-                                                const rg::ShaderOperand &uv) override {
-            return rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::call("sampleMaterialTexture"
-                    + std::to_string(tex), {uv}));
-        }
-
-        rg::ShaderInstruction writeAttachment(const unsigned index, const rg::ShaderOperand &color) override {
-            return rg::ShaderInstructionFactory::call("writeAttachment" + std::to_string(index), {color});
-        }
-
-        std::shared_ptr<RenderShader> compile(const std::vector<rg::Shader> &shaders,
-                                              const rg::RasterPipeline::Configuration &pipelineConfig,
-                                              const std::vector<RenderShader::Attachment> &colorAttachments,
-                                              const std::optional<rg::ColorFormat> &depthAttachment,
-                                              const std::optional<rg::ColorFormat> &stencilAttachment,
-                                              const std::unordered_set<VertexAttribute> &vertexAttributes,
-                                              const std::unordered_set<RenderPipelineMaterial::PropertyID> &
-                                              accessedProperties,
-                                              const std::unordered_set<RenderPipelineMaterial::TextureID> &
-                                              accessedTextures) override {
+        std::shared_ptr<RenderPipelineShader> compile(const std::vector<rg::Shader> &shaders,
+                                                      const rg::RasterPipeline::Configuration &pipelineConfig,
+                                                      const std::vector<RenderPipelineShader::Attachment> &
+                                                      colorAttachments,
+                                                      std::optional<rg::ColorFormat> depthAttachmentFormat,
+                                                      std::optional<rg::ColorFormat> stencilAttachmentFormat) override {
             rg::RasterPipeline pipeline;
             pipeline.shaders = shaders;
             pipeline.configuration = pipelineConfig;
@@ -285,36 +242,36 @@ namespace xng {
 
                 scope.addTypeDefinition(ShaderCamera::getShaderStructType());
                 scope.addStorageBuffer(cameraBufferName,
-                                rg::ShaderStorageBuffer(true,
-                                                 false,
-                                                 ShaderCamera::getShaderStructType().typeName));
+                                       rg::ShaderStorageBuffer(true,
+                                                               false,
+                                                               ShaderCamera::getShaderStructType().typeName));
 
                 scope.addStorageBuffer(transformBufferName,
-                                rg::ShaderStorageBuffer(true,
-                                                 true,
-                                                 rg::ShaderPrimitiveType::mat4()));
+                                       rg::ShaderStorageBuffer(true,
+                                                               true,
+                                                               rg::ShaderPrimitiveType::mat4()));
 
                 scope.addTypeDefinition(layout.getStructType());
                 scope.addStorageBuffer(materialBufferName,
-                                rg::ShaderStorageBuffer(true,
-                                                 true,
-                                                 layout.getStructType().typeName));
+                                       rg::ShaderStorageBuffer(true,
+                                                               true,
+                                                               layout.getStructType().typeName));
 
                 scope.addTypeDefinition(ShaderDrawCall::getShaderStructType());
                 scope.addStorageBuffer(drawMeshBufferName,
-                                rg::ShaderStorageBuffer(true,
-                                                 true,
-                                                 std::string(ShaderDrawMesh::_ShaderDrawMesh_type)));
+                                       rg::ShaderStorageBuffer(true,
+                                                               true,
+                                                               std::string(ShaderDrawMesh::_ShaderDrawMesh_type)));
 
                 compileGetCameraPosition(scope);
                 compileGetModel(scope);
                 compileGetView(scope);
                 compileGetProjection(scope);
                 compileGetModelViewProjection(scope);
-                for (auto &attr: accessedProperties) {
-                    compileGetMaterialProperty(scope, attr, materialLayout.properties.at(attr));
+                for (auto &attr: materialLayout.properties) {
+                    compileGetMaterialProperty(scope, attr.first, attr.second);
                 }
-                for (auto &tex: accessedTextures) {
+                for (auto &tex: materialLayout.textures) {
                     compileSampleMaterialTexture(scope, tex);
                 }
                 for (auto i = 0; i < colorAttachments.size(); i++) {
@@ -381,7 +338,7 @@ namespace xng {
                     shader.outputLayout = {};
                     for (auto i = 0; i < colorAttachments.size(); i++) {
                         const auto &att = colorAttachments.at(i);
-                        if (att.type == RenderShader::Attachment::ATTACHMENT_NATIVE) {
+                        if (att.type == RenderPipelineShader::Attachment::ATTACHMENT_NATIVE) {
                             shader.outputLayout.addElement(attachmentPrefix + std::to_string(i),
                                                            att.value);
                         }
@@ -389,23 +346,23 @@ namespace xng {
                 }
             }
 
-            for (auto &attachment : colorAttachments) {
-                if (attachment.type == RenderShader::Attachment::ATTACHMENT_NATIVE) {
+            for (auto &attachment: colorAttachments) {
+                if (attachment.type == RenderPipelineShader::Attachment::ATTACHMENT_NATIVE) {
                     pipeline.colorAttachments.emplace_back(attachment.format);
                 }
             }
-            pipeline.depthAttachment = depthAttachment;
-            pipeline.stencilAttachment = stencilAttachment;
+            pipeline.depthAttachment = depthAttachmentFormat;
+            pipeline.stencilAttachment = stencilAttachmentFormat;
 
             // TODO: Pipeline vertex format definition
             pipeline.vertexFormat.bindingPoints;
 
-            return std::make_shared<RenderShader>(cache,
-                                                  cache.create(pipeline),
-                                                  colorAttachments,
-                                                  vertexAttributes,
-                                                  accessedProperties,
-                                                  accessedTextures);
+            return std::make_shared<RenderPipelineShader>(cache,
+                                                          cache.create(pipeline),
+                                                          colorAttachments,
+                                                          vertexAttributes,
+                                                          accessedProperties,
+                                                          accessedTextures);
         }
 
         static void compileGetCameraPosition(ShaderScript::ShaderScope &scope);
@@ -427,7 +384,7 @@ namespace xng {
 
         static void compileWriteAttachment(ShaderScript::ShaderScope &scope,
                                            unsigned int index,
-                                           const RenderShader::Attachment &attachment);
+                                           const RenderPipelineShader::Attachment &attachment);
 
     private:
         rg::PipelineCache &cache;

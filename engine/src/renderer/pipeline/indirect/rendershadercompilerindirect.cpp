@@ -171,12 +171,12 @@ namespace xng {
 
     void RenderShaderCompilerIndirect::compileWriteAttachment(ShaderScope &scope,
                                                               const unsigned int index,
-                                                              const RenderShader::Attachment &
+                                                              const RenderPipelineShader::Attachment &
                                                               attachment) {
         Param<vec4> color(parameter("color"));
         FunctionScope fScope("sampleMaterialTexture");
 
-        if (attachment.type == RenderShader::Attachment::ATTACHMENT_TEXTURE) {
+        if (attachment.type == RenderPipelineShader::Attachment::ATTACHMENT_TEXTURE) {
             throw std::runtime_error("writeAttachment for virtual texture not implemented yet.");
         } else {
             outputAttribute(attachmentPrefix + std::to_string(index)) = color;

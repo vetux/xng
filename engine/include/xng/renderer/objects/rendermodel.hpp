@@ -21,64 +21,116 @@
 
 #include "xng/renderer/objects/rendertexture.hpp"
 #include "xng/renderer/objects/rendermesh.hpp"
+#include "xng/renderer/renderpath.hpp"
+#include "xng/renderer/shadingmodel.hpp"
 
 namespace xng {
     class RenderModel {
     public:
-        RenderModel(RenderObjectHandle<RenderTransform> transform,
+        RenderModel() = default;
+
+        RenderModel(std::shared_ptr<RenderPipelineTransform> transform,
                     RenderObjectHandle<RenderMaterial> material,
-                    std::vector<RenderObjectHandle<RenderMesh> > meshes,
-                    const RenderPath renderPath,
-                    const bool castShadows,
-                    const ShadingModel shadingModel,
-                    const bool receiveShadows)
+                    const RenderPipeline::DrawID drawID,
+                    std::vector<RenderObjectHandle<RenderMesh> > meshes)
             : transform(std::move(transform)),
               material(std::move(material)),
+              drawID(drawID),
               meshes(std::move(meshes)),
-              renderPath(renderPath),
-              castShadows(castShadows),
-              shadingModel(shadingModel),
-              receiveShadows(receiveShadows) {
+              castShadows(false) {
         }
 
-        [[nodiscard]] RenderObjectHandle<RenderTransform> getTransform() const {
-            return transform;
+        RenderModel(std::shared_ptr<RenderPipelineTransform> transform,
+                    RenderObjectHandle<RenderMaterial> material,
+                    const RenderPipeline::DrawID drawID,
+                    std::vector<RenderObjectHandle<RenderMesh> > meshes,
+                    std::shared_ptr<RenderPipelineTransform> shadowTransform,
+                    const RenderPipeline::DrawID shadowDrawID)
+            : transform(std::move(transform)),
+              material(std::move(material)),
+              drawID(drawID),
+              meshes(std::move(meshes)),
+              castShadows(true),
+              shadowTransform(std::move(shadowTransform)),
+              shadowDrawID(shadowDrawID) {
         }
 
-        [[nodiscard]] RenderObjectHandle<RenderMaterial> getMaterial() const {
-            return material;
+        RenderModel(const RenderModel &) = default;
+
+        RenderPipelineTransform &getTransform() {
+            if (transform == nullptr) {
+                throw std::runtime_error("Uninitialized RenderModel");
+            }
+            return *transform;
+        }
+
+        RenderMaterial &getMaterial() {
+            if (!material.isAssigned()) {
+                throw std::runtime_error("Uninitialized RenderModel");
+            }
+            return material.get();
+        }
+
+        const RenderPipelineTransform &getTransform() const {
+            if (transform == nullptr) {
+                throw std::runtime_error("Uninitialized RenderModel");
+            }
+            return *transform;
+        }
+
+        const RenderMaterial &getMaterial() const {
+            if (!material.isAssigned()) {
+                throw std::runtime_error("Uninitialized RenderModel");
+            }
+            return material.get();
+        }
+
+        [[nodiscard]] RenderPipeline::DrawID getDrawID() const {
+            return drawID;
         }
 
         [[nodiscard]] const std::vector<RenderObjectHandle<RenderMesh> > &getMeshes() const {
             return meshes;
         }
 
-        [[nodiscard]] RenderPath getRenderPath() const {
-            return renderPath;
-        }
-
-        [[nodiscard]] ShadingModel getShadingModel() const {
-            return shadingModel;
-        }
-
         [[nodiscard]] bool isCastShadows() const {
             return castShadows;
         }
 
-        [[nodiscard]] bool isReceiveShadows() const {
-            return receiveShadows;
+        [[nodiscard]] RenderPipelineTransform &getShadowTransform() {
+            if (shadowTransform == nullptr) {
+                throw std::runtime_error("Uninitialized RenderModel");
+            }
+            return *shadowTransform;
+        }
+
+        [[nodiscard]] RenderPipeline::DrawID getShadowDrawID() const {
+            return shadowDrawID;
+        }
+
+        void setTransform(const Transform &t) {
+            if (transform == nullptr) {
+                throw std::runtime_error("Uninitialized RenderModel");
+            }
+
+            transform->setTransform(t);
+
+            if (shadowTransform) {
+                shadowTransform->setTransform(t);
+            }
         }
 
     private:
-        RenderObjectHandle<RenderTransform> transform;
-        RenderObjectHandle<RenderMaterial> material;
+        std::shared_ptr<RenderPipelineTransform> transform = nullptr;
+        RenderObjectHandle<RenderMaterial> material{};
+
+        RenderPipeline::DrawID drawID = 0;
+
         std::vector<RenderObjectHandle<RenderMesh> > meshes;
 
-        RenderPath renderPath = RENDER_PATH_DEFERRED;
-        bool castShadows = false;
-
-        ShadingModel shadingModel = SHADING_MODEL_NONE;
-        bool receiveShadows = false;
+        bool castShadows;
+        std::shared_ptr<RenderPipelineTransform> shadowTransform = nullptr;
+        RenderPipeline::DrawID shadowDrawID = 0;
     };
 }
 

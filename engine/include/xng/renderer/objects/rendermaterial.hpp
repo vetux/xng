@@ -20,23 +20,67 @@
 #define XENGINE_RENDERMATERIAL_HPP
 
 #include "xng/renderer/shadingmodel.hpp"
+#include "xng/renderer/renderpath.hpp"
 
+#include "xng/renderer/renderobject.hpp"
 #include "xng/renderer/objects/rendertexture.hpp"
+#include "xng/renderer/objects/rendershader.hpp"
 #include "xng/renderer/pipeline/renderpipeline.hpp"
 
 namespace xng {
-    class RenderMaterial {
+    class RenderMaterial final : public RenderObject {
     public:
-        explicit RenderMaterial(std::shared_ptr<RenderPipelineMaterial> materialHandle)
-            : materialHandle(std::move(materialHandle)) {
+        RenderMaterial() = default;
+
+        explicit RenderMaterial(std::shared_ptr<RenderPipelineMaterial> materialHandle,
+                                const ShadingModel shadingModel,
+                                const RenderPath renderPath)
+            : materialHandle(std::move(materialHandle)),
+              shadingModel(shadingModel),
+              renderPath(renderPath) {
         }
 
-        RenderPipelineMaterial &getHandle() const {
-            return *materialHandle;
+        explicit RenderMaterial(std::shared_ptr<RenderPipelineMaterial> materialHandle,
+                                RenderObjectHandle<RenderShader> shader)
+            : materialHandle(std::move(materialHandle)),
+              shader(std::move(shader)) {
+        }
+
+        RenderMaterial(const RenderMaterial &) = default;
+
+        void set(const std::unordered_map<RenderPipelineMaterial::PropertyID, rg::ShaderPrimitive> &properties,
+                 const std::unordered_map<RenderPipelineMaterial::TextureID,
+                     RenderPipelineMaterial::TextureSampler> &textures) {
+            if (materialHandle == nullptr)
+                throw std::runtime_error("Uninitialized RenderMaterial");
+            materialHandle->update(properties, textures);
+        }
+
+        std::shared_ptr<RenderPipelineMaterial> getHandle() const {
+            if (materialHandle == nullptr)
+                throw std::runtime_error("Uninitialized RenderMaterial");
+            return materialHandle;
+        }
+
+        [[nodiscard]] const RenderObjectHandle<RenderShader> &getShader() const {
+            return shader;
+        }
+
+        [[nodiscard]] ShadingModel getShadingModel() const {
+            return shadingModel;
+        }
+
+        [[nodiscard]] RenderPath getRenderPath() const {
+            return renderPath;
         }
 
     private:
-        std::shared_ptr<RenderPipelineMaterial> materialHandle;
+        std::shared_ptr<RenderPipelineMaterial> materialHandle = nullptr;
+
+        RenderObjectHandle<RenderShader> shader{};
+
+        ShadingModel shadingModel = SHADING_MODEL_NONE;
+        RenderPath renderPath = RENDER_PATH_FORWARD;
     };
 }
 

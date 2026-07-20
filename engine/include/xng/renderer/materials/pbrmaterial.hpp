@@ -163,17 +163,18 @@ namespace xng {
             properties[MATERIAL_NORMAL_HAS_TEXTURE] = rg::ShaderPrimitive(true);
         }
 
-        const std::unordered_map<Property, rg::ShaderPrimitive> &getProperties() const {
+        const std::unordered_map<RenderPipelineMaterial::PropertyID, rg::ShaderPrimitive> &getProperties() const {
             return properties;
         }
 
-        const std::unordered_map<Texture, RenderPipelineMaterial::TextureSampler> &getTextures() const {
+        const std::unordered_map<RenderPipelineMaterial::TextureID,
+            RenderPipelineMaterial::TextureSampler> &getTextures() const {
             return textures;
         }
 
     private:
-        std::unordered_map<Property, rg::ShaderPrimitive> properties;
-        std::unordered_map<Texture, RenderPipelineMaterial::TextureSampler> textures;
+        std::unordered_map<RenderPipelineMaterial::PropertyID, rg::ShaderPrimitive> properties;
+        std::unordered_map<RenderPipelineMaterial::TextureID, RenderPipelineMaterial::TextureSampler> textures;
     };
 }
 

@@ -20,6 +20,7 @@
 #define XENGINE_RENDEROBJECT_HPP
 
 #include <cstring>
+#include <algorithm>
 
 namespace xng {
     /**
@@ -41,12 +42,17 @@ namespace xng {
             RENDER_TEXTURE = 0,
             RENDER_SKELETON,
             RENDER_MESH,
+            RENDER_SHADER,
+            RENDER_MATERIAL,
+
             RENDER_MODEL,
+
+            RENDER_CANVAS,
+            RENDER_PAINT,
+
             RENDER_LIGHT_POINT,
             RENDER_LIGHT_DIRECTIONAL,
             RENDER_LIGHT_SPOT,
-            RENDER_CANVAS,
-            RENDER_PAINT
         };
 
         virtual ~RenderObject() = default;

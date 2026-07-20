@@ -16,8 +16,8 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef XENGINE_RENDERSHADER_HPP
-#define XENGINE_RENDERSHADER_HPP
+#ifndef XENGINE_RENDERPIPELINESHADER_HPP
+#define XENGINE_RENDERPIPELINESHADER_HPP
 
 #include "xng/rendergraph/pipelinecache.hpp"
 #include "xng/renderer/pipeline/renderpipelinematerial.hpp"
@@ -36,7 +36,7 @@ namespace xng {
      * as "HAS_NORMAL_MAP" etc. and the pipeline would then permutate on the user permutated shader based on the
      * texture types in the material.
      */
-    class RenderShader {
+    class RenderPipelineShader {
     public:
         struct Attachment {
             enum Type : int {
@@ -46,23 +46,23 @@ namespace xng {
 
             rg::ShaderPrimitiveType value{};
             rg::ColorFormat format{};
+
+            Attachment() = default;
+
+            Attachment(const Type type, const rg::ShaderPrimitiveType value, const rg::ColorFormat format)
+                : type(type), value(value), format(format) {
+            }
         };
 
-        RenderShader(rg::PipelineCache &cache,
-                     const rg::PipelineCache::Handle pipeline,
-                     std::vector<Attachment> _attachments,
-                     std::unordered_set<VertexAttribute> _vertexAttributes,
-                     std::unordered_set<RenderPipelineMaterial::PropertyID> _materialProperties,
-                     std::unordered_set<RenderPipelineMaterial::TextureID> _materialTextures)
+        RenderPipelineShader(rg::PipelineCache &cache,
+                             const rg::PipelineCache::Handle pipeline,
+                             std::vector<Attachment> _attachments)
             : cache(cache),
               pipeline(pipeline),
-              attachments(std::move(_attachments)),
-              vertexAttributes(std::move(_vertexAttributes)),
-              materialProperties(std::move(_materialProperties)),
-              materialTextures(std::move(_materialTextures)) {
+              attachments(std::move(_attachments)) {
         }
 
-        ~RenderShader() {
+        ~RenderPipelineShader() {
             cache.destroy(pipeline);
         }
 
@@ -71,11 +71,7 @@ namespace xng {
         rg::PipelineCache::Handle pipeline;
 
         std::vector<Attachment> attachments;
-
-        std::unordered_set<VertexAttribute> vertexAttributes{};
-        std::unordered_set<RenderPipelineMaterial::PropertyID> materialProperties{};
-        std::unordered_set<RenderPipelineMaterial::TextureID> materialTextures{};
     };
 }
 
-#endif //XENGINE_RENDERSHADER_HPP
+#endif //XENGINE_RENDERPIPELINESHADER_HPP

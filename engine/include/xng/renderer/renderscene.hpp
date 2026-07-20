@@ -19,11 +19,17 @@
 #ifndef XENGINE_RENDERSCENE_HPP
 #define XENGINE_RENDERSCENE_HPP
 
+#include "xng/renderer/materials/pbrmaterial.hpp"
+#include "xng/renderer/materials/canvasmaterial.hpp"
 #include "xng/renderer/camera.hpp"
 
 #include "xng/renderer/objects/renderskeleton.hpp"
 #include "xng/renderer/objects/rendermesh.hpp"
 #include "xng/renderer/objects/rendertexture.hpp"
+#include "xng/renderer/objects/rendermaterial.hpp"
+#include "xng/renderer/objects/rendershader.hpp"
+
+#include "xng/renderer/objects/rendermodel.hpp"
 
 #include "xng/renderer/objects/rendercanvas.hpp"
 #include "xng/renderer/objects/renderpaint.hpp"
@@ -32,9 +38,10 @@
 #include "xng/renderer/objects/renderdirectionallight.hpp"
 #include "xng/renderer/objects/renderspotlight.hpp"
 
-#include "xng/renderer/objects/rendermodel.hpp"
-
 #include "xng/renderer/pipeline/renderpipeline.hpp"
+
+#include "xng/renderer/renderpath.hpp"
+#include "xng/renderer/shadingmodel.hpp"
 
 namespace xng {
     /**
@@ -87,7 +94,52 @@ namespace xng {
 
         RenderObjectHandle<RenderMesh> createMesh(const Mesh &mesh, RenderObjectHandle<RenderSkeleton> skeleton);
 
-        RenderObjectHandle<RenderModel> createModel();
+        /**
+         * Create a user-defined shader.
+         * Each shader owns their own pipeline.
+         *
+         * @param uShaders
+         * @param materialLayout
+         * @param pipelineConfiguration
+         * @return
+         */
+        RenderObjectHandle<RenderShader> createShader(const std::vector<rg::Shader> &uShaders,
+                                                      RenderPipeline::MaterialLayout materialLayout,
+                                                      const rg::RasterPipeline::Configuration &pipelineConfiguration);
+
+        /**
+         * Create a user-defined material for the given shader.
+         *
+         * @param shader
+         * @return
+         */
+        RenderObjectHandle<RenderMaterial> createMaterial(const RenderObjectHandle<RenderShader> &shader);
+
+        /**
+         * Create a PBR material.
+         *
+         * @param material The material data.
+         * @param renderPath The render path for this material.
+         */
+        RenderObjectHandle<RenderMaterial> createMaterial(const PBRMaterial &material, RenderPath renderPath);
+
+        /**
+         * Create a model.
+         *
+         * @param material
+         * @param mMeshes
+         * @param castShadows
+         * @param sortPriority
+         * @return
+         */
+        RenderObjectHandle<RenderModel> createModel(const RenderObjectHandle<RenderMaterial> &material,
+                                                    const std::vector<RenderObjectHandle<RenderMesh> > &mMeshes,
+                                                    bool castShadows,
+                                                    int sortPriority);
+
+        RenderObjectHandle<RenderCanvas> createCanvas();
+
+        RenderObjectHandle<RenderPaint> createPaint();
 
         RenderObjectHandle<RenderPointLight> createPointLight();
 
@@ -95,27 +147,23 @@ namespace xng {
 
         RenderObjectHandle<RenderSpotLight> createSpotLight();
 
-        RenderObjectHandle<RenderCanvas> createCanvas();
-
-        RenderObjectHandle<RenderPaint> createPaint();
-
         // Const interface naturally defines the intent that passes do not modify the scene.
         void drawPbrDeferred(rg::GraphBuilder &graph,
-                             const RenderShader &shader,
+                             const RenderPipelineShader &shader,
                              std::vector<RenderPipeline::Attachment> attachments,
                              std::unordered_map<std::string, rg::ShaderPrimitive> parameters,
                              std::unordered_map<std::string, RenderPipeline::BufferBinding> storageBuffers,
                              std::unordered_map<std::string, std::vector<rg::TextureBinding> > textureArrays) const;
 
         void drawPbrForward(rg::GraphBuilder &graph,
-                            const RenderShader &shader,
+                            const RenderPipelineShader &shader,
                             std::vector<RenderPipeline::Attachment> attachments,
                             std::unordered_map<std::string, rg::ShaderPrimitive> parameters,
                             std::unordered_map<std::string, RenderPipeline::BufferBinding> storageBuffers,
                             std::unordered_map<std::string, std::vector<rg::TextureBinding> > textureArrays) const;
 
         void drawShadowCasters(rg::GraphBuilder &graph,
-                               const RenderShader &shader,
+                               const RenderPipelineShader &shader,
                                std::vector<RenderPipeline::Attachment> attachments,
                                std::unordered_map<std::string, rg::ShaderPrimitive> parameters,
                                std::unordered_map<std::string, RenderPipeline::BufferBinding> storageBuffers,
@@ -128,14 +176,14 @@ namespace xng {
                              std::unordered_map<std::string, std::vector<rg::TextureBinding> > textureArrays) const;
 
         void drawScreenCanvas(rg::GraphBuilder &graph,
-                              const RenderShader &shader,
+                              const RenderPipelineShader &shader,
                               std::vector<RenderPipeline::Attachment> attachments,
                               std::unordered_map<std::string, rg::ShaderPrimitive> parameters,
                               std::unordered_map<std::string, RenderPipeline::BufferBinding> storageBuffers,
                               std::unordered_map<std::string, std::vector<rg::TextureBinding> > textureArrays) const;
 
         void drawTextureCanvases(rg::GraphBuilder &graph,
-                                 const RenderShader &shader,
+                                 const RenderPipelineShader &shader,
                                  std::unordered_map<std::string, rg::ShaderPrimitive> parameters,
                                  std::unordered_map<std::string, RenderPipeline::BufferBinding> storageBuffers,
                                  std::unordered_map<std::string, std::vector<rg::TextureBinding> > textureArrays) const;
@@ -152,8 +200,24 @@ namespace xng {
             return meshes;
         }
 
+        const std::unordered_map<RenderObject::ID, RenderShader> &getShaders() const {
+            return shaders;
+        }
+
+        const std::unordered_map<RenderObject::ID, RenderMaterial> &getMaterials() const {
+            return materials;
+        }
+
         const std::unordered_map<RenderObject::ID, RenderModel> &getModels() const {
             return models;
+        }
+
+        const std::unordered_map<RenderObject::ID, RenderCanvas> &getCanvases() const {
+            return canvases;
+        }
+
+        const std::unordered_map<RenderObject::ID, RenderPaint> &getPaints() const {
+            return paints;
         }
 
         const std::unordered_map<RenderObject::ID, RenderPointLight> &getPointLights() const {
@@ -166,14 +230,6 @@ namespace xng {
 
         const std::unordered_map<RenderObject::ID, RenderSpotLight> &getSpotLights() const {
             return spotLights;
-        }
-
-        const std::unordered_map<RenderObject::ID, RenderCanvas> &getCanvases() const {
-            return canvases;
-        }
-
-        const std::unordered_map<RenderObject::ID, RenderPaint> &getPaints() const {
-            return paints;
         }
 
         const VirtualTextureStreamer &getVirtualTextureStreamer() const {
@@ -197,6 +253,8 @@ namespace xng {
         }
 
     private:
+        std::shared_ptr<RenderPipeline> createPipeline(RenderPipeline::MaterialLayout materialLayout);
+
         void incrementReference(RenderObject::ID id) override;
 
         void decrementReference(RenderObject::ID id) override;
@@ -207,17 +265,21 @@ namespace xng {
 
         void destroyMesh(RenderObject::ID id);
 
+        void destroyShader(RenderObject::ID id);
+
+        void destroyMaterial(RenderObject::ID id);
+
         void destroyModel(RenderObject::ID id);
+
+        void destroyCanvas(RenderObject::ID id);
+
+        void destroyPaint(RenderObject::ID id);
 
         void destroyPointLight(RenderObject::ID id);
 
         void destroyDirectionalLight(RenderObject::ID id);
 
         void destroySpotLight(RenderObject::ID id);
-
-        void destroyCanvas(RenderObject::ID id);
-
-        void destroyPaint(RenderObject::ID id);
 
         RenderObject::ID allocateID() {
             if (freeIDs.empty()) {
@@ -247,15 +309,17 @@ namespace xng {
         std::unordered_map<RenderObject::ID, RenderTexture> textures;
         std::unordered_map<RenderObject::ID, RenderSkeleton> skeletons;
         std::unordered_map<RenderObject::ID, RenderMesh> meshes;
+        std::unordered_map<RenderObject::ID, RenderShader> shaders;
+        std::unordered_map<RenderObject::ID, RenderMaterial> materials;
 
         std::unordered_map<RenderObject::ID, RenderModel> models;
+
+        std::unordered_map<RenderObject::ID, RenderCanvas> canvases;
+        std::unordered_map<RenderObject::ID, RenderPaint> paints;
 
         std::unordered_map<RenderObject::ID, RenderPointLight> pointLights;
         std::unordered_map<RenderObject::ID, RenderDirectionalLight> directionalLights;
         std::unordered_map<RenderObject::ID, RenderSpotLight> spotLights;
-
-        std::unordered_map<RenderObject::ID, RenderCanvas> canvases;
-        std::unordered_map<RenderObject::ID, RenderPaint> paints;
 
         std::unordered_map<RenderObject::ID, size_t> refCounts;
         std::unordered_map<RenderObject::ID, RenderObject::Type> types;
@@ -263,13 +327,11 @@ namespace xng {
         RenderObjectHandle<RenderMesh> unitQuadMesh;
         RenderObjectHandle<RenderMesh> unitCubeMesh;
 
+        // The pipelines
         std::unique_ptr<RenderPipeline> pbrDeferredPipeline;
         std::unique_ptr<RenderPipeline> pbrForwardPipeline;
 
         std::unique_ptr<RenderPipeline> shadowCastersPipeline;
-
-        // For each user shader one pipeline with the corresponding models allocated into it.
-        std::unordered_map<RenderObject::ID, std::unique_ptr<RenderPipeline> > userShadingPipelines;
 
         std::unique_ptr<RenderPipeline> screenCanvasPipeline;
 

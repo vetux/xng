@@ -19,6 +19,7 @@
 #include "xng/renderer/renderscene.hpp"
 
 #include "xng/adapters/opengl/opengl.hpp"
+#include "xng/renderer/pipeline/indirect/renderpipelineindirect.hpp"
 
 namespace xng {
     RenderScene::RenderScene(rg::Runtime &runtime,
@@ -121,6 +122,117 @@ namespace xng {
         return {this, id, meshes.at(id)};
     }
 
+    RenderObjectHandle<RenderShader> RenderScene::createShader(const std::vector<rg::Shader> &uShaders,
+                                                               RenderPipeline::MaterialLayout materialLayout,
+                                                               const rg::RasterPipeline::Configuration &
+                                                               pipelineConfiguration) {
+        const auto id = allocateID();
+        auto pipeline = createPipeline(std::move(materialLayout));
+        auto shader = pipeline->getCompiler().compile(uShaders,
+                                                      pipelineConfiguration,
+                                                      {
+                                                          RenderPipelineShader::Attachment(
+                                                              RenderPipelineShader::Attachment::ATTACHMENT_NATIVE,
+                                                              rg::ShaderPrimitiveType::vec4(),
+                                                              rg::RGBA8)
+                                                      },
+                                                      rg::DEPTH_32F,
+                                                      {});
+        shaders.emplace(id, RenderShader(std::move(pipeline), std::move(shader)));
+        types[id] = RenderObject::RENDER_SHADER;
+        return {this, id, shaders.at(id)};
+    }
+
+    RenderObjectHandle<RenderMaterial> RenderScene::createMaterial(const RenderObjectHandle<RenderShader> &shader) {
+        const auto id = allocateID();
+        auto materialHandle = shader.get().getPipeline()->createMaterial();
+        materials.emplace(id, RenderMaterial(std::move(materialHandle), shader));
+        types[id] = RenderObject::RENDER_MATERIAL;
+        return {this, id, materials.at(id)};
+    }
+
+    RenderObjectHandle<RenderMaterial> RenderScene::createMaterial(const PBRMaterial &material,
+                                                                   const RenderPath renderPath) {
+        const auto id = allocateID();
+
+        std::shared_ptr<RenderPipelineMaterial> materialHandle;
+        switch (renderPath) {
+            case RENDER_PATH_DEFERRED:
+                materialHandle = pbrDeferredPipeline->createMaterial();
+                break;
+            case RENDER_PATH_FORWARD:
+                materialHandle = pbrForwardPipeline->createMaterial();
+                break;
+        }
+
+        materialHandle->update(material.getProperties(), material.getTextures());
+        materials.emplace(id, RenderMaterial(std::move(materialHandle), SHADING_MODEL_PBR, renderPath));
+        types[id] = RenderObject::RENDER_MATERIAL;
+        return {this, id, materials.at(id)};
+    }
+
+    RenderObjectHandle<RenderModel> RenderScene::createModel(const RenderObjectHandle<RenderMaterial> &material,
+                                                             const std::vector<RenderObjectHandle<RenderMesh> > &
+                                                             mMeshes,
+                                                             const bool castShadows,
+                                                             const int sortPriority) {
+        const auto id = allocateID();
+
+        RenderPipeline *pipeline = nullptr;
+        if (material.get().getShader().isAssigned()) {
+            pipeline = material.get().getShader().get().getPipeline().get();
+        } else {
+            assert(material.get().getShadingModel() == SHADING_MODEL_PBR);
+            switch (material.get().getRenderPath()) {
+                case RENDER_PATH_FORWARD:
+                    pipeline = pbrForwardPipeline.get();
+                    break;
+                case RENDER_PATH_DEFERRED:
+                    pipeline = pbrDeferredPipeline.get();
+                    break;
+                default:
+                    throw std::runtime_error("Unknown render path.");
+            }
+        }
+
+        assert(pipeline != nullptr);
+
+        const auto transformHandle = pipeline->createTransform();
+
+        auto drawID = pipeline->addDrawCall(transformHandle,
+                                            material.get().getHandle(),
+                                            mMeshes,
+                                            sortPriority);
+
+        if (castShadows) {
+            auto shadowTransform = shadowCastersPipeline->createTransform();
+            const auto shadowDrawID = shadowCastersPipeline->addDrawCall(shadowTransform,
+                                                                         mMeshes,
+                                                                         0);
+            models.emplace(id, RenderModel(transformHandle,
+                                           material,
+                                           drawID,
+                                           mMeshes,
+                                           std::move(shadowTransform),
+                                           shadowDrawID));
+        } else {
+            models.emplace(id, RenderModel(transformHandle,
+                                           material,
+                                           drawID,
+                                           mMeshes));
+        }
+
+        types[id] = RenderObject::RENDER_MODEL;
+        return {this, id, models.at(id)};
+    }
+
+    std::shared_ptr<RenderPipeline> RenderScene::createPipeline(RenderPipeline::MaterialLayout materialLayout) {
+        // Here the scene will switch constructors based on platform support.
+        return std::make_shared<RenderPipelineIndirect>(runtime.getResourceHeap(),
+                                                        chunkStreamer,
+                                                        std::move(materialLayout));
+    }
+
     void RenderScene::incrementReference(const RenderObject::ID id) {
         refCounts.at(id)++;
     }
@@ -137,6 +249,12 @@ namespace xng {
                     break;
                 case RenderObject::RENDER_MESH:
                     destroyMesh(id);
+                    break;
+                case RenderObject::RENDER_SHADER:
+                    destroyShader(id);
+                    break;
+                case RenderObject::RENDER_MATERIAL:
+                    destroyMaterial(id);
                     break;
                 case RenderObject::RENDER_MODEL:
                     destroyModel(id);
@@ -176,5 +294,36 @@ namespace xng {
     void RenderScene::destroyMesh(const RenderObject::ID id) {
         meshStreamer.destroy(meshes.at(id).getHandle());
         meshes.erase(id);
+    }
+
+    void RenderScene::destroyShader(const RenderObject::ID id) {
+        shaders.erase(id);
+    }
+
+    void RenderScene::destroyMaterial(const RenderObject::ID id) {
+        materials.erase(id);
+    }
+
+    void RenderScene::destroyModel(const RenderObject::ID id) {
+        const auto &model = models.at(id);
+        if (model.getMaterial().getShader().isAssigned()) {
+            model.getMaterial().getShader().get().getPipeline()->removeDrawCall(model.getDrawID());
+        } else {
+            assert(model.getMaterial().getShadingModel() == SHADING_MODEL_PBR);
+            switch (model.getMaterial().getRenderPath()) {
+                case RENDER_PATH_FORWARD:
+                    pbrForwardPipeline->removeDrawCall(model.getDrawID());
+                    break;
+                case RENDER_PATH_DEFERRED:
+                    pbrDeferredPipeline->removeDrawCall(model.getDrawID());
+                    break;
+                default:
+                    throw std::runtime_error("Unknown render path.");
+            }
+        }
+        if (model.isCastShadows()) {
+            shadowCastersPipeline->removeDrawCall(model.getShadowDrawID());
+        }
+        models.erase(id);
     }
 }

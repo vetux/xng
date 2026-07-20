@@ -24,12 +24,30 @@
 #include "xng/rendergraph/shader/shader.hpp"
 
 #include "xng/renderer/vertexattribute.hpp"
-#include "xng/renderer/pipeline/rendershader.hpp"
+#include "xng/renderer/pipeline/renderpipelineshader.hpp"
 
 namespace xng {
     class RenderShaderCompiler {
     public:
         virtual ~RenderShaderCompiler() = default;
+
+        static constexpr auto getVertexAttributePrefix = "_getVertexAttribute";
+
+        static constexpr auto getCameraPositionName = "_getCameraPosition";
+
+        static constexpr auto getModelName = "_getModel";
+
+        static constexpr auto getViewName = "_getView";
+
+        static constexpr auto getProjectionName = "_getProjection";
+
+        static constexpr auto getModelViewProjectionName = "_getModelViewProjection";
+
+        static constexpr auto getMaterialPropertyPrefix = "_getMaterialProperty";
+
+        static constexpr auto sampleMaterialTexturePrefix = "_sampleMaterialTexture";
+
+        static constexpr auto writeAttachmentPrefix = "_writeAttachment";
 
         /**
          * Retrieve vertex attribute value. (Only valid in Vertex stage)
@@ -37,17 +55,31 @@ namespace xng {
          * @param attr
          * @return
          */
-        virtual rg::ShaderOperand getVertexAttribute(VertexAttribute attr) = 0;
+        static rg::ShaderOperand getVertexAttribute(const VertexAttribute attr) {
+            return rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::call(
+                getVertexAttributePrefix + std::to_string(attr),
+                {}));
+        }
 
-        virtual rg::ShaderOperand getCameraPosition() = 0;
+        static rg::ShaderOperand getCameraPosition() {
+            return rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::call(getCameraPositionName, {}));
+        }
 
-        virtual rg::ShaderOperand getModel() = 0;
+        static rg::ShaderOperand getModel() {
+            return rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::call(getModelName, {}));
+        }
 
-        virtual rg::ShaderOperand getView() = 0;
+        static rg::ShaderOperand getView() {
+            return rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::call(getViewName, {}));
+        }
 
-        virtual rg::ShaderOperand getProjection() = 0;
+        static rg::ShaderOperand getProjection() {
+            return rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::call(getProjectionName, {}));
+        }
 
-        virtual rg::ShaderOperand getModelViewProjection() = 0;
+        static rg::ShaderOperand getModelViewProjection() {
+            return rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::call(getModelViewProjectionName, {}));
+        }
 
         /**
          * Retrieve material property value.
@@ -55,7 +87,10 @@ namespace xng {
          * @param attr
          * @return
          */
-        virtual rg::ShaderOperand getMaterialProperty(RenderPipelineMaterial::PropertyID attr) = 0;
+        static rg::ShaderOperand getMaterialProperty(const RenderPipelineMaterial::PropertyID attr) {
+            return rg::ShaderOperand::instruction(
+                rg::ShaderInstructionFactory::call(getMaterialPropertyPrefix + std::to_string(attr), {}));
+        }
 
         /**
          * Sample a material texture.
@@ -64,8 +99,12 @@ namespace xng {
          * @param uv
          * @return
          */
-        virtual rg::ShaderOperand sampleMaterialTexture(RenderPipelineMaterial::TextureID tex,
-                                                        const rg::ShaderOperand &uv) = 0;
+        static rg::ShaderOperand sampleMaterialTexture(const RenderPipelineMaterial::TextureID tex,
+                                                       const rg::ShaderOperand &uv) {
+            return rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::call(
+                sampleMaterialTexturePrefix + std::to_string(tex),
+                {uv}));
+        }
 
         /**
          * Write the specified color value to the specified attachment.
@@ -76,7 +115,10 @@ namespace xng {
          * @param color
          * @return
          */
-        virtual rg::ShaderInstruction writeAttachment(unsigned int index, const rg::ShaderOperand &color) = 0;
+        static rg::ShaderInstruction writeAttachment(const unsigned int index, const rg::ShaderOperand &color) {
+            return rg::ShaderInstructionFactory::call(writeAttachmentPrefix + std::to_string(index),
+                                                      {color});
+        }
 
         /**
          * Inject the pipeline dependent required bindings, parameters, functions and vertex layout into the passed shaders.
@@ -85,23 +127,17 @@ namespace xng {
          *
          * @param shaders The pipeline shaders.
          * @param pipelineConfig The pipeline configuration.
-         * @param colorAttachments The format of the attachments.
-         * @param depthAttachmentFormat
-         * @param stencilAttachmentFormat
-         * @param vertexAttributes The set of accessed vertex attributes.
-         * @param materialProperties The set of accessed material properties.
-         * @param materialTextures The set of accessed material textures.
+         * @param attachments The format of the attachments.
+         * @param depthAttachmentFormat The format of the depth attachment
+         * @param stencilAttachmentFormat The format of the stencil attachment
          */
-        virtual std::shared_ptr<RenderShader> compile(const std::vector<rg::Shader> &shaders,
-                                                      const rg::RasterPipeline::Configuration &pipelineConfig,
-                                                      const std::vector<RenderShader::Attachment> &colorAttachments,
-                                                      const std::optional<rg::ColorFormat> &depthAttachmentFormat,
-                                                      const std::optional<rg::ColorFormat> &stencilAttachmentFormat,
-                                                      const std::unordered_set<VertexAttribute> &vertexAttributes,
-                                                      const std::unordered_set<RenderPipelineMaterial::PropertyID> &
-                                                      materialProperties,
-                                                      const std::unordered_set<RenderPipelineMaterial::TextureID> &
-                                                      materialTextures) = 0;
+        virtual std::shared_ptr<RenderPipelineShader> compile(const std::vector<rg::Shader> &shaders,
+                                                              const rg::RasterPipeline::Configuration &pipelineConfig,
+                                                              const std::vector<RenderPipelineShader::Attachment> &
+                                                              attachments,
+                                                              std::optional<rg::ColorFormat> depthAttachmentFormat,
+                                                              std::optional<rg::ColorFormat> stencilAttachmentFormat) =
+        0;
     };
 }
 
