@@ -72,8 +72,7 @@ namespace xng {
     class XENGINE_EXPORT RenderScene final : public RenderObjectRefCounter {
     public:
         RenderScene(rg::Runtime &runtime,
-                    size_t chunkSize,
-                    size_t chunkCount,
+                    ChunkStreamer &chunkStreamer,
                     size_t tileSize,
                     size_t tileBorder,
                     float maxAnisotropy);
@@ -244,6 +243,10 @@ namespace xng {
 
         RenderObjectHandle<RenderSpotLight> createSpotLight();
 
+        void commit(rg::GraphBuilder &graph, StreamerQueue &streamerQueue);
+
+        void prepare(rg::GraphBuilder &graph);
+
         // Const interface naturally defines the intent that passes do not modify the scene.
         void drawPbrDeferred(rg::GraphBuilder &graph,
                              const RenderPipelineShader &shader,
@@ -349,6 +352,10 @@ namespace xng {
             return unitCubeMesh;
         }
 
+        const std::unordered_set<RenderObject::ID> &getSkinnedMeshes() const {
+            return skinnedMeshes;
+        }
+
     private:
         std::shared_ptr<RenderPipeline> createPipeline(RenderPipeline::MaterialLayout materialLayout);
 
@@ -397,7 +404,8 @@ namespace xng {
 
         rg::Runtime &runtime;
 
-        ChunkStreamer chunkStreamer;
+        ChunkStreamer &chunkStreamer;
+
         SkeletonStreamer skeletonStreamer;
         MeshStreamer meshStreamer;
         VirtualTextureStreamer virtualTextureStreamer;
@@ -420,6 +428,8 @@ namespace xng {
 
         std::unordered_map<RenderObject::ID, size_t> refCounts;
         std::unordered_map<RenderObject::ID, RenderObject::Type> types;
+
+        std::unordered_set<RenderObject::ID> skinnedMeshes;
 
         RenderObjectHandle<RenderMesh> unitQuadMesh;
         RenderObjectHandle<RenderMesh> unitCubeMesh;

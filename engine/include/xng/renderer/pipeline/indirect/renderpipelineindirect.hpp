@@ -64,6 +64,8 @@ namespace xng {
 
         void setEnableDrawCulling(bool enable) override;
 
+        void commit(rg::GraphBuilder &graph, StreamerQueue &streamerQueue) override;
+
         void prepare(rg::GraphBuilder &graph) override;
 
         void execute(rg::GraphBuilder &graph,

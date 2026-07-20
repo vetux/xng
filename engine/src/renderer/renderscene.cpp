@@ -23,18 +23,28 @@
 
 namespace xng {
     RenderScene::RenderScene(rg::Runtime &runtime,
-                             const size_t chunkSize,
-                             const size_t chunkCount,
+                             ChunkStreamer &chunkStreamer,
                              const size_t tileSize,
                              const size_t tileBorder,
                              const float maxAnisotropy)
         : runtime(runtime),
-          chunkStreamer(runtime.getResourceHeap(), chunkSize, chunkCount),
+          chunkStreamer(chunkStreamer),
           skeletonStreamer(runtime.getResourceHeap(), chunkStreamer),
           meshStreamer(runtime.getResourceHeap(), chunkStreamer),
           virtualTextureStreamer(runtime, chunkStreamer, tileSize, tileBorder, maxAnisotropy),
           unitQuadMesh(createMesh(Mesh::normalizedQuad())),
           unitCubeMesh(createMesh(Mesh::normalizedCube())) {
+    }
+
+    void RenderScene::setCamera(const Camera &camera) {
+        pbrDeferredPipeline->setCamera(camera.getTransform().getPosition(), camera.getView(), camera.getProjection());
+        pbrForwardPipeline->setCamera(camera.getTransform().getPosition(), camera.getView(), camera.getProjection());
+
+        for (auto &pair: shaders) {
+            pair.second.getPipeline()->setCamera(camera.getTransform().getPosition(),
+                                                 camera.getView(),
+                                                 camera.getProjection());
+        }
     }
 
     RenderObjectHandle<RenderTexture> RenderScene::createTexture(const ImageRGBA &image,
@@ -118,6 +128,7 @@ namespace xng {
         const auto id = allocateID();
         const auto meshHandle = meshStreamer.create(mesh, skeleton.get().getOffsets());
         meshes.emplace(id, RenderMesh(meshStreamer, meshHandle, skeleton));
+        skinnedMeshes.insert(id);
         types[id] = RenderObject::RENDER_MESH;
         return {this, id, meshes.at(id)};
     }
@@ -450,6 +461,7 @@ namespace xng {
     void RenderScene::destroyMesh(const RenderObject::ID id) {
         meshStreamer.destroy(meshes.at(id).getHandle());
         meshes.erase(id);
+        skinnedMeshes.erase(id);
     }
 
     void RenderScene::destroyShader(const RenderObject::ID id) {

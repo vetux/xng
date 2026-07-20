@@ -144,6 +144,10 @@ namespace xng {
             return instance;
         }
 
+        [[nodiscard]] RenderObject::ID getID() const {
+            return id;
+        }
+
     private:
         RenderObjectRefCounter *refCounter = nullptr;
         RenderObject::ID id = RenderObject::UNASSIGNED_ID;

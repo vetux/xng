@@ -32,28 +32,25 @@ namespace xng {
     public:
         static rg::Shader compileSkinningShader();
 
-        static rg::Shader compileScenePrepassShader();
-
         /**
          * @param runtime The runtime to use
          * @param streamingBudget The streaming budget (Default 64MB)
          */
         explicit Renderer(rg::Runtime &runtime, const size_t streamingBudget = 64 * (1024 * 1024))
-            : Renderer(runtime, streamingBudget, compileSkinningShader(), compileScenePrepassShader()) {
+            : Renderer(runtime, streamingBudget, compileSkinningShader()) {
         }
 
         Renderer(rg::Runtime &runtime,
                  size_t streamingBudget,
-                 const rg::Shader &skinningShader,
-                 const rg::Shader &scenePrepassShader);
+                 const rg::Shader &skinningShader);
 
-        std::shared_ptr<RenderScene> createScene();
+        std::shared_ptr<RenderScene> createScene(size_t tileSize = 256,
+                                                 size_t tileBorder = 9,
+                                                 float maxAnisotropy = 16);
 
         void setPasses(std::vector<std::shared_ptr<RenderPass> > passes);
 
-        void draw(const std::shared_ptr<rg::Surface> &surface, const RenderScene &drawList);
-
-        RendererStatistics getStatistics() const;
+        void draw(const std::shared_ptr<rg::Surface> &surface, RenderScene &scene);
 
     private:
         static constexpr int skinningLocalSize = 64;
@@ -61,9 +58,10 @@ namespace xng {
         rg::ComputePass recordSkinningPass(const RenderScene &scene) const;
 
         rg::Runtime &runtime;
-        std::vector<std::shared_ptr<RenderPass> > passes;
-
+        ChunkStreamer chunkStreamer;
         rg::PipelineCache::Handle skinningPipeline;
+
+        std::vector<std::shared_ptr<RenderPass> > passes;
     };
 }
 

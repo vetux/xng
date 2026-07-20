@@ -29,7 +29,7 @@ namespace xng {
 
         ComputeLocalSize(skinningLocalSize, 1, 1);
 
-        StorageBufferDynamic(ShaderTransform, bones)
+        StorageBufferDynamic(mat4, bones)
         StorageBufferDynamic(Float, positions)
         StorageBufferDynamic(ivec4, boneIds)
         StorageBufferDynamic(vec4, boneWeights)
@@ -61,85 +61,31 @@ namespace xng {
 
         If(vertexBoneIds.x() > -1)
             vec4 localPosition;
-            localPosition = bones[baseBone + vertexBoneIds.x()].transform * position;
+            localPosition = bones[baseBone + vertexBoneIds.x()] * position;
             totalPosition += localPosition * vertexBoneWeights.x();
         Fi
 
         If(vertexBoneIds.y() > -1)
             vec4 localPosition;
-            localPosition = bones[baseBone + vertexBoneIds.y()].transform * position;
+            localPosition = bones[baseBone + vertexBoneIds.y()] * position;
             totalPosition += localPosition * vertexBoneWeights.y();
         Fi
 
         If(vertexBoneIds.z() > -1)
             vec4 localPosition;
-            localPosition = bones[baseBone + vertexBoneIds.z()].transform * position;
+            localPosition = bones[baseBone + vertexBoneIds.z()] * position;
             totalPosition += localPosition * vertexBoneWeights.z();
         Fi
 
         If(vertexBoneIds.w() > -1)
             vec4 localPosition;
-            localPosition = bones[baseBone + vertexBoneIds.w()].transform * position;
+            localPosition = bones[baseBone + vertexBoneIds.w()] * position;
             totalPosition += localPosition * vertexBoneWeights.w();
         Fi
 
         skinnedPositions[floatOutputIndex] = totalPosition.x();
         skinnedPositions[floatOutputIndex + 1] = totalPosition.y();
         skinnedPositions[floatOutputIndex + 2] = totalPosition.z();
-
-        EndShader();
-
-        return BuildShader();
-    }
-
-    rg::Shader Renderer::compileScenePrepassShader() {
-        BeginShader(rg::Shader::COMPUTE)
-
-        ComputeLocalSize(prePassLocalSize, 1, 1);
-
-        StorageBuffer(ShaderCamera, camera)
-        StorageBufferDynamic(ShaderTransform, transforms)
-        StorageBufferDynamic(ShaderMesh, meshBuffer)
-        StorageBufferDynamic(Int, meshIndices)
-        StorageBufferDynamicRW(ShaderDrawMesh, drawBuffer)
-
-        StorageBufferDynamicRW(ShaderDrawIndirectIndexed, commandBuffer)
-        StorageBufferDynamicRW(Int, commandCountBuffer)
-
-        Parameter(Int, meshIndexOffset)
-        Parameter(Int, batchSize)
-
-        If(getGlobalInvocationID().x() >= batchSize)
-            Return();
-        Fi
-
-        Int meshIndex = meshIndices[getGlobalInvocationID().x() + meshIndexOffset];
-        ShaderMesh mesh = meshBuffer[meshIndex];
-
-        // TODO: Culling
-
-        ShaderDrawMesh drawMesh;
-        drawMesh.mvp = camera.projection * camera.view * transforms[mesh.transformIndex].transform;
-        drawMesh.modelID = mesh.modelID;
-        drawMesh.meshID = mesh.meshID;
-        drawMesh.transformIndex = mesh.transformIndex;
-        drawMesh.materialIndex = mesh.materialIndex;
-        drawMesh.receiveShadows = mesh.receiveShadows;
-        drawBuffer[getGlobalInvocationID().x() + meshIndexOffset] = drawMesh;
-
-        ShaderDrawIndirectIndexed command;
-        command.indexCount = mesh.indexCount;
-        command.instanceCount = UInt(1);
-        command.firstIndex = mesh.indexOffset;
-        command.baseVertex = mesh.baseVertex;
-        command.baseInstance = UInt(meshIndexOffset);
-        commandBuffer[getGlobalInvocationID().x()] = command;
-
-        // Currently no Culling, so we set to batchSize.
-        // When culling is implemented, the count buffer would only increment with the draws which survive culling.
-        If(getGlobalInvocationID().x() == 0)
-            commandCountBuffer[0] = Int(batchSize);
-        Fi
 
         EndShader();
 

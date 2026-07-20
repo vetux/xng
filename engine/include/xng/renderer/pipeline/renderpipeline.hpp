@@ -121,7 +121,17 @@ namespace xng {
         virtual void setEnableDrawCulling(bool enable) = 0;
 
         /**
+         * Commit the internal buffers of the pipeline.
+         *
+         * @param graph
+         * @param streamerQueue
+         */
+        virtual void commit(rg::GraphBuilder &graph, StreamerQueue &streamerQueue) = 0;
+
+        /**
          * Prepare the pipeline for execution. Must be called anytime the pipeline state changes before calling draw().
+         *
+         * This will record the prepass in the indirect pipeline.
          *
          * @param graph The graph to record the pipeline preparation into.
          */
