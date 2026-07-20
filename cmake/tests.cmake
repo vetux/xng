@@ -5,13 +5,13 @@ add_executable(test-pak ${BASE_SOURCE_DIR}/tests/pak/src/main.cpp)
 target_include_directories(test-pak PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests/pak/src/ ${TESTS_COMMON_DIR})
 target_link_libraries(test-pak Threads::Threads xengine)
 
-add_executable(test-rendergraph ${BASE_SOURCE_DIR}/tests/rendergraph/src/main.cpp)
-target_include_directories(test-rendergraph PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests/rendergraph/src/ ${TESTS_COMMON_DIR})
-target_link_libraries(test-rendergraph Threads::Threads xengine)
+add_executable(benchmark-renderer ${BASE_SOURCE_DIR}/tests/benchmark-renderer/src/main.cpp)
+target_include_directories(benchmark-renderer PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests/benchmark-renderer/src/ ${TESTS_COMMON_DIR})
+target_link_libraries(benchmark-renderer Threads::Threads xengine)
 
 if (MSVC)
     target_compile_options(test-pak PUBLIC /bigobj)
-    target_compile_options(test-rendergraph PUBLIC /bigobj)
+    target_compile_options(benchmark-renderer PUBLIC /bigobj)
 endif ()
 
 file(GLOB RESULT ${TESTS_ASSET_DIR}/*)
