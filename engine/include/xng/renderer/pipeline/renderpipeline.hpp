@@ -22,7 +22,7 @@
 #include "xng/renderer/objects/rendertexture.hpp"
 #include "xng/renderer/objects/rendermesh.hpp"
 
-#include "xng/renderer/pipeline/rendershadercompiler.hpp"
+#include "xng/renderer/pipeline/renderpipelinecompiler.hpp"
 #include "xng/renderer/pipeline/renderpipelinematerial.hpp"
 #include "xng/renderer/pipeline/renderpipelinetransform.hpp"
 
@@ -82,7 +82,7 @@ namespace xng {
         /**
          * @return The shader compiler for this pipeline.
          */
-        virtual RenderShaderCompiler &getCompiler();
+        virtual RenderPipelineCompiler &getCompiler();
 
         virtual std::shared_ptr<RenderPipelineTransform> createTransform();
 

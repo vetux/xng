@@ -22,7 +22,7 @@
 #include <utility>
 
 #include "xng/renderer/pipeline/renderpipeline.hpp"
-#include "xng/renderer/pipeline/indirect/rendershadercompilerindirect.hpp"
+#include "xng/renderer/pipeline/indirect/renderpipelinecompilerindirect.hpp"
 
 #include "xng/renderer/stream/bufferstreamer.hpp"
 #include "xng/shaderscript/objectstd140.hpp"
@@ -45,7 +45,7 @@ namespace xng {
 
         const MaterialLayout &getMaterialLayout() override;
 
-        RenderShaderCompiler &getCompiler() override;
+        RenderPipelineCompiler &getCompiler() override;
 
         std::shared_ptr<RenderPipelineTransform> createTransform() override;
 
@@ -90,6 +90,10 @@ namespace xng {
                 buffer.upload(slot, t.model());
             }
 
+            void setTransform(const Mat4f &model) override {
+                buffer.upload(slot, model);
+            }
+
         private:
             BufferStreamer<Mat4f> &buffer;
             BufferStreamer<Mat4f>::Slot slot;
@@ -105,8 +109,8 @@ namespace xng {
 
             ~RenderPipelineMaterialIndirect() override = default;
 
-            void update(std::unordered_map<PropertyID, rg::ShaderPrimitive> properties,
-                        std::unordered_map<TextureID, TextureSampler> textures) override;
+            void update(const std::unordered_map<PropertyID, rg::ShaderPrimitive> &properties,
+                        const std::unordered_map<TextureID, TextureSampler> &textures) override;
 
             const std::unordered_map<PropertyID, rg::ShaderPrimitiveType> &getProperties() override;
 

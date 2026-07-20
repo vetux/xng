@@ -19,8 +19,8 @@
 #ifndef XENGINE_RENDERSHADERCOMPILERINDIRECT_HPP
 #define XENGINE_RENDERSHADERCOMPILERINDIRECT_HPP
 
-#include "xng/renderer/pipeline/rendershadercompiler.hpp"
 #include "xng/renderer/pipeline/renderpipeline.hpp"
+#include "xng/renderer/pipeline/renderpipelinecompiler.hpp"
 #include "xng/renderer/objects/rendertexture.hpp"
 
 #include "xng/shaderscript/objectstd140.hpp"
@@ -28,7 +28,7 @@
 #include "xng/shaderscript/macro/shaderstruct.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT RenderShaderCompilerIndirect final : public RenderShaderCompiler {
+    class XENGINE_EXPORT RenderShaderCompilerIndirect final : public RenderPipelineCompiler {
     public:
         ShaderStruct(ShaderCamera,
                      Vec4f, viewPosition,
@@ -359,10 +359,7 @@ namespace xng {
 
             return std::make_shared<RenderPipelineShader>(cache,
                                                           cache.create(pipeline),
-                                                          colorAttachments,
-                                                          vertexAttributes,
-                                                          accessedProperties,
-                                                          accessedTextures);
+                                                          colorAttachments);
         }
 
         static void compileGetCameraPosition(ShaderScript::ShaderScope &scope);

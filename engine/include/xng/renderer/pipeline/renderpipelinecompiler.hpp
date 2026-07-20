@@ -27,9 +27,9 @@
 #include "xng/renderer/pipeline/renderpipelineshader.hpp"
 
 namespace xng {
-    class RenderShaderCompiler {
+    class RenderPipelineCompiler {
     public:
-        virtual ~RenderShaderCompiler() = default;
+        virtual ~RenderPipelineCompiler() = default;
 
         static constexpr auto getVertexAttributePrefix = "_getVertexAttribute";
 
