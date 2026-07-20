@@ -226,6 +226,162 @@ namespace xng {
         return {this, id, models.at(id)};
     }
 
+    RenderObjectHandle<RenderCanvas> RenderScene::createCanvas() {
+        const auto id = allocateID();
+        canvases.emplace(id, RenderCanvas(createPipeline(CanvasMaterial::getLayout())));
+        types[id] = RenderObject::RENDER_CANVAS;
+        return {this, id, canvases.at(id)};
+    }
+
+    RenderObjectHandle<RenderCanvas> RenderScene::createCanvas(const RenderObjectHandle<RenderTexture> &texture) {
+        const auto id = allocateID();
+        canvases.emplace(id, RenderCanvas(createPipeline(CanvasMaterial::getLayout()), texture));
+        types[id] = RenderObject::RENDER_CANVAS;
+        return {this, id, canvases.at(id)};
+    }
+
+    RenderObjectHandle<RenderPaint> RenderScene::createPaint(const RenderObjectHandle<RenderCanvas> &canvas,
+                                                             const Vec2f &start,
+                                                             const Vec2f &end,
+                                                             const ColorRGBA &color,
+                                                             const Vec2f &center,
+                                                             const float rotation,
+                                                             const int sortPriority) {
+        const auto id = allocateID();
+        const auto modelMatrix = MatrixMath::rotate(Vec3f(0, 0, rotation))
+                                 * MatrixMath::translate(Vec3f(center.x, center.y, 0));
+
+        CanvasMaterial canvasMaterial;
+        canvasMaterial.setColor(color);
+
+        Mesh m;
+        m.primitive = Mesh::TRIANGLES;
+        m.positions.emplace_back(start.x, start.y, 1);
+        m.positions.emplace_back(end.x, end.y, 1);
+        m.positions.emplace_back(end.x, end.y, 1);
+        auto mesh = createMesh(m);
+
+        auto transform = canvas.get().getPipeline()->createTransform();
+        transform->setTransform(modelMatrix);
+
+        auto material = canvas.get().getPipeline()->createMaterial();
+        material->update(canvasMaterial.getProperties(), canvasMaterial.getTextures());
+
+        const auto drawID = canvas.get().getPipeline()->addDrawCall(transform, material, {mesh}, sortPriority);
+
+        paints.emplace(id, RenderPaint(canvas,
+                                       std::move(transform),
+                                       std::move(material),
+                                       drawID,
+                                       mesh));
+        types[id] = RenderObject::RENDER_PAINT;
+        return {this, id, paints.at(id)};
+    }
+
+    RenderObjectHandle<RenderPaint> RenderScene::createPaint(const RenderObjectHandle<RenderCanvas> &canvas,
+                                                             const Vec2f &position,
+                                                             const float size,
+                                                             const ColorRGBA &color,
+                                                             const int sortPriority) {
+        const auto id = allocateID();
+        const auto modelMatrix = MatrixMath::scale(Vec3f(size, size, 1))
+                                 * MatrixMath::translate(Vec3f(position.x, position.y, 0));
+
+        CanvasMaterial canvasMaterial;
+        canvasMaterial.setColor(color);
+
+        const auto mesh = unitQuadMesh;
+
+        auto transform = canvas.get().getPipeline()->createTransform();
+        transform->setTransform(modelMatrix);
+
+        auto material = canvas.get().getPipeline()->createMaterial();
+        material->update(canvasMaterial.getProperties(), canvasMaterial.getTextures());
+
+        const auto drawID = canvas.get().getPipeline()->addDrawCall(transform, material, {mesh}, sortPriority);
+
+        paints.emplace(id, RenderPaint(canvas,
+                                       std::move(transform),
+                                       std::move(material),
+                                       drawID,
+                                       mesh));
+        types[id] = RenderObject::RENDER_PAINT;
+        return {this, id, paints.at(id)};
+    }
+
+    RenderObjectHandle<RenderPaint> RenderScene::createPaint(const RenderObjectHandle<RenderCanvas> &canvas,
+                                                             const Rectf &dstRect,
+                                                             const ColorRGBA &color,
+                                                             const Vec2f &center,
+                                                             const float rotation,
+                                                             const int sortPriority) {
+        const auto id = allocateID();
+        const auto modelMatrix = MatrixMath::translate(Vec3f(dstRect.position.x, dstRect.position.y, 0))
+                                 * MatrixMath::rotate(Vec3f(0, 0, rotation))
+                                 * MatrixMath::translate(Vec3f(center.x, center.y, 0))
+                                 * MatrixMath::scale(Vec3f(dstRect.dimensions.x, dstRect.dimensions.y, 1));
+
+        CanvasMaterial canvasMaterial;
+        canvasMaterial.setColor(color);
+
+        const auto mesh = unitQuadMesh;
+
+        auto transform = canvas.get().getPipeline()->createTransform();
+        transform->setTransform(modelMatrix);
+
+        auto material = canvas.get().getPipeline()->createMaterial();
+        material->update(canvasMaterial.getProperties(), canvasMaterial.getTextures());
+
+        const auto drawID = canvas.get().getPipeline()->addDrawCall(transform, material, {mesh}, sortPriority);
+
+        paints.emplace(id, RenderPaint(canvas,
+                                       std::move(transform),
+                                       std::move(material),
+                                       drawID,
+                                       mesh));
+        types[id] = RenderObject::RENDER_PAINT;
+        return {this, id, paints.at(id)};
+    }
+
+    RenderObjectHandle<RenderPaint> RenderScene::createPaint(const RenderObjectHandle<RenderCanvas> &canvas,
+                                                             const Rectf &dstRect,
+                                                             const RenderObjectHandle<RenderTexture> &texture,
+                                                             const SamplingProperties &samplingProperties,
+                                                             const ColorRGBA &mixColor,
+                                                             const Vec4f &mix,
+                                                             const Vec2f &center,
+                                                             float rotation,
+                                                             const int sortPriority) {
+        const auto id = allocateID();
+        const auto modelMatrix = MatrixMath::translate(Vec3f(dstRect.position.x, dstRect.position.y, 0))
+                                 * MatrixMath::rotate(Vec3f(0, 0, rotation))
+                                 * MatrixMath::translate(Vec3f(center.x, center.y, 0))
+                                 * MatrixMath::scale(Vec3f(dstRect.dimensions.x, dstRect.dimensions.y, 1));
+
+        CanvasMaterial canvasMaterial;
+        canvasMaterial.setColor(mixColor);
+        canvasMaterial.setMix(mix);
+        canvasMaterial.setTexture(texture, samplingProperties);
+
+        const auto mesh = unitQuadMesh;
+
+        auto transform = canvas.get().getPipeline()->createTransform();
+        transform->setTransform(modelMatrix);
+
+        auto material = canvas.get().getPipeline()->createMaterial();
+        material->update(canvasMaterial.getProperties(), canvasMaterial.getTextures());
+
+        const auto drawID = canvas.get().getPipeline()->addDrawCall(transform, material, {mesh}, sortPriority);
+
+        paints.emplace(id, RenderPaint(canvas,
+                                       std::move(transform),
+                                       std::move(material),
+                                       drawID,
+                                       mesh));
+        types[id] = RenderObject::RENDER_PAINT;
+        return {this, id, paints.at(id)};
+    }
+
     std::shared_ptr<RenderPipeline> RenderScene::createPipeline(RenderPipeline::MaterialLayout materialLayout) {
         // Here the scene will switch constructors based on platform support.
         return std::make_shared<RenderPipelineIndirect>(runtime.getResourceHeap(),
@@ -259,6 +415,12 @@ namespace xng {
                 case RenderObject::RENDER_MODEL:
                     destroyModel(id);
                     break;
+                case RenderObject::RENDER_CANVAS:
+                    destroyCanvas(id);
+                    break;
+                case RenderObject::RENDER_PAINT:
+                    destroyPaint(id);
+                    break;
                 case RenderObject::RENDER_LIGHT_POINT:
                     destroyPointLight(id);
                     break;
@@ -267,12 +429,6 @@ namespace xng {
                     break;
                 case RenderObject::RENDER_LIGHT_SPOT:
                     destroySpotLight(id);
-                    break;
-                case RenderObject::RENDER_CANVAS:
-                    destroyCanvas(id);
-                    break;
-                case RenderObject::RENDER_PAINT:
-                    destroyPaint(id);
                     break;
             }
             types.erase(id);
@@ -325,5 +481,15 @@ namespace xng {
             shadowCastersPipeline->removeDrawCall(model.getShadowDrawID());
         }
         models.erase(id);
+    }
+
+    void RenderScene::destroyCanvas(const RenderObject::ID id) {
+        canvases.erase(id);
+    }
+
+    void RenderScene::destroyPaint(const RenderObject::ID id) {
+        const auto &paint = paints.at(id);
+        paint.getCanvas().get().getPipeline()->removeDrawCall(paint.getDrawID());
+        paints.erase(id);
     }
 }

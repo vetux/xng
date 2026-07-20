@@ -19,9 +19,11 @@
 #ifndef XENGINE_RENDERPAINT_HPP
 #define XENGINE_RENDERPAINT_HPP
 
+#include "xng/renderer/renderobject.hpp"
+#include "xng/renderer/objects/rendercanvas.hpp"
 
 namespace xng {
-    class RenderPaint {
+    class RenderPaint final : public RenderObject {
     public:
         static Mat4f getTransform(const Rectf &dstRect, const float rotation) {
             return MatrixMath::translate(Vec3f(dstRect.position.x, dstRect.position.y, 0))
@@ -29,181 +31,55 @@ namespace xng {
                    * MatrixMath::scale(Vec3f(dstRect.dimensions.x, dstRect.dimensions.y, 1));
         }
 
-        /**
-         * Paint Line
-         *
-         * @param allocator
-         * @param start
-         * @param end
-         * @param color
-         * @param center
-         * @param rotation
-         */
-        RenderPaint(RenderAllocator &allocator,
-              const Vec2f &start,
-              const Vec2f &end,
-              const ColorRGBA &color,
-              const Vec2f &center = {},
-              const float rotation = 0) {
-            transform = allocator.createTransform(MatrixMath::rotate(Vec3f(0, 0, rotation))
-                                                  * MatrixMath::translate(Vec3f(center.x, center.y, 0)));
-            material = allocator.createMaterial(color,
-                                                0,
-                                                0,
-                                                0,
-                                                0,
-                                                false,
-                                                {},
-                                                {},
-                                                {},
-                                                {},
-                                                {},
-                                                {},
-                                                {},
-                                                {},
-                                                {},
-                                                {});
-            Mesh m;
-            m.primitive = Mesh::TRIANGLES;
-            m.positions.emplace_back(start.x, start.y, 1);
-            m.positions.emplace_back(end.x, end.y, 1);
-            m.positions.emplace_back(end.x, end.y, 1);
-            mesh = allocator.createMesh(m, {});
+        RenderPaint(RenderObjectHandle<RenderCanvas> canvas,
+                    std::shared_ptr<RenderPipelineTransform> transform,
+                    std::shared_ptr<RenderPipelineMaterial> material,
+                    const RenderPipeline::DrawID drawID,
+                    RenderObjectHandle<RenderMesh> mesh)
+            : canvas(canvas),
+              transform(std::move(transform)),
+              material(std::move(material)),
+              drawID(drawID),
+              mesh(std::move(mesh)) {
         }
 
-        /**
-         * Paint Point
-         *
-         * @param allocator
-         * @param unitQuadMesh
-         * @param position
-         * @param size
-         * @param color
-         */
-        RenderPaint(RenderAllocator &allocator,
-              RenderObjectHandle<RenderMesh> unitQuadMesh,
-              const Vec2f &position,
-              const float size,
-              const ColorRGBA &color) {
-            transform = allocator.createTransform(MatrixMath::scale(Vec3f(size, size, 1))
-                                                  * MatrixMath::translate(Vec3f(position.x, position.y, 0)));
-            material = allocator.createMaterial(color,
-                                                0,
-                                                0,
-                                                0,
-                                                0,
-                                                false,
-                                                {},
-                                                {},
-                                                {},
-                                                {},
-                                                {},
-                                                {},
-                                                {},
-                                                {},
-                                                {},
-                                                {});
-            mesh = std::move(unitQuadMesh);
+        RenderPaint(const RenderPaint &) = default;
+
+        [[nodiscard]] RenderObjectHandle<RenderCanvas> getCanvas() const {
+            return canvas;
         }
 
-        /**
-         * Paint Rect
-         *
-         * @param allocator
-         * @param unitQuadMesh
-         * @param dstRect
-         * @param color
-         * @param center
-         * @param rotation
-         */
-        RenderPaint(RenderAllocator &allocator,
-              RenderObjectHandle<RenderMesh> unitQuadMesh,
-              const Rectf &dstRect,
-              const ColorRGBA &color,
-              const Vec2f &center = {},
-              const float rotation = 0) {
-            transform = allocator.createTransform(
-                MatrixMath::translate(Vec3f(dstRect.position.x, dstRect.position.y, 0))
-                * MatrixMath::rotate(Vec3f(0, 0, rotation))
-                * MatrixMath::translate(Vec3f(center.x, center.y, 0))
-                * MatrixMath::scale(Vec3f(dstRect.dimensions.x, dstRect.dimensions.y, 1)));
-            material = allocator.createMaterial(color,
-                                                0,
-                                                0,
-                                                0,
-                                                0,
-                                                false,
-                                                {},
-                                                {},
-                                                {},
-                                                {},
-                                                {},
-                                                {},
-                                                {},
-                                                {},
-                                                {},
-                                                {});
-            mesh = std::move(unitQuadMesh);
+        [[nodiscard]] RenderPipelineTransform &getTransform() const {
+            if (transform == nullptr)
+                throw std::runtime_error("Uninitialized RenderPaint");
+            return *transform;
         }
 
-        /**
-         * Paint Texture
-         *
-         * @param allocator
-         * @param unitQuadMesh
-         * @param dstRect
-         * @param texture
-         * @param samplingProperties
-         * @param center
-         * @param rotation
-         */
-        RenderPaint(RenderAllocator &allocator,
-              RenderObjectHandle<RenderMesh> unitQuadMesh,
-              const Rectf &dstRect,
-              const RenderObjectHandle<RenderTexture> &texture,
-              const SamplingProperties &samplingProperties,
-              const Vec2f &center = {},
-              const float rotation = 0) {
-            transform = allocator.createTransform(
-                MatrixMath::translate(Vec3f(dstRect.position.x, dstRect.position.y, 0))
-                * MatrixMath::rotate(Vec3f(0, 0, rotation))
-                * MatrixMath::translate(Vec3f(center.x, center.y, 0))
-                * MatrixMath::scale(Vec3f(dstRect.dimensions.x, dstRect.dimensions.y, 1)));
-            material = allocator.createMaterial({},
-                                                0,
-                                                0,
-                                                0,
-                                                0,
-                                                false,
-                                                texture,
-                                                samplingProperties,
-                                                {},
-                                                {},
-                                                {},
-                                                {},
-                                                {},
-                                                {},
-                                                {},
-                                                {});
-            mesh = std::move(unitQuadMesh);
+        [[nodiscard]] RenderPipelineMaterial &getMaterial() const {
+            if (material == nullptr)
+                throw std::runtime_error("Uninitialized RenderPaint");
+            return *material;
         }
 
-        [[nodiscard]] RenderObjectHandle<RenderTransform> getTransform() const {
-            return transform;
-        }
-
-        [[nodiscard]] RenderObjectHandle<RenderMaterial> getMaterial() const {
-            return material;
+        [[nodiscard]] RenderPipeline::DrawID getDrawID() const {
+            if (!canvas.isAssigned())
+                throw std::runtime_error("Uninitialized RenderPaint");
+            return drawID;
         }
 
         [[nodiscard]] RenderObjectHandle<RenderMesh> getMesh() const {
+            if (!mesh.isAssigned())
+                throw std::runtime_error("Uninitialized RenderPaint");
             return mesh;
         }
 
     private:
-        RenderObjectHandle<RenderTransform> transform;
-        RenderObjectHandle<RenderMaterial> material;
-        RenderObjectHandle<RenderMesh> mesh;
+        RenderObjectHandle<RenderCanvas> canvas{};
+        std::shared_ptr<RenderPipelineTransform> transform = nullptr;
+        std::shared_ptr<RenderPipelineMaterial> material = nullptr;
+        RenderPipeline::DrawID drawID = 0;
+
+        RenderObjectHandle<RenderMesh> mesh{};
     };
 }
 

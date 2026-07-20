@@ -137,9 +137,106 @@ namespace xng {
                                                     bool castShadows,
                                                     int sortPriority);
 
+        /**
+         * Create a screen space canvas.
+         *
+         * @return
+         */
         RenderObjectHandle<RenderCanvas> createCanvas();
 
-        RenderObjectHandle<RenderPaint> createPaint();
+        /**
+         * Create a texture canvas.
+         *
+         * The canvas will be rendered to the given texture.
+         *
+         * The texture can be used as a material texture for models which allows
+         * for a flexible implementation of world space canvases. (Custom shading, Non-Planar canvas mesh, etc.)
+         *
+         * @param texture
+         * @return
+         */
+        RenderObjectHandle<RenderCanvas> createCanvas(const RenderObjectHandle<RenderTexture> &texture);
+
+        /**
+         * Create a line paint object.
+         *
+         * The canvas owns the paint objects.
+         * All paints referencing a canvas must be destroyed before destroying the canvas.
+         *
+         * @param canvas
+         * @param start
+         * @param end
+         * @param color
+         * @param center
+         * @param rotation
+         * @param sortPriority
+         * @return
+         */
+        RenderObjectHandle<RenderPaint> createPaint(const RenderObjectHandle<RenderCanvas> &canvas,
+                                                    const Vec2f &start,
+                                                    const Vec2f &end,
+                                                    const ColorRGBA &color,
+                                                    const Vec2f &center = {},
+                                                    float rotation = 0,
+                                                    int sortPriority = 0);
+
+        /**
+         * Create a point paint object.
+         *
+         * @param canvas
+         * @param position
+         * @param size
+         * @param color
+         * @param sortPriority
+         * @return
+         */
+        RenderObjectHandle<RenderPaint> createPaint(const RenderObjectHandle<RenderCanvas> &canvas,
+                                                    const Vec2f &position,
+                                                    float size,
+                                                    const ColorRGBA &color,
+                                                    int sortPriority = 0);
+
+        /**
+         * Create a rectangle paint object.
+         *
+         * @param canvas
+         * @param dstRect
+         * @param color
+         * @param center
+         * @param rotation
+         * @param sortPriority
+         * @return
+         */
+        RenderObjectHandle<RenderPaint> createPaint(const RenderObjectHandle<RenderCanvas> &canvas,
+                                                    const Rectf &dstRect,
+                                                    const ColorRGBA &color,
+                                                    const Vec2f &center = {},
+                                                    float rotation = 0,
+                                                    int sortPriority = 0);
+
+        /**
+         * Create a texture paint object.
+         *
+         * @param canvas
+         * @param dstRect
+         * @param texture
+         * @param samplingProperties
+         * @param mixColor The color to mix with the sampled texture color.
+         * @param mix The mixing factor for each color channel.
+         * @param center
+         * @param rotation
+         * @param sortPriority
+         * @return
+         */
+        RenderObjectHandle<RenderPaint> createPaint(const RenderObjectHandle<RenderCanvas> &canvas,
+                                                    const Rectf &dstRect,
+                                                    const RenderObjectHandle<RenderTexture> &texture,
+                                                    const SamplingProperties &samplingProperties,
+                                                    const ColorRGBA &mixColor,
+                                                    const Vec4f &mix,
+                                                    const Vec2f &center = {},
+                                                    float rotation = 0,
+                                                    int sortPriority = 0);
 
         RenderObjectHandle<RenderPointLight> createPointLight();
 
@@ -327,16 +424,9 @@ namespace xng {
         RenderObjectHandle<RenderMesh> unitQuadMesh;
         RenderObjectHandle<RenderMesh> unitCubeMesh;
 
-        // The pipelines
         std::unique_ptr<RenderPipeline> pbrDeferredPipeline;
         std::unique_ptr<RenderPipeline> pbrForwardPipeline;
-
         std::unique_ptr<RenderPipeline> shadowCastersPipeline;
-
-        std::unique_ptr<RenderPipeline> screenCanvasPipeline;
-
-        // For each canvas object one pipeline with models / paints allocated into it.
-        std::unordered_map<RenderObject::ID, std::unique_ptr<RenderPipeline> > textureCanvasesPipelines;
     };
 }
 

@@ -27,6 +27,8 @@ namespace xng {
         virtual ~RenderPipelineTransform() = default;
 
         virtual void setTransform(const Transform &t) = 0;
+
+        virtual void setTransform(const Mat4f &model) = 0;
     };
 }
 
