@@ -19,6 +19,8 @@
 #ifndef XENGINE_RENDERPAINT_HPP
 #define XENGINE_RENDERPAINT_HPP
 
+#include <utility>
+
 #include "xng/renderer/renderobject.hpp"
 #include "xng/renderer/objects/rendercanvas.hpp"
 
@@ -31,12 +33,14 @@ namespace xng {
                    * MatrixMath::scale(Vec3f(dstRect.dimensions.x, dstRect.dimensions.y, 1));
         }
 
+        RenderPaint() = default;
+
         RenderPaint(RenderObjectHandle<RenderCanvas> canvas,
                     std::shared_ptr<RenderPipelineTransform> transform,
                     std::shared_ptr<RenderPipelineMaterial> material,
                     const RenderPipeline::DrawID drawID,
                     RenderObjectHandle<RenderMesh> mesh)
-            : canvas(canvas),
+            : canvas(std::move(canvas)),
               transform(std::move(transform)),
               material(std::move(material)),
               drawID(drawID),

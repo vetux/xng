@@ -20,7 +20,7 @@
 #define XENGINE_RENDERFONT_HPP
 
 #include "xng/font/fontrenderer.hpp"
-#include "xng/renderer/renderallocator.hpp"
+#include "xng/renderer/renderscene.hpp"
 
 namespace xng {
     class RenderFont {
@@ -31,10 +31,10 @@ namespace xng {
             bool grayscale{};
         };
 
-        RenderFont(RenderAllocator &allocator,
+        RenderFont(std::shared_ptr<RenderScene> scene,
                    std::vector<std::unique_ptr<FontRenderer> > _fonts,
                    const Vec2i &pixelSize)
-            : allocator(allocator),
+            : scene(std::move(scene)),
               fonts(std::move(_fonts)) {
             for (const auto &font: fonts) {
                 font->setPixelSize(pixelSize);
@@ -93,7 +93,7 @@ namespace xng {
                     g.grayscale = false;
                 }
 
-                g.texture = allocator.createTexture(image, WRAP_CLAMP_TO_EDGE, 1);
+                g.texture = scene->createTexture(image, WRAP_CLAMP_TO_EDGE, 1);
             }
 
             g.metrics = glyph.metrics;
@@ -102,7 +102,7 @@ namespace xng {
             glyphMetrics[glyph.character] = glyph.metrics;
         }
 
-        RenderAllocator &allocator;
+        std::shared_ptr<RenderScene> scene;
 
         std::vector<std::unique_ptr<FontRenderer> > fonts;
 
