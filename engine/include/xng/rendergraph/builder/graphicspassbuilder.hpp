@@ -34,7 +34,7 @@ namespace xng::rg {
                                         const size_t offset = 0,
                                         const size_t size = 0) {
             const auto access = BufferAccess(BufferAccess::VertexRead, offset, size);
-            const auto entry = RenderResourceAccess<BufferAccess>::Entry(Shader::VERTEX, access);
+            const auto entry = GraphicsResourceAccess<BufferAccess>::Entry(Shader::VERTEX, access);
             pass.bufferUsages[buffer].entries.emplace_back(entry);
             return *this;
         }
@@ -43,7 +43,7 @@ namespace xng::rg {
                                        const size_t offset = 0,
                                        const size_t size = 0) {
             const auto access = BufferAccess(BufferAccess::IndexRead, offset, size);
-            const auto entry = RenderResourceAccess<BufferAccess>::Entry(Shader::VERTEX, access);
+            const auto entry = GraphicsResourceAccess<BufferAccess>::Entry(Shader::VERTEX, access);
             pass.bufferUsages[buffer].entries.emplace_back(entry);
             return *this;
         }
@@ -53,7 +53,7 @@ namespace xng::rg {
                                          const size_t offset = 0,
                                          const size_t size = 0) {
             const auto access = BufferAccess(BufferAccess::StorageRead, offset, size);
-            const auto entry = RenderResourceAccess<BufferAccess>::Entry(std::move(stages), access);
+            const auto entry = GraphicsResourceAccess<BufferAccess>::Entry(std::move(stages), access);
             pass.bufferUsages[buffer].entries.emplace_back(entry);
             return *this;
         }
@@ -63,7 +63,7 @@ namespace xng::rg {
                                           const size_t offset = 0,
                                           const size_t size = 0) {
             const auto access = BufferAccess(BufferAccess::StorageWrite, offset, size);
-            const auto entry = RenderResourceAccess<BufferAccess>::Entry(std::move(stages), access);
+            const auto entry = GraphicsResourceAccess<BufferAccess>::Entry(std::move(stages), access);
             pass.bufferUsages[buffer].entries.emplace_back(entry);
             return *this;
         }
@@ -75,7 +75,7 @@ namespace xng::rg {
             const auto access = TextureAccess(TextureAccess::TextureStorageRead,
                                               range,
                                               aspect);
-            const auto entry = RenderResourceAccess<TextureAccess>::Entry(std::move(stages), access);
+            const auto entry = GraphicsResourceAccess<TextureAccess>::Entry(std::move(stages), access);
             pass.textureUsages[texture].entries.emplace_back(entry);
             return *this;
         }
@@ -87,7 +87,7 @@ namespace xng::rg {
             const auto access = TextureAccess(TextureAccess::TextureStorageWrite,
                                               range,
                                               aspect);
-            const auto entry = RenderResourceAccess<TextureAccess>::Entry(std::move(stages), access);
+            const auto entry = GraphicsResourceAccess<TextureAccess>::Entry(std::move(stages), access);
             pass.textureUsages[texture].entries.emplace_back(entry);
             return *this;
         }
@@ -99,7 +99,7 @@ namespace xng::rg {
             const auto access = TextureAccess(TextureAccess::TextureSampledRead,
                                               range,
                                               aspect);
-            const auto entry = RenderResourceAccess<TextureAccess>::Entry(std::move(stages), access);
+            const auto entry = GraphicsResourceAccess<TextureAccess>::Entry(std::move(stages), access);
             pass.textureUsages[texture].entries.emplace_back(entry);
             return *this;
         }
@@ -110,7 +110,7 @@ namespace xng::rg {
             const auto access = TextureAccess(TextureAccess::TextureAttachmentColor,
                                               range,
                                               aspect);
-            const auto entry = RenderResourceAccess<TextureAccess>::Entry({Shader::VERTEX, Shader::FRAGMENT},
+            const auto entry = GraphicsResourceAccess<TextureAccess>::Entry({Shader::VERTEX, Shader::FRAGMENT},
                                                                           access);
             pass.textureUsages[texture].entries.emplace_back(entry);
             return *this;
@@ -123,7 +123,7 @@ namespace xng::rg {
             const auto access = TextureAccess(TextureAccess::TextureAttachmentDepthStencil,
                                               range,
                                               aspect);
-            const auto entry = RenderResourceAccess<TextureAccess>::Entry({Shader::VERTEX, Shader::FRAGMENT},
+            const auto entry = GraphicsResourceAccess<TextureAccess>::Entry({Shader::VERTEX, Shader::FRAGMENT},
                                                                           access);
             pass.textureUsages[texture].entries.emplace_back(entry);
             return *this;

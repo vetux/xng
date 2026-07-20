@@ -88,7 +88,7 @@ namespace xng::rg {
     };
 
     template<typename T>
-    struct RenderResourceAccess {
+    struct GraphicsResourceAccess {
         struct Entry {
             T access; // The access description
             std::unordered_set<Shader::Stage> stages; // The pipeline stages in which the access happens.
@@ -102,7 +102,8 @@ namespace xng::rg {
             }
 
             /**
-             * For *Transfer* accesses and TextureAttachment* accesses no stages are declared.
+             * For transfers no stages must be specified.
+             *
              * @param access
              */
             explicit Entry(T access)
@@ -148,8 +149,8 @@ namespace xng::rg {
                            TransferContext &,
                            ComputeContext &)> callback; // May be invoked on a different thread.
 
-        std::unordered_map<ResourceId, RenderResourceAccess<BufferAccess>, ResourceIdHash> bufferUsages;
-        std::unordered_map<ResourceId, RenderResourceAccess<TextureAccess>, ResourceIdHash> textureUsages;
+        std::unordered_map<ResourceId, GraphicsResourceAccess<BufferAccess>, ResourceIdHash> bufferUsages;
+        std::unordered_map<ResourceId, GraphicsResourceAccess<TextureAccess>, ResourceIdHash> textureUsages;
         std::unordered_map<std::shared_ptr<Surface>, ResourceAccess<TextureAccess> > surfaceUsages;
     };
 
