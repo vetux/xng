@@ -24,54 +24,54 @@
 #include "xng/rendergraph/pass.hpp"
 
 namespace xng::rg {
-    class RenderPassBuilder {
+    class GraphicsPassBuilder {
     public:
-        explicit RenderPassBuilder(std::string name) {
+        explicit GraphicsPassBuilder(std::string name) {
             pass.name = std::move(name);
         }
 
-        RenderPassBuilder &vertexRead(const Resource<Buffer> &buffer,
-                                      const size_t offset = 0,
-                                      const size_t size = 0) {
+        GraphicsPassBuilder &vertexRead(const Resource<Buffer> &buffer,
+                                        const size_t offset = 0,
+                                        const size_t size = 0) {
             const auto access = BufferAccess(BufferAccess::VertexRead, offset, size);
             const auto entry = RenderResourceAccess<BufferAccess>::Entry(Shader::VERTEX, access);
             pass.bufferUsages[buffer].entries.emplace_back(entry);
             return *this;
         }
 
-        RenderPassBuilder &indexRead(const Resource<Buffer> &buffer,
-                                     const size_t offset = 0,
-                                     const size_t size = 0) {
+        GraphicsPassBuilder &indexRead(const Resource<Buffer> &buffer,
+                                       const size_t offset = 0,
+                                       const size_t size = 0) {
             const auto access = BufferAccess(BufferAccess::IndexRead, offset, size);
             const auto entry = RenderResourceAccess<BufferAccess>::Entry(Shader::VERTEX, access);
             pass.bufferUsages[buffer].entries.emplace_back(entry);
             return *this;
         }
 
-        RenderPassBuilder &storageRead(const Resource<Buffer> &buffer,
-                                       std::unordered_set<Shader::Stage> stages,
-                                       const size_t offset = 0,
-                                       const size_t size = 0) {
+        GraphicsPassBuilder &storageRead(const Resource<Buffer> &buffer,
+                                         std::unordered_set<Shader::Stage> stages,
+                                         const size_t offset = 0,
+                                         const size_t size = 0) {
             const auto access = BufferAccess(BufferAccess::StorageRead, offset, size);
             const auto entry = RenderResourceAccess<BufferAccess>::Entry(std::move(stages), access);
             pass.bufferUsages[buffer].entries.emplace_back(entry);
             return *this;
         }
 
-        RenderPassBuilder &storageWrite(const Resource<Buffer> &buffer,
-                                        std::unordered_set<Shader::Stage> stages,
-                                        const size_t offset = 0,
-                                        const size_t size = 0) {
+        GraphicsPassBuilder &storageWrite(const Resource<Buffer> &buffer,
+                                          std::unordered_set<Shader::Stage> stages,
+                                          const size_t offset = 0,
+                                          const size_t size = 0) {
             const auto access = BufferAccess(BufferAccess::StorageWrite, offset, size);
             const auto entry = RenderResourceAccess<BufferAccess>::Entry(std::move(stages), access);
             pass.bufferUsages[buffer].entries.emplace_back(entry);
             return *this;
         }
 
-        RenderPassBuilder &textureStorageRead(const Resource<Texture> &texture,
-                                              std::unordered_set<Shader::Stage> stages,
-                                              const TextureBinding::Range range = {},
-                                              const TextureBinding::Aspect aspect = TextureBinding::Automatic) {
+        GraphicsPassBuilder &textureStorageRead(const Resource<Texture> &texture,
+                                                std::unordered_set<Shader::Stage> stages,
+                                                const TextureBinding::Range range = {},
+                                                const TextureBinding::Aspect aspect = TextureBinding::Automatic) {
             const auto access = TextureAccess(TextureAccess::TextureStorageRead,
                                               range,
                                               aspect);
@@ -80,10 +80,10 @@ namespace xng::rg {
             return *this;
         }
 
-        RenderPassBuilder &textureStorageWrite(const Resource<Texture> &texture,
-                                               std::unordered_set<Shader::Stage> stages,
-                                               const TextureBinding::Range range = {},
-                                               const TextureBinding::Aspect aspect = TextureBinding::Automatic) {
+        GraphicsPassBuilder &textureStorageWrite(const Resource<Texture> &texture,
+                                                 std::unordered_set<Shader::Stage> stages,
+                                                 const TextureBinding::Range range = {},
+                                                 const TextureBinding::Aspect aspect = TextureBinding::Automatic) {
             const auto access = TextureAccess(TextureAccess::TextureStorageWrite,
                                               range,
                                               aspect);
@@ -92,10 +92,10 @@ namespace xng::rg {
             return *this;
         }
 
-        RenderPassBuilder &textureSampledRead(const Resource<Texture> &texture,
-                                              std::unordered_set<Shader::Stage> stages,
-                                              const TextureBinding::Range range = {},
-                                              const TextureBinding::Aspect aspect = TextureBinding::Automatic) {
+        GraphicsPassBuilder &textureSampledRead(const Resource<Texture> &texture,
+                                                std::unordered_set<Shader::Stage> stages,
+                                                const TextureBinding::Range range = {},
+                                                const TextureBinding::Aspect aspect = TextureBinding::Automatic) {
             const auto access = TextureAccess(TextureAccess::TextureSampledRead,
                                               range,
                                               aspect);
@@ -104,9 +104,9 @@ namespace xng::rg {
             return *this;
         }
 
-        RenderPassBuilder &textureAttachmentColor(const Resource<Texture> &texture,
-                                                  const TextureBinding::Range range = {},
-                                                  const TextureBinding::Aspect aspect = TextureBinding::Automatic) {
+        GraphicsPassBuilder &textureAttachmentColor(const Resource<Texture> &texture,
+                                                    const TextureBinding::Range range = {},
+                                                    const TextureBinding::Aspect aspect = TextureBinding::Automatic) {
             const auto access = TextureAccess(TextureAccess::TextureAttachmentColor,
                                               range,
                                               aspect);
@@ -116,10 +116,10 @@ namespace xng::rg {
             return *this;
         }
 
-        RenderPassBuilder &textureAttachmentDepthStencil(const Resource<Texture> &texture,
-                                                         const TextureBinding::Range range = {},
-                                                         const TextureBinding::Aspect aspect =
-                                                                 TextureBinding::Automatic) {
+        GraphicsPassBuilder &textureAttachmentDepthStencil(const Resource<Texture> &texture,
+                                                           const TextureBinding::Range range = {},
+                                                           const TextureBinding::Aspect aspect =
+                                                                   TextureBinding::Automatic) {
             const auto access = TextureAccess(TextureAccess::TextureAttachmentDepthStencil,
                                               range,
                                               aspect);
@@ -129,7 +129,7 @@ namespace xng::rg {
             return *this;
         }
 
-        RenderPassBuilder &surfaceAttachmentColor(const std::shared_ptr<Surface> &surface) {
+        GraphicsPassBuilder &surfaceAttachmentColor(const std::shared_ptr<Surface> &surface) {
             const auto access = TextureAccess(TextureAccess::TextureAttachmentColor,
                                               {},
                                               TextureBinding::Automatic);
@@ -137,7 +137,7 @@ namespace xng::rg {
             return *this;
         }
 
-        RenderPassBuilder &surfaceAttachmentDepthStencil(const std::shared_ptr<Surface> &surface) {
+        GraphicsPassBuilder &surfaceAttachmentDepthStencil(const std::shared_ptr<Surface> &surface) {
             const auto access = TextureAccess(TextureAccess::TextureAttachmentDepthStencil,
                                               {},
                                               TextureBinding::Automatic);
@@ -145,24 +145,24 @@ namespace xng::rg {
             return *this;
         }
 
-        RenderPassBuilder &transferRead(const Resource<Buffer> &buffer,
-                                        const size_t offset = 0,
-                                        const size_t size = 0) {
+        GraphicsPassBuilder &transferRead(const Resource<Buffer> &buffer,
+                                          const size_t offset = 0,
+                                          const size_t size = 0) {
             const auto access = BufferAccess(BufferAccess::TransferSrc, offset, size);
             pass.bufferUsages[buffer].entries.emplace_back(access);
             return *this;
         }
 
-        RenderPassBuilder &transferWrite(const Resource<Buffer> &buffer, const size_t offset = 0,
-                                         const size_t size = 0) {
+        GraphicsPassBuilder &transferWrite(const Resource<Buffer> &buffer, const size_t offset = 0,
+                                           const size_t size = 0) {
             const auto access = BufferAccess(BufferAccess::TransferDst, offset, size);
             pass.bufferUsages[buffer].entries.emplace_back(access);
             return *this;
         }
 
-        RenderPassBuilder &transferRead(const Resource<Texture> &texture,
-                                        const TextureBinding::Range range = {},
-                                        const TextureBinding::Aspect aspect = TextureBinding::Automatic) {
+        GraphicsPassBuilder &transferRead(const Resource<Texture> &texture,
+                                          const TextureBinding::Range range = {},
+                                          const TextureBinding::Aspect aspect = TextureBinding::Automatic) {
             const auto access = TextureAccess(TextureAccess::TextureTransferSrc,
                                               range,
                                               aspect);
@@ -170,9 +170,9 @@ namespace xng::rg {
             return *this;
         }
 
-        RenderPassBuilder &transferWrite(const Resource<Texture> &texture,
-                                         const TextureBinding::Range range = {},
-                                         const TextureBinding::Aspect aspect = TextureBinding::Automatic) {
+        GraphicsPassBuilder &transferWrite(const Resource<Texture> &texture,
+                                           const TextureBinding::Range range = {},
+                                           const TextureBinding::Aspect aspect = TextureBinding::Automatic) {
             const auto access = TextureAccess(TextureAccess::TextureTransferDst,
                                               range,
                                               aspect);
@@ -180,15 +180,15 @@ namespace xng::rg {
             return *this;
         }
 
-        const RenderPass &execute(std::function<void(RasterContext &,
-                                                     TransferContext &,
-                                                     ComputeContext &)> callback) {
+        const GraphicsPass &execute(std::function<void(RasterContext &,
+                                                       TransferContext &,
+                                                       ComputeContext &)> callback) {
             pass.callback = std::move(callback);
             return pass;
         }
 
     private:
-        RenderPass pass;
+        GraphicsPass pass;
     };
 }
 

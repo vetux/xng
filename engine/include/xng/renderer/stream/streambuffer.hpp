@@ -140,7 +140,7 @@ namespace xng {
 
                 const auto copySize = std::min(staleBuffer.getDescription().size, buffer.getDescription().size);
 
-                auto pass = rg::RenderPassBuilder("StreamBuffer/Resize")
+                auto pass = rg::GraphicsPassBuilder("StreamBuffer/Resize")
                         .transferRead(staleBuffer, 0, staleBuffer.getDescription().size)
                         .transferWrite(buffer, 0, staleBuffer.getDescription().size)
                         .execute([this, staleBuffer, copySize](rg::RasterContext &,

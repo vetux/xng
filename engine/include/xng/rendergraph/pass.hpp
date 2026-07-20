@@ -138,10 +138,9 @@ namespace xng::rg {
     };
 
     /**
-     * Render passes can perform all available operations
-     * and run on a dedicated graphics queue if available.
+     * Graphics passes can access all context types and run on a dedicated graphics queue if available.
      */
-    struct RenderPass {
+    struct GraphicsPass {
         //TODO: Sub Render Pass interface (Mobile Tiling)
 
         std::string name;
@@ -154,7 +153,7 @@ namespace xng::rg {
         std::unordered_map<std::shared_ptr<Surface>, ResourceAccess<TextureAccess> > surfaceUsages;
     };
 
-    typedef std::variant<TransferPass, ComputePass, RenderPass> Pass;
+    typedef std::variant<TransferPass, ComputePass, GraphicsPass> Pass;
 }
 
 #endif //XENGINE_RENDERGRAPH_PASS_HPP

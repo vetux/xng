@@ -135,7 +135,7 @@ namespace xng {
                 auto desc = texture.getDescription();
                 desc.arrayLayers = totalOffset.z + 1;
                 texture = runtime.getResourceHeap().allocateTexture(desc);
-                graph.addPass(rg::RenderPassBuilder("TextureAtlas/Copy")
+                graph.addPass(rg::GraphicsPassBuilder("TextureAtlas/Copy")
                     .transferRead(staleTexture,
                                   rg::TextureBinding::Range(0, 1, 0, staleTexture.getDescription().arrayLayers))
                     .transferWrite(
@@ -211,7 +211,7 @@ namespace xng {
 
             buffer.commit(graph);
 
-            auto pass = rg::RenderPassBuilder("TextureAtlas/Copy");
+            auto pass = rg::GraphicsPassBuilder("TextureAtlas/Copy");
 
             for (auto slot: frameCopies) {
                 const auto &upload = pendingUploads.at(slot);

@@ -48,7 +48,7 @@ namespace xng::opengl {
     };
 
     //TODO: Implement DAG based barrier insertion.
-    static void insertBarrier(const RenderPass &pass) {
+    static void insertBarrier(const GraphicsPass &pass) {
         for (auto &pair: pass.bufferUsages) {
             for (auto &entry: pair.second.entries) {
                 switch (entry.access.type) {
@@ -226,7 +226,7 @@ namespace xng::opengl {
         for (auto &pass: graph.passes) {
             switch (pass.index()) {
                 case 1: {
-                    auto p = std::get<RenderPass>(pass);
+                    auto p = std::get<GraphicsPass>(pass);
                     for (auto &pair: p.surfaceUsages) {
                         surfaces.insert(down_cast<SurfaceGL *>(pair.first.get()));
                     }
@@ -298,7 +298,7 @@ namespace xng::opengl {
                         break;
                     }
                     case 2: {
-                        auto p = std::get<RenderPass>(pass);
+                        auto p = std::get<GraphicsPass>(pass);
                         queries.emplace_back(p.name);
                         glQueryCounter(queries.back().queries[0], GL_TIMESTAMP);
                         p.callback(rasterContext, transferContext, computeContext);
@@ -325,7 +325,7 @@ namespace xng::opengl {
                         break;
                     }
                     case 2: {
-                        auto p = std::get<RenderPass>(pass);
+                        auto p = std::get<GraphicsPass>(pass);
                         p.callback(rasterContext, transferContext, computeContext);
                         insertBarrier(p);
                         break;
@@ -379,7 +379,7 @@ namespace xng::opengl {
             for (auto &pass: graph.passes) {
                 switch (pass.index()) {
                     case 1: {
-                        auto p = std::get<RenderPass>(pass);
+                        auto p = std::get<GraphicsPass>(pass);
                         for (auto &pair: p.surfaceUsages) {
                             surfaces.insert(down_cast<SurfaceGL *>(pair.first.get()));
                         }
@@ -443,7 +443,7 @@ namespace xng::opengl {
                             break;
                         }
                         case 2: {
-                            auto p = std::get<RenderPass>(pass);
+                            auto p = std::get<GraphicsPass>(pass);
                             queries.emplace_back(p.name);
                             glQueryCounter(queries.back().queries[0], GL_TIMESTAMP);
                             p.callback(rasterContext, transferContext, computeContext);
@@ -470,7 +470,7 @@ namespace xng::opengl {
                             break;
                         }
                         case 2: {
-                            auto p = std::get<RenderPass>(pass);
+                            auto p = std::get<GraphicsPass>(pass);
                             p.callback(rasterContext, transferContext, computeContext);
                             insertBarrier(p);
                             break;

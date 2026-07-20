@@ -270,8 +270,8 @@ namespace xng {
                         const auto offset = buffer.pendingTransferOffset;
                         const auto size = buffer.pendingTransferSize;
 
-                        // This will stall on the transfer queue for flushed uploads.
-                        auto pass = rg::RenderPassBuilder("ChunkStreamer/Copy")
+                        // This will stall the graphics queue waiting on the transfer queue for flushed uploads.
+                        auto pass = rg::GraphicsPassBuilder("ChunkStreamer/Copy")
                                 .transferRead(buffer.backBuffer, 0, buffer.pendingTransferSize)
                                 .transferWrite(targetBuffer, buffer.pendingTransferOffset, buffer.pendingTransferSize)
                                 .execute([sourceBuffer, targetBuffer, offset, size](rg::RasterContext &,

@@ -25,7 +25,7 @@
 #include "xng/rendergraph/resource/texture.hpp"
 
 #include "xng/rendergraph/builder/transferpassbuilder.hpp"
-#include "xng/rendergraph/builder/rasterpassbuilder.hpp"
+#include "xng/rendergraph/builder/graphicspassbuilder.hpp"
 #include "xng/rendergraph/builder/computepassbuilder.hpp"
 
 namespace xng::rg {
@@ -59,7 +59,7 @@ namespace xng::rg {
             return *this;
         }
 
-        GraphBuilder &addPass(RenderPass pass) {
+        GraphBuilder &addPass(GraphicsPass pass) {
             passes.emplace_back(std::move(pass));
             return *this;
         }

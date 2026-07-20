@@ -46,7 +46,7 @@ namespace xng {
                                const float maxAnisotropy)
             : runtime(runtime),
               atlas(runtime, chunkStreamer, tileSize, tileBorder, maxAnisotropy),
-              tileStreamer(runtime.getResourceHeap(), chunkStreamer, atlas, ThreadPool::getPool(), tileSize) {
+              tileStreamer(runtime, chunkStreamer, atlas, ThreadPool::getPool(), tileSize) {
         }
 
         TextureID create(const std::shared_ptr<TileLoader> &tileLoader) {

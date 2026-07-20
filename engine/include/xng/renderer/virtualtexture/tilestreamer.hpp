@@ -378,7 +378,7 @@ namespace xng {
             // On Win32 the process crashes while capturing.
 
             const auto sem = runtime.execute(rg::GraphBuilder().addPass({
-                rg::RenderPassBuilder("TileStreamer/Readback")
+                rg::GraphicsPassBuilder("TileStreamer/Readback")
                 .transferRead(readbackBuffer)
                 .transferWrite(readbackHostBuffer)
                 .execute([this](rg::RasterContext &, rg::TransferContext &ctx, rg::ComputeContext &) {

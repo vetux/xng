@@ -119,8 +119,8 @@ namespace xng {
         }
 
     private:
-        [[nodiscard]] rg::RenderPass createPass(const RenderScene &scene, const GBuffer &gBuffer) const {
-            rg::RenderPassBuilder builder("ConstructionPass");
+        [[nodiscard]] rg::GraphicsPass createPass(const RenderScene &scene, const GBuffer &gBuffer) const {
+            rg::GraphicsPassBuilder builder("ConstructionPass");
 
             // Set Attachments
             builder.attachColor(rg::Attachment(gBuffer.position, Vec4f(0)))

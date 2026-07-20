@@ -39,6 +39,8 @@ namespace xng::rg {
         /**
          * Begin a render pass.
          *
+         * Inside a render pass only raster context operations may be performed.
+         *
          * @param colorAttachments
          * @param depthStencilAttachment
          */

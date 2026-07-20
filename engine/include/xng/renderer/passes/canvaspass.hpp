@@ -61,7 +61,7 @@ namespace xng {
                     continue;
                 }
 
-                auto pass = rg::RenderPassBuilder("CanvasPass");
+                auto pass = rg::GraphicsPassBuilder("CanvasPass");
 
                 pass.vertexRead(scene.vertexBuffers.at(POSITION));
                 pass.vertexRead(scene.vertexBuffers.at(UV));
