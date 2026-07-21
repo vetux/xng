@@ -393,6 +393,121 @@ namespace xng {
         return {this, id, paints.at(id)};
     }
 
+    RenderObjectHandle<RenderPointLight> RenderScene::createPointLight() {
+        const auto id = allocateID();
+        pointLights.emplace(id, RenderPointLight([this]() {
+            reuploadPointLights = true;
+        }));
+
+        types[id] = RenderObject::RENDER_LIGHT_POINT;
+        return {this, id, pointLights.at(id)};
+    }
+
+    RenderObjectHandle<RenderDirectionalLight> RenderScene::createDirectionalLight() {
+        const auto id = allocateID();
+        directionalLights.emplace(id, RenderDirectionalLight([this]() {
+            reuploadDirectionalLights = true;
+        }));
+        types[id] = RenderObject::RENDER_LIGHT_DIRECTIONAL;
+        return {this, id, directionalLights.at(id)};
+    }
+
+    RenderObjectHandle<RenderSpotLight> RenderScene::createSpotLight() {
+        const auto id = allocateID();
+        spotLights.emplace(id, RenderSpotLight([this]() {
+            reuploadSpotLights = true;
+        }));
+        types[id] = RenderObject::RENDER_LIGHT_SPOT;
+        return {this, id, spotLights.at(id)};
+    }
+
+    void RenderScene::commit(rg::GraphBuilder &graph, StreamerQueue &streamerQueue) {
+        //TODO: Design better light buffer technique.
+
+        // Light iteration in shaders is expensive.
+        // One solution is storing lights in a separate buffer with gaps and using an index table.
+        // This indirection is bad for cache performance, so lights should be in a single contiguous (uniform) buffer
+        // that handles gaps by moving the lights / reallocating on grow / shrink.
+        if (reuploadPointLights) {
+            if (pointLightResident) {
+                pointLightBuffer.release(pointLightBufferHandle);
+            }
+
+            std::vector<uint8_t> lightData;
+            lightData.reserve(pointLights.size() * sizeof(ShaderPointLight::CPU));
+            for (const auto &pair: pointLights) {
+                lightData.insert(lightData.end(),
+                                 reinterpret_cast<const uint8_t *>(&pair.second.getData()),
+                                 reinterpret_cast<const uint8_t *>(&pair.second.getData()) + sizeof(
+                                     ShaderPointLight::CPU));
+            }
+            pointLightBufferHandle = pointLightBuffer.upload(lightData, 0);
+            pointLightBuffer.flush(pointLightBufferHandle);
+            reuploadPointLights = false;
+            pointLightResident = true;
+        }
+
+        if (reuploadDirectionalLights) {
+            if (directionalLightResident) {
+                directionalLightBuffer.release(directionalLightBufferHandle);
+            }
+            std::vector<uint8_t> lightData;
+            lightData.reserve(directionalLights.size() * sizeof(ShaderDirectionalLight::CPU));
+            for (const auto &pair: directionalLights) {
+                lightData.insert(lightData.end(),
+                                 reinterpret_cast<const uint8_t *>(&pair.second.getData()),
+                                 reinterpret_cast<const uint8_t *>(&pair.second.getData()) + sizeof(
+                                     ShaderDirectionalLight::CPU));
+            }
+            directionalLightBufferHandle = directionalLightBuffer.upload(lightData, 0);
+            directionalLightBuffer.flush(directionalLightBufferHandle);
+            reuploadDirectionalLights = false;
+            directionalLightResident = true;
+        }
+
+        if (reuploadSpotLights) {
+            if (spotLightResident) {
+                spotLightBuffer.release(spotLightBufferHandle);
+            }
+            std::vector<uint8_t> lightData;
+            lightData.reserve(spotLights.size() * sizeof(ShaderSpotLight::CPU));
+            for (const auto &pair: spotLights) {
+                lightData.insert(lightData.end(),
+                                 reinterpret_cast<const uint8_t *>(&pair.second.getData()),
+                                 reinterpret_cast<const uint8_t *>(&pair.second.getData()) + sizeof(
+                                     ShaderSpotLight::CPU));
+            }
+            spotLightBufferHandle = spotLightBuffer.upload(lightData, 0);
+            spotLightBuffer.flush(spotLightBufferHandle);
+            reuploadSpotLights = false;
+            spotLightResident = true;
+        }
+
+        pointLightBuffer.commit(graph);
+        directionalLightBuffer.commit(graph);
+        spotLightBuffer.commit(graph);
+
+        skeletonStreamer.commit(graph);
+        meshStreamer.commit(graph);
+        virtualTextureStreamer.commit(graph);
+
+        chunkStreamer.commit(graph, streamerQueue);
+    }
+
+    void RenderScene::prepare(rg::GraphBuilder &graph) {
+        pbrDeferredPipeline->prepare(graph);
+        pbrForwardPipeline->prepare(graph);
+        shadowCastersPipeline->prepare(graph);
+
+        for (auto &pair: shaders) {
+            pair.second.getPipeline()->prepare(graph);
+        }
+
+        for (auto &pair: canvases) {
+            pair.second.getPipeline()->prepare(graph);
+        }
+    }
+
     std::shared_ptr<RenderPipeline> RenderScene::createPipeline(RenderPipeline::MaterialLayout materialLayout) {
         // Here the scene will switch constructors based on platform support.
         return std::make_shared<RenderPipelineIndirect>(runtime.getResourceHeap(),
@@ -503,5 +618,20 @@ namespace xng {
         const auto &paint = paints.at(id);
         paint.getCanvas().get().getPipeline()->removeDrawCall(paint.getDrawID());
         paints.erase(id);
+    }
+
+    void RenderScene::destroyPointLight(const RenderObject::ID id) {
+        pointLights.erase(id);
+        reuploadPointLights = true;
+    }
+
+    void RenderScene::destroyDirectionalLight(const RenderObject::ID id) {
+        directionalLights.erase(id);
+        reuploadDirectionalLights = true;
+    }
+
+    void RenderScene::destroySpotLight(const RenderObject::ID id) {
+        spotLights.erase(id);
+        reuploadSpotLights = true;
     }
 }

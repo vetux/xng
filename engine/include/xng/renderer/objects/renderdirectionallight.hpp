@@ -23,6 +23,12 @@
 #include "xng/renderer/stream/bufferstreamer.hpp"
 
 namespace xng {
+    ShaderStruct(ShaderDirectionalLight,
+                 Vec4f, color,
+                 Vec4f, direction,
+                 Vec4f, shadowFarPlane,
+                 Mat4f, shadowProjectionMatrix)
+
     class RenderDirectionalLight final : public RenderObject {
     public:
         static Mat4f getShadowProjection(const Transform &transform,
@@ -38,15 +44,11 @@ namespace xng {
                    * MatrixMath::inverse(transform.getRotation().matrix());
         }
 
-        explicit RenderDirectionalLight(const Id id, BufferStreamer<ShaderDirectionalLight::CPU> &lightStream)
-            : RenderObject(OBJECT_DIRECTIONAL_LIGHT, id),
-              lightStream(lightStream) {
-            lightHandle = lightStream.create();
+        explicit RenderDirectionalLight(std::function<void()> onChangedCallback)
+            : onChangedCallback(std::move(onChangedCallback)) {
         }
 
-        ~RenderDirectionalLight() override {
-            lightStream.destroy(lightHandle);
-        }
+        ~RenderDirectionalLight() override = default;
 
         void set(const Vec3f &direction,
                  const ColorRGB color,
@@ -57,37 +59,28 @@ namespace xng {
                  const float shadowExtent) {
             const auto colorF = color.divide() * power;
 
-            ShaderDirectionalLight::CPU light;
-            light.color = Vec4f(colorF.x, colorF.y, colorF.z, 0);
-            light.direction = Vec4f(direction.x, direction.y, direction.z, 0);
+            data.color = Vec4f(colorF.x, colorF.y, colorF.z, 0);
+            data.direction = Vec4f(direction.x, direction.y, direction.z, 0);
 
-            light.shadowFarPlane = Vec4f(shadowFarPlane, 0, 0, 0);
+            data.shadowFarPlane = Vec4f(shadowFarPlane, 0, 0, 0);
 
             if (castShadows) {
-                light.shadowProjectionMatrix = getShadowProjection(Transform({}, direction, {}),
+                data.shadowProjectionMatrix = getShadowProjection(Transform({}, direction, {}),
                                                                    shadowNearPlane,
                                                                    shadowFarPlane,
                                                                    shadowExtent);
             }
 
-            lightStream.upload(lightHandle, light);
+            onChangedCallback();
         }
 
-        [[nodiscard]] BufferStreamer<ShaderPointLight::CPU>::Slot getSlot() const {
-            return lightHandle;
-        }
-
-        bool isUploadComplete() override {
-            return lightStream.isUploadComplete(lightHandle);
-        }
-
-        void flush() override {
-            lightStream.flush(lightHandle);
+        [[nodiscard]] const ShaderDirectionalLight::CPU &getData() const {
+            return data;
         }
 
     private:
-        BufferStreamer<ShaderDirectionalLight::CPU> &lightStream;
-        BufferStreamer<ShaderDirectionalLight::CPU>::Slot lightHandle;
+        std::function<void()> onChangedCallback;
+        ShaderDirectionalLight::CPU data{};
     };
 }
 

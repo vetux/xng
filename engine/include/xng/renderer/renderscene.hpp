@@ -248,45 +248,17 @@ namespace xng {
         void prepare(rg::GraphBuilder &graph);
 
         // Const interface naturally defines the intent that passes do not modify the scene.
-        void drawPbrDeferred(rg::GraphBuilder &graph,
-                             const RenderPipelineShader &shader,
-                             std::vector<RenderPipeline::Attachment> attachments,
-                             std::unordered_map<std::string, rg::ShaderPrimitive> parameters,
-                             std::unordered_map<std::string, RenderPipeline::BufferBinding> storageBuffers,
-                             std::unordered_map<std::string, std::vector<rg::TextureBinding> > textureArrays) const;
+        const RenderPipeline &getPbrDeferredPipeline() const {
+            return *pbrDeferredPipeline;
+        }
 
-        void drawPbrForward(rg::GraphBuilder &graph,
-                            const RenderPipelineShader &shader,
-                            std::vector<RenderPipeline::Attachment> attachments,
-                            std::unordered_map<std::string, rg::ShaderPrimitive> parameters,
-                            std::unordered_map<std::string, RenderPipeline::BufferBinding> storageBuffers,
-                            std::unordered_map<std::string, std::vector<rg::TextureBinding> > textureArrays) const;
+        const RenderPipeline &getPbrForwardPipeline() const {
+            return *pbrForwardPipeline;
+        }
 
-        void drawShadowCasters(rg::GraphBuilder &graph,
-                               const RenderPipelineShader &shader,
-                               std::vector<RenderPipeline::Attachment> attachments,
-                               std::unordered_map<std::string, rg::ShaderPrimitive> parameters,
-                               std::unordered_map<std::string, RenderPipeline::BufferBinding> storageBuffers,
-                               std::unordered_map<std::string, std::vector<rg::TextureBinding> > textureArrays) const;
-
-        void drawUserShading(rg::GraphBuilder &graph,
-                             std::vector<RenderPipeline::Attachment> attachments,
-                             std::unordered_map<std::string, rg::ShaderPrimitive> parameters,
-                             std::unordered_map<std::string, RenderPipeline::BufferBinding> storageBuffers,
-                             std::unordered_map<std::string, std::vector<rg::TextureBinding> > textureArrays) const;
-
-        void drawScreenCanvas(rg::GraphBuilder &graph,
-                              const RenderPipelineShader &shader,
-                              std::vector<RenderPipeline::Attachment> attachments,
-                              std::unordered_map<std::string, rg::ShaderPrimitive> parameters,
-                              std::unordered_map<std::string, RenderPipeline::BufferBinding> storageBuffers,
-                              std::unordered_map<std::string, std::vector<rg::TextureBinding> > textureArrays) const;
-
-        void drawTextureCanvases(rg::GraphBuilder &graph,
-                                 const RenderPipelineShader &shader,
-                                 std::unordered_map<std::string, rg::ShaderPrimitive> parameters,
-                                 std::unordered_map<std::string, RenderPipeline::BufferBinding> storageBuffers,
-                                 std::unordered_map<std::string, std::vector<rg::TextureBinding> > textureArrays) const;
+        const RenderPipeline &getShadowCastersPipeline() const {
+            return *shadowCastersPipeline;
+        }
 
         const std::unordered_map<RenderObject::ID, RenderTexture> &getTextures() const {
             return textures;
@@ -342,6 +314,18 @@ namespace xng {
 
         const MeshStreamer &getMeshStreamer() const {
             return meshStreamer;
+        }
+
+        rg::HeapResource<rg::Buffer> getPointLightBuffer() const {
+            return pointLightBuffer.getBuffer();
+        }
+
+        rg::HeapResource<rg::Buffer> getDirectionalLightBuffer() const {
+            return directionalLightBuffer.getBuffer();
+        }
+
+        rg::HeapResource<rg::Buffer> getSpotLightBuffer() const {
+            return spotLightBuffer.getBuffer();
         }
 
         const RenderObjectHandle<RenderMesh> &getUnitQuadMesh() const {
@@ -409,6 +393,22 @@ namespace xng {
         SkeletonStreamer skeletonStreamer;
         MeshStreamer meshStreamer;
         VirtualTextureStreamer virtualTextureStreamer;
+
+        StreamBuffer pointLightBuffer;
+        StreamBuffer directionalLightBuffer;
+        StreamBuffer spotLightBuffer;
+
+        StreamBuffer::Handle pointLightBufferHandle;
+        StreamBuffer::Handle directionalLightBufferHandle;
+        StreamBuffer::Handle spotLightBufferHandle;
+
+        bool pointLightResident = false;
+        bool directionalLightResident = false;
+        bool spotLightResident = false;
+
+        bool reuploadPointLights = false;
+        bool reuploadDirectionalLights = false;
+        bool reuploadSpotLights = false;
 
         // TODO: Contiguous objects storage with separate ID mapping
         std::unordered_map<RenderObject::ID, RenderTexture> textures;

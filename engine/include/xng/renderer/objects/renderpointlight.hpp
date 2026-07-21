@@ -23,17 +23,21 @@
 #include "xng/renderer/renderobject.hpp"
 
 namespace xng {
+    typedef std::array<Mat4f, 6> Mat4f_Array_6;
+
+    ShaderStruct(ShaderPointLight,
+                 Vec4f, position,
+                 Vec4f, color,
+                 Vec4f, shadowFarPlane,
+                 Mat4f_Array_6, shadowMatrices)
+
     class RenderPointLight final : public RenderObject {
     public:
-        explicit RenderPointLight(const Id id, BufferStreamer<ShaderPointLight::CPU> &lightStream)
-            : RenderObject(OBJECT_POINT_LIGHT, id),
-              lightStream(lightStream) {
-            lightHandle = lightStream.create();
+        explicit RenderPointLight(std::function<void()> onChangedCallback)
+            : onChangedCallback(std::move(onChangedCallback)) {
         }
 
-        ~RenderPointLight() override {
-            lightStream.destroy(lightHandle);
-        }
+        ~RenderPointLight() override = default;
 
         void set(const Vec3f &position,
                  const ColorRGB color,
@@ -43,59 +47,54 @@ namespace xng {
                  const float shadowFarPlane) {
             const auto colorF = color.divide() * power;
 
-            ShaderPointLight::CPU light;
-            light.position = Vec4f(position.x, position.y, position.z, 0);
-            light.color = Vec4f(colorF.x, colorF.y, colorF.z, 0);
+            data.position = Vec4f(position.x, position.y, position.z, 0);
+            data.color = Vec4f(colorF.x, colorF.y, colorF.z, 0);
 
-            light.shadowFarPlane = Vec4f(shadowFarPlane, 0, 0, 0);
+            data.shadowFarPlane = Vec4f(shadowFarPlane, 0, 0, 0);
 
             if (castShadows) {
                 const auto shadowProj = MatrixMath::perspective(90.0f, 1, shadowNearPlane, shadowFarPlane);
 
-                light.shadowMatrices.value[0] = (shadowProj *
-                                                 MatrixMath::lookAt(position,
-                                                                    position + Vec3f(1.0, 0.0, 0.0),
-                                                                    Vec3f(0.0, -1.0, 0.0)));
-                light.shadowMatrices.value[1] = (shadowProj *
-                                                 MatrixMath::lookAt(position,
-                                                                    position + Vec3f(-1.0, 0.0, 0.0),
-                                                                    Vec3f(0.0, -1.0, 0.0)));
-                light.shadowMatrices.value[2] = (shadowProj *
-                                                 MatrixMath::lookAt(position,
-                                                                    position + Vec3f(0.0, 1.0, 0.0),
-                                                                    Vec3f(0.0, 0.0, -1.0)));
-                light.shadowMatrices.value[3] = (shadowProj *
-                                                 MatrixMath::lookAt(position,
-                                                                    position + Vec3f(0.0, -1.0, 0.0),
-                                                                    Vec3f(0.0, 0.0, 1.0)));
-                light.shadowMatrices.value[4] = (shadowProj *
-                                                 MatrixMath::lookAt(position,
-                                                                    position + Vec3f(0.0, 0.0, 1.0),
-                                                                    Vec3f(0.0, -1.0, 0.0)));
-                light.shadowMatrices.value[5] = (shadowProj *
-                                                 MatrixMath::lookAt(position,
-                                                                    position + Vec3f(0.0, 0.0, -1.0),
-                                                                    Vec3f(0.0, -1.0, 0.0)));
+                Mat4f_Array_6 shadowMatrices;
+
+                shadowMatrices[0] = (shadowProj *
+                                     MatrixMath::lookAt(position,
+                                                        position + Vec3f(1.0, 0.0, 0.0),
+                                                        Vec3f(0.0, -1.0, 0.0)));
+                shadowMatrices[1] = (shadowProj *
+                                     MatrixMath::lookAt(position,
+                                                        position + Vec3f(-1.0, 0.0, 0.0),
+                                                        Vec3f(0.0, -1.0, 0.0)));
+                shadowMatrices[2] = (shadowProj *
+                                     MatrixMath::lookAt(position,
+                                                        position + Vec3f(0.0, 1.0, 0.0),
+                                                        Vec3f(0.0, 0.0, -1.0)));
+                shadowMatrices[3] = (shadowProj *
+                                     MatrixMath::lookAt(position,
+                                                        position + Vec3f(0.0, -1.0, 0.0),
+                                                        Vec3f(0.0, 0.0, 1.0)));
+                shadowMatrices[4] = (shadowProj *
+                                     MatrixMath::lookAt(position,
+                                                        position + Vec3f(0.0, 0.0, 1.0),
+                                                        Vec3f(0.0, -1.0, 0.0)));
+                shadowMatrices[5] = (shadowProj *
+                                     MatrixMath::lookAt(position,
+                                                        position + Vec3f(0.0, 0.0, -1.0),
+                                                        Vec3f(0.0, -1.0, 0.0)));
+
+                data.shadowMatrices = shadowMatrices;
             }
 
-            lightStream.upload(lightHandle, light);
+            onChangedCallback();
         }
 
-        [[nodiscard]] BufferStreamer<ShaderPointLight::CPU>::Slot getSlot() const {
-            return lightHandle;
-        }
-
-        bool isUploadComplete() override {
-            return lightStream.isUploadComplete(lightHandle);
-        }
-
-        void flush() override {
-            lightStream.flush(lightHandle);
+        [[nodiscard]] const ShaderPointLight::CPU &getData() const {
+            return data;
         }
 
     private:
-        BufferStreamer<ShaderPointLight::CPU> &lightStream;
-        BufferStreamer<ShaderPointLight::CPU>::Slot lightHandle;
+        std::function<void()> onChangedCallback;
+        ShaderPointLight::CPU data{};
     };
 }
 

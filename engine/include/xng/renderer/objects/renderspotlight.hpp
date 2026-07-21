@@ -23,6 +23,14 @@
 #include "xng/renderer/stream/streamtexture.hpp"
 
 namespace xng {
+    ShaderStruct(ShaderSpotLight,
+                 Vec4f, position,
+                 Vec4f, color,
+                 Vec4f, direction_quadratic,
+                 Vec4f, cutOff_outerCutOff_constant_linear,
+                 Vec4f, shadowFarPlane,
+                 Mat4f, shadowProjectionMatrix)
+
     class RenderSpotLight final : public RenderObject {
     public:
         static Mat4f getShadowProjection(const Transform &transform, const float near, const float far) {
@@ -34,15 +42,11 @@ namespace xng {
                    * MatrixMath::translate(transform.getPosition() * -1);
         }
 
-        explicit RenderSpotLight(const Id id, BufferStreamer<ShaderSpotLight::CPU> &lightStream)
-            : RenderObject(OBJECT_SPOT_LIGHT, id),
-              lightStream(lightStream) {
-            lightHandle = lightStream.create();
+        explicit RenderSpotLight(std::function<void()> onChangedCallback)
+            : onChangedCallback(std::move(onChangedCallback)) {
         }
 
-        ~RenderSpotLight() override {
-            lightStream.destroy(lightHandle);
-        }
+        ~RenderSpotLight() override = default;
 
         void set(const Vec3f &position,
                  const Vec3f &direction,
@@ -58,38 +62,29 @@ namespace xng {
                  const float shadowFarPlane) {
             const auto colorF = color.divide() * power;
 
-            ShaderSpotLight::CPU light;
-            light.position = Vec4f(position.x, position.y, position.z, 0);
-            light.color = Vec4f(colorF.x, colorF.y, colorF.z, 0);
-            light.direction_quadratic = Vec4f(direction.x, direction.y, direction.z, quadratic);
-            light.cutOff_outerCutOff_constant_linear = Vec4f(cutOff, outerCutOff, constant, linear);
+            data.position = Vec4f(position.x, position.y, position.z, 0);
+            data.color = Vec4f(colorF.x, colorF.y, colorF.z, 0);
+            data.direction_quadratic = Vec4f(direction.x, direction.y, direction.z, quadratic);
+            data.cutOff_outerCutOff_constant_linear = Vec4f(cutOff, outerCutOff, constant, linear);
 
-            light.shadowFarPlane = Vec4f(shadowFarPlane, 0, 0, 0);
+            data.shadowFarPlane = Vec4f(shadowFarPlane, 0, 0, 0);
 
             if (castShadows) {
-                light.shadowProjectionMatrix = getShadowProjection(Transform(position, direction, {}),
-                                                                   shadowNearPlane,
-                                                                   shadowFarPlane);
+                data.shadowProjectionMatrix = getShadowProjection(Transform(position, direction, {}),
+                                                                  shadowNearPlane,
+                                                                  shadowFarPlane);
             }
 
-            lightStream.upload(lightHandle, light);
+            onChangedCallback();
         }
 
-        [[nodiscard]] BufferStreamer<ShaderPointLight::CPU>::Slot getSlot() const {
-            return lightHandle;
-        }
-
-        bool isUploadComplete() override {
-            return lightStream.isUploadComplete(lightHandle);
-        }
-
-        void flush() override {
-            lightStream.flush(lightHandle);
+        [[nodiscard]] const ShaderSpotLight::CPU &getData() const {
+            return data;
         }
 
     private:
-        BufferStreamer<ShaderSpotLight::CPU> &lightStream;
-        BufferStreamer<ShaderSpotLight::CPU>::Slot lightHandle;
+        std::function<void()> onChangedCallback;
+        ShaderSpotLight::CPU data{};
     };
 }
 
