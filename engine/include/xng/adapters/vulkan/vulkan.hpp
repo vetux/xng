@@ -34,8 +34,6 @@ namespace xng::vulkan {
 
         rg::PipelineCache &getPipelineCache() override;
 
-        std::unordered_set<rg::ColorFormat> getSupportedColorFormats() override;
-
         rg::TextureFormatLimits getTextureFormatLimits(rg::TextureType type,
                                                        rg::ColorFormat colorFormat,
                                                        rg::Texture::Capability capabilities) override;

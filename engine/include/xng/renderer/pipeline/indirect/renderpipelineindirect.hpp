@@ -103,7 +103,8 @@ namespace xng {
                      std::optional<rg::Attachment> stencilAttachment,
                      const std::unordered_map<std::string, rg::ShaderPrimitive> &parameters,
                      const std::unordered_map<std::string, BufferBinding> &storageBuffers,
-                     const std::unordered_map<std::string, std::vector<rg::TextureBinding> > &textureArrays) override;
+                     const std::unordered_map<std::string, std::vector<rg::TextureBinding> > &textureArrays)
+        const override;
 
     private:
         static constexpr int prePassLocalSize = 256;

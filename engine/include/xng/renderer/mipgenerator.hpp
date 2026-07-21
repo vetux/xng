@@ -31,8 +31,8 @@ namespace xng {
     // TODO: Use raster pipeline for mip generation (Currently the downsampling blit doesnt filter across texture edges)
     class MipGenerator {
     public:
-        explicit MipGenerator(rg::Heap &heap)
-            : heap(heap) {
+        explicit MipGenerator(rg::Runtime &runtime)
+            : runtime(runtime) {
         }
 
         /**
@@ -44,20 +44,20 @@ namespace xng {
          */
         [[nodiscard]] std::unordered_map<unsigned int, ImageRGBA> generate(const ImageRGBA &image,
                                                                   const unsigned int mipLevels) const {
-            const auto texture = heap.allocateTexture(rg::Texture(rg::Texture::CAPABILITY_TRANSFER_SRC
+            const auto texture = runtime.getResourceHeap().allocateTexture(rg::Texture(rg::Texture::CAPABILITY_TRANSFER_SRC
                                                                   | rg::Texture::CAPABILITY_TRANSFER_DST,
                                                                   image.getResolution()));
-            const auto buffer = heap.allocateBuffer(rg::Buffer(image.getBuffer().size() * sizeof(ColorRGBA),
+            const auto buffer = runtime.getResourceHeap().allocateBuffer(rg::Buffer(image.getBuffer().size() * sizeof(ColorRGBA),
                                                                rg::Buffer::CAPABILITY_TRANSFER_SRC,
                                                                rg::Buffer::MEMORY_CPU_TO_GPU));
 
             {
-                const auto mapping = heap.map(buffer);
+                const auto mapping = runtime.getResourceHeap().map(buffer);
                 assert(mapping->size() == image.getBuffer().size() * sizeof(ColorRGBA));
                 std::memcpy(mapping->data(), image.getBuffer().data(), image.getBuffer().size() * sizeof(ColorRGBA));
             }
 
-            std::vector<rg::TransferPass> passes;
+            std::vector<rg::Pass> passes;
 
             passes.emplace_back(
                 rg::TransferPassBuilder("MipGenerator::Upload")
@@ -77,9 +77,9 @@ namespace xng {
             blits[0] = {texture, buffer};
             for (int mip = 1; mip < mipLevels; mip++) {
                 const auto mipSize = rg::Texture::getMipLevelSize(texture.getDescription().size, mip);
-                const auto mipTexture = heap.allocateTexture(rg::Texture(rg::Texture::CAPABILITY_TRANSFER_DST,
+                const auto mipTexture = runtime.getResourceHeap().allocateTexture(rg::Texture(rg::Texture::CAPABILITY_TRANSFER_DST,
                                                                          mipSize));
-                const auto mipBuffer = heap.allocateBuffer(rg::Buffer(sizeof(ColorRGBA) * (mipSize.x * mipSize.y),
+                const auto mipBuffer = runtime.getResourceHeap().allocateBuffer(rg::Buffer(sizeof(ColorRGBA) * (mipSize.x * mipSize.y),
                                                                       rg::Buffer::CAPABILITY_TRANSFER_DST,
                                                                       rg::Buffer::MEMORY_GPU_TO_CPU));
 
@@ -111,7 +111,7 @@ namespace xng {
                 blits[mip] = {mipTexture, mipBuffer};
             }
 
-            auto sem = heap.transfer(passes);
+            auto sem = runtime.execute(rg::Graph(passes,{},{}));
             if (!sem->wait(timeOut)) {
                 throw std::runtime_error("Failed to generate mip levels");
             }
@@ -122,7 +122,7 @@ namespace xng {
             for (auto &pair: blits) {
                 ImageRGBA mipImage(pair.second.first.getDescription().size);
                 {
-                    const auto mipMapping = heap.map(pair.second.second);
+                    const auto mipMapping = runtime.getResourceHeap().map(pair.second.second);
                     assert(mipMapping->size() == mipImage.getBuffer().size() * sizeof(ColorRGBA));
                     std::memcpy(mipImage.getBuffer().data(),
                                 mipMapping->data(),
@@ -136,7 +136,7 @@ namespace xng {
     private:
         static constexpr size_t timeOut = 10'000'000'000ULL;
 
-        rg::Heap &heap;
+        rg::Runtime &runtime;
     };
 }
 

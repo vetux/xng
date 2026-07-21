@@ -22,6 +22,7 @@
 #include <utility>
 
 #include "xng/renderer/renderpass.hpp"
+#include "xng/renderer/pipeline/indirect/renderpipelinecompilerindirect.hpp"
 #include "xng/rendergraph/builder/graphbuilder.hpp"
 
 namespace xng {
@@ -92,22 +93,47 @@ namespace xng {
 
         static rg::Shader compileFragmentShader();
 
-        explicit ConstructionPass(rg::PipelineCache &pipelineCache)
-            : ConstructionPass(pipelineCache,
+        explicit ConstructionPass(RenderPipelineCompiler &compiler)
+            : ConstructionPass(compiler,
                                compileVertexShader(),
                                compileFragmentShader()) {
         }
 
-        ConstructionPass(rg::PipelineCache &pipelineCache,
+        // This is now awkward to compile the shader for the render pipeline.
+        // With the offline shader compile phase, I will have to find a clean solution here.
+        ConstructionPass(RenderPipelineCompiler &compiler,
                          const rg::Shader &vertexShader,
-                         const rg::Shader &fragmentShader)
-            : pipelineCache(pipelineCache) {
-            pipeline = pipelineCache.create(getPipeline(vertexShader, fragmentShader));
+                         const rg::Shader &fragmentShader) {
+            const auto colorFormats = GBuffer::getColorFormats();
+            std::vector<RenderPipelineShader::Attachment> attachments;
+            attachments.reserve(6);
+            attachments.emplace_back(RenderPipelineShader::Attachment::ATTACHMENT_NATIVE,
+                                     rg::ShaderPrimitiveType::vec4(),
+                                     colorFormats.at(GBUFFER_POSITION));
+            attachments.emplace_back(RenderPipelineShader::Attachment::ATTACHMENT_NATIVE,
+                                     rg::ShaderPrimitiveType::vec4(),
+                                     colorFormats.at(GBUFFER_NORMAL));
+            attachments.emplace_back(RenderPipelineShader::Attachment::ATTACHMENT_NATIVE,
+                                     rg::ShaderPrimitiveType::vec4(),
+                                     colorFormats.at(GBUFFER_TANGENT));
+            attachments.emplace_back(RenderPipelineShader::Attachment::ATTACHMENT_NATIVE,
+                                     rg::ShaderPrimitiveType::vec4(),
+                                     colorFormats.at(GBUFFER_ROUGHNESS_METALLIC_AO));
+            attachments.emplace_back(RenderPipelineShader::Attachment::ATTACHMENT_NATIVE,
+                                     rg::ShaderPrimitiveType::vec4(),
+                                     colorFormats.at(GBUFFER_ALBEDO));
+            attachments.emplace_back(RenderPipelineShader::Attachment::ATTACHMENT_NATIVE,
+                                     rg::ShaderPrimitiveType::ivec4(),
+                                     colorFormats.at(GBUFFER_OBJECT_ID_RECEIVE_SHADOWS));
+
+            shader = compiler.compile({vertexShader, fragmentShader},
+                                      getPipelineConfig(),
+                                      attachments,
+                                      rg::DEPTH24_STENCIL8,
+                                      rg::DEPTH24_STENCIL8);
         }
 
-        ~ConstructionPass() override {
-            pipelineCache.destroy(pipeline);
-        }
+        ~ConstructionPass() override = default;
 
         void record(rg::GraphBuilder &graph,
                     const std::shared_ptr<rg::Surface> surface,
@@ -115,144 +141,44 @@ namespace xng {
                     const RenderScene &scene) override {
             const GBuffer gBuffer(graph, surface->getDimensions());
             gBuffer.subscribe(registry);
-            graph.addPass(createPass(scene, gBuffer));
+
+            std::vector<RenderPipeline::Attachment> colorAttachments;
+            colorAttachments.reserve(6);
+            colorAttachments.emplace_back(rg::Attachment(gBuffer.position, Vec4f(0)));
+            colorAttachments.emplace_back(rg::Attachment(gBuffer.normal, Vec4f(0)));
+            colorAttachments.emplace_back(rg::Attachment(gBuffer.tangent, Vec4f(0)));
+            colorAttachments.emplace_back(rg::Attachment(gBuffer.roughnessMetallicAO, Vec4f(0)));
+            colorAttachments.emplace_back(rg::Attachment(gBuffer.albedo, Vec4f(0)));
+            colorAttachments.emplace_back(rg::Attachment(gBuffer.objectIdReceiveShadows, Vec4i(0)));
+
+            rg::Attachment depthStencilAttachment(gBuffer.depthStencil,
+                                                  rg::Texture::DepthStencilClearValue(1.0f, SHADING_MODEL_NONE));
+
+            scene.getPbrDeferredPipeline().execute(graph,
+                                                   "ConstructionPass",
+                                                   *shader,
+                                                   {{}, gBuffer.resolution.convert<int>()},
+                                                   colorAttachments,
+                                                   depthStencilAttachment,
+                                                   {},
+                                                   {},
+                                                   {},
+                                                   {},
+                                                   {});
         }
 
     private:
-        [[nodiscard]] rg::GraphicsPass createPass(const RenderScene &scene, const GBuffer &gBuffer) const {
-            rg::GraphicsPassBuilder builder("ConstructionPass");
+        enum AttachmentIndex : int {
+            GBUFFER_POSITION = 0,
+            GBUFFER_NORMAL,
+            GBUFFER_TANGENT,
+            GBUFFER_ROUGHNESS_METALLIC_AO,
+            GBUFFER_ALBEDO,
+            GBUFFER_OBJECT_ID_RECEIVE_SHADOWS,
+        };
 
-            // Set Attachments
-            builder.attachColor(rg::Attachment(gBuffer.position, Vec4f(0)))
-                    .attachColor(rg::Attachment(gBuffer.normal, Vec4f(0)))
-                    .attachColor(rg::Attachment(gBuffer.tangent, Vec4f(0)))
-                    .attachColor(rg::Attachment(gBuffer.roughnessMetallicAO, Vec4f(0)))
-                    .attachColor(rg::Attachment(gBuffer.albedo, Vec4f(0)))
-                    .attachColor(rg::Attachment(gBuffer.objectIdReceiveShadows, Vec4i(0)))
-                    .attachDepthStencil(rg::Attachment(gBuffer.depthStencil,
-                                                       rg::Texture::DepthStencilClearValue(1.0f, SHADING_MODEL_NONE)));
-
-            // Declare Accesses
-            builder.storageRead(scene.cameraBuffer, {rg::Shader::VERTEX});
-
-            size_t totalDrawCount = 0;
-            for (auto &batch: scene.drawList) {
-                if (batch.renderPath != RENDER_PATH_DEFERRED) {
-                    continue;
-                }
-
-                totalDrawCount++;
-
-                for (auto &access: batch.drawBufferAccesses) {
-                    builder.storageRead(scene.drawBuffer, {rg::Shader::VERTEX}, access.offset, access.size);
-                }
-
-                for (auto &access: batch.transformBufferAccesses) {
-                    builder.storageRead(scene.transformBuffer, {rg::Shader::VERTEX}, access.offset, access.size);
-                }
-
-                for (auto &access: batch.materialBufferAccesses) {
-                    builder.storageRead(scene.materialBuffer, {rg::Shader::FRAGMENT}, access.offset, access.size);
-                }
-
-                for (auto &pair: batch.vertexBufferAccesses) {
-                    for (auto &access: pair.second) {
-                        builder.vertexRead(scene.vertexBuffers.at(pair.first), access.offset, access.size);
-                    }
-                }
-
-                for (auto &access: batch.indexBufferAccesses) {
-                    builder.indexRead(scene.indexBuffer, access.offset, access.size);
-                }
-
-                for (auto &layer: batch.textureAccesses) {
-                    builder.textureSampledRead(scene.textureAtlas,
-                                               {rg::Shader::FRAGMENT},
-                                               rg::TextureBinding::Range(0,
-                                                                         scene.textureAtlas.
-                                                                         getDescription().
-                                                                         mipLevels,
-                                                                         layer,
-                                                                         1));
-                }
-
-                builder.storageRead(scene.tileMapBuffer, {rg::Shader::FRAGMENT});
-                builder.storageRead(scene.tileMapOffsetsBuffer, {rg::Shader::FRAGMENT});
-                builder.storageRead(scene.residencyMapBuffer, {rg::Shader::FRAGMENT});
-                builder.storageRead(scene.residencyMapOffsetsBuffer, {rg::Shader::FRAGMENT});
-                builder.storageWrite(scene.readbackBuffer, {rg::Shader::FRAGMENT});
-            }
-
-            if (totalDrawCount <= 0) {
-                return builder.execute([](rg::RasterContext &cmd) {
-                });
-            }
-
-            return builder.execute([this, &scene, gBuffer](rg::RasterContext &cmd) {
-                // Bind pipeline
-                cmd.bindPipeline(pipeline);
-
-                cmd.setViewport({}, gBuffer.resolution);
-
-                // Bind Vertex Buffers
-                for (auto attr = ATTRIBUTE_BEGIN;
-                     attr <= ATTRIBUTE_END;
-                     attr = static_cast<VertexAttribute>(attr + 1)) {
-                    cmd.bindVertexBuffer(scene.vertexBuffers.at(attr),
-                                         attr,
-                                         0,
-                                         getVertexAttributeSize(attr));
-                }
-
-                // Bind Index Buffer
-                cmd.bindIndexBuffer(scene.indexBuffer, rg::INDEX_UNSIGNED_INT);
-
-                // Bind storage buffers
-                cmd.bindStorageBuffer("drawBuffer",
-                                      scene.drawBuffer,
-                                      0,
-                                      scene.drawBuffer.getDescription().size);
-
-                cmd.bindStorageBuffer("transforms",
-                                      scene.transformBuffer,
-                                      0,
-                                      scene.transformBuffer.getDescription().size);
-
-                cmd.bindStorageBuffer("materials",
-                                      scene.materialBuffer,
-                                      0,
-                                      scene.materialBuffer.getDescription().size);
-
-                cmd.bindTexture("atlasTexture", {rg::TextureBinding(scene.textureAtlas)});
-                cmd.bindStorageBuffer("tileMap", scene.tileMapBuffer, 0, 0);
-                cmd.bindStorageBuffer("tileMapOffsets", scene.tileMapOffsetsBuffer, 0, 0);
-                cmd.bindStorageBuffer("residencyMap", scene.residencyMapBuffer, 0, 0);
-                cmd.bindStorageBuffer("residencyMapOffsets", scene.residencyMapOffsetsBuffer, 0, 0);
-                cmd.bindStorageBuffer("readbackBuffer", scene.readbackBuffer, 0, 0);
-
-                cmd.setShaderParameter("atlasSize", rg::ShaderPrimitive(scene.atlasSize));
-                cmd.setShaderParameter("tileSize", rg::ShaderPrimitive(scene.tileSize));
-                cmd.setShaderParameter("tileBorder", rg::ShaderPrimitive(scene.tileBorder));
-                cmd.setShaderParameter("maxAnisotropy", rg::ShaderPrimitive(scene.maxAnisotropy));
-
-                for (auto &batch: scene.drawList) {
-                    if (batch.renderPath != RENDER_PATH_DEFERRED) {
-                        continue;
-                    }
-                    cmd.setStencilReference(batch.shadingModel);
-                    cmd.drawIndexedMultiIndirectCount(batch.indirectBuffer,
-                                                      batch.indirectCountBuffer,
-                                                      batch.indirectBufferOffset,
-                                                      batch.indirectCountBufferOffset,
-                                                      batch.batchSize,
-                                                      batch.stride);
-                }
-            });
-        }
-
-        static rg::RasterPipeline getPipeline(const rg::Shader &vertexShader, const rg::Shader &fragmentShader) {
-            rg::RasterPipeline ret;
-            ret.shaders = {vertexShader, fragmentShader};
+        static rg::RasterPipeline::Configuration getPipelineConfig() {
+            rg::RasterPipeline::Configuration ret;
 
             ret.enableDepthTest = true;
             ret.depthTestWrite = true;
@@ -265,27 +191,10 @@ namespace xng {
             ret.stencilFail = rg::RasterPipeline::StencilAction::STENCIL_KEEP;
             ret.stencilDepthFail = rg::RasterPipeline::StencilAction::STENCIL_KEEP;
 
-            ret.colorAttachments = GBuffer::getColorFormats();
-            ret.depthAttachment = rg::ColorFormat::DEPTH24_STENCIL8;
-            ret.stencilAttachment = rg::ColorFormat::DEPTH24_STENCIL8;
-
-            std::vector<size_t> offsets;
-            offsets.resize(5, 0);
-
-            ret.vertexFormat = rg::RasterPipeline::VertexFormat(vertexShader.inputLayout,
-                                                                {
-                                                                    POSITION,
-                                                                    NORMAL,
-                                                                    UV,
-                                                                    TANGENT,
-                                                                    BITANGENT,
-                                                                },
-                                                                offsets);
             return ret;
         }
 
-        rg::PipelineCache &pipelineCache;
-        rg::PipelineCache::Handle pipeline;
+        std::shared_ptr<RenderPipelineShader> shader;
     };
 }
 

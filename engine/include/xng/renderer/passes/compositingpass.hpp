@@ -46,10 +46,10 @@ namespace xng {
                     RenderPassRegistry &registry,
                     const RenderScene &scene) override {
             auto pass = rg::GraphicsPassBuilder("CompositingPass")
-                    .attachColor(rg::Attachment(surface, Vec4f(0)))
-                    .vertexRead(scene.vertexBuffers.at(POSITION))
-                    .vertexRead(scene.vertexBuffers.at(UV))
-                    .indexRead(scene.indexBuffer);
+                    .surfaceAttachmentColor(surface)
+                    .vertexRead(scene.getMeshStreamer().getVertexBuffers().at(POSITION))
+                    .vertexRead(scene.getMeshStreamer().getVertexBuffers().at(UV))
+                    .indexRead(scene.getMeshStreamer().getIndexBuffer());
 
             std::vector<rg::Resource<rg::Texture> > textures;
             if (registry.checkTexture(RenderPassRegistry::PBR_COLOR_DEFERRED)) {
@@ -63,23 +63,30 @@ namespace xng {
                 pass.textureSampledRead(tex, {rg::Shader::FRAGMENT});
             }
 
-            pass.attachColor(rg::Attachment(surface, Vec4f(0)));
+            builder.addPass(pass.execute([this, textures, surface,&scene](rg::RasterContext &ctx,
+                                                                          rg::TransferContext &,
+                                                                          rg::ComputeContext &) {
+                ctx.beginRenderPass({rg::Attachment(surface, Vec4f(0))}, {}, {});
 
-            builder.addPass(pass.execute([this, textures, surface, scene](rg::RasterContext &ctx) {
                 ctx.bindPipeline(pipeline);
                 ctx.setViewport({}, surface->getDimensions());
 
                 // Bind Vertex Buffers
-                ctx.bindVertexBuffer(scene.vertexBuffers.at(POSITION), 0, 0, getVertexAttributeSize(POSITION));
-                ctx.bindVertexBuffer(scene.vertexBuffers.at(UV), 1, 0, getVertexAttributeSize(UV));
+                ctx.bindVertexBuffer(scene.getMeshStreamer().getVertexBuffers().at(POSITION), 0, 0,
+                                     getVertexAttributeSize(POSITION));
+                ctx.bindVertexBuffer(scene.getMeshStreamer().getVertexBuffers().at(UV), 1, 0,
+                                     getVertexAttributeSize(UV));
 
                 // Bind Index Buffer
-                ctx.bindIndexBuffer(scene.indexBuffer, rg::INDEX_UNSIGNED_INT);
+                ctx.bindIndexBuffer(scene.getMeshStreamer().getIndexBuffer(), rg::INDEX_UNSIGNED_INT);
 
                 for (auto &tex: textures) {
                     ctx.bindTexture("texture", {rg::TextureBinding(tex)});
-                    ctx.drawIndexed(scene.normalizedQuad.drawCall, scene.normalizedQuad.baseVertex);
+                    ctx.drawIndexed(scene.getUnitQuadMesh().get().getAllocation().drawCall,
+                                    scene.getUnitQuadMesh().get().getAllocation().baseVertex);
                 }
+
+                ctx.endRenderPass();
             }));
         }
 
@@ -88,13 +95,13 @@ namespace xng {
             rg::RasterPipeline ret;
             ret.colorAttachments = {rg::ColorFormat::RGBA8};
             ret.shaders = {vertexShader, fragmentShader};
-            ret.enableDepthTest = false;
-            ret.depthTestWrite = false;
-            ret.enableBlending = true;
-            ret.alphaBlendSourceMode = rg::RasterPipeline::BlendMode::ONE;
-            ret.alphaBlendDestinationMode = rg::RasterPipeline::BlendMode::ONE_MINUS_SRC_ALPHA;
-            ret.enableStencilTest = false;
-            ret.enableDynamicStencilReference = false;
+            ret.configuration.enableDepthTest = false;
+            ret.configuration.depthTestWrite = false;
+            ret.configuration.enableBlending = true;
+            ret.configuration.alphaBlendSourceMode = rg::RasterPipeline::BlendMode::ONE;
+            ret.configuration.alphaBlendDestinationMode = rg::RasterPipeline::BlendMode::ONE_MINUS_SRC_ALPHA;
+            ret.configuration.enableStencilTest = false;
+            ret.configuration.enableDynamicStencilReference = false;
             std::vector<size_t> offsets;
             offsets.resize(2, 0);
 

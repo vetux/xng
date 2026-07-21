@@ -150,7 +150,7 @@ namespace xng {
                                          const std::unordered_map<std::string, rg::ShaderPrimitive> &parameters,
                                          const std::unordered_map<std::string, BufferBinding> &storageBuffers,
                                          const std::unordered_map<std::string, std::vector<rg::TextureBinding> > &
-                                         textureArrays) {
+                                         textureArrays) const {
         // Bind and execute
         rg::GraphicsPassBuilder builder(passName);
 

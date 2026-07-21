@@ -189,10 +189,6 @@ namespace xng::vulkan {
         throw std::runtime_error("Not Implemented");
     }
 
-    std::unordered_set<rg::ColorFormat> Runtime::getSupportedColorFormats() {
-        throw std::runtime_error("Not Implemented");
-    }
-
     rg::TextureFormatLimits Runtime::getTextureFormatLimits(rg::TextureType type,
                                                             rg::ColorFormat colorFormat,
                                                             rg::Texture::Capability capabilities) {

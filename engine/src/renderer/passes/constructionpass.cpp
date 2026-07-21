@@ -21,22 +21,14 @@
 #include "xng/shaderscript/shaderscript.hpp"
 #include "xng/shaderscript/macro/helpermacros.hpp"
 
-#include "xng/renderer/shadertypes.hpp"
-#include "xng/renderer/shaderlib/virtualtexture.hpp"
-
 using namespace xng::rg;
 using namespace xng::ShaderScript;
-using namespace xng::shaderlib::virtualtexture;
 
 namespace xng {
+    using namespace RenderPipelineCompilerStubs;
+
     Shader ConstructionPass::compileVertexShader() {
         BeginShader(Shader::VERTEX)
-
-        Input(vec3, position)
-        Input(vec3, normal)
-        Input(vec2, uv)
-        Input(vec3, tangent)
-        Input(vec3, bitangent)
 
         Output(vec3, fPos)
         Output(vec3, fNorm)
@@ -51,47 +43,30 @@ namespace xng {
         OutputFlat(Int, fObjectID)
         OutputFlat(Int, fReceiveShadows)
 
-        StorageBufferDynamic(ShaderTransform, transforms)
-        StorageBufferDynamic(ShaderMaterial, materials)
-        StorageBufferDynamic(ShaderDrawMesh, drawBuffer)
+        vec4 position = vec4(getVertexAttribute(POSITION), 1.0f);
+        vec2 uv = vec2(getVertexAttribute(UV));
+        vec3 normal = vec3(getVertexAttribute(NORMAL));
+        vec3 tangent = vec3(getVertexAttribute(TANGENT));
+        vec3 bitangent = vec3(getVertexAttribute(BITANGENT));
 
-        Texture(TEXTURE_2D_ARRAY, RGBA8, atlasTexture)
-        StorageBufferDynamic(UInt, tileMap)
-        StorageBufferDynamic(UInt, tileMapOffsets)
-        StorageBufferDynamic(UInt, residencyMap)
-        StorageBufferDynamic(UInt, residencyMapOffsets)
-        StorageBufferDynamicRW(UInt, readbackBuffer)
+        mat4 model = mat4(getModel());
+        mat4 mvp = mat4(getModelViewProjection());
 
-        Parameter(UInt, atlasSize)
-        Parameter(UInt, tileSize)
-        Parameter(UInt, tileBorder)
-        Parameter(Float, maxAnisotropy)
-
-        UInt modelIndex = getBaseInstance() + getDrawID() + getInstanceID();
-
-        vec4 pos = vec4(position, 1.0f);
-
-        mat4 model = transforms[drawBuffer[modelIndex].transformIndex].transform;
-        mat4 mvp = drawBuffer[modelIndex].mvp;
-
-        vPos = mvp * pos;
-        fPos = (model * pos).xyz();
+        vPos = mvp * position;
+        fPos = (model * position).xyz();
         fUv = uv;
 
         fNorm = normalize(normal);
         fTan = normalize(tangent);
 
         //https://www.gamedeveloper.com/programming/three-normal-mapping-techniques-explained-for-the-mathematically-uninclined
-        fN = normalize((model * vec4(normalize(normal), 0.0)).xyz());
-        fT = normalize((model * vec4(normalize(tangent), 0.0)).xyz());
-        fB = normalize((model * vec4(normalize(bitangent), 0.0)).xyz());
+        fN = normalize((getModel() * vec4(normalize(normal), 0.0)).xyz());
+        fT = normalize((getModel() * vec4(normalize(tangent), 0.0)).xyz());
+        fB = normalize((getModel() * vec4(normalize(bitangent), 0.0)).xyz());
 
         fModel = model;
 
-        fMaterialIndex = Int(drawBuffer[modelIndex].materialIndex);
-        fObjectID = Int(drawBuffer[modelIndex].modelID);
-
-        If(drawBuffer[modelIndex].receiveShadows)
+        If(getMaterialProperty(PBRMaterial::RECEIVE_SHADOWS) == true)
             fReceiveShadows = Int(1);
         Else
             fReceiveShadows = Int(0);
@@ -120,176 +95,70 @@ namespace xng {
         InputFlat(Int, fObjectID)
         InputFlat(Int, fReceiveShadows)
 
-        Output(vec4, oPosition)
-        Output(vec4, oNormal)
-        Output(vec4, oTangent)
-        Output(vec4, oRoughnessMetallicAO)
-        Output(vec4, oAlbedo)
-        Output(ivec4, oObjectShadows)
-
-        StorageBufferDynamic(ShaderTransform, transforms)
-        StorageBufferDynamic(ShaderMaterial, materials)
-        StorageBufferDynamic(ShaderDrawMesh, drawBuffer)
-
-        Texture(TEXTURE_2D_ARRAY, RGBA8, atlasTexture)
-        StorageBufferDynamic(UInt, tileMap)
-        StorageBufferDynamic(UInt, tileMapOffsets)
-        StorageBufferDynamic(UInt, residencyMap)
-        StorageBufferDynamic(UInt, residencyMapOffsets)
-        StorageBufferDynamicRW(UInt, readbackBuffer)
-
-        Parameter(UInt, atlasSize)
-        Parameter(UInt, tileSize)
-        Parameter(UInt, tileBorder)
-        Parameter(Float, maxAnisotropy)
-
-        ShaderMaterial material = materials[fMaterialIndex];
-
-        oPosition = vec4(fPos, 1);
+        writeAttachment(GBUFFER_POSITION, vec4(fPos, 1));
 
         // Albedo
-        If(material.albedo.textureSize_textureID_maxMip.z() < 0)
-            oAlbedo = material.albedoColor;
+        If(getMaterialProperty(PBRMaterial::MATERIAL_ALBEDO_HAS_TEXTURE) == true)
+            writeAttachment(GBUFFER_ALBEDO,
+                            sampleMaterialTexture(
+                                PBRMaterial::MATERIAL_ALBEDO_TEXTURE,
+                                fUv
+                            ));
         Else
-            oAlbedo = sample_virtual_readback(material.albedo.textureSize_textureID_maxMip.z(),
-                                              fUv,
-                                              material.albedo.minFilter_magFilter_mipFilter_wrap.w(),
-                                              material.albedo.minFilter_magFilter_mipFilter_wrap.x(),
-                                              material.albedo.minFilter_magFilter_mipFilter_wrap.y(),
-                                              material.albedo.minFilter_magFilter_mipFilter_wrap.z(),
-                                              material.albedo.textureSize_textureID_maxMip.xy(),
-                                              material.albedo.textureSize_textureID_maxMip.w(),
-                                              atlasSize,
-                                              tileSize,
-                                              tileBorder,
-                                              maxAnisotropy,
-                                              tileMapOffsets,
-                                              tileMap,
-                                              residencyMapOffsets,
-                                              residencyMap,
-                                              readbackBuffer,
-                                              atlasTexture);
+            writeAttachment(GBUFFER_ALBEDO,
+                            getMaterialProperty(
+                                PBRMaterial::MATERIAL_ALBEDO_COLOR
+                            ));
         Fi
 
-        oRoughnessMetallicAO = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+        writeAttachment(GBUFFER_ROUGHNESS_METALLIC_AO, vec4(0.0f, 0.0f, 0.0f, 1.0f));
+
+        vec4 roughnessMetallicAO(0.0f, 0.0f, 0.0f, 1.0f);
 
         // Roughness
-        If(material.roughness.textureSize_textureID_maxMip.z() < 0)
-            oRoughnessMetallicAO.x() = material.metallic_roughness_ambientOcclusion.y();
+        If(getMaterialProperty(PBRMaterial::MATERIAL_ROUGHNESS_HAS_TEXTURE) == true)
+            roughnessMetallicAO.x() = sampleMaterialTexture(PBRMaterial::MATERIAL_ROUGHNESS_TEXTURE, fUv);
         Else
-            oRoughnessMetallicAO.x() = sample_virtual_readback(material.roughness.textureSize_textureID_maxMip.z(),
-                                                               fUv,
-                                                               material.roughness.minFilter_magFilter_mipFilter_wrap.
-                                                               w(),
-                                                               material.roughness.minFilter_magFilter_mipFilter_wrap.
-                                                               x(),
-                                                               material.roughness.minFilter_magFilter_mipFilter_wrap.
-                                                               y(),
-                                                               material.roughness.minFilter_magFilter_mipFilter_wrap.
-                                                               z(),
-                                                               material.roughness.textureSize_textureID_maxMip.xy(),
-                                                               material.roughness.textureSize_textureID_maxMip.w(),
-                                                               atlasSize,
-                                                               tileSize,
-                                                               tileBorder,
-                                                               maxAnisotropy,
-                                                               tileMapOffsets,
-                                                               tileMap,
-                                                               residencyMapOffsets,
-                                                               residencyMap,
-                                                               readbackBuffer,
-                                                               atlasTexture).x();
+            roughnessMetallicAO.x() = getMaterialProperty(PBRMaterial::MATERIAL_ROUGHNESS_COLOR);
         Fi
 
-        // Metallic
-        If(material.metallic.textureSize_textureID_maxMip.z() < 0)
-            oRoughnessMetallicAO.y() = material.metallic_roughness_ambientOcclusion.x();
+        If(getMaterialProperty(PBRMaterial::MATERIAL_METALLIC_HAS_TEXTURE) == true)
+            roughnessMetallicAO.y() = sampleMaterialTexture(PBRMaterial::MATERIAL_METALLIC_TEXTURE, fUv);
         Else
-            oRoughnessMetallicAO.y() = sample_virtual_readback(material.metallic.textureSize_textureID_maxMip.z(),
-                                                               fUv,
-                                                               material.metallic.minFilter_magFilter_mipFilter_wrap.w(),
-                                                               material.metallic.minFilter_magFilter_mipFilter_wrap.x(),
-                                                               material.metallic.minFilter_magFilter_mipFilter_wrap.y(),
-                                                               material.metallic.minFilter_magFilter_mipFilter_wrap.z(),
-                                                               material.metallic.textureSize_textureID_maxMip.xy(),
-                                                               material.metallic.textureSize_textureID_maxMip.w(),
-                                                               atlasSize,
-                                                               tileSize,
-                                                               tileBorder,
-                                                               maxAnisotropy,
-                                                               tileMapOffsets,
-                                                               tileMap,
-                                                               residencyMapOffsets,
-                                                               residencyMap,
-                                                               readbackBuffer,
-                                                               atlasTexture).x();
+            roughnessMetallicAO.y() = getMaterialProperty(PBRMaterial::MATERIAL_METALLIC_COLOR);
         Fi
 
-        // Ambient Occlusion
-        If(material.ambientOcclusion.textureSize_textureID_maxMip.z() < 0)
-            oRoughnessMetallicAO.z() = material.metallic_roughness_ambientOcclusion.z();
+        If(getMaterialProperty(PBRMaterial::MATERIAL_AMBIENT_OCCLUSION_HAS_TEXTURE) == true)
+            roughnessMetallicAO.z() = sampleMaterialTexture(PBRMaterial::MATERIAL_AMBIENT_OCCLUSION_TEXTURE, fUv);
         Else
-            oRoughnessMetallicAO.z() = sample_virtual_readback(
-                material.ambientOcclusion.textureSize_textureID_maxMip.z(),
-                fUv,
-                material.ambientOcclusion.minFilter_magFilter_mipFilter_wrap.w(),
-                material.ambientOcclusion.minFilter_magFilter_mipFilter_wrap.x(),
-                material.ambientOcclusion.minFilter_magFilter_mipFilter_wrap.y(),
-                material.ambientOcclusion.minFilter_magFilter_mipFilter_wrap.z(),
-                material.ambientOcclusion.textureSize_textureID_maxMip.xy(),
-                material.ambientOcclusion.textureSize_textureID_maxMip.w(),
-                atlasSize,
-                tileSize,
-                tileBorder,
-                maxAnisotropy,
-                tileMapOffsets,
-                tileMap,
-                residencyMapOffsets,
-                residencyMap,
-                readbackBuffer,
-                atlasTexture).x();
+            roughnessMetallicAO.z() = getMaterialProperty(PBRMaterial::MATERIAL_AMBIENT_OCCLUSION_COLOR);
         Fi
+
+        writeAttachment(GBUFFER_ROUGHNESS_METALLIC_AO, roughnessMetallicAO);
 
         // Normals
         mat3 normalMatrix = mat3(transpose(inverse(fModel)));
-        oNormal = vec4(normalize(normalMatrix * fNorm), 1);
-        oTangent = vec4(normalize(normalMatrix * fTan), 1);
+        vec4 oNormal = vec4(normalize(normalMatrix * fNorm), 1);
+        vec4 oTangent = vec4(normalize(normalMatrix * fTan), 1);
 
-        If(material.normal.textureSize_textureID_maxMip.z() >= 0)
+        If(getMaterialProperty(PBRMaterial::MATERIAL_NORMAL_HAS_TEXTURE) == true)
             mat3 tbn = mat3(fT, fB, fN);
-            vec3 texNormal = sample_virtual_readback(material.normal.textureSize_textureID_maxMip.z(),
-                                                     fUv,
-                                                     material.normal.minFilter_magFilter_mipFilter_wrap.w(),
-                                                     material.normal.minFilter_magFilter_mipFilter_wrap.x(),
-                                                     material.normal.minFilter_magFilter_mipFilter_wrap.y(),
-                                                     material.normal.minFilter_magFilter_mipFilter_wrap.z(),
-                                                     material.normal.textureSize_textureID_maxMip.xy(),
-                                                     material.normal.textureSize_textureID_maxMip.w(),
-                                                     atlasSize,
-                                                     tileSize,
-                                                     tileBorder,
-                                                     maxAnisotropy,
-                                                     tileMapOffsets,
-                                                     tileMap,
-                                                     residencyMapOffsets,
-                                                     residencyMap,
-                                                     readbackBuffer,
-                                                     atlasTexture).xyz();
+            vec3 texNormal = vec3(sampleMaterialTexture(PBRMaterial::MATERIAL_NORMAL_TEXTURE, fUv));
             texNormal = texNormal * 2.0f - 1.0f;
-            If(material.normalIntensity_flipNormal.y() != 0.0f)
+            If(getMaterialProperty(PBRMaterial::MATERIAL_NORMAL_FLIP) == true)
                 texNormal.y() = texNormal.y() * -1.0f;
             Fi
-            texNormal = vec3(texNormal.x() * material.normalIntensity_flipNormal.x(),
-                             texNormal.y() * material.normalIntensity_flipNormal.x(),
+            texNormal = vec3(texNormal.x() * getMaterialProperty(PBRMaterial::MATERIAL_NORMAL_INTENSITY),
+                             texNormal.y() * getMaterialProperty(PBRMaterial::MATERIAL_NORMAL_INTENSITY),
                              texNormal.z());
             texNormal = tbn * normalize(texNormal);
             oNormal = vec4(normalize(texNormal), 1);
         Fi
 
-        oObjectShadows.x() = Int(fObjectID);
-        oObjectShadows.y() = Int(fReceiveShadows);
-        oObjectShadows.z() = Int(0);
-        oObjectShadows.w() = Int(0);
+        writeAttachment(GBUFFER_NORMAL, oNormal);
+
+        vec4 oObjectShadows(0, getMaterialProperty(PBRMaterial::RECEIVE_SHADOWS), 0, 0);
+        writeAttachment(GBUFFER_OBJECT_ID_RECEIVE_SHADOWS, oObjectShadows);
 
         EndShader();
 

@@ -32,11 +32,16 @@ namespace xng {
           skeletonStreamer(runtime.getResourceHeap(), chunkStreamer),
           meshStreamer(runtime.getResourceHeap(), chunkStreamer),
           virtualTextureStreamer(runtime, chunkStreamer, tileSize, tileBorder, maxAnisotropy),
+          pointLightBuffer(runtime.getResourceHeap(), chunkStreamer, rg::Buffer::CAPABILITY_STORAGE),
+          directionalLightBuffer(runtime.getResourceHeap(), chunkStreamer, rg::Buffer::CAPABILITY_STORAGE),
+          spotLightBuffer(runtime.getResourceHeap(), chunkStreamer, rg::Buffer::CAPABILITY_STORAGE),
           unitQuadMesh(createMesh(Mesh::normalizedQuad())),
           unitCubeMesh(createMesh(Mesh::normalizedCube())) {
     }
 
-    void RenderScene::setCamera(const Camera &camera) {
+    void RenderScene::setCamera(const Camera &value) {
+        camera = value;
+
         pbrDeferredPipeline->setCamera(camera.getTransform().getPosition(), camera.getView(), camera.getProjection());
         pbrForwardPipeline->setCamera(camera.getTransform().getPosition(), camera.getView(), camera.getProjection());
 
@@ -45,6 +50,10 @@ namespace xng {
                                                  camera.getView(),
                                                  camera.getProjection());
         }
+    }
+
+    const Camera &RenderScene::getCamera() const {
+        return camera;
     }
 
     RenderObjectHandle<RenderTexture> RenderScene::createTexture(const ImageRGBA &image,
@@ -58,7 +67,7 @@ namespace xng {
             virtualTextureStreamer.getTileSize(),
             virtualTextureStreamer.getTileBorder(),
             wrapping,
-            runtime.getResourceHeap()));
+            runtime));
         textures.emplace(id,
                          RenderTexture(virtualTextureStreamer,
                                        textureHandle,
@@ -78,7 +87,7 @@ namespace xng {
             virtualTextureStreamer.getTileSize(),
             virtualTextureStreamer.getTileBorder(),
             wrapping,
-            runtime.getResourceHeap()));
+            runtime));
         textures.emplace(id,
                          RenderTexture(virtualTextureStreamer,
                                        textureHandle,
@@ -510,9 +519,12 @@ namespace xng {
 
     std::shared_ptr<RenderPipeline> RenderScene::createPipeline(RenderPipeline::MaterialLayout materialLayout) {
         // Here the scene will switch constructors based on platform support.
-        return std::make_shared<RenderPipelineIndirect>(runtime.getResourceHeap(),
+        return std::make_shared<RenderPipelineIndirect>(runtime,
                                                         chunkStreamer,
-                                                        std::move(materialLayout));
+                                                        meshStreamer,
+                                                        virtualTextureStreamer,
+                                                        std::move(materialLayout),
+                                                        RenderPipelineIndirect::getPrePassShader());
     }
 
     void RenderScene::incrementReference(const RenderObject::ID id) {

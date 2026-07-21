@@ -69,12 +69,12 @@ namespace xng {
         Texture(rg::TEXTURE_2D, rg::RGBA8, gRoughnessMetallicAO)
         Texture(rg::TEXTURE_2D, rg::RGBA8, gObjectIdReceiveShadows)
 
-        StorageBuffer(ShaderCamera, camera)
-        StorageBuffer(ShaderConfiguration, config)
-
         StorageBufferDynamic(ShaderPointLight, pointLights)
         StorageBufferDynamic(ShaderDirectionalLight, directionalLights)
         StorageBufferDynamic(ShaderSpotLight, spotLights)
+
+        Parameter(vec4, viewPosition)
+        Parameter(Float, gamma)
 
         vec3 position = textureSample(gPosition, fUv).xyz();
         vec3 normal = textureSample(gNormal, fUv).xyz();
@@ -91,8 +91,8 @@ namespace xng {
                          roughnessMetallicAO.y(),
                          roughnessMetallicAO.x(),
                          roughnessMetallicAO.z(),
-                         camera.viewPosition.xyz(),
-                         config.gamma);
+                         viewPosition.xyz(),
+                         gamma);
 
         vec3 reflectance;
         reflectance = vec3(0, 0, 0);
@@ -122,7 +122,7 @@ namespace xng {
                                    Float(1.0f));
         Done
 
-        If(config.ibl == Bool(false))
+        If(Bool(false))
             pass.iblIrradiance = vec3(0);
             pass.iblPrefilter = vec3(0);
             pass.iblBRDF = vec2(0);

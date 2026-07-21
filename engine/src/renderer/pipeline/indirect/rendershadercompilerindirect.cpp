@@ -27,7 +27,7 @@ using namespace xng::ShaderScript;
 
 namespace xng {
     void RenderPipelineCompilerIndirect::compileGetCameraPosition(ShaderScope &scope) {
-        FunctionScope fScope("getCameraPosition");
+        FunctionScope fScope(RenderPipelineCompilerStubs::_getCameraPositionName);
 
         ShaderObject cameraBuffer(rg::ShaderOperand::storageBuffer(cameraBufferName));
 
@@ -38,7 +38,7 @@ namespace xng {
     }
 
     void RenderPipelineCompilerIndirect::compileGetModel(ShaderScope &scope) {
-        FunctionScope fScope("getModel");
+        FunctionScope fScope(RenderPipelineCompilerStubs::_getModelName);
 
         ShaderObject drawMeshBuffer(rg::ShaderOperand::storageBuffer(drawMeshBufferName));
         ShaderObject transformBuffer(rg::ShaderOperand::storageBuffer(transformBufferName));
@@ -54,7 +54,7 @@ namespace xng {
     }
 
     void RenderPipelineCompilerIndirect::compileGetView(ShaderScope &scope) {
-        FunctionScope fScope("getView");
+        FunctionScope fScope(RenderPipelineCompilerStubs::_getViewName);
 
         ShaderObject cameraBuffer(rg::ShaderOperand::storageBuffer(cameraBufferName));
 
@@ -65,7 +65,7 @@ namespace xng {
     }
 
     void RenderPipelineCompilerIndirect::compileGetProjection(ShaderScope &scope) {
-        FunctionScope fScope("getProjection");
+        FunctionScope fScope(RenderPipelineCompilerStubs::_getProjectionName);
 
         ShaderObject cameraBuffer(rg::ShaderOperand::storageBuffer(cameraBufferName));
 
@@ -76,7 +76,7 @@ namespace xng {
     }
 
     void RenderPipelineCompilerIndirect::compileGetModelViewProjection(ShaderScope &scope) {
-        FunctionScope fScope("getModelViewProjection");
+        FunctionScope fScope(RenderPipelineCompilerStubs::_getModelViewProjectionName);
 
         ShaderObject drawMeshBuffer(rg::ShaderOperand::storageBuffer(drawMeshBufferName));
 
@@ -93,7 +93,7 @@ namespace xng {
         RenderPipelineMaterial::PropertyID prop,
         rg::ShaderPrimitiveType type
     ) {
-        FunctionScope fScope("getMaterialAttribute");
+        FunctionScope fScope(RenderPipelineCompilerStubs::_getMaterialPropertyPrefix + std::to_string(prop));
 
         ShaderObject drawMeshBuffer(rg::ShaderOperand::storageBuffer(drawMeshBufferName));
         ShaderObject materialBuffer(rg::ShaderOperand::storageBuffer(materialBufferName));
@@ -111,9 +111,9 @@ namespace xng {
     }
 
     void RenderPipelineCompilerIndirect::compileSampleMaterialTexture(ShaderScope &scope,
-                                                                    RenderPipelineMaterial::TextureID tex) {
+                                                                      RenderPipelineMaterial::TextureID tex) {
         Param<vec2> uv(parameter("uv"));
-        FunctionScope fScope("sampleMaterialTexture");
+        FunctionScope fScope(RenderPipelineCompilerStubs::_sampleMaterialTexturePrefix + std::to_string(tex));
 
         ShaderObject drawMeshBuffer(rg::ShaderOperand::storageBuffer(drawMeshBufferName));
         ShaderObject materialBuffer(rg::ShaderOperand::storageBuffer(materialBufferName));
@@ -125,7 +125,8 @@ namespace xng {
 
         StorageBufferWrapper<UInt> tileMapOffsets(rg::ShaderOperand::storageBuffer(virtualTileMapOffsetsName));
         StorageBufferWrapper<UInt> tileMap(rg::ShaderOperand::storageBuffer(virtualTileMapName));
-        StorageBufferWrapper<UInt> residencyMapOffsets(rg::ShaderOperand::storageBuffer(virtualResidencyMapOffsetsName));
+        StorageBufferWrapper<UInt>
+                residencyMapOffsets(rg::ShaderOperand::storageBuffer(virtualResidencyMapOffsetsName));
         StorageBufferWrapper<UInt> residencyMap(rg::ShaderOperand::storageBuffer(virtualResidencyMapName));
         StorageBufferWrapper<UInt> readbackBuffer(rg::ShaderOperand::storageBuffer(virtualReadbackBufferName));
 
@@ -170,9 +171,9 @@ namespace xng {
     }
 
     void RenderPipelineCompilerIndirect::compileWriteAttachment(ShaderScope &scope,
-                                                              const unsigned int index,
-                                                              const RenderPipelineShader::Attachment &
-                                                              attachment) {
+                                                                const unsigned int index,
+                                                                const RenderPipelineShader::Attachment &
+                                                                attachment) {
         Param<vec4> color(parameter("color"));
         FunctionScope fScope("sampleMaterialTexture");
 

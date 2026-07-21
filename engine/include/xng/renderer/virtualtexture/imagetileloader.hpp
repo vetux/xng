@@ -162,7 +162,7 @@ namespace xng {
                         const unsigned int tileSize,
                         const unsigned int tileBorder,
                         const WrappingMethod wrapping,
-                        rg::Heap &heap)
+                        rg::Runtime &runtime)
             : size(image.getResolution()),
               mipLevels(mipLevels),
               wrapping(wrapping) {
@@ -170,7 +170,7 @@ namespace xng {
                 || size.y > std::numeric_limits<int>::max()) {
                 throw std::runtime_error("Image resolution must fit in int");
             }
-            const auto mipImages = MipGenerator(heap).generate(image, mipLevels);
+            const auto mipImages = MipGenerator(runtime).generate(image, mipLevels);
             mips.resize(mipLevels);
             std::vector<std::shared_ptr<Task> > tasks;
             tasks.emplace_back(ThreadPool::getPool().addTask([&]() {

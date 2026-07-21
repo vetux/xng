@@ -42,7 +42,6 @@ namespace xng {
                         const rg::Shader &fragmentShader)
             : pipelineCache(pipelineCache),
               pipeline(pipelineCache.create(getPipeline(vertexShader, fragmentShader))) {
-            createUnitQuad(heap);
         }
 
         void record(rg::GraphBuilder &builder,
@@ -63,13 +62,11 @@ namespace xng {
             registry.set(RenderPassRegistry::PBR_COLOR_DEFERRED, colorTexture);
 
             builder.addPass(rg::GraphicsPassBuilder("DeferredPBRPass")
-                .attachColor(rg::Attachment(colorTexture, Vec4f(0)))
-                .attachDepthStencil(rg::Attachment(gDepth))
-                .storageRead(scene.cameraBuffer, {rg::Shader::FRAGMENT})
-                .storageRead(scene.configBuffer, {rg::Shader::FRAGMENT})
-                .storageRead(scene.pointLightBuffer, {rg::Shader::FRAGMENT})
-                .storageRead(scene.directionalLightBuffer, {rg::Shader::FRAGMENT})
-                .storageRead(scene.spotLightBuffer, {rg::Shader::FRAGMENT})
+                .textureAttachmentColor(colorTexture)
+                .textureAttachmentDepthStencil(gDepth)
+                .storageRead(scene.getPointLightBuffer(), {rg::Shader::FRAGMENT})
+                .storageRead(scene.getDirectionalLightBuffer(), {rg::Shader::FRAGMENT})
+                .storageRead(scene.getSpotLightBuffer(), {rg::Shader::FRAGMENT})
                 .textureSampledRead(gPosition, {rg::Shader::FRAGMENT})
                 .textureSampledRead(gNormal, {rg::Shader::FRAGMENT})
                 .textureSampledRead(gTangent, {rg::Shader::FRAGMENT})
@@ -86,19 +83,23 @@ namespace xng {
                         gRoughnessMetallicAO,
                         gAlbedo,
                         gObjectIdReceiveShadows,
-                        gDepth](rg::RasterContext &ctx) {
+                        gDepth](rg::RasterContext &ctx, rg::TransferContext &, rg::ComputeContext &) {
                         ctx.bindPipeline(pipeline);
 
                         ctx.setViewport({}, surface->getDimensions());
 
-                        ctx.bindVertexBuffer(unitQuad, 0, 0, (3 * sizeof(float)) + (2 * sizeof(float)));
+                        ctx.bindVertexBuffer(scene.getMeshStreamer().getVertexBuffers().at(POSITION), 0, 0,
+                                             getVertexAttributeSize(POSITION));
+                        ctx.bindVertexBuffer(scene.getMeshStreamer().getVertexBuffers().at(UV), 1, 0,
+                                             getVertexAttributeSize(UV));
 
-                        ctx.bindStorageBuffer("camera", scene.cameraBuffer, 0, 0);
-                        ctx.bindStorageBuffer("config", scene.configBuffer, 0, 0);
+                        ctx.setShaderParameter("viewPosition",
+                                               rg::ShaderPrimitive(scene.getCamera().getPosition()));
+                        ctx.setShaderParameter("gamma", rg::ShaderPrimitive(1.0f));
 
-                        ctx.bindStorageBuffer("pointLights", scene.pointLightBuffer, 0, 0);
-                        ctx.bindStorageBuffer("directionalLights", scene.directionalLightBuffer, 0, 0);
-                        ctx.bindStorageBuffer("spotLights", scene.spotLightBuffer, 0, 0);
+                        ctx.bindStorageBuffer("pointLights", scene.getPointLightBuffer(), 0, 0);
+                        ctx.bindStorageBuffer("directionalLights", scene.getDirectionalLightBuffer(), 0, 0);
+                        ctx.bindStorageBuffer("spotLights", scene.getSpotLightBuffer(), 0, 0);
 
                         ctx.bindTexture("gPosition", {
                                             rg::TextureBinding(gPosition,
@@ -131,23 +132,24 @@ namespace xng {
                                                                rg::TextureBinding::Automatic)
                                         });
 
-                        ctx.drawArray(unitQuadDrawCall);
+                        ctx.drawIndexed(scene.getUnitQuadMesh().get().getAllocation().drawCall,
+                                        scene.getUnitQuadMesh().get().getAllocation().baseVertex);
                     }));
         }
 
     private:
         static rg::RasterPipeline getPipeline(const rg::Shader &vertexShader, const rg::Shader &fragmentShader) {
             rg::RasterPipeline ret;
-            ret.enableDepthTest = false;
-            ret.depthTestWrite = false;
+            ret.configuration.enableDepthTest = false;
+            ret.configuration.depthTestWrite = false;
 
-            ret.enableBlending = false;
+            ret.configuration.enableBlending = false;
 
-            ret.enableStencilTest = false;
-            ret.enableDynamicStencilReference = false;
-            ret.stencilTestMask = 0x00;
-            ret.stencilMode = rg::RasterPipeline::StencilMode::STENCIL_EQUAL;
-            ret.stencilReference = SHADING_MODEL_PBR;
+            ret.configuration.enableStencilTest = false;
+            ret.configuration.enableDynamicStencilReference = false;
+            ret.configuration.stencilTestMask = 0x00;
+            ret.configuration.stencilMode = rg::RasterPipeline::StencilMode::STENCIL_EQUAL;
+            ret.configuration.stencilReference = SHADING_MODEL_PBR;
 
             ret.vertexFormat = rg::RasterPipeline::VertexFormat(vertexShader.inputLayout,
                                                                 {0, 0},
@@ -162,30 +164,8 @@ namespace xng {
             return ret;
         }
 
-        void createUnitQuad(rg::Heap &heap) {
-            const auto mesh = Mesh::normalizedQuad();
-            unitQuadDrawCall.offset = 0;
-            unitQuadDrawCall.count = mesh.positions.size();
-            VertexBuilder builder;
-            for (auto i = 0; i < mesh.positions.size(); i++) {
-                builder.addVec3(mesh.positions[i]);
-                builder.addVec2(mesh.uvs[i]);
-            }
-            const auto data = builder.build();
-
-            //TODO: Double buffer unit quad
-            unitQuad = heap.allocateBuffer(rg::Buffer(data.size(),
-                                                      rg::Buffer::CAPABILITY_VERTEX |
-                                                      rg::Buffer::CAPABILITY_TRANSFER_DST,
-                                                      rg::Buffer::MEMORY_CPU_TO_GPU));
-            const auto mapping = heap.map(unitQuad);
-            mapping->copyFrom(data, 0, 0, data.size());
-        }
-
         rg::PipelineCache &pipelineCache;
         rg::PipelineCache::Handle pipeline;
-        rg::HeapResource<rg::Buffer> unitQuad;
-        rg::DrawCall unitQuadDrawCall;
     };
 }
 

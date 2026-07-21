@@ -22,6 +22,8 @@
 #include "xng/renderer/renderconfiguration.hpp"
 #include "xng/layout/text/textlayout.hpp"
 #include "xng/resource/resourcehandle.hpp"
+#include "xng/math/rectangle.hpp"
+#include "xng/assets/image.hpp"
 
 namespace xng {
     /**

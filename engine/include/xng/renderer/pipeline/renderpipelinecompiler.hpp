@@ -27,27 +27,24 @@
 #include "xng/renderer/pipeline/renderpipelineshader.hpp"
 
 namespace xng {
-    class RenderPipelineCompiler {
-    public:
-        virtual ~RenderPipelineCompiler() = default;
+    namespace RenderPipelineCompilerStubs {
+        static constexpr auto _getVertexAttributePrefix = "_getVertexAttribute";
 
-        static constexpr auto getVertexAttributePrefix = "_getVertexAttribute";
+        static constexpr auto _getCameraPositionName = "_getCameraPosition";
 
-        static constexpr auto getCameraPositionName = "_getCameraPosition";
+        static constexpr auto _getModelName = "_getModel";
 
-        static constexpr auto getModelName = "_getModel";
+        static constexpr auto _getViewName = "_getView";
 
-        static constexpr auto getViewName = "_getView";
+        static constexpr auto _getProjectionName = "_getProjection";
 
-        static constexpr auto getProjectionName = "_getProjection";
+        static constexpr auto _getModelViewProjectionName = "_getModelViewProjection";
 
-        static constexpr auto getModelViewProjectionName = "_getModelViewProjection";
+        static constexpr auto _getMaterialPropertyPrefix = "_getMaterialProperty";
 
-        static constexpr auto getMaterialPropertyPrefix = "_getMaterialProperty";
+        static constexpr auto _sampleMaterialTexturePrefix = "_sampleMaterialTexture";
 
-        static constexpr auto sampleMaterialTexturePrefix = "_sampleMaterialTexture";
-
-        static constexpr auto writeAttachmentPrefix = "_writeAttachment";
+        static constexpr auto _writeAttachmentPrefix = "_writeAttachment";
 
         /**
          * Retrieve vertex attribute value. (Only valid in Vertex stage)
@@ -57,28 +54,28 @@ namespace xng {
          */
         static rg::ShaderOperand getVertexAttribute(const VertexAttribute attr) {
             return rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::call(
-                getVertexAttributePrefix + std::to_string(attr),
+                _getVertexAttributePrefix + std::to_string(attr),
                 {}));
         }
 
         static rg::ShaderOperand getCameraPosition() {
-            return rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::call(getCameraPositionName, {}));
+            return rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::call(_getCameraPositionName, {}));
         }
 
         static rg::ShaderOperand getModel() {
-            return rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::call(getModelName, {}));
+            return rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::call(_getModelName, {}));
         }
 
         static rg::ShaderOperand getView() {
-            return rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::call(getViewName, {}));
+            return rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::call(_getViewName, {}));
         }
 
         static rg::ShaderOperand getProjection() {
-            return rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::call(getProjectionName, {}));
+            return rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::call(_getProjectionName, {}));
         }
 
         static rg::ShaderOperand getModelViewProjection() {
-            return rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::call(getModelViewProjectionName, {}));
+            return rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::call(_getModelViewProjectionName, {}));
         }
 
         /**
@@ -89,7 +86,7 @@ namespace xng {
          */
         static rg::ShaderOperand getMaterialProperty(const RenderPipelineMaterial::PropertyID attr) {
             return rg::ShaderOperand::instruction(
-                rg::ShaderInstructionFactory::call(getMaterialPropertyPrefix + std::to_string(attr), {}));
+                rg::ShaderInstructionFactory::call(_getMaterialPropertyPrefix + std::to_string(attr), {}));
         }
 
         /**
@@ -102,7 +99,7 @@ namespace xng {
         static rg::ShaderOperand sampleMaterialTexture(const RenderPipelineMaterial::TextureID tex,
                                                        const rg::ShaderOperand &uv) {
             return rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::call(
-                sampleMaterialTexturePrefix + std::to_string(tex),
+                _sampleMaterialTexturePrefix + std::to_string(tex),
                 {uv}));
         }
 
@@ -116,9 +113,14 @@ namespace xng {
          * @return
          */
         static rg::ShaderInstruction writeAttachment(const unsigned int index, const rg::ShaderOperand &color) {
-            return rg::ShaderInstructionFactory::call(writeAttachmentPrefix + std::to_string(index),
+            return rg::ShaderInstructionFactory::call(_writeAttachmentPrefix + std::to_string(index),
                                                       {color});
         }
+    }
+
+    class RenderPipelineCompiler {
+    public:
+        virtual ~RenderPipelineCompiler() = default;
 
         /**
          * Inject the pipeline dependent required bindings, parameters, functions and vertex layout into the passed shaders.

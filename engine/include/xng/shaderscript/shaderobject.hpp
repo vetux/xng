@@ -529,6 +529,10 @@ namespace xng::ShaderScript {
             return ShaderObject(rg::ShaderInstructionFactory::arraySubscript(operand, index.operand));
         }
 
+        operator rg::ShaderOperand() {
+            return operand;
+        }
+
     protected:
         ShaderObject swizzle_vec2(const rg::ShaderPrimitiveType::VectorComponent &x,
                                   const rg::ShaderPrimitiveType::VectorComponent &y) {

@@ -77,7 +77,9 @@ namespace xng {
                     size_t tileBorder,
                     float maxAnisotropy);
 
-        void setCamera(const Camera &camera);
+        void setCamera(const Camera &value);
+
+        const Camera &getCamera() const;
 
         RenderObjectHandle<RenderTexture> createTexture(const ImageRGBA &image,
                                                         WrappingMethod wrapping,
@@ -405,6 +407,8 @@ namespace xng {
         bool reuploadPointLights = false;
         bool reuploadDirectionalLights = false;
         bool reuploadSpotLights = false;
+
+        Camera camera;
 
         // TODO: Contiguous objects storage with separate ID mapping
         std::unordered_map<RenderObject::ID, RenderTexture> textures;
