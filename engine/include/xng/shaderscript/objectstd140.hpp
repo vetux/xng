@@ -32,6 +32,126 @@ namespace xng {
             : layout(layout), data(layout.getTotalSize()) {
         }
 
+        void set(const std::string &name, const rg::ShaderPrimitive &primitive) {
+            const auto primitiveType = primitive.getType();
+            switch (primitiveType.type) {
+                case rg::ShaderPrimitiveType::SCALAR:
+                    switch (primitiveType.component) {
+                        case rg::ShaderPrimitiveType::BOOLEAN:
+                            set<bool>(name, std::get<bool>(primitive.value));
+                            break;
+                        case rg::ShaderPrimitiveType::UNSIGNED_INT:
+                            set<unsigned int>(name, std::get<unsigned int>(primitive.value));
+                            break;
+                        case rg::ShaderPrimitiveType::SIGNED_INT:
+                            set<int>(name, std::get<int>(primitive.value));
+                            break;
+                        case rg::ShaderPrimitiveType::FLOAT:
+                            set<float>(name, std::get<float>(primitive.value));
+                            break;
+                        case rg::ShaderPrimitiveType::DOUBLE:
+                            set<double>(name, std::get<double>(primitive.value));
+                            break;
+                    }
+                    break;
+                case rg::ShaderPrimitiveType::VECTOR2:
+                    switch (primitiveType.component) {
+                        case rg::ShaderPrimitiveType::BOOLEAN:
+                            set<Vec2b>(name, std::get<Vec2b>(primitive.value));
+                            break;
+                        case rg::ShaderPrimitiveType::UNSIGNED_INT:
+                            set<Vec2u>(name, std::get<Vec2u>(primitive.value));
+                            break;
+                        case rg::ShaderPrimitiveType::SIGNED_INT:
+                            set<Vec2i>(name, std::get<Vec2i>(primitive.value));
+                            break;
+                        case rg::ShaderPrimitiveType::FLOAT:
+                            set<Vec2f>(name, std::get<Vec2f>(primitive.value));
+                            break;
+                        case rg::ShaderPrimitiveType::DOUBLE:
+                            set<Vec2d>(name, std::get<Vec2d>(primitive.value));
+                            break;
+                    }
+                    break;
+                case rg::ShaderPrimitiveType::VECTOR3:
+                    switch (primitiveType.component) {
+                        case rg::ShaderPrimitiveType::BOOLEAN:
+                            set<Vec3b>(name, std::get<Vec3b>(primitive.value));
+                            break;
+                        case rg::ShaderPrimitiveType::UNSIGNED_INT:
+                            set<Vec3u>(name, std::get<Vec3u>(primitive.value));
+                            break;
+                        case rg::ShaderPrimitiveType::SIGNED_INT:
+                            set<Vec3i>(name, std::get<Vec3i>(primitive.value));
+                            break;
+                        case rg::ShaderPrimitiveType::FLOAT:
+                            set<Vec3f>(name, std::get<Vec3f>(primitive.value));
+                            break;
+                        case rg::ShaderPrimitiveType::DOUBLE:
+                            set<Vec3d>(name, std::get<Vec3d>(primitive.value));
+                            break;
+                    }
+                    break;
+                case rg::ShaderPrimitiveType::VECTOR4:
+                    switch (primitiveType.component) {
+                        case rg::ShaderPrimitiveType::BOOLEAN:
+                            set<Vec4b>(name, std::get<Vec4b>(primitive.value));
+                            break;
+                        case rg::ShaderPrimitiveType::UNSIGNED_INT:
+                            set<Vec4u>(name, std::get<Vec4u>(primitive.value));
+                            break;
+                        case rg::ShaderPrimitiveType::SIGNED_INT:
+                            set<Vec4i>(name, std::get<Vec4i>(primitive.value));
+                            break;
+                        case rg::ShaderPrimitiveType::FLOAT:
+                            set<Vec4f>(name, std::get<Vec4f>(primitive.value));
+                            break;
+                        case rg::ShaderPrimitiveType::DOUBLE:
+                            set<Vec4d>(name, std::get<Vec4d>(primitive.value));
+                            break;
+                    }
+                    break;
+                case rg::ShaderPrimitiveType::MAT2:
+                    switch (primitiveType.component) {
+                        case rg::ShaderPrimitiveType::FLOAT:
+                            set<Mat2f>(name, std::get<Mat2f>(primitive.value));
+                            break;
+                        case rg::ShaderPrimitiveType::DOUBLE:
+                            set<Mat2d>(name, std::get<Mat2d>(primitive.value));
+                            break;
+                        default:
+                            throw std::runtime_error("Unsupported matrix type");
+                    }
+                    break;
+                case rg::ShaderPrimitiveType::MAT3:
+                    switch (primitiveType.component) {
+                        case rg::ShaderPrimitiveType::FLOAT:
+                            set<Mat3f>(name, std::get<Mat3f>(primitive.value));
+                            break;
+                        case rg::ShaderPrimitiveType::DOUBLE:
+                            set<Mat3d>(name, std::get<Mat3d>(primitive.value));
+                            break;
+                        default:
+                            throw std::runtime_error("Unsupported matrix type");
+                    }
+                    break;
+                case rg::ShaderPrimitiveType::MAT4:
+                    switch (primitiveType.component) {
+                        case rg::ShaderPrimitiveType::FLOAT:
+                            set<Mat4f>(name, std::get<Mat4f>(primitive.value));
+                            break;
+                        case rg::ShaderPrimitiveType::DOUBLE:
+                            set<Mat4d>(name, std::get<Mat4d>(primitive.value));
+                            break;
+                        default:
+                            throw std::runtime_error("Unsupported matrix type");
+                    }
+                    break;
+                default:
+                    throw std::runtime_error("Unsupported primitive type");
+            }
+        }
+
         template<typename T>
         void set(const std::string &name, const T &value) {
             assert(std::holds_alternative<rg::ShaderPrimitiveType>(layout.getStructType().get(name).type.value));
@@ -47,6 +167,8 @@ namespace xng {
 
             std::memcpy(data.data() + offset, &valueAligned, sizeof(Std140<T>));
         }
+
+        const std::vector<uint8_t> &getData() const { return data; }
 
     private:
         LayoutStd140 layout;
