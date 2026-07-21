@@ -141,6 +141,7 @@ namespace xng {
          * Execute the pipeline.
          *
          * @param graph The graph to record the draw invocations into.
+         * @param passName The name for the execution pass.
          * @param shader The shader to use for drawing.
          * @param viewport The viewport to set.
          * @param colorAttachments The Attachments to bind. (Type / Format must match the format in the shader)
@@ -152,6 +153,7 @@ namespace xng {
          * @param textureArrays Optional user-supplied texture bindings.
          */
         virtual void execute(rg::GraphBuilder &graph,
+                             const std::string &passName,
                              const RenderPipelineShader &shader,
                              const Recti &viewport,
                              const std::vector<Attachment> &colorAttachments,

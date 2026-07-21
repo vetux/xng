@@ -249,7 +249,7 @@ namespace xng {
         };
 
         struct DrawCall {
-            int sortPriority;
+            int sortPriority{};
 
             std::shared_ptr<RenderPipelineTransform> transform;
             std::shared_ptr<RenderPipelineMaterial> material;
