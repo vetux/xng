@@ -322,6 +322,7 @@ namespace xng {
         // TODO: Shared indirect buffers
         // TODO: Shared draw call / mesh buffers
         // TODO: Batch based fixed size indirect buffers
+        // TODO: Automatic Instancing
         struct DrawList {
             std::unordered_set<DrawID> drawCalls;
 

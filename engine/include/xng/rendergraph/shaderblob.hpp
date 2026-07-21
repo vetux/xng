@@ -28,7 +28,7 @@ namespace xng {
      * To allow offline compilation and decouple the shader IR from the hardware interface,
      * the shader IR will be compiled to implementation-dependent blobs.
      *
-     * This will cleanup the runtime overhead of the shader IR and also allows support for graphics platforms
+     * This will cleanup the runtime overhead of the shader IR and also allows for support of graphics platforms
      * where shader compilation must happen offline (Console Devkits) and eliminates the need to ship shader IR
      * to end users (IP Protection, Shipping size).
      *

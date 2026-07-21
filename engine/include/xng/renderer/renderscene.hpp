@@ -159,9 +159,6 @@ namespace xng {
         /**
          * Create a line paint object.
          *
-         * The canvas owns the paint objects.
-         * All paints referencing a canvas must be destroyed before destroying the canvas.
-         *
          * @param canvas
          * @param start
          * @param end
@@ -247,7 +244,6 @@ namespace xng {
 
         void prepare(rg::GraphBuilder &graph);
 
-        // Const interface naturally defines the intent that passes do not modify the scene.
         const RenderPipeline &getPbrDeferredPipeline() const {
             return *pbrDeferredPipeline;
         }
