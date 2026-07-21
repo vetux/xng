@@ -763,11 +763,11 @@ namespace xng::ShaderScript {
         }
 
         T operator[](const Int &index) {
-            return buffer[index];
+            return T(buffer[index]);
         }
 
         T operator[](const int index) {
-            return buffer[Int(index)];
+            return T(buffer[Int(index)]);
         }
 
         ShaderObject length() {
