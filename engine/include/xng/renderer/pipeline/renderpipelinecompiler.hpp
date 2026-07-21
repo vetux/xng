@@ -138,8 +138,8 @@ namespace xng {
                                                               const std::vector<RenderPipelineShader::Attachment> &
                                                               attachments,
                                                               std::optional<rg::ColorFormat> depthAttachmentFormat,
-                                                              std::optional<rg::ColorFormat> stencilAttachmentFormat) =
-        0;
+                                                              std::optional<rg::ColorFormat> stencilAttachmentFormat)
+        const =0;
     };
 }
 

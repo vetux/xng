@@ -64,7 +64,7 @@ namespace xng {
             return layout;
         }
 
-        RenderPipelineCompiler &getCompiler() override {
+        const RenderPipelineCompiler &getCompiler() const override {
             return compiler;
         }
 

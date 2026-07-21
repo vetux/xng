@@ -93,7 +93,7 @@ namespace xng {
 
         static rg::Shader compileFragmentShader();
 
-        explicit ConstructionPass(RenderPipelineCompiler &compiler)
+        explicit ConstructionPass(const RenderPipelineCompiler &compiler)
             : ConstructionPass(compiler,
                                compileVertexShader(),
                                compileFragmentShader()) {
@@ -101,7 +101,7 @@ namespace xng {
 
         // This is now awkward to compile the shader for the render pipeline.
         // With the offline shader compile phase, I will have to find a clean solution here.
-        ConstructionPass(RenderPipelineCompiler &compiler,
+        ConstructionPass(const RenderPipelineCompiler &compiler,
                          const rg::Shader &vertexShader,
                          const rg::Shader &fragmentShader) {
             const auto colorFormats = GBuffer::getColorFormats();

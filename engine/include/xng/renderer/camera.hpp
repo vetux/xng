@@ -79,6 +79,14 @@ namespace xng {
             return viewProjection;
         }
 
+        Camera() = default;
+
+        explicit Camera(Transform _transform, const Mat4f &projection) : transform(std::move(_transform)),
+                                                                   view(getView(transform)),
+                                                                   projection(projection),
+                                                                   viewProjection(projection * view) {
+        }
+
     private:
         Transform transform;
         Mat4f view;

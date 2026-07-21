@@ -33,6 +33,8 @@ namespace xng {
 
     class RenderPointLight final : public RenderObject {
     public:
+        RenderPointLight() = default;
+
         explicit RenderPointLight(std::function<void()> onChangedCallback)
             : onChangedCallback(std::move(onChangedCallback)) {
         }

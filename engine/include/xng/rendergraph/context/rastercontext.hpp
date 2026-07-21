@@ -45,13 +45,13 @@ namespace xng::rg {
          * @param depthStencilAttachment
          */
         virtual void beginRenderPass(const std::vector<Attachment> &colorAttachments,
-                                     const Attachment &depthStencilAttachment);
+                                     const Attachment &depthStencilAttachment) = 0;
 
         virtual void beginRenderPass(const std::vector<Attachment> &colorAttachments,
                                      const std::optional<Attachment> &depthAttachment,
-                                     const std::optional<Attachment> &stencilAttachment);
+                                     const std::optional<Attachment> &stencilAttachment) = 0;
 
-        virtual void endRenderPass();
+        virtual void endRenderPass() = 0;
 
         /**
          * Bind a pipeline.

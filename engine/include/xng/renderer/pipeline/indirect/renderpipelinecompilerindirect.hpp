@@ -214,8 +214,8 @@ namespace xng {
         static constexpr auto virtualMaxAnisotropyName = "_virtualMaxAnisotropy";
 
         explicit RenderPipelineCompilerIndirect(rg::PipelineCache &cache,
-                                              const RenderPipeline::MaterialLayout &attributes,
-                                              const LayoutStd140 &layout)
+                                                const RenderPipeline::MaterialLayout &attributes,
+                                                const LayoutStd140 &layout)
             : cache(cache), materialLayout(attributes), layout(layout) {
         }
 
@@ -226,7 +226,8 @@ namespace xng {
                                                       const std::vector<RenderPipelineShader::Attachment> &
                                                       colorAttachments,
                                                       std::optional<rg::ColorFormat> depthAttachmentFormat,
-                                                      std::optional<rg::ColorFormat> stencilAttachmentFormat) override {
+                                                      std::optional<rg::ColorFormat> stencilAttachmentFormat)
+        const override {
             rg::RasterPipeline pipeline;
             pipeline.shaders = shaders;
             pipeline.configuration = pipelineConfig;

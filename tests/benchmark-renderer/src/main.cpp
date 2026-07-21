@@ -22,7 +22,8 @@
 #include "xng/adapters/opengl/opengl.hpp"
 #include "xng/adapters/freetype/freetype.hpp"
 #include "xng/adapters/assimp/assimp.hpp"
-#include "xng/renderer/objects/paint/renderpainttext.hpp"
+#include "xng/renderer/renderfont.hpp"
+#include "xng/renderer/rendertext.hpp"
 #include "xng/renderer/passes/canvaspass.hpp"
 
 using namespace xng;
@@ -69,7 +70,7 @@ struct Resources {
         return node.transform;
     }
 
-    Resources(rg::Heap &heap) {
+    Resources(rg::Runtime &runtime) {
         const auto scene = ResourceHandle<AssetScene>(Uri("file://meshes/cornell.fbx:RootNode")).get();
         bool found = false;
         boxTransform = getTransform("Box", scene.root, found);
@@ -120,28 +121,28 @@ struct Resources {
         constexpr auto tileSize = 256;
         constexpr auto tileBorder = 9;
 
-        boxAlbedoLoader = getLoader(boxAlbedoImage, heap, tileSize, tileBorder);
+        boxAlbedoLoader = getLoader(boxAlbedoImage, runtime, tileSize, tileBorder);
 
-        brickAlbedoLoader = getLoader(brickAlbedo, heap, tileSize, tileBorder);
-        brickMetallicLoader = getLoader(brickMetallic, heap, tileSize, tileBorder);
-        brickRoughnessLoader = getLoader(brickRoughness, heap, tileSize, tileBorder);
-        brickAoLoader = getLoader(brickAo, heap, tileSize, tileBorder);
-        brickNormalLoader = getLoader(brickNormal, heap, tileSize, tileBorder);
+        brickAlbedoLoader = getLoader(brickAlbedo, runtime, tileSize, tileBorder);
+        brickMetallicLoader = getLoader(brickMetallic, runtime, tileSize, tileBorder);
+        brickRoughnessLoader = getLoader(brickRoughness, runtime, tileSize, tileBorder);
+        brickAoLoader = getLoader(brickAo, runtime, tileSize, tileBorder);
+        brickNormalLoader = getLoader(brickNormal, runtime, tileSize, tileBorder);
 
-        rustedIronAlbedoLoader = getLoader(rustedIronAlbedo, heap, tileSize, tileBorder);
-        rustedIronMetallicLoader = getLoader(rustedIronMetallic, heap, tileSize, tileBorder);
-        rustedIronRoughnessLoader = getLoader(rustedIronRoughness, heap, tileSize, tileBorder);
+        rustedIronAlbedoLoader = getLoader(rustedIronAlbedo, runtime, tileSize, tileBorder);
+        rustedIronMetallicLoader = getLoader(rustedIronMetallic, runtime, tileSize, tileBorder);
+        rustedIronRoughnessLoader = getLoader(rustedIronRoughness, runtime, tileSize, tileBorder);
 
-        goldAlbedoLoader = getLoader(goldAlbedo, heap, tileSize, tileBorder);
-        goldMetallicLoader = getLoader(goldMetallic, heap, tileSize, tileBorder);
-        goldRoughnessLoader = getLoader(goldRoughness, heap, tileSize, tileBorder);
+        goldAlbedoLoader = getLoader(goldAlbedo, runtime, tileSize, tileBorder);
+        goldMetallicLoader = getLoader(goldMetallic, runtime, tileSize, tileBorder);
+        goldRoughnessLoader = getLoader(goldRoughness, runtime, tileSize, tileBorder);
 
-        sphereNormalLoader = getLoader(sphereNormal, heap, tileSize, tileBorder);
+        sphereNormalLoader = getLoader(sphereNormal, runtime, tileSize, tileBorder);
     }
 
 private:
     std::shared_ptr<ImageTileLoader> getLoader(const ResourceHandle<ImageRGBA> &image,
-                                               rg::Heap &heap,
+                                               rg::Runtime &runtime,
                                                const unsigned int tileSize,
                                                const unsigned int tileBorder) {
         return std::make_shared<ImageTileLoader>(image.get(),
@@ -150,155 +151,106 @@ private:
                                                  tileSize,
                                                  tileBorder,
                                                  WRAP_CLAMP_TO_EDGE,
-                                                 heap);
+                                                 runtime);
     }
 };
 
-void createCornellInstance(RenderAllocator &allocator, Resources &res, RenderDrawList &drawList, Vec3f offset) {
-    auto boxAlbedo = allocator.createTexture(res.boxAlbedoLoader);
+void createCornellInstance(RenderScene &scene,
+                           Resources &res,
+                           Vec3f offset,
+                           std::vector<RenderObjectHandle<RenderModel> > &models,
+                           std::vector<RenderObjectHandle<RenderPointLight> > &lights) {
+    auto boxAlbedo = scene.createTexture(res.boxAlbedoLoader);
 
-    auto boxMaterial = allocator.createMaterial({},
-                                                1,
-                                                1,
-                                                1,
-                                                1,
-                                                false,
-                                                boxAlbedo,
-                                                {},
-                                                {},
-                                                {},
-                                                {},
-                                                {},
-                                                {},
-                                                {},
-                                                {},
-                                                {});
+    PBRMaterial boxMaterialDef;
+    boxMaterialDef.setAlbedo(boxAlbedo, {});
 
-    auto boxMesh = allocator.createMesh(res.boxMesh.get(), {});
-
-    auto boxModel = allocator.createModel({boxMesh},
-                                          boxMaterial,
-                                          RENDER_PATH_DEFERRED,
-                                          SHADING_MODEL_PBR,
-                                          true,
-                                          true);
+    auto boxMaterial = scene.createMaterial(PBRMaterial({}), RENDER_PATH_DEFERRED);
+    auto boxMesh = scene.createMesh(res.boxMesh.get(), {});
+    auto boxModel = scene.createModel(boxMaterial,
+                                      {boxMesh},
+                                      true,
+                                      0);
 
     boxModel->setTransform(res.boxTransform.getWorldTransform(Transform(offset, Vec3f(0), Vec3f(1))));
 
-    drawList.models.emplace_back(boxModel);
+    models.emplace_back(boxModel);
 
-    auto brickAlbedo = allocator.createTexture(res.brickAlbedoLoader);
-    auto brickMetallic = allocator.createTexture(res.brickMetallicLoader);
-    auto brickRoughness = allocator.createTexture(res.brickRoughnessLoader);
-    auto brickAo = allocator.createTexture(res.brickAoLoader);
-    auto brickNormal = allocator.createTexture(res.brickNormalLoader);
+    auto brickAlbedo = scene.createTexture(res.brickAlbedoLoader);
+    auto brickMetallic = scene.createTexture(res.brickMetallicLoader);
+    auto brickRoughness = scene.createTexture(res.brickRoughnessLoader);
+    auto brickAo = scene.createTexture(res.brickAoLoader);
+    auto brickNormal = scene.createTexture(res.brickNormalLoader);
 
     SamplingProperties brickProps(FILTER_BICUBIC, FILTER_BICUBIC, rg::LINEAR, WRAP_REPEAT);
 
-    auto brickMaterial = allocator.createMaterial({},
-                                                  1,
-                                                  1,
-                                                  1,
-                                                  1,
-                                                  true,
-                                                  brickAlbedo,
-                                                  brickProps,
-                                                  brickMetallic,
-                                                  brickProps,
-                                                  brickRoughness,
-                                                  brickProps,
-                                                  brickAo,
-                                                  brickProps,
-                                                  brickNormal,
-                                                  brickProps);
+    PBRMaterial brickMaterialDef;
+    brickMaterialDef.setAlbedo(brickAlbedo, brickProps);
+    brickMaterialDef.setMetallic(brickMetallic, brickProps);
+    brickMaterialDef.setRoughness(brickRoughness, brickProps);
+    brickMaterialDef.setAmbientOcclusion(brickAo, brickProps);
+    brickMaterialDef.setNormal(brickNormal, brickProps);
 
-    auto brickMesh = allocator.createMesh(res.cubeMesh.get(), {});
-
-    auto brickModel = allocator.createModel({brickMesh},
-                                            brickMaterial,
-                                            RENDER_PATH_DEFERRED,
-                                            SHADING_MODEL_PBR,
-                                            true,
-                                            true);
+    auto brickMaterial = scene.createMaterial(brickMaterialDef, RENDER_PATH_DEFERRED);
+    auto brickMesh = scene.createMesh(res.cubeMesh.get(), {});
+    auto brickModel = scene.createModel(brickMaterial,
+                                        {brickMesh},
+                                        true,
+                                        0);
 
     brickModel->setTransform(res.cubeTransform.getWorldTransform(
             Transform(offset, Quaternion(Vec3f(0, 0, 0)), Vec3f(1)))
     );
 
-    drawList.models.emplace_back(brickModel);
+    models.emplace_back(brickModel);
 
-    auto sphereMesh = allocator.createMesh(Mesh::computeSmoothNormals(res.sphereMesh1.get()), {});
-    auto sphereMesh2 = allocator.createMesh(res.sphereMesh2.get(), {});
+    auto sphereMesh = scene.createMesh(Mesh::computeSmoothNormals(res.sphereMesh1.get()), {});
+    auto sphereMesh2 = scene.createMesh(res.sphereMesh2.get(), {});
 
-    auto sphereNormal = allocator.createTexture(res.sphereNormalLoader);
+    auto sphereNormal = scene.createTexture(res.sphereNormalLoader);
 
-    auto rustedIronAlbedo = allocator.createTexture(res.rustedIronAlbedoLoader);
-    auto rustedIronMetallic = allocator.createTexture(res.rustedIronMetallicLoader);
-    auto rustedIronRoughness = allocator.createTexture(res.rustedIronRoughnessLoader);
+    auto rustedIronAlbedo = scene.createTexture(res.rustedIronAlbedoLoader);
+    auto rustedIronMetallic = scene.createTexture(res.rustedIronMetallicLoader);
+    auto rustedIronRoughness = scene.createTexture(res.rustedIronRoughnessLoader);
 
-    auto rustedIronSphereMaterial = allocator.createMaterial({},
-                                                             0,
-                                                             0,
-                                                             0,
-                                                             1,
-                                                             true,
-                                                             rustedIronAlbedo,
-                                                             {},
-                                                             rustedIronMetallic,
-                                                             {},
-                                                             rustedIronRoughness,
-                                                             {},
-                                                             {},
-                                                             {},
-                                                             {},
-                                                             {});
+    PBRMaterial rustedIronMaterialDef;
+    rustedIronMaterialDef.setAlbedo(rustedIronAlbedo, {});
+    rustedIronMaterialDef.setMetallic(rustedIronMetallic, {});
+    rustedIronMaterialDef.setRoughness(rustedIronRoughness, {});
 
-    auto rustedIronSphereModel = allocator.createModel({sphereMesh},
-                                                       rustedIronSphereMaterial,
-                                                       RENDER_PATH_DEFERRED,
-                                                       SHADING_MODEL_PBR,
-                                                       true,
-                                                       true);
+    auto rustedIronSphereMaterial = scene.createMaterial(rustedIronMaterialDef, RENDER_PATH_DEFERRED);
+    auto rustedIronSphereModel = scene.createModel(rustedIronSphereMaterial,
+                                                   {sphereMesh},
+                                                   true,
+                                                   0);
 
     rustedIronSphereModel->setTransform(res.sphereTransform1.getWorldTransform(
         Transform(offset, Quaternion(Vec3f(0, 0, 0)), Vec3f(1))
     ));
 
-    drawList.models.emplace_back(rustedIronSphereModel);
+    models.emplace_back(rustedIronSphereModel);
 
-    auto goldAlbedo = allocator.createTexture(res.goldAlbedoLoader);
-    auto goldMetallic = allocator.createTexture(res.goldMetallicLoader);
-    auto goldRoughness = allocator.createTexture(res.goldRoughnessLoader);
+    auto goldAlbedo = scene.createTexture(res.goldAlbedoLoader);
+    auto goldMetallic = scene.createTexture(res.goldMetallicLoader);
+    auto goldRoughness = scene.createTexture(res.goldRoughnessLoader);
 
-    auto goldSphereMaterial = allocator.createMaterial({},
-                                                       1,
-                                                       1,
-                                                       1,
-                                                       1,
-                                                       true,
-                                                       goldAlbedo,
-                                                       {},
-                                                       goldMetallic,
-                                                       {},
-                                                       goldRoughness,
-                                                       {},
-                                                       {},
-                                                       {},
-                                                       sphereNormal,
-                                                       {});
+    PBRMaterial goldMaterialDef;
+    goldMaterialDef.setAlbedo(goldAlbedo, {});
+    goldMaterialDef.setMetallic(goldMetallic, {});
+    goldMaterialDef.setRoughness(goldRoughness, {});
+    goldMaterialDef.setNormal(sphereNormal, {});
 
-    auto goldSphereModel = allocator.createModel({sphereMesh2},
-                                                 goldSphereMaterial,
-                                                 RENDER_PATH_DEFERRED,
-                                                 SHADING_MODEL_PBR,
-                                                 true,
-                                                 true);
+    auto goldSphereMaterial = scene.createMaterial(goldMaterialDef, RENDER_PATH_DEFERRED);
+    auto goldSphereModel = scene.createModel(goldSphereMaterial,
+                                             {sphereMesh},
+                                             true,
+                                             0);
 
     goldSphereModel->setTransform(res.sphereTransform2.getWorldTransform(Transform(offset, Vec3f(0), Vec3f(1))));
 
-    drawList.models.emplace_back(goldSphereModel);
+    models.emplace_back(goldSphereModel);
 
-    auto pointLight = allocator.createPointLight();
+    auto pointLight = scene.createPointLight();
     pointLight->set(offset + Vec3f(0, 0.4, 0),
                     ColorRGB(255),
                     2,
@@ -306,21 +258,23 @@ void createCornellInstance(RenderAllocator &allocator, Resources &res, RenderDra
                     0.1,
                     1000.0f);
 
-    drawList.pointLights.emplace_back(pointLight);
+    lights.emplace_back(pointLight);
 }
 
-RenderDrawList createDrawList(RenderAllocator &allocator, rg::Heap &heap) {
+void createDrawList(RenderScene &scene,
+                    rg::Runtime &runtime,
+                    std::vector<RenderObjectHandle<RenderModel> > &models,
+                    std::vector<RenderObjectHandle<RenderPointLight> > &lights) {
     std::cout << "Generating Mips..." << std::endl;
-    Resources res(heap);
+    Resources res(runtime);
 
     std::cout << "Generating Draw List..." << std::endl;
-    RenderDrawList ret;
-
     // scene.hdri = ResourceHandle<ImageRGBF>(Uri("file://hdri/church_stairway_4k.hdr"));
-    ret.camera.setTransform(Transform(Vec3f(0, 0, -2),
-                                      Quaternion(Vec3f(0, 0, 0)),
-                                      Vec3f(1)));
-    ret.camera.setProjection(Camera::getPerspectiveProjection(90, 4 / 3, 0.001f, 1000.0f));
+
+    scene.setCamera(Camera(Transform(Vec3f(0, 0, -2),
+                                     Quaternion(Vec3f(0, 0, 0)),
+                                     Vec3f(1)),
+                           Camera::getPerspectiveProjection(90, 4 / 3, 0.001f, 1000.0f)));
     /*
         SpotLightObject spotLight;
         spotLight.light.castShadows = true;
@@ -349,12 +303,13 @@ RenderDrawList createDrawList(RenderAllocator &allocator, rg::Heap &heap) {
     const float spacing = 1.5f;
     for (int x = 0; x < columns; x++) {
         for (int y = 0; y < rows; y++) {
-            createCornellInstance(allocator, res, ret, Vec3f(x * spacing - (columns * spacing / 2),
-                                                             y * spacing - (rows * spacing / 2),
-                                                             0));
+            createCornellInstance(scene, res, Vec3f(x * spacing - (columns * spacing / 2),
+                                                    y * spacing - (rows * spacing / 2),
+                                                    0),
+                                  models,
+                                  lights);
         }
     }
-    return ret;
 }
 
 void cameraController(Transform &cameraTransform, Window &window, double deltaTime) {
@@ -460,7 +415,7 @@ int main(int argc, char *argv[]) {
     attributes.visible = true;
     attributes.doubleBuffer = false;
 
-    const std::shared_ptr window = std::move(glfw.createWindow("RenderGraph Test",
+    const std::shared_ptr window = std::move(glfw.createWindow("Renderer Benchmark",
                                                                {1000, 900},
                                                                attributes));
     window->show();
@@ -476,8 +431,10 @@ int main(int argc, char *argv[]) {
 
     auto ren = Renderer(*runtime);
 
+    auto scene = ren.createScene();
+
     ren.setPasses({
-        std::make_shared<ConstructionPass>(runtime->getPipelineCache()),
+        std::make_shared<ConstructionPass>(scene->getPbrDeferredPipeline().getCompiler()),
         std::make_shared<DeferredPBRPass>(runtime->getResourceHeap(), runtime->getPipelineCache()),
         std::make_shared<CanvasPass>(runtime->getResourceHeap(), runtime->getPipelineCache()),
         std::make_shared<CompositingPass>(runtime->getPipelineCache())
@@ -487,7 +444,11 @@ int main(int argc, char *argv[]) {
     ResourceRegistry::getDefaultRegistry().awaitAll();
 
     std::cout << "Allocating Objects..." << std::endl;
-    auto drawList = createDrawList(ren.getAllocator(), runtime->getResourceHeap());
+
+    std::vector<RenderObjectHandle<RenderModel> > models;
+    std::vector<RenderObjectHandle<RenderPointLight> > lights;
+
+    createDrawList(*scene, *runtime, models, lights);
 
     std::cout << "Ready" << std::endl;
 
@@ -500,14 +461,13 @@ int main(int argc, char *argv[]) {
     std::vector<std::unique_ptr<FontRenderer> > fonts;
     fonts.emplace_back(freeType->createFontRenderer(font.get().data));
 
-    const auto fontObject = ren.getAllocator().createFont(std::move(fonts),
-                                                          Vec2i(0, 16));
+    const auto fontObject = std::make_shared<RenderFont>(scene,
+                                                         std::move(fonts),
+                                                         Vec2i(0, 16));
 
-    const auto canvas = ren.getAllocator().createCanvas();
+    auto canvas = scene->createCanvas();
 
-    drawList.canvases.emplace_back(canvas);
-
-    RenderObjectHandle<RenderPaintText> textObject;
+    RenderText textObject(*scene, canvas, fontObject, {}, {}, {}, {});
 
     RendererStatistics stats;
     while (!window->shouldClose()) {
@@ -524,33 +484,34 @@ int main(int argc, char *argv[]) {
 
             std::wstring txt = std::to_wstring(frameLimiter.getFramerate())
                                + L" FPS";
-            if (ren.getStatistics().streamingTiles > 0)
-                txt += L"\nStreaming "
-                        + std::to_wstring(ren.getStatistics().streamingTiles)
-                        + L" tiles";
+            /* if (ren.getStatistics().streamingTiles > 0)
+                 txt += L"\nStreaming "
+                         + std::to_wstring(ren.getStatistics().streamingTiles)
+                         + L" tiles";
 
-            SamplingProperties props;
-            props.minFilter = FILTER_NEAREST;
-            props.magFilter = FILTER_NEAREST;
-            textObject = ren.getAllocator().createPaintText(fontObject,
-                                                            std::u32string(txt.begin(), txt.end()),
-                                                            {},
-                                                            ColorRGBA::lime(),
-                                                            props);
+             SamplingProperties props;
+             props.minFilter = FILTER_NEAREST;
+             props.magFilter = FILTER_NEAREST;
+             textObject = ren.getAllocator().createPaintText(fontObject,
+                                                             std::u32string(txt.begin(), txt.end()),
+                                                             {},
+                                                             ColorRGBA::lime(),
+                                                             props);*/
 
-            canvas->setPaints({textObject});
+            // canvas->setPaints({textObject});
         }
 
         auto fbSize = surface->getDimensions();
 
-        drawList.camera.setProjection(Camera::getPerspectiveProjection(90,
-                                                                       static_cast<float>(fbSize.x) / static_cast<float>
-                                                                       (fbSize.y),
-                                                                       0.001f,
-                                                                       1000.0f));
-        Transform cameraTransform = drawList.camera.getTransform();
+        Transform cameraTransform = scene->getCamera().getTransform();
         cameraController(cameraTransform, *window, frameLimiter.getDeltaTimeSeconds());
-        drawList.camera.setTransform(cameraTransform);
+        scene->setCamera(Camera(cameraTransform,
+                                Camera::getPerspectiveProjection(90,
+                                                                 static_cast<float>(fbSize.x) / static_cast<float>
+                                                                 (fbSize.y),
+                                                                 0.001f,
+                                                                 1000.0f)));
+
         /*
         lightController(scene.spotLights.at(0).transform, *window, frameLimiter.getDeltaTimeSeconds());
         scene.skinnedModels.at(0).transform.setPosition(scene.spotLights.at(0).transform.getPosition());
@@ -588,7 +549,7 @@ int main(int argc, char *argv[]) {
                }
 
                stats = passScheduler->execute(graph3D);*/
-        ren.draw(surface, drawList);
+        ren.draw(surface, *scene);
     }
 
     return 0;

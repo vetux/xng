@@ -77,25 +77,25 @@ namespace xng {
         /**
          * @return The material properties and textures available in this pipeline.
          */
-        virtual const MaterialLayout &getMaterialLayout();
+        virtual const MaterialLayout &getMaterialLayout() = 0;
 
         /**
          * @return The shader compiler for this pipeline.
          */
-        virtual RenderPipelineCompiler &getCompiler();
+        virtual const RenderPipelineCompiler &getCompiler() const = 0;
 
-        virtual std::shared_ptr<RenderPipelineTransform> createTransform();
+        virtual std::shared_ptr<RenderPipelineTransform> createTransform() = 0;
 
-        virtual std::shared_ptr<RenderPipelineMaterial> createMaterial();
+        virtual std::shared_ptr<RenderPipelineMaterial> createMaterial() = 0;
 
         virtual DrawID addDrawCall(std::shared_ptr<RenderPipelineTransform> transform,
                                    std::shared_ptr<RenderPipelineMaterial> material,
                                    const std::vector<RenderObjectHandle<RenderMesh> > &meshes,
-                                   int sortPriority);
+                                   int sortPriority) = 0;
 
         virtual DrawID addDrawCall(std::shared_ptr<RenderPipelineTransform> transform,
                                    const std::vector<RenderObjectHandle<RenderMesh> > &meshes,
-                                   int sortPriority);
+                                   int sortPriority) = 0;
 
         virtual void removeDrawCall(DrawID id) = 0;
 
@@ -163,7 +163,7 @@ namespace xng {
                              const std::unordered_map<std::string, rg::ShaderPrimitive> &parameters,
                              const std::unordered_map<std::string, BufferBinding> &storageBuffers,
                              const std::unordered_map<std::string, std::vector<rg::TextureBinding> > &textureArrays)
-        const;
+        const = 0;
     };
 }
 

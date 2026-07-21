@@ -148,6 +148,14 @@ namespace xng {
             return id;
         }
 
+        T *operator ->() {
+            return &instance;
+        }
+
+        const T *operator ->() const {
+            return &instance;
+        }
+
     private:
         RenderObjectRefCounter *refCounter = nullptr;
         RenderObject::ID id = RenderObject::UNASSIGNED_ID;
