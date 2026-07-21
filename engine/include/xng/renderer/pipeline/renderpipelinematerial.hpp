@@ -45,9 +45,9 @@ namespace xng {
         virtual void update(const std::unordered_map<PropertyID, rg::ShaderPrimitive> &properties,
                             const std::unordered_map<TextureID, TextureSampler> &textures) = 0;
 
-        virtual const std::unordered_map<PropertyID, rg::ShaderPrimitiveType> &getProperties() = 0;
+        virtual bool isUploadComplete() = 0;
 
-        virtual const std::unordered_set<TextureID> &getTextures() = 0;
+        virtual void flush() = 0;
     };
 }
 

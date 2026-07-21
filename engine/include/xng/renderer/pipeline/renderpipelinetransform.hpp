@@ -29,6 +29,10 @@ namespace xng {
         virtual void setTransform(const Transform &t) = 0;
 
         virtual void setTransform(const Mat4f &model) = 0;
+
+        virtual bool isUploadComplete() = 0;
+
+        virtual void flush() = 0;
     };
 }
 

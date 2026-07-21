@@ -16,7 +16,7 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "xng/renderer/pipeline/indirect/rendershadercompilerindirect.hpp"
+#include "xng/renderer/pipeline/indirect/renderpipelinecompilerindirect.hpp"
 
 #include "xng/shaderscript/shaderscript.hpp"
 #include "xng/shaderscript/macro/helpermacros.hpp"
@@ -26,7 +26,7 @@
 using namespace xng::ShaderScript;
 
 namespace xng {
-    void RenderShaderCompilerIndirect::compileGetCameraPosition(ShaderScope &scope) {
+    void RenderPipelineCompilerIndirect::compileGetCameraPosition(ShaderScope &scope) {
         FunctionScope fScope("getCameraPosition");
 
         ShaderObject cameraBuffer(rg::ShaderOperand::storageBuffer(cameraBufferName));
@@ -37,7 +37,7 @@ namespace xng {
         scope.addFunction(fScope.build());
     }
 
-    void RenderShaderCompilerIndirect::compileGetModel(ShaderScope &scope) {
+    void RenderPipelineCompilerIndirect::compileGetModel(ShaderScope &scope) {
         FunctionScope fScope("getModel");
 
         ShaderObject drawMeshBuffer(rg::ShaderOperand::storageBuffer(drawMeshBufferName));
@@ -53,7 +53,7 @@ namespace xng {
         scope.addFunction(fScope.build());
     }
 
-    void RenderShaderCompilerIndirect::compileGetView(ShaderScope &scope) {
+    void RenderPipelineCompilerIndirect::compileGetView(ShaderScope &scope) {
         FunctionScope fScope("getView");
 
         ShaderObject cameraBuffer(rg::ShaderOperand::storageBuffer(cameraBufferName));
@@ -64,7 +64,7 @@ namespace xng {
         scope.addFunction(fScope.build());
     }
 
-    void RenderShaderCompilerIndirect::compileGetProjection(ShaderScope &scope) {
+    void RenderPipelineCompilerIndirect::compileGetProjection(ShaderScope &scope) {
         FunctionScope fScope("getProjection");
 
         ShaderObject cameraBuffer(rg::ShaderOperand::storageBuffer(cameraBufferName));
@@ -75,7 +75,7 @@ namespace xng {
         scope.addFunction(fScope.build());
     }
 
-    void RenderShaderCompilerIndirect::compileGetModelViewProjection(ShaderScope &scope) {
+    void RenderPipelineCompilerIndirect::compileGetModelViewProjection(ShaderScope &scope) {
         FunctionScope fScope("getModelViewProjection");
 
         ShaderObject drawMeshBuffer(rg::ShaderOperand::storageBuffer(drawMeshBufferName));
@@ -88,7 +88,7 @@ namespace xng {
         scope.addFunction(fScope.build());
     }
 
-    void RenderShaderCompilerIndirect::compileGetMaterialProperty(
+    void RenderPipelineCompilerIndirect::compileGetMaterialProperty(
         ShaderScope &scope,
         RenderPipelineMaterial::PropertyID prop,
         rg::ShaderPrimitiveType type
@@ -110,7 +110,7 @@ namespace xng {
         scope.addFunction(fScope.build());
     }
 
-    void RenderShaderCompilerIndirect::compileSampleMaterialTexture(ShaderScope &scope,
+    void RenderPipelineCompilerIndirect::compileSampleMaterialTexture(ShaderScope &scope,
                                                                     RenderPipelineMaterial::TextureID tex) {
         Param<vec2> uv(parameter("uv"));
         FunctionScope fScope("sampleMaterialTexture");
@@ -169,7 +169,7 @@ namespace xng {
         scope.addFunction(fScope.build());
     }
 
-    void RenderShaderCompilerIndirect::compileWriteAttachment(ShaderScope &scope,
+    void RenderPipelineCompilerIndirect::compileWriteAttachment(ShaderScope &scope,
                                                               const unsigned int index,
                                                               const RenderPipelineShader::Attachment &
                                                               attachment) {

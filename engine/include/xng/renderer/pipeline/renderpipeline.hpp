@@ -143,7 +143,10 @@ namespace xng {
          * @param graph The graph to record the draw invocations into.
          * @param shader The shader to use for drawing.
          * @param viewport The viewport to set.
-         * @param attachments The Attachments to bind. (Type / Format must match the format in the shader)
+         * @param colorAttachments The Attachments to bind. (Type / Format must match the format in the shader)
+         * @param depthStencilAttachment
+         * @param depthAttachment
+         * @param stencilAttachment
          * @param parameters Optional user-supplied shader parameters.
          * @param storageBuffers Optional user-supplied storage buffer bindings.
          * @param textureArrays Optional user-supplied texture bindings.
@@ -151,10 +154,13 @@ namespace xng {
         virtual void execute(rg::GraphBuilder &graph,
                              const RenderPipelineShader &shader,
                              const Recti &viewport,
-                             std::vector<Attachment> attachments,
-                             std::unordered_map<std::string, rg::ShaderPrimitive> parameters,
-                             std::unordered_map<std::string, BufferBinding> storageBuffers,
-                             std::unordered_map<std::string, std::vector<rg::TextureBinding> > textureArrays);
+                             const std::vector<Attachment> &colorAttachments,
+                             std::optional<rg::Attachment> depthStencilAttachment,
+                             std::optional<rg::Attachment> depthAttachment,
+                             std::optional<rg::Attachment> stencilAttachment,
+                             const std::unordered_map<std::string, rg::ShaderPrimitive> &parameters,
+                             const std::unordered_map<std::string, BufferBinding> &storageBuffers,
+                             const std::unordered_map<std::string, std::vector<rg::TextureBinding> > &textureArrays);
     };
 }
 

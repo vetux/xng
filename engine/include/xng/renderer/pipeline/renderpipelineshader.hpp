@@ -66,6 +66,10 @@ namespace xng {
             cache.destroy(pipeline);
         }
 
+        [[nodiscard]] rg::PipelineCache::Handle getPipeline() const {
+            return pipeline;
+        }
+
     private:
         rg::PipelineCache &cache;
         rg::PipelineCache::Handle pipeline;
