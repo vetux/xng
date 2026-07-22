@@ -28,15 +28,15 @@ namespace xng::ShaderScript {
                  unsigned int, firstVertex,
                  unsigned int, baseInstance)
 
-    ShaderStruct(ShaderDrawIndirectIndexed,
-                 unsigned int, indexCount,
-                 unsigned int, instanceCount,
-                 unsigned int, firstIndex,
-                 int, baseVertex,
-                 unsigned int, baseInstance,
-                 unsigned int, padding0,
-                 unsigned int, padding1,
-                 unsigned int, padding2)
+        ShaderStruct(ShaderDrawIndirectIndexed,
+                     unsigned int, indexCount,
+                     unsigned int, instanceCount,
+                     unsigned int, firstIndex,
+                     int, baseVertex,
+                     unsigned int, baseInstance,
+                     unsigned int, padding0,
+                     unsigned int, padding1,
+                     unsigned int, padding2)
 
     ShaderStruct(ShaderComputeIndirect,
                  unsigned int, x,

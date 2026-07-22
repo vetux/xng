@@ -229,7 +229,10 @@ namespace xng {
                      unsigned int, indexOffset, // The first index
                      unsigned int, indexCount,
                      unsigned int, transformIndex,
-                     unsigned int, materialIndex)
+                     unsigned int, materialIndex,
+                     unsigned int, padding0,
+                     unsigned int, padding1,
+                     unsigned int, padding2)
 
         struct BufferAccessRange {
             size_t offset;

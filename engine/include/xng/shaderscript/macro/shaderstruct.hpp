@@ -553,6 +553,7 @@
             return *this;\
         }\
         operator const xng::ShaderScript::ShaderObject&() const { return _object; }\
-    };
+    };\
+    static_assert(sizeof(name::CPU) % 16 == 0);
 
 #endif //XENGINE_RENDERGRAPH_SHADERSTRUCT_HPP

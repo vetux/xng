@@ -386,9 +386,6 @@ namespace xng {
                                           0,
                                           0);
 
-                    // TODO: Find cause of mesh indexing corruption.
-
-                    // This draw invocation receives corrupted indexed mesh data.
                     cmd.drawIndexedMultiIndirectCount(pair.second.indirectBuffer,
                                                       pair.second.indirectCountBuffer,
                                                       0,
