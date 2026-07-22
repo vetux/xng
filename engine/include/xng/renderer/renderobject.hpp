@@ -89,6 +89,9 @@ namespace xng {
         }
 
         RenderObjectHandle(const RenderObjectHandle &other) {
+            if (refCounter) {
+                refCounter->decrementReference(id);
+            }
             refCounter = other.refCounter;
             id = other.id;
             instance = other.instance;
@@ -102,6 +105,9 @@ namespace xng {
             if (this == &other) {
                 return *this;
             }
+            if (refCounter) {
+                refCounter->decrementReference(id);
+            }
             refCounter = other.refCounter;
             id = other.id;
             instance = other.instance;
@@ -112,20 +118,28 @@ namespace xng {
         }
 
         RenderObjectHandle(RenderObjectHandle &&other) noexcept {
+            if (refCounter) {
+                refCounter->decrementReference(id);
+            }
             refCounter = other.refCounter;
             id = other.id;
             instance = std::move(other.instance);
             other.refCounter = nullptr;
+            other.id = RenderObject::UNASSIGNED_ID;
         }
 
         RenderObjectHandle &operator=(RenderObjectHandle &&other) noexcept {
             if (this == &other) {
                 return *this;
             }
+            if (refCounter) {
+                refCounter->decrementReference(id);
+            }
             refCounter = other.refCounter;
             id = other.id;
             instance = std::move(other.instance);
             other.refCounter = nullptr;
+            other.id = RenderObject::UNASSIGNED_ID;
             return *this;
         }
 
