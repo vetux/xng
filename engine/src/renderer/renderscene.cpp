@@ -409,11 +409,17 @@ namespace xng {
         return {this, id, paints.at(id)};
     }
 
-    RenderObjectHandle<RenderPointLight> RenderScene::createPointLight() {
+    RenderObjectHandle<RenderPointLight> RenderScene::createPointLight(const Vec3f &position,
+                 const ColorRGB color,
+                 const float power,
+                 const bool castShadows,
+                 const float shadowNearPlane,
+                 const float shadowFarPlane) {
         const auto id = allocateID();
         pointLights.emplace(id, RenderPointLight([this]() {
             reuploadPointLights = true;
         }));
+        pointLights.at(id).set(position, color, power, castShadows, shadowNearPlane, shadowFarPlane);
 
         types[id] = RenderObject::RENDER_LIGHT_POINT;
         return {this, id, pointLights.at(id)};
@@ -438,7 +444,7 @@ namespace xng {
     }
 
     void RenderScene::commit(rg::GraphBuilder &graph, StreamerQueue &streamerQueue) {
-        //TODO: Design better light buffer technique.
+        //TODO: Design light buffer technique.
 
         // Light iteration in shaders is expensive.
         // One solution is storing lights in a separate buffer with gaps and using an index table.
@@ -499,13 +505,15 @@ namespace xng {
             spotLightResident = true;
         }
 
-        pointLightBuffer.commit(graph);
-        directionalLightBuffer.commit(graph);
-        spotLightBuffer.commit(graph);
+        pointLightBuffer.commit(streamerQueue);
+        directionalLightBuffer.commit(streamerQueue);
+        spotLightBuffer.commit(streamerQueue);
 
-        skeletonStreamer.commit(graph);
-        meshStreamer.commit(graph);
-        virtualTextureStreamer.commit(graph);
+        skeletonStreamer.commit(streamerQueue);
+        meshStreamer.commit(streamerQueue);
+
+        virtualTextureStreamer.update();
+        virtualTextureStreamer.commit(graph, streamerQueue);
 
         pbrDeferredPipeline->commit(graph, streamerQueue);
         pbrForwardPipeline->commit(graph, streamerQueue);
@@ -518,7 +526,7 @@ namespace xng {
             pair.second.getPipeline()->commit(graph, streamerQueue);
         }
 
-        chunkStreamer.commit(graph, streamerQueue);
+        chunkStreamer.commit(streamerQueue);
     }
 
     void RenderScene::prepare(rg::GraphBuilder &graph) {
@@ -546,10 +554,16 @@ namespace xng {
     }
 
     void RenderScene::incrementReference(const RenderObject::ID id) {
+        if (id == RenderObject::UNASSIGNED_ID) {
+            throw std::runtime_error("Unassigned ID in incrementReference.");
+        }
         refCounts[id]++;
     }
 
     void RenderScene::decrementReference(const RenderObject::ID id) {
+        if (id == RenderObject::UNASSIGNED_ID) {
+            throw std::runtime_error("Unassigned ID in decrementReference.");
+        }
         refCounts.at(id)--;
         if (refCounts.at(id) <= 0) {
             switch (types.at(id)) {

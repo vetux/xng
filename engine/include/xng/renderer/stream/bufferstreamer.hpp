@@ -59,8 +59,8 @@ namespace xng {
             return streamer.flush(slot);
         }
 
-        void commit(rg::GraphBuilder &graph) {
-            streamer.commit(graph);
+        void commit(StreamerQueue &queue) {
+            streamer.commit(queue);
         }
 
         rg::HeapResource<rg::Buffer> getBuffer() const {

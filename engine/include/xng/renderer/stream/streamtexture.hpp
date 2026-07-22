@@ -162,7 +162,7 @@ namespace xng {
             }
         }
 
-        void commit(rg::GraphBuilder &graph) {
+        void commit(rg::GraphBuilder &graph, StreamerQueue &queue) {
             // Resize / copy texture
             if (nextSlot > texture.getDescription().arrayLayers) {
                 const auto staleTexture = texture;
@@ -200,7 +200,7 @@ namespace xng {
                 }
             }
 
-            buffer.commit(graph);
+            buffer.commit(queue);
 
             const auto stableBuffer = buffer.getBuffer();
 

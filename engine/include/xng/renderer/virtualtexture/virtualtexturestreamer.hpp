@@ -86,9 +86,9 @@ namespace xng {
             }
         }
 
-        void commit(rg::GraphBuilder &graph) {
-            tileStreamer.commit(graph);
-            atlas.commit(graph);
+        void commit(rg::GraphBuilder &graph, StreamerQueue &queue) {
+            tileStreamer.commit(graph, queue);
+            atlas.commit(graph, queue);
         }
 
         bool isUploadComplete(const TextureID textureID) const {

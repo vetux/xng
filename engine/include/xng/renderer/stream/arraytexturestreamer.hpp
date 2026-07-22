@@ -121,9 +121,9 @@ namespace xng {
             textures.at(handle.level).flush(handle.slot);
         }
 
-        void commit(rg::GraphBuilder &ctx) {
+        void commit(rg::GraphBuilder &graph, StreamerQueue &queue) {
             for (auto &pair: textures) {
-                pair.second.commit(ctx);
+                pair.second.commit(graph,queue);
             }
         }
 

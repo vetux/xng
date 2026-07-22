@@ -60,6 +60,10 @@ namespace xng {
             return sem;
         }
 
+        void addPass(rg::GraphicsPass pass) {
+            graphicsGraph.passes.emplace_back(std::move(pass));
+        }
+
         void submit() {
             rg::Graph graph;
             for (auto &submit: passes) {
@@ -70,6 +74,8 @@ namespace xng {
                 submit.fence->fence = sem;
             }
             passes.clear();
+
+            runtime.execute(graphicsGraph);
         }
 
     private:
@@ -84,6 +90,7 @@ namespace xng {
 
         rg::Runtime &runtime;
         std::vector<PassSubmit> passes;
+        rg::Graph graphicsGraph;
     };
 }
 

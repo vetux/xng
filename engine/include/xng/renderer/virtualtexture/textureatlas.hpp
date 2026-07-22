@@ -126,7 +126,7 @@ namespace xng {
             return true;
         }
 
-        void commit(rg::GraphBuilder &graph) {
+        void commit(rg::GraphBuilder &graph, StreamerQueue &streamerQueue) {
             staleTexture = {};
 
             const auto totalOffset = getOffset(slotAllocator.getSize());
@@ -209,7 +209,7 @@ namespace xng {
                 }
             }
 
-            buffer.commit(graph);
+            buffer.commit(streamerQueue);
 
             auto pass = rg::GraphicsPassBuilder("TextureAtlas/Copy");
 

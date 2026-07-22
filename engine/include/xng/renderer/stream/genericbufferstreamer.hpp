@@ -88,8 +88,8 @@ namespace xng {
             }
         }
 
-        void commit(rg::GraphBuilder &graph) {
-            buffer.commit(graph);
+        void commit(StreamerQueue &queue) {
+            buffer.commit(queue);
         }
 
         rg::HeapResource<rg::Buffer> getBuffer() const {

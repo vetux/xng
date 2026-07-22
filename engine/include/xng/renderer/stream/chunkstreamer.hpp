@@ -197,7 +197,7 @@ namespace xng {
             targetBuffers[handle] = targetBuffer;
         }
 
-        void commit(rg::GraphBuilder &graph, StreamerQueue &queue) {
+        void commit(StreamerQueue &queue) {
             for (auto handle: flushedUploads) {
                 const auto it = pendingChunks.find(handle);
                 if (it != pendingChunks.end()) {
@@ -284,7 +284,7 @@ namespace xng {
                                         ctx.copyBuffer(targetBuffer, sourceBuffer, offset, 0, size);
                                     });
 
-                        graph.addPass(std::move(pass));
+                        queue.addPass(std::move(pass));
 
                         if (freeChunkBuffers.size() < pinnedChunkBuffers) {
                             buffer.pendingTransfer = nullptr;

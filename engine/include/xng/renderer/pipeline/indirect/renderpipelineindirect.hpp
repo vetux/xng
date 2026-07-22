@@ -362,6 +362,7 @@ namespace xng {
             DrawList(rg::Heap &resourceHeap, ChunkStreamer &chunkStreamer);
 
             void commit(rg::GraphBuilder &graph,
+                        StreamerQueue &streamerQueue,
                         rg::Heap &resourceHeap,
                         const std::unordered_map<DrawID, DrawCall> &callMap);
 

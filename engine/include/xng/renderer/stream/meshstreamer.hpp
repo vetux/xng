@@ -318,15 +318,15 @@ namespace xng {
             return allocations.at(handle);
         }
 
-        void commit(rg::GraphBuilder &graph) {
+        void commit(StreamerQueue &queue) {
             for (auto &pair: vertexBuffers) {
-                pair.second.commit(graph);
+                pair.second.commit(queue);
             }
 
-            indexBuffer.commit(graph);
-            skinnedBindPosBuffer.commit(graph);
-            skinnedBoneIndicesBuffer.commit(graph);
-            skinnedBoneWeightsBuffer.commit(graph);
+            indexBuffer.commit(queue);
+            skinnedBindPosBuffer.commit(queue);
+            skinnedBoneIndicesBuffer.commit(queue);
+            skinnedBoneWeightsBuffer.commit(queue);
         }
 
         std::unordered_map<VertexAttribute, rg::HeapResource<rg::Buffer> > getVertexBuffers() const {

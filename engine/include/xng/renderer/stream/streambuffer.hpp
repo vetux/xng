@@ -139,12 +139,10 @@ namespace xng {
          *
          * Allocates and initializes a new stable buffer on resize
          *
-         * @param graph
+         * @param queue
          * @return The handle to the buffer.
          */
-        void commit(rg::GraphBuilder &graph) {
-            std::vector<rg::TransferPass> ret;
-
+        void commit(StreamerQueue &queue) {
             // On resize all previous chunk transfers have already been submitted on the graphics queue because
             // the copies from backBuffer -> buffer happen in the main graph in RenderPasses and thus on the graphics queue.
 
@@ -179,7 +177,7 @@ namespace xng {
                             ctx.copyBuffer(buffer, staleBuffer, 0, 0, copySize);
                         });
 
-                graph.addPass(std::move(pass));
+                queue.addPass(std::move(pass));
 
                 // Chunk Streamer inserts copies from chunk buffers to target after stream buffer commit
                 // and all previous copies from chunk buffers to target buffer are synchronized on the graphics queue

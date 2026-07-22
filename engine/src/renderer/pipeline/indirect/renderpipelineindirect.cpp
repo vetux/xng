@@ -130,11 +130,11 @@ namespace xng {
 
         // Commit draw lists
         for (auto &pair: drawLists) {
-            pair.second.commit(graph, heap, drawCalls);
+            pair.second.commit(graph, streamerQueue, heap, drawCalls);
         }
-        cameraBuffer.commit(graph);
-        transformStreamer.commit(graph);
-        materialStreamer.commit(graph);
+        cameraBuffer.commit(streamerQueue);
+        transformStreamer.commit(streamerQueue);
+        materialStreamer.commit(streamerQueue);
     }
 
     void RenderPipelineIndirect::prepare(rg::GraphBuilder &graph) {
@@ -408,6 +408,7 @@ namespace xng {
     }
 
     void RenderPipelineIndirect::DrawList::commit(rg::GraphBuilder &graph,
+                                                  StreamerQueue &queue,
                                                   rg::Heap &resourceHeap,
                                                   const std::unordered_map<DrawID, DrawCall> &callMap) {
         if (!updateDrawCallBuffer) {
@@ -446,7 +447,7 @@ namespace xng {
         drawCallBuffer.flush(drawCallBufferHandle);
         residentDrawCallBuffer = true;
 
-        drawCallBuffer.commit(graph);
+        drawCallBuffer.commit(queue);
 
         // Update indirect / drawMesh buffers
         const auto indirectBufferSize = drawCallData.size() * sizeof(ShaderScript::ShaderDrawIndirectIndexed::CPU);

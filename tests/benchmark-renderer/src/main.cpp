@@ -165,7 +165,7 @@ void createCornellInstance(RenderScene &scene,
     PBRMaterial boxMaterialDef;
     boxMaterialDef.setAlbedo(boxAlbedo, {});
 
-    auto boxMaterial = scene.createMaterial(PBRMaterial({}), RENDER_PATH_DEFERRED);
+    auto boxMaterial = scene.createMaterial(boxMaterialDef, RENDER_PATH_DEFERRED);
     auto boxMesh = scene.createMesh(res.boxMesh.get());
     auto boxModel = scene.createModel(boxMaterial,
                                       {boxMesh},
@@ -250,8 +250,7 @@ void createCornellInstance(RenderScene &scene,
 
     models.emplace_back(goldSphereModel);
 
-    auto pointLight = scene.createPointLight();
-    pointLight->set(offset + Vec3f(0, 0.4, 0),
+    auto pointLight = scene.createPointLight(offset + Vec3f(0, 0.4, 0),
                     ColorRGB(255),
                     2,
                     true,
