@@ -80,6 +80,13 @@ namespace xng::ShaderScript {
             getArgumentValuesStorage().emplace_back(static_cast<ShaderObject>(argumentValue).operand);
         }
 
+        Param(ShaderObject argumentValue, rg::ShaderPrimitiveType type) {
+            const auto argName = "arg" + std::to_string(getArgumentsStorage().size());
+            val = std::make_unique<T>(rg::ShaderOperand::argument(argName));
+            getArgumentsStorage().emplace_back(rg::ShaderFunction::Argument(type, argName, false));
+            getArgumentValuesStorage().emplace_back(argumentValue.operand);
+        }
+
         T &value() {
             return *val;
         }
