@@ -183,8 +183,8 @@ namespace xng {
             ret.enableDepthTest = true;
             ret.depthTestWrite = true;
 
-            ret.enableStencilTest = true;
-            ret.enableDynamicStencilReference = true;
+            ret.enableStencilTest = false;
+            ret.enableDynamicStencilReference = false;
             ret.stencilTestMask = 0xFF;
             ret.stencilMode = rg::RasterPipeline::StencilMode::STENCIL_ALWAYS;
             ret.stencilPass = rg::RasterPipeline::StencilAction::STENCIL_REPLACE;

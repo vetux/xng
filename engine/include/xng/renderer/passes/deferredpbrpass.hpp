@@ -83,14 +83,21 @@ namespace xng {
                         gRoughnessMetallicAO,
                         gAlbedo,
                         gObjectIdReceiveShadows,
-                        gDepth](rg::RasterContext &ctx, rg::TransferContext &, rg::ComputeContext &) {
+                        gDepth,
+                        colorTexture](rg::RasterContext &ctx, rg::TransferContext &, rg::ComputeContext &) {
+                        ctx.beginRenderPass({rg::Attachment(colorTexture, Vec4f(0))}, {}, {});
+
                         ctx.bindPipeline(pipeline);
 
-                        ctx.setViewport({}, surface->getDimensions());
+                        ctx.setViewport({}, colorTexture.getDescription().size);
 
-                        ctx.bindVertexBuffer(scene.getMeshStreamer().getVertexBuffers().at(POSITION), 0, 0,
+                        ctx.bindVertexBuffer(scene.getMeshStreamer().getVertexBuffers().at(POSITION),
+                                             0,
+                                             0,
                                              getVertexAttributeSize(POSITION));
-                        ctx.bindVertexBuffer(scene.getMeshStreamer().getVertexBuffers().at(UV), 1, 0,
+                        ctx.bindVertexBuffer(scene.getMeshStreamer().getVertexBuffers().at(UV),
+                                             1,
+                                             0,
                                              getVertexAttributeSize(UV));
                         ctx.bindIndexBuffer(scene.getMeshStreamer().getIndexBuffer(), rg::INDEX_UNSIGNED_INT);
 
@@ -134,7 +141,9 @@ namespace xng {
                                         });
 
                         ctx.drawIndexed(scene.getUnitQuadMesh().get().getAllocation().drawCall,
-                                        scene.getUnitQuadMesh().get().getAllocation().baseVertex);
+                                        scene.getUnitQuadMesh()->getAllocation().baseVertex);
+
+                        ctx.endRenderPass();
                     }));
         }
 
@@ -152,9 +161,15 @@ namespace xng {
             ret.configuration.stencilMode = rg::RasterPipeline::StencilMode::STENCIL_EQUAL;
             ret.configuration.stencilReference = SHADING_MODEL_PBR;
 
+            std::vector<size_t> offsets;
+            offsets.resize(2, 0);
+
             ret.vertexFormat = rg::RasterPipeline::VertexFormat(vertexShader.inputLayout,
-                                                                {0, 0},
-                                                                {0, 3 * sizeof(float)});
+                                                                {
+                                                                    POSITION,
+                                                                    UV,
+                                                                },
+                                                                offsets);
 
             ret.colorAttachments = {rg::ColorFormat::RGBA8};
             ret.depthAttachment = rg::ColorFormat::DEPTH24_STENCIL8;

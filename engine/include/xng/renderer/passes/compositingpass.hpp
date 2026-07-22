@@ -72,9 +72,13 @@ namespace xng {
                 ctx.setViewport({}, surface->getDimensions());
 
                 // Bind Vertex Buffers
-                ctx.bindVertexBuffer(scene.getMeshStreamer().getVertexBuffers().at(POSITION), 0, 0,
+                ctx.bindVertexBuffer(scene.getMeshStreamer().getVertexBuffers().at(POSITION),
+                                     0,
+                                     0,
                                      getVertexAttributeSize(POSITION));
-                ctx.bindVertexBuffer(scene.getMeshStreamer().getVertexBuffers().at(UV), 1, 0,
+                ctx.bindVertexBuffer(scene.getMeshStreamer().getVertexBuffers().at(UV),
+                                     1,
+                                     0,
                                      getVertexAttributeSize(UV));
 
                 // Bind Index Buffer
@@ -83,7 +87,7 @@ namespace xng {
                 for (auto &tex: textures) {
                     ctx.bindTexture("texture", {rg::TextureBinding(tex)});
                     ctx.drawIndexed(scene.getUnitQuadMesh().get().getAllocation().drawCall,
-                                    scene.getUnitQuadMesh().get().getAllocation().baseVertex);
+                                    scene.getUnitQuadMesh()->getAllocation().baseVertex);
                 }
 
                 ctx.endRenderPass();
