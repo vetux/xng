@@ -105,6 +105,9 @@ namespace xng {
             refCounter = other.refCounter;
             id = other.id;
             instance = other.instance;
+            if (refCounter) {
+                refCounter->incrementReference(id);
+            }
             return *this;
         }
 

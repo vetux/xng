@@ -78,6 +78,9 @@ namespace xng {
 
             ret.properties[MATERIAL_NORMAL_HAS_TEXTURE] = rg::ShaderPrimitiveType::Bool();
 
+            ret.properties[MATERIAL_NORMAL_INTENSITY] = rg::ShaderPrimitiveType::Float();
+            ret.properties[MATERIAL_NORMAL_FLIP] = rg::ShaderPrimitiveType::Bool();
+
             ret.properties[RECEIVE_SHADOWS] = rg::ShaderPrimitiveType::Bool();
 
             ret.textures.insert(MATERIAL_ALBEDO_TEXTURE);

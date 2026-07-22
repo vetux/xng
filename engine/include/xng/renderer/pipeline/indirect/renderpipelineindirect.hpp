@@ -291,7 +291,7 @@ namespace xng {
                     const auto alloc = mesh.get().getAllocation();
                     ShaderDrawCall::CPU c;
                     c.baseVertex = alloc.baseVertex;
-                    c.indexOffset = alloc.drawCall.offset;
+                    c.indexOffset = alloc.drawCall.offset / sizeof(unsigned int);
                     c.indexCount = alloc.drawCall.count;
 
                     const auto &dt = down_cast<RenderPipelineTransformIndirect &>(*transform);
@@ -357,6 +357,14 @@ namespace xng {
             void commit(rg::GraphBuilder &graph,
                         rg::Heap &resourceHeap,
                         const std::unordered_map<DrawID, DrawCall> &callMap);
+
+            size_t getDrawCallCount(const std::unordered_map<DrawID, DrawCall> &drawMap) const {
+                size_t ret = 0;
+                for (auto &id: drawCalls) {
+                    ret += drawMap.at(id).drawCallData.size();
+                }
+                return ret;
+            }
         };
 
         static LayoutStd140 getMaterialLayout(const MaterialLayout &layout) {

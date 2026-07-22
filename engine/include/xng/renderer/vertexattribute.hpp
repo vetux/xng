@@ -40,6 +40,23 @@ namespace xng {
                 return sizeof(float) * 2;
         }
     }
+
+    inline rg::ShaderPrimitiveType getVertexAttributeType(const VertexAttribute attribute) {
+        switch (attribute) {
+            case POSITION:
+                return rg::ShaderPrimitiveType::vec3();
+            case NORMAL:
+                return rg::ShaderPrimitiveType::vec3();
+            case TANGENT:
+                return rg::ShaderPrimitiveType::vec3();
+            case BITANGENT:
+                return rg::ShaderPrimitiveType::vec3();
+            case UV:
+                return rg::ShaderPrimitiveType::vec2();
+            default:
+                throw std::runtime_error("Unknown vertex attribute.");
+        }
+    }
 }
 
 #endif //XENGINE_VERTEXATTRIBUTE_HPP

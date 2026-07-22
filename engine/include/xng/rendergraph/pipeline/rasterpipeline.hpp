@@ -114,7 +114,8 @@ namespace xng::rg {
              * @param _bindingPoints The binding points of each attribute
              * @param _offsets The relative offsets of each attribute
              */
-            VertexFormat(ShaderAttributeLayout _layout, std::vector<size_t> _bindingPoints,
+            VertexFormat(ShaderAttributeLayout _layout,
+                         std::vector<size_t> _bindingPoints,
                          std::vector<size_t> _offsets)
                 : layout(std::move(_layout)), bindingPoints(std::move(_bindingPoints)), offsets(std::move(_offsets)) {
                 if (layout.getElements().size() != offsets.size()) {

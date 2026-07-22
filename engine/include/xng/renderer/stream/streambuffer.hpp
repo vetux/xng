@@ -48,6 +48,34 @@ namespace xng {
 
         ~StreamBuffer() = default;
 
+        StreamBuffer(const StreamBuffer &) = delete;
+
+        StreamBuffer &operator=(const StreamBuffer &) = delete;
+
+        StreamBuffer(StreamBuffer &&other) noexcept
+            : heap(other.heap),
+              chunkStreamer(other.chunkStreamer),
+              buffer(std::move(other.buffer)),
+              targetSize(other.targetSize),
+              bufferSize(other.bufferSize),
+              uploads(std::move(other.uploads)),
+              pendingUploads(std::move(other.pendingUploads)),
+              flushedUploads(std::move(other.flushedUploads)),
+              finishedUploads(std::move(other.finishedUploads)) {
+        }
+
+        StreamBuffer &operator=(StreamBuffer &&other)  noexcept {
+            if (&other == this) return *this;
+            buffer = std::move(other.buffer);
+            targetSize = other.targetSize;
+            bufferSize = other.bufferSize;
+            uploads = std::move(other.uploads);
+            pendingUploads = std::move(other.pendingUploads);
+            flushedUploads = std::move(other.flushedUploads);
+            finishedUploads = std::move(other.finishedUploads);
+            return *this;
+        }
+
         Handle upload(const std::vector<uint8_t> &data, const size_t offset) {
             return upload(data.data(), data.size(), offset);
         }
@@ -163,7 +191,7 @@ namespace xng {
             }
 
             std::unordered_set<Handle> frameUploads;
-            for (auto &upload : flushedUploads) {
+            for (auto &upload: flushedUploads) {
                 pendingUploads.erase(upload);
                 finishedUploads.insert(upload);
                 frameUploads.insert(upload);
@@ -177,7 +205,7 @@ namespace xng {
                 }
             }
 
-            for (auto &upload : frameUploads) {
+            for (auto &upload: frameUploads) {
                 pendingUploads.erase(upload);
                 flushedUploads.erase(upload);
             }

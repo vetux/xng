@@ -212,7 +212,7 @@ namespace xng {
                                           pair.second.dataSize);
                             pendingChunkBuffers[handle].emplace_back(std::move(buffer));
                         } else {
-                            auto &buffer = freeChunkBuffers.back();
+                            auto buffer = std::move(freeChunkBuffers.back());
                             freeChunkBuffers.pop_back();
                             buffer.upload(queue,
                                           handle,
@@ -235,7 +235,7 @@ namespace xng {
                     if (freeChunkBuffers.empty()) {
                         break;
                     }
-                    auto &buffer = freeChunkBuffers.back();
+                    auto buffer = std::move(freeChunkBuffers.back());
                     freeChunkBuffers.pop_back();
                     buffer.upload(queue,
                                   hPair.first,
@@ -269,6 +269,10 @@ namespace xng {
                         const auto targetBuffer = targetBuffers.at(buffer.pendingTransferHandle);
                         const auto offset = buffer.pendingTransferOffset;
                         const auto size = buffer.pendingTransferSize;
+
+                        if (targetBuffer.getDescription().size < offset + size) {
+                            throw std::runtime_error("Invalid target buffer");
+                        }
 
                         // This will stall the graphics queue waiting on the transfer queue for flushed uploads.
                         auto pass = rg::GraphicsPassBuilder("ChunkStreamer/Copy")
@@ -326,6 +330,10 @@ namespace xng {
                 mapping = heap.map(stagingBuffer);
             }
 
+            ChunkBuffer(ChunkBuffer &&other) noexcept = default;
+
+            ChunkBuffer(const ChunkBuffer &other) = delete;
+
             void upload(StreamerQueue &queue,
                         const Handle handle,
                         const std::vector<uint8_t> &data,
@@ -333,14 +341,18 @@ namespace xng {
                         const size_t chunkOffset,
                         const size_t size) {
                 assert(pendingTransfer == nullptr);
+                assert(mapping);
 
                 mapping->copyFrom(data, chunkOffset, 0, size);
 
+                auto backBufferRef = backBuffer;
+                auto stagingBufferRef = stagingBuffer;
+
                 auto pass = rg::TransferPassBuilder("ChunkStreamer/Upload")
-                        .read(stagingBuffer, 0, size)
-                        .write(backBuffer, 0, size)
-                        .execute([this, size](rg::TransferContext &ctx) {
-                            ctx.copyBuffer(backBuffer, stagingBuffer, 0, 0, size);
+                        .read(stagingBufferRef, 0, size)
+                        .write(backBufferRef, 0, size)
+                        .execute([backBufferRef, stagingBufferRef, size](rg::TransferContext &ctx) {
+                            ctx.copyBuffer(backBufferRef, stagingBufferRef, 0, 0, size);
                         });
                 pendingTransfer = queue.addPass(std::move(pass));
                 pendingTransferHandle = handle;

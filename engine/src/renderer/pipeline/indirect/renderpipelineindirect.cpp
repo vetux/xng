@@ -47,7 +47,7 @@ namespace xng {
         DrawCall drawCall(transform, material, mesh, sortPriority);
 
         if (drawLists.find(sortPriority) == drawLists.end()) {
-            drawLists.emplace(sortPriority, DrawList(heap, chunkStreamer));
+            drawLists.emplace(sortPriority, std::move(DrawList(heap, chunkStreamer)));
         }
 
         bool pending = true;
@@ -119,6 +119,8 @@ namespace xng {
                     it = drawLists.find(drawCall.sortPriority);
                 }
                 it->second.drawCalls.insert(id);
+                it->second.updateDrawCallBuffer = true;
+                drawCall.loadData();
                 mergedDrawCalls.insert(id);
             }
         }
@@ -130,6 +132,9 @@ namespace xng {
         for (auto &pair: drawLists) {
             pair.second.commit(graph, heap, drawCalls);
         }
+        cameraBuffer.commit(graph);
+        transformStreamer.commit(graph);
+        materialStreamer.commit(graph);
     }
 
     void RenderPipelineIndirect::prepare(rg::GraphBuilder &graph) {
@@ -216,13 +221,15 @@ namespace xng {
                                     range.offset,
                                     range.size);
             }
+            const auto vertexBuffers = meshStreamer.getVertexBuffers();
             for (const auto &vbAccess: pair.second.vertexBufferAccesses) {
+                const auto &buf = vertexBuffers.at(vbAccess.first);
                 for (const auto &range: vbAccess.second) {
-                    builder.vertexRead(drawLists.at(pair.first).drawMeshBuffer, range.offset, range.size);
+                    builder.vertexRead(buf, range.offset, range.size);
                 }
             }
             for (const auto &range: pair.second.indexBufferAccesses) {
-                builder.indexRead(drawLists.at(pair.first).drawMeshBuffer, range.offset, range.size);
+                builder.indexRead(meshStreamer.getIndexBuffer(), range.offset, range.size);
             }
 
             builder.storageRead(pair.second.drawMeshBuffer, {rg::Shader::VERTEX, rg::Shader::FRAGMENT});
@@ -294,10 +301,11 @@ namespace xng {
                 cmd.setViewport(viewport.position, viewport.dimensions.convert<unsigned int>());
 
                 // Bind Vertex Buffers
+                const auto vertexBuffers = meshStreamer.getVertexBuffers();
                 for (auto attr = ATTRIBUTE_BEGIN;
                      attr <= ATTRIBUTE_END;
                      attr = static_cast<VertexAttribute>(attr + 1)) {
-                    cmd.bindVertexBuffer(meshStreamer.getVertexBuffers().at(attr),
+                    cmd.bindVertexBuffer(vertexBuffers.at(attr),
                                          attr,
                                          0,
                                          getVertexAttributeSize(attr));
@@ -343,8 +351,7 @@ namespace xng {
 
                 cmd.setShaderParameter(RenderPipelineCompilerIndirect::virtualAtlasSizeName,
                                        rg::ShaderPrimitive(
-                                           virtualTextureStreamer
-                                           .getAtlasTexture().getDescription().size.convert<float>()));
+                                           virtualTextureStreamer.getAtlasTexture().getDescription().size.x));
                 cmd.setShaderParameter(RenderPipelineCompilerIndirect::virtualTileSizeName,
                                        rg::ShaderPrimitive(virtualTextureStreamer.getTileSize()));
                 cmd.setShaderParameter(RenderPipelineCompilerIndirect::virtualTileBorderName,
@@ -371,16 +378,22 @@ namespace xng {
                 }
 
                 for (const auto &pair: drawLists) {
+                    if (pair.second.drawCalls.empty()) {
+                        continue;
+                    }
                     cmd.bindStorageBuffer(RenderPipelineCompilerIndirect::drawMeshBufferName,
                                           pair.second.drawMeshBuffer,
                                           0,
                                           0);
 
+                    // TODO: Find cause of mesh indexing corruption.
+
+                    // This draw invocation receives corrupted indexed mesh data.
                     cmd.drawIndexedMultiIndirectCount(pair.second.indirectBuffer,
                                                       pair.second.indirectCountBuffer,
                                                       0,
                                                       0,
-                                                      pair.second.drawCalls.size(),
+                                                      pair.second.getDrawCallCount(drawCalls),
                                                       sizeof(ShaderScript::ShaderDrawIndirectIndexed::CPU));
                 }
 
@@ -512,9 +525,10 @@ namespace xng {
             ctx.bindStorageBuffer("commandBuffer", drawList.indirectBuffer, 0, 0);
             ctx.bindStorageBuffer("commandCountBuffer", drawList.indirectCountBuffer, 0, 0);
 
-            ctx.setShaderParameter("batchSize", rg::ShaderPrimitive(static_cast<int>(drawList.drawCalls.size())));
+            ctx.setShaderParameter("batchSize",
+                                   rg::ShaderPrimitive(static_cast<int>(drawList.getDrawCallCount(drawCalls))));
 
-            ctx.dispatch(Vec3u((drawList.drawCalls.size() + (prePassLocalSize - 1)) / prePassLocalSize,
+            ctx.dispatch(Vec3u((drawList.getDrawCallCount(drawCalls) + (prePassLocalSize - 1)) / prePassLocalSize,
                                1,
                                1));
         }));

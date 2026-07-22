@@ -67,6 +67,32 @@ namespace xng {
 
         ~StreamTexture() = default;
 
+        StreamTexture(const StreamTexture &) = delete;
+
+        StreamTexture &operator=(const StreamTexture &) = delete;
+
+        StreamTexture(StreamTexture &&other) noexcept
+            : heap(other.heap),
+              chunkStreamer(other.chunkStreamer),
+              buffer(std::move(other.buffer)),
+              bufferAllocator(std::move(other.bufferAllocator)),
+              texture(std::move(other.texture)),
+              pendingUploads(std::move(other.pendingUploads)),
+              nextSlot(other.nextSlot),
+              freeSlots(std::move(other.freeSlots)) {
+        }
+
+        StreamTexture &operator=(StreamTexture &&other) noexcept {
+            if (&other == this) return *this;
+            buffer = std::move(other.buffer);
+            bufferAllocator = std::move(other.bufferAllocator);
+            texture = std::move(other.texture);
+            pendingUploads = std::move(other.pendingUploads);
+            nextSlot = other.nextSlot;
+            freeSlots = std::move(other.freeSlots);
+            return *this;
+        }
+
         Slot create() {
             Slot ret;
             if (!freeSlots.empty()) {

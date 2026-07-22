@@ -26,13 +26,23 @@
 using namespace xng::ShaderScript;
 
 namespace xng {
+    void RenderPipelineCompilerIndirect::compileGetVertexAttribute(ShaderScope &scope,
+                                                                   const VertexAttribute attr) {
+        FunctionScope fScope(RenderPipelineCompilerStubs::_getVertexAttributePrefix + std::to_string(attr));
+
+        fScope.setReturnType(rg::ShaderDataType(getVertexAttributeType(attr)));
+        Return(inputAttribute(vertexAttributeToName(attr)));
+
+        scope.addFunction(fScope.build());
+    }
+
     void RenderPipelineCompilerIndirect::compileGetCameraPosition(ShaderScope &scope) {
         FunctionScope fScope(RenderPipelineCompilerStubs::_getCameraPositionName);
 
         ShaderObject cameraBuffer(rg::ShaderOperand::storageBuffer(cameraBufferName));
 
         fScope.setReturnType<vec3>();
-        Return(cameraBuffer["position"]);
+        Return(cameraBuffer["viewPosition"].xyz());
 
         scope.addFunction(fScope.build());
     }
@@ -43,9 +53,8 @@ namespace xng {
         ShaderObject drawMeshBuffer(rg::ShaderOperand::storageBuffer(drawMeshBufferName));
         ShaderObject transformBuffer(rg::ShaderOperand::storageBuffer(transformBufferName));
 
-        Int index = getBaseInstance() + getDrawID() + getInstanceID();
-
-        auto drawMesh = drawMeshBuffer[index];
+        auto drawIndex = rg::ShaderInstructionFactory::call("_getDrawIndex", {});
+        auto drawMesh = drawMeshBuffer[drawIndex];
 
         fScope.setReturnType<mat4>();
         Return(transformBuffer[drawMesh["transformIndex"]]);
@@ -80,7 +89,9 @@ namespace xng {
 
         ShaderObject drawMeshBuffer(rg::ShaderOperand::storageBuffer(drawMeshBufferName));
 
-        auto drawMesh = drawMeshBuffer[getBaseInstance() + getDrawID() + getInstanceID()];
+        auto drawIndex = rg::ShaderInstructionFactory::call("_getDrawIndex", {});
+
+        auto drawMesh = drawMeshBuffer[drawIndex];
 
         fScope.setReturnType<mat4>();
         Return(drawMesh["mvp"]);
@@ -98,7 +109,9 @@ namespace xng {
         ShaderObject drawMeshBuffer(rg::ShaderOperand::storageBuffer(drawMeshBufferName));
         ShaderObject materialBuffer(rg::ShaderOperand::storageBuffer(materialBufferName));
 
-        auto drawMesh = drawMeshBuffer[getBaseInstance() + getDrawID() + getInstanceID()];
+        auto drawIndex = rg::ShaderInstructionFactory::call("_getDrawIndex", {});
+
+        auto drawMesh = drawMeshBuffer[drawIndex];
 
         auto material = materialBuffer[drawMesh["materialIndex"]];
 
@@ -130,9 +143,11 @@ namespace xng {
         StorageBufferWrapper<UInt> residencyMap(rg::ShaderOperand::storageBuffer(virtualResidencyMapName));
         StorageBufferWrapper<UInt> readbackBuffer(rg::ShaderOperand::storageBuffer(virtualReadbackBufferName));
 
-        ShaderObject atlasTexture(rg::ShaderOperand::texture(virtualAtlasTextureName));
+        ShaderObject atlasTexture = ShaderObject(rg::ShaderOperand::texture(virtualAtlasTextureName))[Int(0)];
 
-        auto drawMesh = drawMeshBuffer[getBaseInstance() + getDrawID() + getInstanceID()];
+        auto drawIndex = rg::ShaderInstructionFactory::call("_getDrawIndex", {});
+
+        auto drawMesh = drawMeshBuffer[drawIndex];
 
         auto material = materialBuffer[drawMesh["materialIndex"]];
 
@@ -174,8 +189,8 @@ namespace xng {
                                                                 const unsigned int index,
                                                                 const RenderPipelineShader::Attachment &
                                                                 attachment) {
-        Param<vec4> color(parameter("color"));
-        FunctionScope fScope("sampleMaterialTexture");
+        Param<vec4> color(parameter("color"), attachment.value);
+        FunctionScope fScope(RenderPipelineCompilerStubs::_writeAttachmentPrefix + std::to_string(index));
 
         if (attachment.type == RenderPipelineShader::Attachment::ATTACHMENT_TEXTURE) {
             throw std::runtime_error("writeAttachment for virtual texture not implemented yet.");
@@ -184,5 +199,32 @@ namespace xng {
         }
 
         scope.addFunction(fScope.build());
+    }
+
+
+    void RenderPipelineCompilerIndirect::compileGetDrawIndex(ShaderScript::ShaderScope &scope,
+                                                             rg::Shader::Stage stage) {
+        FunctionScope fScope("_getDrawIndex");
+
+        fScope.setReturnType<UInt>();
+        if (stage == rg::Shader::VERTEX) {
+            Return(getDrawIndex());
+        } else {
+            Return(rg::ShaderOperand::inputAttribute("_drawIndex"));
+        }
+
+        scope.addFunction(fScope.build());
+    }
+
+    rg::ShaderOperand RenderPipelineCompilerIndirect::getDrawIndex() {
+        auto baseInstance = rg::ShaderInstructionFactory::getBaseInstance();
+        auto drawID = rg::ShaderInstructionFactory::getDrawID();
+        auto instanceID = rg::ShaderInstructionFactory::getInstanceID();
+
+        return rg::ShaderOperand::instruction(
+            rg::ShaderInstructionFactory::add(rg::ShaderOperand::instruction(baseInstance),
+                                              rg::ShaderOperand::instruction(rg::ShaderInstructionFactory::add(
+                                                  rg::ShaderOperand::instruction(drawID),
+                                                  rg::ShaderOperand::instruction(instanceID)))));
     }
 }

@@ -36,7 +36,10 @@ namespace xng {
           directionalLightBuffer(runtime.getResourceHeap(), chunkStreamer, rg::Buffer::CAPABILITY_STORAGE),
           spotLightBuffer(runtime.getResourceHeap(), chunkStreamer, rg::Buffer::CAPABILITY_STORAGE),
           unitQuadMesh(createMesh(Mesh::normalizedQuad())),
-          unitCubeMesh(createMesh(Mesh::normalizedCube())) {
+          unitCubeMesh(createMesh(Mesh::normalizedCube())),
+          pbrDeferredPipeline(createPipeline(PBRMaterial::getLayout())),
+          pbrForwardPipeline(createPipeline(PBRMaterial::getLayout())),
+          shadowCastersPipeline(createPipeline(PBRMaterial::getLayout())) {
     }
 
     void RenderScene::setCamera(const Camera &value) {
@@ -134,6 +137,10 @@ namespace xng {
 
     RenderObjectHandle<RenderMesh> RenderScene::createMesh(const Mesh &mesh,
                                                            RenderObjectHandle<RenderSkeleton> skeleton) {
+        if (!skeleton.isAssigned()) {
+            throw std::runtime_error("Skeleton is not assigned.");
+        }
+
         const auto id = allocateID();
         const auto meshHandle = meshStreamer.create(mesh, skeleton.get().getOffsets());
         meshes.emplace(id, RenderMesh(meshStreamer, meshHandle, skeleton));
@@ -224,23 +231,23 @@ namespace xng {
                                             mMeshes,
                                             sortPriority);
 
-        if (castShadows) {
-            auto shadowTransform = shadowCastersPipeline->createTransform();
-            const auto shadowDrawID = shadowCastersPipeline->addDrawCall(shadowTransform,
-                                                                         mMeshes,
-                                                                         0);
-            models.emplace(id, RenderModel(transformHandle,
-                                           material,
-                                           drawID,
-                                           mMeshes,
-                                           std::move(shadowTransform),
-                                           shadowDrawID));
-        } else {
-            models.emplace(id, RenderModel(transformHandle,
-                                           material,
-                                           drawID,
-                                           mMeshes));
-        }
+        /*  if (castShadows) {
+              auto shadowTransform = shadowCastersPipeline->createTransform();
+              const auto shadowDrawID = shadowCastersPipeline->addDrawCall(shadowTransform,
+                                                                           mMeshes,
+                                                                           0);
+              models.emplace(id, RenderModel(transformHandle,
+                                             material,
+                                             drawID,
+                                             mMeshes,
+                                             std::move(shadowTransform),
+                                             shadowDrawID));
+          } else {*/
+        models.emplace(id, RenderModel(transformHandle,
+                                       material,
+                                       drawID,
+                                       mMeshes));
+        // }
 
         types[id] = RenderObject::RENDER_MODEL;
         return {this, id, models.at(id)};
@@ -500,6 +507,17 @@ namespace xng {
         meshStreamer.commit(graph);
         virtualTextureStreamer.commit(graph);
 
+        pbrDeferredPipeline->commit(graph, streamerQueue);
+        pbrForwardPipeline->commit(graph, streamerQueue);
+        shadowCastersPipeline->commit(graph, streamerQueue);
+        for (const auto &pair: shaders) {
+            pair.second.getPipeline()->commit(graph, streamerQueue);
+        }
+
+        for (const auto &pair: canvases) {
+            pair.second.getPipeline()->commit(graph, streamerQueue);
+        }
+
         chunkStreamer.commit(graph, streamerQueue);
     }
 
@@ -528,7 +546,7 @@ namespace xng {
     }
 
     void RenderScene::incrementReference(const RenderObject::ID id) {
-        refCounts.at(id)++;
+        refCounts[id]++;
     }
 
     void RenderScene::decrementReference(const RenderObject::ID id) {
@@ -616,9 +634,9 @@ namespace xng {
                     throw std::runtime_error("Unknown render path.");
             }
         }
-        if (model.isCastShadows()) {
-            shadowCastersPipeline->removeDrawCall(model.getShadowDrawID());
-        }
+        /* if (model.isCastShadows()) {
+             shadowCastersPipeline->removeDrawCall(model.getShadowDrawID());
+         }*/
         models.erase(id);
     }
 

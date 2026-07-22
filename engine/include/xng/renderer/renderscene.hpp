@@ -396,9 +396,9 @@ namespace xng {
         StreamBuffer directionalLightBuffer;
         StreamBuffer spotLightBuffer;
 
-        StreamBuffer::Handle pointLightBufferHandle;
-        StreamBuffer::Handle directionalLightBufferHandle;
-        StreamBuffer::Handle spotLightBufferHandle;
+        StreamBuffer::Handle pointLightBufferHandle{};
+        StreamBuffer::Handle directionalLightBufferHandle{};
+        StreamBuffer::Handle spotLightBufferHandle{};
 
         bool pointLightResident = false;
         bool directionalLightResident = false;
@@ -429,14 +429,14 @@ namespace xng {
         std::unordered_map<RenderObject::ID, size_t> refCounts;
         std::unordered_map<RenderObject::ID, RenderObject::Type> types;
 
-        std::unordered_set<RenderObject::ID> skinnedMeshes;
+        std::unordered_set<RenderObject::ID> skinnedMeshes{};
 
         RenderObjectHandle<RenderMesh> unitQuadMesh;
         RenderObjectHandle<RenderMesh> unitCubeMesh;
 
-        std::unique_ptr<RenderPipeline> pbrDeferredPipeline;
-        std::unique_ptr<RenderPipeline> pbrForwardPipeline;
-        std::unique_ptr<RenderPipeline> shadowCastersPipeline;
+        std::shared_ptr<RenderPipeline> pbrDeferredPipeline;
+        std::shared_ptr<RenderPipeline> pbrForwardPipeline;
+        std::shared_ptr<RenderPipeline> shadowCastersPipeline;
     };
 }
 

@@ -40,8 +40,8 @@ namespace xng {
          */
         ShaderStruct(ShaderDrawMesh,
                      Mat4f, mvp,
-                     int, transformIndex,
-                     int, materialIndex)
+                     unsigned int, transformIndex,
+                     unsigned int, materialIndex)
 
         class ShaderTexture {
         public:
@@ -76,7 +76,7 @@ namespace xng {
                 return object[std::string(name + textureSizePostfix).c_str()];
             }
 
-            static ShaderScript::Int getMaxMip(const std::string &name, ShaderScript::ShaderObject &object) {
+            static ShaderScript::UInt getMaxMip(const std::string &name, ShaderScript::ShaderObject &object) {
                 return object[std::string(name + maxMipPostfix).c_str()];
             }
 
@@ -128,19 +128,19 @@ namespace xng {
                 object.set(name + maxMipPostfix, value);
             }
 
-            static void setMinFilter(const std::string &name, ObjectStd140 &object, const unsigned int value) {
+            static void setMinFilter(const std::string &name, ObjectStd140 &object, const int value) {
                 object.set(name + minFilterPostfix, value);
             }
 
-            static void setMagFilter(const std::string &name, ObjectStd140 &object, const unsigned int value) {
+            static void setMagFilter(const std::string &name, ObjectStd140 &object, const int value) {
                 object.set(name + magFilterPostfix, value);
             }
 
-            static void setMipFilter(const std::string &name, ObjectStd140 &object, const unsigned int value) {
+            static void setMipFilter(const std::string &name, ObjectStd140 &object, const int value) {
                 object.set(name + mipFilterPostfix, value);
             }
 
-            static void setWrap(const std::string &name, ObjectStd140 &object, const unsigned int value) {
+            static void setWrap(const std::string &name, ObjectStd140 &object, const int value) {
                 object.set(name + wrapPostfix, value);
             }
 
@@ -153,7 +153,7 @@ namespace xng {
                 layout.add(name + textureIDPostfix, rg::ShaderPrimitiveType::Int());
                 layout.add(name + arrayLayerPostfix, rg::ShaderPrimitiveType::Int());
                 layout.add(name + textureSizePostfix, rg::ShaderPrimitiveType::ivec2());
-                layout.add(name + maxMipPostfix, rg::ShaderPrimitiveType::Int());
+                layout.add(name + maxMipPostfix, rg::ShaderPrimitiveType::UInt());
                 layout.add(name + minFilterPostfix, rg::ShaderPrimitiveType::Int());
                 layout.add(name + magFilterPostfix, rg::ShaderPrimitiveType::Int());
                 layout.add(name + mipFilterPostfix, rg::ShaderPrimitiveType::Int());
@@ -233,13 +233,9 @@ namespace xng {
             pipeline.configuration = pipelineConfig;
 
             rg::ShaderAttributeLayout vertexLayout;
-            vertexLayout.addElement(vertexAttributeToName(POSITION),
-                                    rg::ShaderPrimitiveType::vec3());
-            vertexLayout.addElement(vertexAttributeToName(NORMAL),
-                                    rg::ShaderPrimitiveType::vec3());
-            vertexLayout.addElement(vertexAttributeToName(UV), rg::ShaderPrimitiveType::vec2());
-            vertexLayout.addElement(vertexAttributeToName(TANGENT), rg::ShaderPrimitiveType::vec3());
-            vertexLayout.addElement(vertexAttributeToName(BITANGENT), rg::ShaderPrimitiveType::vec3());
+            for (auto attr = ATTRIBUTE_BEGIN; attr <= ATTRIBUTE_END; attr = static_cast<VertexAttribute>(attr + 1)) {
+                vertexLayout.addElement(vertexAttributeToName(attr), getVertexAttributeType(attr));
+            }
 
             for (auto &shader: pipeline.shaders) {
                 ShaderScript::ShaderScope scope(shader.stage);
@@ -267,6 +263,37 @@ namespace xng {
                                                                true,
                                                                std::string(ShaderDrawMesh::_ShaderDrawMesh_type)));
 
+                scope.addTextureArray(virtualAtlasTextureName,
+                                      {rg::ShaderTextureArray{rg::ShaderTexture(rg::TEXTURE_2D_ARRAY, rg::RGBA8), 1}});
+
+                scope.addStorageBuffer(virtualTileMapName,
+                                       rg::ShaderStorageBuffer(true,
+                                                               true,
+                                                               rg::ShaderPrimitiveType::UInt()));
+                scope.addStorageBuffer(virtualTileMapOffsetsName,
+                                       rg::ShaderStorageBuffer(true,
+                                                               true,
+                                                               rg::ShaderPrimitiveType::UInt()));
+                scope.addStorageBuffer(virtualResidencyMapName,
+                                       rg::ShaderStorageBuffer(true,
+                                                               true,
+                                                               rg::ShaderPrimitiveType::UInt()));
+                scope.addStorageBuffer(virtualResidencyMapOffsetsName,
+                                       rg::ShaderStorageBuffer(true,
+                                                               true,
+                                                               rg::ShaderPrimitiveType::UInt()));
+                scope.addStorageBuffer(virtualReadbackBufferName,
+                                       rg::ShaderStorageBuffer(false,
+                                                               true,
+                                                               rg::ShaderPrimitiveType::UInt()));
+
+                scope.addParameter(virtualAtlasSizeName, rg::ShaderPrimitiveType::UInt());
+                scope.addParameter(virtualTileSizeName, rg::ShaderPrimitiveType::UInt());
+                scope.addParameter(virtualTileBorderName, rg::ShaderPrimitiveType::UInt());
+                scope.addParameter(virtualMaxAnisotropyName, rg::ShaderPrimitiveType::Float());
+
+                compileGetDrawIndex(scope, shader.stage);
+
                 compileGetCameraPosition(scope);
                 compileGetModel(scope);
                 compileGetView(scope);
@@ -275,12 +302,30 @@ namespace xng {
                 for (auto &attr: materialLayout.properties) {
                     compileGetMaterialProperty(scope, attr.first, attr.second);
                 }
-                for (auto &tex: materialLayout.textures) {
-                    compileSampleMaterialTexture(scope, tex);
-                }
-                for (auto i = 0; i < colorAttachments.size(); i++) {
-                    const auto &att = colorAttachments.at(i);
-                    compileWriteAttachment(scope, i, att);
+                if (shader.stage == rg::Shader::FRAGMENT) {
+                    for (auto &tex: materialLayout.textures) {
+                        compileSampleMaterialTexture(scope, tex);
+                    }
+                    for (auto i = 0; i < colorAttachments.size(); i++) {
+                        const auto &att = colorAttachments.at(i);
+                        compileWriteAttachment(scope, i, att);
+                    }
+                    shader.inputLayout.addElement("_drawIndex",
+                                                  rg::ShaderPrimitiveType::UInt(),
+                                                  rg::ShaderAttributeLayout::INTERPOLATE_FLAT);
+                } else if (shader.stage == rg::Shader::VERTEX) {
+                    for (auto attr = ATTRIBUTE_BEGIN;
+                         attr <= ATTRIBUTE_END;
+                         attr = static_cast<VertexAttribute>(attr + 1)) {
+                        compileGetVertexAttribute(scope, attr);
+                    }
+                    shader.mainFunction.insert(shader.mainFunction.begin(),
+                                               rg::ShaderInstructionFactory::assign(
+                                                   rg::ShaderOperand::outputAttribute("_drawIndex"),
+                                                   getDrawIndex()));
+                    shader.outputLayout.addElement("_drawIndex",
+                                                   rg::ShaderPrimitiveType::UInt(),
+                                                   rg::ShaderAttributeLayout::INTERPOLATE_FLAT);
                 }
 
                 const auto cShader = scope.build();
@@ -323,6 +368,33 @@ namespace xng {
                             throw std::runtime_error("Conflicting Buffer Definitions");
                         }
                     }
+                    shader.storageBuffers[buffer.first] = buffer.second;
+                }
+
+                // Inject Textures
+                for (auto &tex : cShader.textureArrays) {
+                    for (auto &existingTex: shader.textureArrays) {
+                        if (existingTex == tex) {
+                            continue;
+                        }
+                        if (existingTex.first == tex.first) {
+                            throw std::runtime_error("Conflicting Texture Array Definitions");
+                        }
+                    }
+                    shader.textureArrays[tex.first] = tex.second;
+                }
+
+                // Inject Parameters
+                for (auto &param: cShader.parameters) {
+                    for (auto &existingParam : shader.parameters) {
+                        if (existingParam == param) {
+                            continue;
+                        }
+                        if (existingParam.first == param.first) {
+                            throw std::runtime_error("Conflicting Parameter Definitions");
+                        }
+                    }
+                    shader.parameters[param.first] = param.second;
                 }
 
                 // Inject vertex layout
@@ -354,20 +426,21 @@ namespace xng {
             std::vector<size_t> offsets;
             offsets.resize(5, 0);
 
+            std::vector<size_t> bindingPoints;
+            for (auto attr = ATTRIBUTE_BEGIN; attr <= ATTRIBUTE_END; attr = static_cast<VertexAttribute>(attr + 1)) {
+                bindingPoints.emplace_back(attr);
+            }
+
             pipeline.vertexFormat = rg::RasterPipeline::VertexFormat(vertexLayout,
-                                                                     {
-                                                                         POSITION,
-                                                                         NORMAL,
-                                                                         UV,
-                                                                         TANGENT,
-                                                                         BITANGENT,
-                                                                     },
+                                                                     bindingPoints,
                                                                      offsets);
 
             return std::make_shared<RenderPipelineShader>(cache,
                                                           cache.create(pipeline),
                                                           colorAttachments);
         }
+
+        static void compileGetVertexAttribute(ShaderScript::ShaderScope &scope, VertexAttribute attr);
 
         static void compileGetCameraPosition(ShaderScript::ShaderScope &scope);
 
@@ -389,6 +462,11 @@ namespace xng {
         static void compileWriteAttachment(ShaderScript::ShaderScope &scope,
                                            unsigned int index,
                                            const RenderPipelineShader::Attachment &attachment);
+
+        static void compileGetDrawIndex(ShaderScript::ShaderScope &scope,
+                                        rg::Shader::Stage stage);
+
+        static rg::ShaderOperand getDrawIndex();
 
     private:
         rg::PipelineCache &cache;

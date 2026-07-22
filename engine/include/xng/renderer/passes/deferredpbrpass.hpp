@@ -92,6 +92,7 @@ namespace xng {
                                              getVertexAttributeSize(POSITION));
                         ctx.bindVertexBuffer(scene.getMeshStreamer().getVertexBuffers().at(UV), 1, 0,
                                              getVertexAttributeSize(UV));
+                        ctx.bindIndexBuffer(scene.getMeshStreamer().getIndexBuffer(), rg::INDEX_UNSIGNED_INT);
 
                         ctx.setShaderParameter("viewPosition",
                                                rg::ShaderPrimitive(scene.getCamera().getPosition()));

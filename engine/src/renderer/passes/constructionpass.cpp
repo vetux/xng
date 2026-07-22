@@ -95,46 +95,46 @@ namespace xng {
         InputFlat(Int, fObjectID)
         InputFlat(Int, fReceiveShadows)
 
-        writeAttachment(GBUFFER_POSITION, vec4(fPos, 1));
+        sideEffect(writeAttachment(GBUFFER_POSITION, vec4(fPos, 1)));
 
         // Albedo
         If(getMaterialProperty(PBRMaterial::MATERIAL_ALBEDO_HAS_TEXTURE) == true)
-            writeAttachment(GBUFFER_ALBEDO,
-                            sampleMaterialTexture(
-                                PBRMaterial::MATERIAL_ALBEDO_TEXTURE,
-                                fUv
-                            ));
+            sideEffect(writeAttachment(GBUFFER_ALBEDO,
+                                       sampleMaterialTexture(
+                                           PBRMaterial::MATERIAL_ALBEDO_TEXTURE,
+                                           fUv
+                                       )));
         Else
-            writeAttachment(GBUFFER_ALBEDO,
-                            getMaterialProperty(
-                                PBRMaterial::MATERIAL_ALBEDO_COLOR
-                            ));
+            sideEffect(writeAttachment(GBUFFER_ALBEDO,
+                                       getMaterialProperty(
+                                           PBRMaterial::MATERIAL_ALBEDO_COLOR
+                                       )));
         Fi
 
-        writeAttachment(GBUFFER_ROUGHNESS_METALLIC_AO, vec4(0.0f, 0.0f, 0.0f, 1.0f));
-
-        vec4 roughnessMetallicAO(0.0f, 0.0f, 0.0f, 1.0f);
+        vec4 roughnessMetallicAO;
+        roughnessMetallicAO = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
         // Roughness
         If(getMaterialProperty(PBRMaterial::MATERIAL_ROUGHNESS_HAS_TEXTURE) == true)
-            roughnessMetallicAO.x() = sampleMaterialTexture(PBRMaterial::MATERIAL_ROUGHNESS_TEXTURE, fUv);
+            roughnessMetallicAO.x() = vec4(sampleMaterialTexture(PBRMaterial::MATERIAL_ROUGHNESS_TEXTURE, fUv)).x();
         Else
             roughnessMetallicAO.x() = getMaterialProperty(PBRMaterial::MATERIAL_ROUGHNESS_COLOR);
         Fi
 
         If(getMaterialProperty(PBRMaterial::MATERIAL_METALLIC_HAS_TEXTURE) == true)
-            roughnessMetallicAO.y() = sampleMaterialTexture(PBRMaterial::MATERIAL_METALLIC_TEXTURE, fUv);
+            roughnessMetallicAO.y() = vec4(sampleMaterialTexture(PBRMaterial::MATERIAL_METALLIC_TEXTURE, fUv)).x();
         Else
             roughnessMetallicAO.y() = getMaterialProperty(PBRMaterial::MATERIAL_METALLIC_COLOR);
         Fi
 
         If(getMaterialProperty(PBRMaterial::MATERIAL_AMBIENT_OCCLUSION_HAS_TEXTURE) == true)
-            roughnessMetallicAO.z() = sampleMaterialTexture(PBRMaterial::MATERIAL_AMBIENT_OCCLUSION_TEXTURE, fUv);
+            roughnessMetallicAO.z() = vec4(sampleMaterialTexture(PBRMaterial::MATERIAL_AMBIENT_OCCLUSION_TEXTURE, fUv)).
+                    x();
         Else
             roughnessMetallicAO.z() = getMaterialProperty(PBRMaterial::MATERIAL_AMBIENT_OCCLUSION_COLOR);
         Fi
 
-        writeAttachment(GBUFFER_ROUGHNESS_METALLIC_AO, roughnessMetallicAO);
+        sideEffect(writeAttachment(GBUFFER_ROUGHNESS_METALLIC_AO, roughnessMetallicAO));
 
         // Normals
         mat3 normalMatrix = mat3(transpose(inverse(fModel)));
@@ -143,7 +143,8 @@ namespace xng {
 
         If(getMaterialProperty(PBRMaterial::MATERIAL_NORMAL_HAS_TEXTURE) == true)
             mat3 tbn = mat3(fT, fB, fN);
-            vec3 texNormal = vec3(sampleMaterialTexture(PBRMaterial::MATERIAL_NORMAL_TEXTURE, fUv));
+            vec3 texNormal;
+            texNormal = vec4(sampleMaterialTexture(PBRMaterial::MATERIAL_NORMAL_TEXTURE, fUv)).xyz();
             texNormal = texNormal * 2.0f - 1.0f;
             If(getMaterialProperty(PBRMaterial::MATERIAL_NORMAL_FLIP) == true)
                 texNormal.y() = texNormal.y() * -1.0f;
@@ -155,10 +156,10 @@ namespace xng {
             oNormal = vec4(normalize(texNormal), 1);
         Fi
 
-        writeAttachment(GBUFFER_NORMAL, oNormal);
+        sideEffect(writeAttachment(GBUFFER_NORMAL, oNormal));
 
-        vec4 oObjectShadows(0, getMaterialProperty(PBRMaterial::RECEIVE_SHADOWS), 0, 0);
-        writeAttachment(GBUFFER_OBJECT_ID_RECEIVE_SHADOWS, oObjectShadows);
+        ivec4 oObjectShadows(0, getMaterialProperty(PBRMaterial::RECEIVE_SHADOWS), 0, 0);
+        sideEffect(writeAttachment(GBUFFER_OBJECT_ID_RECEIVE_SHADOWS, oObjectShadows));
 
         EndShader();
 
