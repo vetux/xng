@@ -166,7 +166,7 @@ void createCornellInstance(RenderScene &scene,
     boxMaterialDef.setAlbedo(boxAlbedo, {});
 
     auto boxMaterial = scene.createMaterial(PBRMaterial({}), RENDER_PATH_DEFERRED);
-    auto boxMesh = scene.createMesh(res.boxMesh.get(), {});
+    auto boxMesh = scene.createMesh(res.boxMesh.get());
     auto boxModel = scene.createModel(boxMaterial,
                                       {boxMesh},
                                       true,
@@ -192,7 +192,7 @@ void createCornellInstance(RenderScene &scene,
     brickMaterialDef.setNormal(brickNormal, brickProps);
 
     auto brickMaterial = scene.createMaterial(brickMaterialDef, RENDER_PATH_DEFERRED);
-    auto brickMesh = scene.createMesh(res.cubeMesh.get(), {});
+    auto brickMesh = scene.createMesh(res.cubeMesh.get());
     auto brickModel = scene.createModel(brickMaterial,
                                         {brickMesh},
                                         true,
@@ -204,8 +204,8 @@ void createCornellInstance(RenderScene &scene,
 
     models.emplace_back(brickModel);
 
-    auto sphereMesh = scene.createMesh(Mesh::computeSmoothNormals(res.sphereMesh1.get()), {});
-    auto sphereMesh2 = scene.createMesh(res.sphereMesh2.get(), {});
+    auto sphereMesh = scene.createMesh(Mesh::computeSmoothNormals(res.sphereMesh1.get()));
+    auto sphereMesh2 = scene.createMesh(res.sphereMesh2.get());
 
     auto sphereNormal = scene.createTexture(res.sphereNormalLoader);
 
@@ -242,7 +242,7 @@ void createCornellInstance(RenderScene &scene,
 
     auto goldSphereMaterial = scene.createMaterial(goldMaterialDef, RENDER_PATH_DEFERRED);
     auto goldSphereModel = scene.createModel(goldSphereMaterial,
-                                             {sphereMesh},
+                                             {sphereMesh2},
                                              true,
                                              0);
 
@@ -467,7 +467,7 @@ int main(int argc, char *argv[]) {
 
     auto canvas = scene->createCanvas();
 
-    RenderText textObject(*scene, canvas, fontObject, {}, {}, {}, {});
+   // RenderText textObject(*scene, canvas, fontObject, {}, {}, {}, {});
 
     RendererStatistics stats;
     while (!window->shouldClose()) {
