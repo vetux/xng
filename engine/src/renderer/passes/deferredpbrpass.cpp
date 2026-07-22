@@ -47,7 +47,7 @@ namespace xng {
         fPos = position;
         fUv = uv;
 
-        setVertexPosition(vec4(fPos.xyz(), 1));
+        setVertexPosition(vec4(position, 1.0f));
 
         EndShader();
 
