@@ -41,6 +41,10 @@ namespace xng::opengl {
             }
         }
 
+        [[nodiscard]] bool isBound() const {
+            return bindingPoint != 0;
+        }
+
         void bind(const GLenum target) {
             bindingPoint = target;
             glBindFramebuffer(bindingPoint, FBO);
