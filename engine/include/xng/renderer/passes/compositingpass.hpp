@@ -84,6 +84,7 @@ namespace xng {
                 // Bind Index Buffer
                 ctx.bindIndexBuffer(scene.getMeshStreamer().getIndexBuffer(), rg::INDEX_UNSIGNED_INT);
 
+                // TODO: Find cause of Blending? artifacts between textures and clear color.
                 for (auto &tex: textures) {
                     ctx.bindTexture("texture", {rg::TextureBinding(tex)});
                     ctx.drawIndexed(scene.getUnitQuadMesh().get().getAllocation().drawCall,
