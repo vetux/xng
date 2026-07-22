@@ -34,7 +34,7 @@ namespace xng {
                        const size_t streamingBudget,
                        const rg::Shader &skinningShader)
         : runtime(runtime),
-          chunkStreamer(runtime.getResourceHeap(), KB(128), streamingBudget / KB(128)),
+          chunkStreamer(runtime.getResourceHeap(), KB(256), streamingBudget / KB(256)),
           skinningPipeline(createPipeline(runtime.getPipelineCache(), skinningShader)) {
     }
 

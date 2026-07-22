@@ -24,6 +24,7 @@
 #include "xng/renderer/renderscene.hpp"
 #include "xng/renderer/renderpass.hpp"
 #include "xng/renderer/rendererstatistics.hpp"
+#include "xng/io/byte.hpp"
 
 namespace xng {
     // TODO: Frames in flight implementation
@@ -36,7 +37,7 @@ namespace xng {
          * @param runtime The runtime to use
          * @param streamingBudget The streaming budget (Default 64MB)
          */
-        explicit Renderer(rg::Runtime &runtime, const size_t streamingBudget = 64 * (1024 * 1024))
+        explicit Renderer(rg::Runtime &runtime, const size_t streamingBudget = 256 * (KB(256)))
             : Renderer(runtime, streamingBudget, compileSkinningShader()) {
         }
 
