@@ -203,6 +203,8 @@ namespace xng {
                                                                                   sp.srcRect.dimensions.y));
                 }
                 buffer.upload(slot, obj.getData().data(), obj.getData().size());
+
+                textureSamplers = textures;
             }
 
             bool isUploadComplete() override {
@@ -222,6 +224,8 @@ namespace xng {
             GenericBufferStreamer::Slot slot;
 
             LayoutStd140 layout;
+
+            std::unordered_map<TextureID, TextureSampler> textureSamplers;
         };
 
         ShaderStruct(ShaderDrawCall,

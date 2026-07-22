@@ -38,6 +38,32 @@ namespace xng {
         struct TextureSampler {
             RenderObjectHandle<RenderTexture> texture;
             SamplingProperties samplingProperties;
+
+            TextureSampler() = default;
+
+            TextureSampler(const RenderObjectHandle<RenderTexture> &texture,
+                           const SamplingProperties &samplingProperties)
+                : texture(texture),
+                  samplingProperties(samplingProperties) {
+            }
+
+            TextureSampler(const TextureSampler &other) = default;
+
+            TextureSampler &operator=(const TextureSampler &other) = default;
+
+            TextureSampler(TextureSampler &&other) noexcept {
+                texture = other.texture;
+                samplingProperties = std::move(other.samplingProperties);
+            }
+
+            TextureSampler &operator=(TextureSampler &&other) noexcept {
+                if (this == &other) {
+                    return *this;
+                }
+                texture = other.texture;
+                samplingProperties = std::move(other.samplingProperties);
+                return *this;
+            }
         };
 
         virtual ~RenderPipelineMaterial() = default;
