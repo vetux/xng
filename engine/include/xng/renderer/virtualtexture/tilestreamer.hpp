@@ -291,7 +291,7 @@ namespace xng {
                 for (auto y = 0u; y < state.tileCount.y; y++) {
                     const auto tile = Vec2u(x, y);
                     if (state.getTileState(tile) != TILE_EVICTED) {
-                        return;
+                        continue;
                     }
 
                     const auto texSize = textures.at(tex).loader->getSize();
@@ -416,8 +416,7 @@ namespace xng {
             return ret;
         }
 
-        std::vector<rg::TransferPass> commit(rg::GraphBuilder &graph) {
-            std::vector<rg::TransferPass> ret;
+        void commit(rg::GraphBuilder &graph, StreamerQueue &queue) {
             for (auto &pair: pendingUploads) {
                 pair.second.erase(std::remove_if(pair.second.begin(),
                                                  pair.second.end(),
@@ -491,10 +490,10 @@ namespace xng {
             }
             updatedMips.clear();
 
-            tileMapOffsetsBuffer.commit(graph);
-            tileMapBuffer.commit(graph);
-            residencyMapOffsetsBuffer.commit(graph);
-            residencyMapBuffer.commit(graph);
+            tileMapOffsetsBuffer.commit(queue);
+            tileMapBuffer.commit(queue);
+            residencyMapOffsetsBuffer.commit(queue);
+            residencyMapBuffer.commit(queue);
 
             if (readbackBuffer.getDescription().size != tileMapBuffer.getBuffer().getDescription().size) {
                 auto desc = readbackBuffer.getDescription();
@@ -514,18 +513,16 @@ namespace xng {
                 }
             }
 
-            ret.emplace_back(rg::TransferPassBuilder("TileStreamer/ReadbackClear")
-                .write(readbackBuffer)
-                .read(readbackClearBuffer)
-                .execute([this](rg::TransferContext &ctx) {
+            graph.addPass(rg::GraphicsPassBuilder("TileStreamer/ReadbackClear")
+                .storageWrite(readbackBuffer, {})
+                .storageRead(readbackClearBuffer, {})
+                .execute([this](rg::RasterContext &, rg::TransferContext &ctx, rg::ComputeContext &) {
                     ctx.copyBuffer(readbackBuffer, readbackClearBuffer, 0, 0, readbackBuffer.getDescription().size);
                 }));
 
             copiedReadback = true;
 
             newTextures.clear();
-
-            return ret;
         }
 
         rg::HeapResource<rg::Buffer> getTileMapOffsetsBuffer() const {
