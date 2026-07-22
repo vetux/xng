@@ -26,7 +26,10 @@ namespace xng::opengl {
         auto handle = allocateHandle();
 
         rasterPipelines.emplace(handle, desc);
-        shaderPrograms.emplace(handle, shader);
+
+        ShaderProgram shaderProgram(shader);
+        shaderPrograms.emplace(handle, std::move(shaderProgram));
+
         compiledShaders.emplace(handle, std::move(shader));
 
         return handle;

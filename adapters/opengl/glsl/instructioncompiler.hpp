@@ -23,13 +23,13 @@
 
 using namespace xng::rg;
 
-static const char *inputAttributePrefix = "in_";
-static const char *outputAttributePrefix = "out_";
-static const char *parameterPrefix = "param_";
-static const char *storageBufferPrefix = "storagebuffer_";
-static const char *uniformBufferPrefix = "uniformbuffer_";
+static const char *inputAttributePrefix = "_in";
+static const char *outputAttributePrefix = "_out";
+static const char *parameterPrefix = "_param";
+static const char *storageBufferPrefix = "_storagebuffer";
+static const char *uniformBufferPrefix = "_uniformbuffer";
 static const char *bufferArrayName = "data";
-static const char *texturePrefix = "texture_";
+static const char *texturePrefix = "_texture";
 
 namespace InstructionCompiler {
     /**

@@ -46,18 +46,29 @@ static void oglCheckError() {
     }
 }
 
-static void oglDebugStartGroup(const std::string &name) {
+class OGLDebugGroup {
+public:
+    explicit OGLDebugGroup(const std::string &name) {
 #ifndef NDEBUG
-    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, name.c_str());
+        glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, name.c_str());
 #endif
-    oglCheckError();
-}
+        oglCheckError();
+    }
 
-static void oglDebugEndGroup() {
+    ~OGLDebugGroup() {
 #ifndef NDEBUG
-    glPopDebugGroup();
+        glPopDebugGroup();
 #endif
-    oglCheckError();
-}
+        oglCheckError();
+    }
+
+    OGLDebugGroup(const OGLDebugGroup &) = delete;
+
+    OGLDebugGroup &operator=(const OGLDebugGroup &) = delete;
+
+    OGLDebugGroup(OGLDebugGroup &&) = delete;
+
+    OGLDebugGroup &operator=(OGLDebugGroup &&) = delete;
+};
 
 #endif //XENGINE_OGLDEBUG_HPP

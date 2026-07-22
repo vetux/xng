@@ -96,7 +96,7 @@ namespace xng::opengl {
         BufferGL &operator=(BufferGL &&) = delete;
 
         [[nodiscard]] uint8_t *map() const {
-            oglDebugStartGroup("BufferGL::map");
+            OGLDebugGroup debug("BufferGL::map");
 
             glBindBuffer(target, handle);
 
@@ -118,18 +118,15 @@ namespace xng::opengl {
 
             oglCheckError();
 
-            oglDebugEndGroup();
-
             return static_cast<uint8_t *>(ret);
         }
 
         void unmap() const {
-            oglDebugStartGroup("BufferGL::unmap");
+            OGLDebugGroup debug("BufferGL::unmap");
             glBindBuffer(target, handle);
             glUnmapBuffer(target);
             glBindBuffer(target, 0);
             oglCheckError();
-            oglDebugEndGroup();
         }
     };
 }

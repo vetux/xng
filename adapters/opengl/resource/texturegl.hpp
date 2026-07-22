@@ -78,7 +78,7 @@ namespace xng::opengl {
         void initializeTexture() {
             textureType = convert(desc.textureType);
 
-            oglDebugStartGroup("Texture Buffer Constructor");
+            OGLDebugGroup debug("Texture Buffer Constructor");
 
             glGenTextures(1, &handle);
             glBindTexture(textureType, handle);
@@ -163,13 +163,11 @@ namespace xng::opengl {
 
             glBindTexture(textureType, 0);
 
-            oglDebugEndGroup();
-
             oglCheckError();
         }
 
         void initializeArrayTexture() {
-            oglDebugStartGroup("Texture Buffer Constructor");
+            OGLDebugGroup debug("Texture Buffer Constructor");
 
             glGenTextures(1, &handle);
 
@@ -253,8 +251,6 @@ namespace xng::opengl {
             glTexParameterf(textureType, GL_TEXTURE_MAX_ANISOTROPY, desc.maxAnisotropy);
 
             glBindTexture(textureType, 0);
-
-            oglDebugEndGroup();
 
             oglCheckError();
         }

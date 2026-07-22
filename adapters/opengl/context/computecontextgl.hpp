@@ -34,7 +34,7 @@ namespace xng::opengl {
         ~ComputeContextGL() override = default;
 
         void bindPipeline(const PipelineCache::Handle &pipeline) override {
-            oglDebugStartGroup("ComputeContextGL::bindPipeline");
+            OGLDebugGroup debug("ComputeContextGL::bindPipeline");
 
             const auto &shaderProgram = pipelineCache.getShaderProgram(pipeline);
 
@@ -48,8 +48,6 @@ namespace xng::opengl {
             oglCheckError();
 
             boundPipeline = pipeline;
-
-            oglDebugEndGroup();
         }
 
         void bindUniformBuffer(const std::string &target,
@@ -68,7 +66,7 @@ namespace xng::opengl {
                 throw std::runtime_error("Buffer must have CAPABILITY_UNIFORM");
             }
 
-            oglDebugStartGroup("ComputeContextGL::bindUniformBuffer");
+            OGLDebugGroup debug("ComputeContextGL::bindUniformBuffer");
 
             const auto binding = pipelineCache.getCompiledShader(boundPipeline.value()).getStorageBufferBinding(target);
 
@@ -95,8 +93,6 @@ namespace xng::opengl {
             }
 
             oglCheckError();
-
-            oglDebugEndGroup();
         }
 
         void bindStorageBuffer(const std::string &target,
@@ -115,7 +111,7 @@ namespace xng::opengl {
                 throw std::runtime_error("Buffer must have CAPABILITY_STORAGE");
             }
 
-            oglDebugStartGroup("ComputeContextGL::bindStorageBuffer");
+            OGLDebugGroup debug("ComputeContextGL::bindStorageBuffer");
 
             const auto binding = pipelineCache.getCompiledShader(boundPipeline.value()).getStorageBufferBinding(target);
 
@@ -142,8 +138,6 @@ namespace xng::opengl {
             }
 
             oglCheckError();
-
-            oglDebugEndGroup();
         }
 
         void bindTexture(const std::string &target, const std::vector<TextureBinding> &textureArray) override {
@@ -151,7 +145,7 @@ namespace xng::opengl {
                 throw std::runtime_error("Must bind pipeline before binding texture.");
             }
 
-            oglDebugStartGroup("ComputeContextGL::bindTexture");
+            OGLDebugGroup debug("ComputeContextGL::bindTexture");
 
             const auto binding = pipelineCache.getCompiledShader(boundPipeline.value())
                     .getTextureArrayBinding(target);
@@ -166,8 +160,6 @@ namespace xng::opengl {
             }
 
             oglCheckError();
-
-            oglDebugEndGroup();
         }
 
         void setShaderParameter(const std::string &name, const ShaderPrimitive &value) override {
@@ -178,7 +170,7 @@ namespace xng::opengl {
                 throw std::runtime_error("Shader parameter type mismatch");
             }
 
-            oglDebugStartGroup("ComputeContextGL::setShaderParameter");
+            OGLDebugGroup debug("ComputeContextGL::setShaderParameter");
 
             switch (paramType.type) {
                 case ShaderPrimitiveType::SCALAR: {
@@ -343,14 +335,11 @@ namespace xng::opengl {
                 }
                 break;
             }
-
-            oglDebugEndGroup();
         }
 
         void dispatch(const Vec3u groupCount) override {
-            oglDebugStartGroup("ComputeContextGL::dispatch");
+            OGLDebugGroup debug("ComputeContextGL::dispatch");
             glDispatchCompute(groupCount.x, groupCount.y, groupCount.z);
-            oglDebugEndGroup();
         }
 
         void dispatchIndirect(const Resource<Buffer> &indirectBuffer, const size_t offset) override {
@@ -358,10 +347,9 @@ namespace xng::opengl {
                 throw std::runtime_error("Unassigned buffer resource");
             }
             const auto &buf = resources.getBuffer(indirectBuffer);
-            oglDebugStartGroup("ComputeContextGL::dispatchIndirect");
+            OGLDebugGroup debug("ComputeContextGL::dispatchIndirect");
             glBindBuffer(GL_DISPATCH_INDIRECT_BUFFER, buf.handle);
             glDispatchComputeIndirect(static_cast<GLintptr>(offset));
-            oglDebugEndGroup();
         }
 
     private:

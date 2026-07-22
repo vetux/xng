@@ -77,6 +77,25 @@ struct ShaderProgram {
         oglCheckError();
     }
 
+    ShaderProgram(const ShaderProgram &) = delete;
+
+    ShaderProgram &operator=(const ShaderProgram &) = delete;
+
+    ShaderProgram(ShaderProgram &&other) noexcept {
+        if (this == &other)
+            return;
+        programHandle = other.programHandle;
+        other.programHandle = 0;
+    }
+
+    ShaderProgram &operator=(ShaderProgram &&other) noexcept {
+        if (this == &other)
+            return *this;
+        programHandle = other.programHandle;
+        other.programHandle = 0;
+        return *this;
+    }
+
     void buildShader(const std::string &computeSource) {
         const auto src = computeSource.c_str();
 

@@ -24,45 +24,45 @@
 
 namespace xng::opengl {
     void SurfaceGL::update() {
-            oglDebugStartGroup("Surface::update");
+        OGLDebugGroup debug("Surface::update");
 
-            if (backBuffer == nullptr) {
-                backBuffer = std::make_shared<Framebuffer>();
-            }
-
-            auto fbSize = window->getFramebufferSize();
-
-            // Handle framebuffer null size (Minimize, Window resize)
-            if (fbSize.x <= 0) fbSize.x = 1;
-            if (fbSize.y <= 0) fbSize.y = 1;
-
-            if (backBufferColor == nullptr || backBufferColor->desc.size != fbSize) {
-                rg::Texture desc;
-                desc.size = fbSize;
-                desc.format = RGBA8;
-                backBufferColor = std::make_shared<TextureGL>(desc);
-
-                backBuffer->bind(GL_FRAMEBUFFER);
-                {
-                    backBuffer->attach2D(GL_COLOR_ATTACHMENT0, *backBufferColor, backBufferColor->textureType, 0);
-
-                    glDrawBuffer(GL_COLOR_ATTACHMENT0);
-
-                    const auto clearColor = ColorRGBA::fuchsia();
-                    glClearColor(clearColor.r(), clearColor.g(), clearColor.b(), 0);
-                    glClearDepth(0);
-                    glClearStencil(0);
-                    glClear(GL_COLOR_BUFFER_BIT);
-                }
-                backBuffer->unbind();
-                oglCheckError();
-            }
-
-            oglDebugEndGroup();
+        if (backBuffer == nullptr) {
+            backBuffer = std::make_shared<Framebuffer>();
         }
 
-        void SurfaceGL::present() const {
-            oglDebugStartGroup("Surface::present");
+        auto fbSize = window->getFramebufferSize();
+
+        // Handle framebuffer null size (Minimize, Window resize)
+        if (fbSize.x <= 0) fbSize.x = 1;
+        if (fbSize.y <= 0) fbSize.y = 1;
+
+        if (backBufferColor == nullptr || backBufferColor->desc.size != fbSize) {
+            rg::Texture desc;
+            desc.size = fbSize;
+            desc.format = RGBA8;
+            backBufferColor = std::make_shared<TextureGL>(desc);
+
+            backBuffer->bind(GL_FRAMEBUFFER);
+            {
+                backBuffer->attach2D(GL_COLOR_ATTACHMENT0, *backBufferColor, backBufferColor->textureType, 0);
+
+                glDrawBuffer(GL_COLOR_ATTACHMENT0);
+
+                const auto clearColor = ColorRGBA::fuchsia();
+                glClearColor(clearColor.r(), clearColor.g(), clearColor.b(), 0);
+                glClearDepth(0);
+                glClearStencil(0);
+                glClear(GL_COLOR_BUFFER_BIT);
+            }
+            backBuffer->unbind();
+            oglCheckError();
+        }
+    }
+
+    void SurfaceGL::present() const {
+        {
+            // !! RenderDoc expects debug groups to not span across swap invocations.
+            OGLDebugGroup debug("Surface::present");
 
             auto srcSize = backBufferColor->desc.size;
             auto dstSize = window->getFramebufferSize();
@@ -91,16 +91,15 @@ namespace xng::opengl {
             }
 
             glFlush();
-
-            windowGl->swapBuffers();
-
-            oglCheckError();
-            try {
-                oglCheckError();
-            } catch (const std::exception &e) {
-                // Because the framebuffer size can change randomly, I ignore errors that glBlitFramebuffer might throw.
-            }
-
-            oglDebugEndGroup();
         }
+
+        windowGl->swapBuffers();
+
+        oglCheckError();
+        try {
+            oglCheckError();
+        } catch (const std::exception &e) {
+            // Because the framebuffer size can change randomly, I ignore errors that glBlitFramebuffer might throw.
+        }
+    }
 }

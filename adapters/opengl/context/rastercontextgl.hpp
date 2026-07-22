@@ -39,42 +39,35 @@ namespace xng::opengl {
 
         void beginRenderPass(const std::vector<Attachment> &colorAttachments,
                              const Attachment &depthStencilAttachment) override {
-            oglDebugStartGroup("RasterContextGL::beginRenderPass");
+            OGLDebugGroup debug("RasterContextGL::beginRenderPass");
 
             framebuffer.bind(GL_DRAW_FRAMEBUFFER);
             bindColorAttachments(colorAttachments);
             bindDepthStencilAttachment(depthStencilAttachment);
             checkFramebufferStatus();
             oglCheckError();
-
-            oglDebugEndGroup();
         }
 
         void beginRenderPass(const std::vector<Attachment> &colorAttachments,
                              const std::optional<Attachment> &depthAttachment,
                              const std::optional<Attachment> &stencilAttachment) override {
-            oglDebugStartGroup("RasterContextGL::beginRenderPass");
+            OGLDebugGroup debug("RasterContextGL::beginRenderPass");
 
             framebuffer.bind(GL_DRAW_FRAMEBUFFER);
             bindColorAttachments(colorAttachments);
             bindDepthStencilAttachments(depthAttachment, stencilAttachment);
             checkFramebufferStatus();
             oglCheckError();
-
-            oglDebugEndGroup();
         }
 
         void endRenderPass() override {
-            oglDebugStartGroup("RasterContextGL::endRenderPass");
-
-            framebuffer.bind(0);
+            OGLDebugGroup debug("RasterContextGL::endRenderPass");
+            framebuffer.unbind();
             oglCheckError();
-
-            oglDebugEndGroup();
         }
 
         void bindPipeline(const PipelineCache::Handle &handle) override {
-            oglDebugStartGroup("RasterContextGL::bindPipeline");
+            OGLDebugGroup debug("RasterContextGL::bindPipeline");
 
             const auto &pipeline = pipelineCache.getRasterPipelines().at(handle);
             const auto &shaderProgram = pipelineCache.getShaderProgram(handle);
@@ -185,8 +178,6 @@ namespace xng::opengl {
             boundPipeline = handle;
 
             indexFormat = INDEX_UNDEFINED;
-
-            oglDebugEndGroup();
         }
 
         void bindVertexBuffer(const Resource<Buffer> &buffer,
@@ -205,13 +196,11 @@ namespace xng::opengl {
                 throw std::runtime_error("Buffer must have CAPABILITY_VERTEX");
             }
 
-            oglDebugStartGroup("RasterContextGL::bindVertexBuffer");
+            OGLDebugGroup debug("RasterContextGL::bindVertexBuffer");
 
             glBindVertexBuffer(bindingPoint, resources.getBuffer(buffer).handle, offset, stride);
 
             oglCheckError();
-
-            oglDebugEndGroup();
         }
 
         void bindIndexBuffer(const Resource<Buffer> &buffer, const IndexFormat format) override {
@@ -227,13 +216,11 @@ namespace xng::opengl {
                 throw std::runtime_error("Buffer must have CAPABILITY_VERTEX");
             }
 
-            oglDebugStartGroup("RasterContextGL::bindIndexBuffer");
+            OGLDebugGroup debug("RasterContextGL::bindIndexBuffer");
 
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, resources.getBuffer(buffer).handle);
 
             oglCheckError();
-
-            oglDebugEndGroup();
 
             indexFormat = format;
         }
@@ -255,7 +242,7 @@ namespace xng::opengl {
                 throw std::runtime_error("Buffer must have CAPABILITY_UNIFORM");
             }
 
-            oglDebugStartGroup("RasterContextGL::bindUniformBuffer");
+            OGLDebugGroup debug("RasterContextGL::bindUniformBuffer");
 
             const auto binding = pipelineCache.getCompiledShader(boundPipeline.value()).getStorageBufferBinding(target);
 
@@ -282,8 +269,6 @@ namespace xng::opengl {
             }
 
             oglCheckError();
-
-            oglDebugEndGroup();
         }
 
         void bindStorageBuffer(const std::string &target,
@@ -302,7 +287,7 @@ namespace xng::opengl {
                 throw std::runtime_error("Buffer must have CAPABILITY_STORAGE");
             }
 
-            oglDebugStartGroup("RasterContextGL::bindStorageBuffer");
+            OGLDebugGroup debug("RasterContextGL::bindStorageBuffer");
 
             const auto binding = pipelineCache.getCompiledShader(boundPipeline.value()).getStorageBufferBinding(target);
 
@@ -329,8 +314,6 @@ namespace xng::opengl {
             }
 
             oglCheckError();
-
-            oglDebugEndGroup();
         }
 
         void bindTexture(const std::string &target, const std::vector<TextureBinding> &textureArray) override {
@@ -338,7 +321,7 @@ namespace xng::opengl {
                 throw std::runtime_error("Must bind pipeline before binding texture.");
             }
 
-            oglDebugStartGroup("RasterContextGL::bindTexture");
+            OGLDebugGroup debug("RasterContextGL::bindTexture");
 
             const auto binding = pipelineCache.getCompiledShader(boundPipeline.value())
                     .getTextureArrayBinding(target);
@@ -353,19 +336,21 @@ namespace xng::opengl {
             }
 
             oglCheckError();
-
-            oglDebugEndGroup();
         }
 
         void setShaderParameter(const std::string &name, const ShaderPrimitive &value) override {
-            const auto location = pipelineCache.getCompiledShader(boundPipeline.value()).getParameterBinding(name);
-            const auto paramType = pipelineCache.getCompiledShader(boundPipeline.value()).parameterTypes.at(location);
+            const auto &shader = pipelineCache.getCompiledShader(boundPipeline.value());
+            const auto source = shader.sourceCode;
+            const auto vs = source.at(rg::Shader::VERTEX);
+            const auto fs = source.at(rg::Shader::FRAGMENT);
+            const auto location = shader.getParameterBinding(name);
+            const auto paramType = shader.parameterTypes.at(location);
 
             if (paramType != value.getType()) {
                 throw std::runtime_error("Shader parameter type mismatch");
             }
 
-            oglDebugStartGroup("RasterContextGL::setShaderParameter");
+            OGLDebugGroup debug("RasterContextGL::setShaderParameter");
 
             switch (paramType.type) {
                 case ShaderPrimitiveType::SCALAR: {
@@ -530,8 +515,6 @@ namespace xng::opengl {
                 }
                 break;
             }
-
-            oglDebugEndGroup();
         }
 
         void setViewport(const Vec2i viewportOffset, const Vec2u viewportSize) override {
@@ -539,15 +522,13 @@ namespace xng::opengl {
                 throw std::runtime_error("Must bind pipeline before setting viewport.");
             }
 
-            oglDebugStartGroup("RasterContextGL::setViewport");
+            OGLDebugGroup debug("RasterContextGL::setViewport");
 
             glViewport(static_cast<GLint>(viewportOffset.x),
                        static_cast<GLint>(frameBufferSize.y - (viewportOffset.y + viewportSize.y)),
                        static_cast<GLsizei>(viewportSize.x),
                        static_cast<GLsizei>(viewportSize.y));
             oglCheckError();
-
-            oglDebugEndGroup();
         }
 
         void setStencilReference(const int value) override {
@@ -561,14 +542,12 @@ namespace xng::opengl {
                 throw std::runtime_error("Dynamic stencil reference not enabled.");
             }
 
-            oglDebugStartGroup("RasterContextGL::setStencilReference");
+            OGLDebugGroup debug("RasterContextGL::setStencilReference");
 
             glStencilFunc(convert(pipeline.configuration.stencilMode),
                           value,
                           pipeline.configuration.stencilFunctionMask);
             oglCheckError();
-
-            oglDebugEndGroup();
         }
 
         void drawArray(const DrawCall &drawCall) override {
@@ -578,14 +557,12 @@ namespace xng::opengl {
 
             const auto primitive = pipelineCache.getRasterPipeline(boundPipeline.value()).primitive;
 
-            oglDebugStartGroup("RasterContextGL::drawArray");
+            OGLDebugGroup debug("RasterContextGL::drawArray");
 
             glDrawArrays(convert(primitive),
                          static_cast<GLint>(drawCall.offset),
                          static_cast<GLsizei>(drawCall.count));
             oglCheckError();
-
-            oglDebugEndGroup();
         }
 
         void drawIndexed(const DrawCall &drawCall, const int indexOffset) override {
@@ -599,7 +576,7 @@ namespace xng::opengl {
 
             const auto primitive = pipelineCache.getRasterPipeline(boundPipeline.value()).primitive;
 
-            oglDebugStartGroup("RasterContextGL::drawIndexed");
+            OGLDebugGroup debug("RasterContextGL::drawIndexed");
 
             glDrawElementsBaseVertex(convert(primitive),
                                      static_cast<GLsizei>(drawCall.count),
@@ -607,8 +584,6 @@ namespace xng::opengl {
                                      reinterpret_cast<void *>(static_cast<uintptr_t>(drawCall.offset)),
                                      static_cast<GLint>(indexOffset));
             oglCheckError();
-
-            oglDebugEndGroup();
         }
 
         void drawArrayInstanced(const DrawCall &drawCall, const unsigned int instanceCount) override {
@@ -618,15 +593,13 @@ namespace xng::opengl {
 
             const auto primitive = pipelineCache.getRasterPipeline(boundPipeline.value()).primitive;
 
-            oglDebugStartGroup("RasterContextGL::drawArrayInstanced");
+            OGLDebugGroup debug("RasterContextGL::drawArrayInstanced");
 
             glDrawArraysInstanced(convert(primitive),
                                   static_cast<GLint>(drawCall.offset),
                                   static_cast<GLsizei>(drawCall.count),
                                   static_cast<GLsizei>(instanceCount));
             oglCheckError();
-
-            oglDebugEndGroup();
         }
 
         void drawIndexedInstanced(const DrawCall &drawCall,
@@ -642,7 +615,7 @@ namespace xng::opengl {
 
             const auto primitive = pipelineCache.getRasterPipeline(boundPipeline.value()).primitive;
 
-            oglDebugStartGroup("RasterContextGL::drawIndexedInstanced");
+            OGLDebugGroup debug("RasterContextGL::drawIndexedInstanced");
 
             glDrawElementsInstancedBaseVertex(convert(primitive),
                                               static_cast<GLsizei>(drawCall.count),
@@ -651,8 +624,6 @@ namespace xng::opengl {
                                               static_cast<GLint>(indexOffset),
                                               static_cast<GLsizei>(instanceCount));
             oglCheckError();
-
-            oglDebugEndGroup();
         }
 
         void drawArrayMulti(const std::vector<DrawCall> &drawCalls) override {
@@ -666,7 +637,7 @@ namespace xng::opengl {
                 return;
             }
 
-            oglDebugStartGroup("RasterContextGL::drawArrayMulti");
+            OGLDebugGroup debug("RasterContextGL::drawArrayMulti");
 
             std::vector<GLint> offsets;
             std::vector<GLsizei> counts;
@@ -682,8 +653,6 @@ namespace xng::opengl {
                               static_cast<GLsizei>(offsets.size()));
 
             oglCheckError();
-
-            oglDebugEndGroup();
         }
 
         void drawIndexedMulti(const std::vector<std::pair<DrawCall, int> > &drawCalls) override {
@@ -701,7 +670,7 @@ namespace xng::opengl {
                 return;
             }
 
-            oglDebugStartGroup("RasterContextGL::drawIndexedMulti");
+            OGLDebugGroup debug("RasterContextGL::drawIndexedMulti");
 
             std::vector<void *> offsets;
             std::vector<GLsizei> counts;
@@ -721,8 +690,6 @@ namespace xng::opengl {
                                           static_cast<GLint *>(indexOffsets.data()));
 
             oglCheckError();
-
-            oglDebugEndGroup();
         }
 
         void drawArrayIndirect(const Resource<Buffer> &indirectBuffer, const size_t offset) override {
@@ -737,15 +704,13 @@ namespace xng::opengl {
             const auto primitive = pipelineCache.getRasterPipeline(boundPipeline.value()).primitive;
             const auto &buffer = resources.getBuffer(indirectBuffer);
 
-            oglDebugStartGroup("RasterContextGL::drawArrayIndirect");
+            OGLDebugGroup debug("RasterContextGL::drawArrayIndirect");
 
             glBindBuffer(GL_DRAW_INDIRECT_BUFFER, buffer.handle);
 
             glDrawArraysIndirect(convert(primitive), reinterpret_cast<void *>(static_cast<uintptr_t>(offset)));
 
             oglCheckError();
-
-            oglDebugEndGroup();
         }
 
         void drawIndexedIndirect(const Resource<Buffer> &indirectBuffer, const size_t offset) override {
@@ -764,7 +729,7 @@ namespace xng::opengl {
             const auto primitive = pipelineCache.getRasterPipeline(boundPipeline.value()).primitive;
             const auto &buffer = resources.getBuffer(indirectBuffer);
 
-            oglDebugStartGroup("RasterContextGL::drawIndexedIndirect");
+            OGLDebugGroup debug("RasterContextGL::drawIndexedIndirect");
 
             glBindBuffer(GL_DRAW_INDIRECT_BUFFER, buffer.handle);
 
@@ -773,8 +738,6 @@ namespace xng::opengl {
                                    reinterpret_cast<void *>(static_cast<uintptr_t>(offset)));
 
             oglCheckError();
-
-            oglDebugEndGroup();
         }
 
         void drawArrayMultiIndirect(const Resource<Buffer> &indirectBuffer,
@@ -792,7 +755,7 @@ namespace xng::opengl {
             const auto primitive = pipelineCache.getRasterPipeline(boundPipeline.value()).primitive;
             const auto &buffer = resources.getBuffer(indirectBuffer);
 
-            oglDebugStartGroup("RasterContextGL::drawArrayMultiIndirect");
+            OGLDebugGroup debug("RasterContextGL::drawArrayMultiIndirect");
 
             glBindBuffer(GL_DRAW_INDIRECT_BUFFER, buffer.handle);
 
@@ -802,8 +765,6 @@ namespace xng::opengl {
                                       static_cast<GLsizei>(stride));
 
             oglCheckError();
-
-            oglDebugEndGroup();
         }
 
         void drawIndexedMultiIndirect(const Resource<Buffer> &indirectBuffer,
@@ -825,7 +786,7 @@ namespace xng::opengl {
             const auto primitive = pipelineCache.getRasterPipeline(boundPipeline.value()).primitive;
             const auto &buffer = resources.getBuffer(indirectBuffer);
 
-            oglDebugStartGroup("RasterContextGL::drawIndexedMultiIndirect");
+            OGLDebugGroup debug("RasterContextGL::drawIndexedMultiIndirect");
 
             glBindBuffer(GL_DRAW_INDIRECT_BUFFER, buffer.handle);
 
@@ -836,8 +797,6 @@ namespace xng::opengl {
                                         static_cast<GLsizei>(stride));
 
             oglCheckError();
-
-            oglDebugEndGroup();
         }
 
         void drawArrayMultiIndirectCount(const Resource<Buffer> &indirectBuffer,
@@ -859,7 +818,7 @@ namespace xng::opengl {
             const auto &indirectBuff = resources.getBuffer(indirectBuffer);
             const auto &drawCountBuff = resources.getBuffer(drawCountBuffer);
 
-            oglDebugStartGroup("RasterContextGL::drawArrayMultiIndirectCount");
+            OGLDebugGroup debug("RasterContextGL::drawArrayMultiIndirectCount");
 
             glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirectBuff.handle);
             glBindBuffer(GL_PARAMETER_BUFFER, drawCountBuff.handle);
@@ -871,8 +830,6 @@ namespace xng::opengl {
                                            static_cast<GLsizei>(stride));
 
             oglCheckError();
-
-            oglDebugEndGroup();
         }
 
         void drawIndexedMultiIndirectCount(const Resource<Buffer> &indirectBuffer,
@@ -898,7 +855,7 @@ namespace xng::opengl {
             const auto &indirectBuff = resources.getBuffer(indirectBuffer);
             const auto &drawCountBuff = resources.getBuffer(drawCountBuffer);
 
-            oglDebugStartGroup("RasterContextGL::drawIndexedMultiIndirectCount");
+            OGLDebugGroup debug("RasterContextGL::drawIndexedMultiIndirectCount");
 
             glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirectBuff.handle);
             glBindBuffer(GL_PARAMETER_BUFFER, drawCountBuff.handle);
@@ -911,8 +868,6 @@ namespace xng::opengl {
                                              static_cast<GLsizei>(stride));
 
             oglCheckError();
-
-            oglDebugEndGroup();
         }
 
     private:

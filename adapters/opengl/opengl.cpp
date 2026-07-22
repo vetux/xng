@@ -16,6 +16,8 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <iostream>
+
 #include "xng/adapters/opengl/opengl.hpp"
 
 #include "surfacegl.hpp"
@@ -156,6 +158,18 @@ namespace xng::opengl {
 
     Runtime::Runtime(DisplayEnvironment &env)
         : data(std::make_unique<MemberData>()) {
+#ifndef NDEBUG
+        glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        glDebugMessageCallback([](GLenum source, GLenum type, GLuint id, GLenum severity,
+                          GLsizei length, const GLchar* message, const void* userParam) {
+            // Filter specifically for errors or API mismanagement
+            if (type == GL_DEBUG_TYPE_ERROR || type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR) {
+                std::cerr << "[OpenGL Error] " << message << std::endl;
+            }
+}, nullptr);
+#endif
+
         data->heap = std::make_unique<HeapGL>();
 
         data->deviceInfo.vendor = std::string(reinterpret_cast<const char *>(glGetString(GL_VENDOR)));
@@ -209,7 +223,7 @@ namespace xng::opengl {
         return data->pipelineCache;
     }
 
-    const Runtime::DeviceInformation & Runtime::getDeviceInformation() {
+    const Runtime::DeviceInformation &Runtime::getDeviceInformation() {
         return data->deviceInfo;
     }
 
@@ -224,16 +238,11 @@ namespace xng::opengl {
         std::unordered_set<SurfaceGL *> surfaces;
 
         for (auto &pass: graph.passes) {
-            switch (pass.index()) {
-                case 1: {
-                    auto p = std::get<GraphicsPass>(pass);
-                    for (auto &pair: p.surfaceUsages) {
-                        surfaces.insert(down_cast<SurfaceGL *>(pair.first.get()));
-                    }
-                    break;
+            if (std::holds_alternative<GraphicsPass>(pass)) {
+                auto p = std::get<GraphicsPass>(pass);
+                for (auto &pair: p.surfaceUsages) {
+                    surfaces.insert(down_cast<SurfaceGL *>(pair.first.get()));
                 }
-                default:
-                    continue;
             }
         }
 
@@ -315,17 +324,20 @@ namespace xng::opengl {
                 switch (pass.index()) {
                     case 0: {
                         auto p = std::get<TransferPass>(pass);
+                        OGLDebugGroup debug(p.name);
                         p.callback(transferContext);
                         break;
                     }
                     case 1: {
                         auto p = std::get<ComputePass>(pass);
+                        OGLDebugGroup debug(p.name);
                         p.callback(computeContext);
                         insertBarrier(p);
                         break;
                     }
                     case 2: {
                         auto p = std::get<GraphicsPass>(pass);
+                        OGLDebugGroup debug(p.name);
                         p.callback(rasterContext, transferContext, computeContext);
                         insertBarrier(p);
                         break;

@@ -177,7 +177,7 @@ namespace xng::opengl {
                 uint srcRow = uHeight - 1u - row;
                 dstData[row * uRowUints + col] = srcData[uSrcBase + srcRow * uRowUints + col];
             })";
-            flipShader = ShaderProgram();
+            flipShader = std::move(ShaderProgram());
             flipShader.buildShader(flipShaderSource);
 
             flipRowUintsLoc = glGetUniformLocation(flipShader.programHandle, "uRowUints");
@@ -211,7 +211,7 @@ namespace xng::opengl {
                 throw std::runtime_error("Invalid buffer offset");
             }
 
-            oglDebugStartGroup("TransferContextGL::copyBuffer");
+            OGLDebugGroup debug("TransferContextGL::copyBuffer");
 
             const auto readBuffer = resources.getBuffer(source).handle;
             const auto writeBuffer = resources.getBuffer(target).handle;
@@ -233,8 +233,6 @@ namespace xng::opengl {
             glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
 
             oglCheckError();
-
-            oglDebugEndGroup();
         }
 
         void copyTexture(const Resource<Texture> &target,
@@ -244,7 +242,7 @@ namespace xng::opengl {
                 throw std::runtime_error("Unassigned texture resource");
             }
 
-            oglDebugStartGroup("TransferContextGL::copyTexture");
+            OGLDebugGroup debug("TransferContextGL::copyTexture");
 
             const auto &srcTexture = resources.getTexture(source);
             const auto &dstTexture = resources.getTexture(target);
@@ -276,8 +274,6 @@ namespace xng::opengl {
             }
 
             oglCheckError();
-
-            oglDebugEndGroup();
         }
 
         void copyBufferToTexture(const Resource<Texture> &texture,
@@ -290,7 +286,7 @@ namespace xng::opengl {
                 throw std::runtime_error("Unassigned resource");
             }
 
-            oglDebugStartGroup("TransferContextGL::copyBufferToTexture");
+            OGLDebugGroup debug("TransferContextGL::copyBufferToTexture");
 
             const auto &tex = resources.getTexture(texture);
             const auto &buf = resources.getBuffer(buffer);
@@ -369,8 +365,6 @@ namespace xng::opengl {
             glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
             oglCheckError();
-
-            oglDebugEndGroup();
         }
 
         void copyTextureToBuffer(const Resource<Buffer> &buffer,
@@ -383,7 +377,7 @@ namespace xng::opengl {
                 throw std::runtime_error("Unassigned resource");
             }
 
-            oglDebugStartGroup("TransferContextGL::copyTextureToBuffer");
+            OGLDebugGroup debug("TransferContextGL::copyTextureToBuffer");
 
             const auto &tex = resources.getTexture(texture);
             const auto &buf = resources.getBuffer(buffer);
@@ -442,8 +436,6 @@ namespace xng::opengl {
             flipRowsGL(packCopy.handle, buf.handle, rowSize, textureOffset.dimensions.y, bufferOffset);
 
             oglCheckError();
-
-            oglDebugEndGroup();
         }
 
         void clearTexture(const Resource<Texture> &texture,
@@ -528,7 +520,7 @@ namespace xng::opengl {
                 throw std::runtime_error("Unassigned resource");
             }
 
-            oglDebugStartGroup("TransferContextGL::generateMipMaps");
+            OGLDebugGroup debug("TransferContextGL::generateMipMaps");
 
             const auto &tex = resources.getTexture(texture);
 
@@ -537,14 +529,12 @@ namespace xng::opengl {
             glBindTexture(tex.textureType, 0);
 
             oglCheckError();
-
-            oglDebugEndGroup();
         }
 
         static void clearTexture(const TextureGL &tex,
                                  const Texture::SubResource &target,
                                  const Texture::ClearValue &clearVal) {
-            oglDebugStartGroup("TransferContextGL::clearTexture");
+            OGLDebugGroup debug("TransferContextGL::clearTexture");
 
             const auto mipSize = tex.desc.getMipLevelSize(target.mipLevel);
 
@@ -676,8 +666,6 @@ namespace xng::opengl {
             }
 
             oglCheckError();
-
-            oglDebugEndGroup();
         }
 
     private:
