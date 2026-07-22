@@ -53,7 +53,7 @@ namespace xng {
                                                                           | rg::Texture::CAPABILITY_SAMPLED,
                                                                           surface->getDimensions()));
 
-            registry.set(RenderPassRegistry::CANVAS_COLOR, colorTexture);
+           // registry.set(RenderPassRegistry::CANVAS_COLOR, colorTexture);
         }
 
     private:
