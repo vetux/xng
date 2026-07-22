@@ -64,7 +64,7 @@ namespace xng {
               finishedUploads(std::move(other.finishedUploads)) {
         }
 
-        StreamBuffer &operator=(StreamBuffer &&other)  noexcept {
+        StreamBuffer &operator=(StreamBuffer &&other) noexcept {
             if (&other == this) return *this;
             buffer = std::move(other.buffer);
             targetSize = other.targetSize;
@@ -105,7 +105,8 @@ namespace xng {
          * @return True if the passed upload has finished.
          */
         bool isUploadComplete(const Handle handle) const {
-            return finishedUploads.find(handle) != finishedUploads.end();
+            return finishedUploads.find(handle) != finishedUploads.end()
+                   || flushedUploads.find(handle) != flushedUploads.end();
         }
 
         /**

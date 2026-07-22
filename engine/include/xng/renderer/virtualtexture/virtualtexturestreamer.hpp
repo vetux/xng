@@ -64,6 +64,7 @@ namespace xng {
         void update() {
             // TODO: Tile streaming limiting based on available VRAM
             // TODO: Optimize virtual texture streaming
+            // TODO: Find cause of incorrect flushing behaviour.
             auto tappedTiles = tileStreamer.readback();
             for (auto &pair: tappedTiles) {
                 const auto &mips = tileStreamer.getTextureStates().at(pair.first);

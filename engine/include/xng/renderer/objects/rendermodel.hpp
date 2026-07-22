@@ -120,6 +120,17 @@ namespace xng {
             }
         }
 
+        void flush() {
+            transform->flush();
+            material->flush();
+            for (auto &mesh : meshes) {
+                mesh->flush();
+            }
+            if (shadowTransform) {
+                shadowTransform->flush();
+            }
+        }
+
     private:
         std::shared_ptr<RenderPipelineTransform> transform = nullptr;
         RenderObjectHandle<RenderMaterial> material{};

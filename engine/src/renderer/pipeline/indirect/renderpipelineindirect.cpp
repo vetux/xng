@@ -451,7 +451,7 @@ namespace xng {
 
         // Update indirect / drawMesh buffers
         const auto indirectBufferSize = drawCallData.size() * sizeof(ShaderScript::ShaderDrawIndirectIndexed::CPU);
-        if (indirectBuffer.getDescription().size != indirectBufferSize) {
+        if (indirectBuffer.getDescription().size != indirectBufferSize && indirectBufferSize > 0) {
             const rg::Buffer desc(indirectBufferSize,
                                   rg::Buffer::CAPABILITY_STORAGE | rg::Buffer::CAPABILITY_INDIRECT,
                                   rg::Buffer::MEMORY_GPU_ONLY);
@@ -461,7 +461,7 @@ namespace xng {
         const auto drawMeshBufferSize = drawCallData.size()
                                         * sizeof(RenderPipelineCompilerIndirect::ShaderDrawMesh::CPU);
 
-        if (drawMeshBuffer.getDescription().size != drawMeshBufferSize) {
+        if (drawMeshBuffer.getDescription().size != drawMeshBufferSize && drawMeshBufferSize > 0) {
             const rg::Buffer desc(drawMeshBufferSize,
                                   rg::Buffer::CAPABILITY_STORAGE,
                                   rg::Buffer::MEMORY_GPU_ONLY);

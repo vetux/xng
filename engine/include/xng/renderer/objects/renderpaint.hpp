@@ -77,6 +77,15 @@ namespace xng {
             return mesh;
         }
 
+        void flush() override {
+            if (!canvas.isAssigned())
+                throw std::runtime_error("Uninitialized RenderPaint");
+            canvas->flush();
+            transform->flush();
+            material->flush();
+            mesh->flush();
+        }
+
     private:
         RenderObjectHandle<RenderCanvas> canvas{};
         std::shared_ptr<RenderPipelineTransform> transform = nullptr;

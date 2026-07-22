@@ -25,40 +25,19 @@
 
 using namespace xng::rg;
 using namespace xng::ShaderScript;
-using namespace xng::shaderlib::virtualtexture;
+using namespace xng::RenderPipelineCompilerStubs;
 
 namespace xng {
     rg::Shader CanvasPass::compileVertexShader() {
         BeginShader(Shader::VERTEX)
 
-        Input(vec3, position)
-        Input(vec2, uv)
-
         Output(vec4, fPos)
         Output(vec2, fUv)
 
-        Texture(TEXTURE_2D_ARRAY, RGBA8, atlasTexture)
-        StorageBufferDynamic(UInt, tileMap)
-        StorageBufferDynamic(UInt, tileMapOffsets)
-        StorageBufferDynamic(UInt, residencyMap)
-        StorageBufferDynamic(UInt, residencyMapOffsets)
-        StorageBufferDynamicRW(UInt, readbackBuffer)
+        vec4 pos = vec4(getVertexAttribute(POSITION), 1.0f);
 
-        Parameter(UInt, atlasSize)
-        Parameter(UInt, tileSize)
-        Parameter(UInt, tileBorder)
-        Parameter(Float, maxAnisotropy)
-
-        Parameter(mat4, mvp)
-        Parameter(vec4, color)
-        Parameter(ivec4, textureSize_textureID_maxMip)
-        Parameter(ivec4, minFilter_magFilter_mipFilter_wrap)
-        Parameter(Bool, grayscale)
-
-        vec4 pos = vec4(position, 1.0f);
-
-        fPos = mvp * pos;
-        fUv = uv;
+        fPos = getModelViewProjection() * pos;
+        fUv = getVertexAttribute(UV);
 
         setVertexPosition(fPos);
 
@@ -73,51 +52,17 @@ namespace xng {
         Input(vec4, fPos)
         Input(vec2, fUv)
 
-        Output(vec4, oColor)
-
-        Texture(TEXTURE_2D_ARRAY, RGBA8, atlasTexture)
-        StorageBufferDynamic(UInt, tileMap)
-        StorageBufferDynamic(UInt, tileMapOffsets)
-        StorageBufferDynamic(UInt, residencyMap)
-        StorageBufferDynamic(UInt, residencyMapOffsets)
-        StorageBufferDynamicRW(UInt, readbackBuffer)
-
-        Parameter(UInt, atlasSize)
-        Parameter(UInt, tileSize)
-        Parameter(UInt, tileBorder)
-        Parameter(Float, maxAnisotropy)
-
-        Parameter(mat4, mvp)
-        Parameter(vec4, color)
-        Parameter(ivec4, textureSize_textureID_maxMip)
-        Parameter(ivec4, minFilter_magFilter_mipFilter_wrap)
-        Parameter(Bool, grayscale)
-
-        vec4 texColor = sample_virtual_readback(textureSize_textureID_maxMip.z(),
-                                                fUv,
-                                                minFilter_magFilter_mipFilter_wrap.w(),
-                                                minFilter_magFilter_mipFilter_wrap.x(),
-                                                minFilter_magFilter_mipFilter_wrap.y(),
-                                                minFilter_magFilter_mipFilter_wrap.z(),
-                                                textureSize_textureID_maxMip.xy(),
-                                                textureSize_textureID_maxMip.w(),
-                                                atlasSize,
-                                                tileSize,
-                                                tileBorder,
-                                                maxAnisotropy,
-                                                tileMapOffsets,
-                                                tileMap,
-                                                residencyMapOffsets,
-                                                residencyMap,
-                                                readbackBuffer,
-                                                atlasTexture);
-
-        If(grayscale)
-            oColor = color;
-            oColor.w() = texColor.x();
-        Else
-            oColor = texColor;
+        vec4 texColor;
+        texColor = vec4(0.0f);
+        If(getMaterialProperty(CanvasMaterial::PAINT_HAS_TEXTURE) == Bool(true))
+            texColor = sampleMaterialTexture(CanvasMaterial::PAINT_TEXTURE, fUv);
         Fi
+
+        vec4 color = vec4(getMaterialProperty(CanvasMaterial::PAINT_COLOR));
+
+        vec4 oColor = mix(texColor, color, getMaterialProperty(CanvasMaterial::PAINT_MIX));
+
+        sideEffect(writeAttachment(0, oColor));
 
         EndShader();
 

@@ -237,11 +237,11 @@ namespace xng {
                                                     int sortPriority = 0);
 
         RenderObjectHandle<RenderPointLight> createPointLight(const Vec3f &position,
-                 const ColorRGB color,
-                 const float power,
-                 const bool castShadows,
-                 const float shadowNearPlane,
-                 const float shadowFarPlane);
+                                                              const ColorRGB color,
+                                                              const float power,
+                                                              const bool castShadows,
+                                                              const float shadowNearPlane,
+                                                              const float shadowFarPlane);
 
         RenderObjectHandle<RenderDirectionalLight> createDirectionalLight();
 
@@ -261,6 +261,10 @@ namespace xng {
 
         const RenderPipeline &getShadowCastersPipeline() const {
             return *shadowCastersPipeline;
+        }
+
+        const RenderPipelineCompiler &getCanvasPipelineCompiler() const {
+            return canvasPipeline->getCompiler();
         }
 
         const std::unordered_map<RenderObject::ID, RenderTexture> &getTextures() const {
@@ -442,6 +446,9 @@ namespace xng {
         std::shared_ptr<RenderPipeline> pbrDeferredPipeline;
         std::shared_ptr<RenderPipeline> pbrForwardPipeline;
         std::shared_ptr<RenderPipeline> shadowCastersPipeline;
+
+        // Hack to get this working.
+        std::shared_ptr<RenderPipeline> canvasPipeline;
     };
 }
 

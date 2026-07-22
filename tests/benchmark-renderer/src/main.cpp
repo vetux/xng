@@ -251,11 +251,11 @@ void createCornellInstance(RenderScene &scene,
     models.emplace_back(goldSphereModel);
 
     auto pointLight = scene.createPointLight(offset + Vec3f(0, 0.4, 0),
-                    ColorRGB(255),
-                    2,
-                    true,
-                    0.1,
-                    1000.0f);
+                                             ColorRGB(255),
+                                             2,
+                                             true,
+                                             0.1,
+                                             1000.0f);
 
     lights.emplace_back(pointLight);
 }
@@ -267,7 +267,7 @@ void createDrawList(RenderScene &scene,
     std::cout << "Generating Mips..." << std::endl;
     Resources res(runtime);
 
-    std::cout << "Generating Draw List..." << std::endl;
+    std::cout << "Instantiating Models..." << std::endl;
     // scene.hdri = ResourceHandle<ImageRGBF>(Uri("file://hdri/church_stairway_4k.hdr"));
 
     scene.setCamera(Camera(Transform(Vec3f(0, 0, -2),
@@ -435,19 +435,23 @@ int main(int argc, char *argv[]) {
     ren.setPasses({
         std::make_shared<ConstructionPass>(scene->getPbrDeferredPipeline().getCompiler()),
         std::make_shared<DeferredPBRPass>(runtime->getResourceHeap(), runtime->getPipelineCache()),
-        std::make_shared<CanvasPass>(runtime->getResourceHeap(), runtime->getPipelineCache()),
+        std::make_shared<CanvasPass>(scene->getCanvasPipelineCompiler()),
         std::make_shared<CompositingPass>(runtime->getPipelineCache())
     });
 
     std::cout << "Loading Assets..." << std::endl;
     ResourceRegistry::getDefaultRegistry().awaitAll();
 
-    std::cout << "Allocating Objects..." << std::endl;
+    std::cout << "Preparing Scene..." << std::endl;
 
     std::vector<RenderObjectHandle<RenderModel> > models;
     std::vector<RenderObjectHandle<RenderPointLight> > lights;
 
     createDrawList(*scene, *runtime, models, lights);
+
+    for (auto &model : models) {
+        model->flush();
+    }
 
     std::cout << "Ready" << std::endl;
 
@@ -466,7 +470,7 @@ int main(int argc, char *argv[]) {
 
     auto canvas = scene->createCanvas();
 
-   // RenderText textObject(*scene, canvas, fontObject, {}, {}, {}, {});
+    RenderText textObject(*scene, canvas, fontObject, {}, {}, {}, {});
 
     RendererStatistics stats;
     while (!window->shouldClose()) {
@@ -483,21 +487,22 @@ int main(int argc, char *argv[]) {
 
             std::wstring txt = std::to_wstring(frameLimiter.getFramerate())
                                + L" FPS";
-            /* if (ren.getStatistics().streamingTiles > 0)
-                 txt += L"\nStreaming "
-                         + std::to_wstring(ren.getStatistics().streamingTiles)
-                         + L" tiles";
+            size_t streamingTiles = scene->getVirtualTextureStreamer().getStreamingTiles();
+            if (streamingTiles > 0)
+                txt += L"\nStreaming "
+                        + std::to_wstring(streamingTiles)
+                        + L" tiles";
 
-             SamplingProperties props;
-             props.minFilter = FILTER_NEAREST;
-             props.magFilter = FILTER_NEAREST;
-             textObject = ren.getAllocator().createPaintText(fontObject,
-                                                             std::u32string(txt.begin(), txt.end()),
-                                                             {},
-                                                             ColorRGBA::lime(),
-                                                             props);*/
-
-            // canvas->setPaints({textObject});
+            SamplingProperties props;
+            props.minFilter = FILTER_NEAREST;
+            props.magFilter = FILTER_NEAREST;
+            textObject = RenderText(*scene,
+                                    canvas,
+                                    fontObject,
+                                    std::u32string(txt.begin(), txt.end()),
+                                    {},
+                                    ColorRGBA::lime(),
+                                    props);
         }
 
         auto fbSize = surface->getDimensions();
@@ -511,43 +516,6 @@ int main(int argc, char *argv[]) {
                                                                  0.001f,
                                                                  1000.0f)));
 
-        /*
-        lightController(scene.spotLights.at(0).transform, *window, frameLimiter.getDeltaTimeSeconds());
-        scene.skinnedModels.at(0).transform.setPosition(scene.spotLights.at(0).transform.getPosition());
-        scene.skinnedModels.at(0).transform.setRotation(scene.spotLights.at(0).transform.getRotation());
-        config->setScene(scene);*/
-        /*
-                auto fbSizeF = fbSize.convert<float>();
-
-                Canvas canvas(fbSize);
-                canvas.setBackgroundColor(ColorRGBA::black(1, 0));
-                canvas.paint(PaintImage(Rectf({}, smileyImg.getResolution().convert<float>()),
-                                        Rectf({}, smileyImg.getResolution().convert<float>()),
-                                        smiley,
-                                        true));
-                canvas.paint(PaintImage(Rectf({}, tuxImg.getResolution().convert<float>()),
-                                        Rectf({}, tuxImg.getResolution().convert<float>()),
-                                        tux,
-                                        true));
-                canvas.paint(PaintText({15, 10}, text, ColorRGBA::purple()));
-                canvas.paint(PaintText(Vec2f(fbSizeF.x - static_cast<float>(deltaText.size.x) - 3, 0), deltaText,
-                                       ColorRGBA::black()));
-
-                config->setCanvases({canvas});
-        */
-        /*       if (input.getKey(KEY_F1)) {
-                   config->setGamma(config->getGamma() - 0.75 * frameLimiter.getDeltaTimeSeconds());
-               } else if (input.getKey(KEY_F2)) {
-                   config->setGamma(config->getGamma() + 0.75 * frameLimiter.getDeltaTimeSeconds());
-               }
-
-               if (input.getKey(KEY_F3)) {
-                   config->setRenderScale(config->getRenderScale() - 0.1 * frameLimiter.getDeltaTimeSeconds());
-               } else if (input.getKey(KEY_F4)) {
-                   config->setRenderScale(config->getRenderScale() + 0.1 * frameLimiter.getDeltaTimeSeconds());
-               }
-
-               stats = passScheduler->execute(graph3D);*/
         ren.draw(surface, *scene);
     }
 

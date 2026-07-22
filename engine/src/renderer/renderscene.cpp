@@ -39,7 +39,8 @@ namespace xng {
           unitCubeMesh(createMesh(Mesh::normalizedCube())),
           pbrDeferredPipeline(createPipeline(PBRMaterial::getLayout())),
           pbrForwardPipeline(createPipeline(PBRMaterial::getLayout())),
-          shadowCastersPipeline(createPipeline(PBRMaterial::getLayout())) {
+          shadowCastersPipeline(createPipeline(PBRMaterial::getLayout())),
+          canvasPipeline(createPipeline(CanvasMaterial::getLayout())) {
     }
 
     void RenderScene::setCamera(const Camera &value) {
@@ -288,13 +289,13 @@ namespace xng {
         m.positions.emplace_back(end.x, end.y, 1);
         auto mesh = createMesh(m);
 
-        auto transform = canvas.get().getPipeline()->createTransform();
+        auto transform = canvas.get().getPipeline().createTransform();
         transform->setTransform(modelMatrix);
 
-        auto material = canvas.get().getPipeline()->createMaterial();
+        auto material = canvas.get().getPipeline().createMaterial();
         material->update(canvasMaterial.getProperties(), canvasMaterial.getTextures());
 
-        const auto drawID = canvas.get().getPipeline()->addDrawCall(transform, material, {mesh}, sortPriority);
+        const auto drawID = canvas.get().getPipeline().addDrawCall(transform, material, {mesh}, sortPriority);
 
         paints.emplace(id, RenderPaint(canvas,
                                        std::move(transform),
@@ -319,13 +320,13 @@ namespace xng {
 
         const auto mesh = unitQuadMesh;
 
-        auto transform = canvas.get().getPipeline()->createTransform();
+        auto transform = canvas->getPipeline().createTransform();
         transform->setTransform(modelMatrix);
 
-        auto material = canvas.get().getPipeline()->createMaterial();
+        auto material = canvas->getPipeline().createMaterial();
         material->update(canvasMaterial.getProperties(), canvasMaterial.getTextures());
 
-        const auto drawID = canvas.get().getPipeline()->addDrawCall(transform, material, {mesh}, sortPriority);
+        const auto drawID = canvas->getPipeline().addDrawCall(transform, material, {mesh}, sortPriority);
 
         paints.emplace(id, RenderPaint(canvas,
                                        std::move(transform),
@@ -353,13 +354,13 @@ namespace xng {
 
         const auto mesh = unitQuadMesh;
 
-        auto transform = canvas.get().getPipeline()->createTransform();
+        auto transform = canvas->getPipeline().createTransform();
         transform->setTransform(modelMatrix);
 
-        auto material = canvas.get().getPipeline()->createMaterial();
+        auto material = canvas->getPipeline().createMaterial();
         material->update(canvasMaterial.getProperties(), canvasMaterial.getTextures());
 
-        const auto drawID = canvas.get().getPipeline()->addDrawCall(transform, material, {mesh}, sortPriority);
+        const auto drawID = canvas->getPipeline().addDrawCall(transform, material, {mesh}, sortPriority);
 
         paints.emplace(id, RenderPaint(canvas,
                                        std::move(transform),
@@ -392,13 +393,13 @@ namespace xng {
 
         const auto mesh = unitQuadMesh;
 
-        auto transform = canvas.get().getPipeline()->createTransform();
+        auto transform = canvas->getPipeline().createTransform();
         transform->setTransform(modelMatrix);
 
-        auto material = canvas.get().getPipeline()->createMaterial();
+        auto material = canvas->getPipeline().createMaterial();
         material->update(canvasMaterial.getProperties(), canvasMaterial.getTextures());
 
-        const auto drawID = canvas.get().getPipeline()->addDrawCall(transform, material, {mesh}, sortPriority);
+        const auto drawID = canvas->getPipeline().addDrawCall(transform, material, {mesh}, sortPriority);
 
         paints.emplace(id, RenderPaint(canvas,
                                        std::move(transform),
@@ -410,11 +411,11 @@ namespace xng {
     }
 
     RenderObjectHandle<RenderPointLight> RenderScene::createPointLight(const Vec3f &position,
-                 const ColorRGB color,
-                 const float power,
-                 const bool castShadows,
-                 const float shadowNearPlane,
-                 const float shadowFarPlane) {
+                                                                       const ColorRGB color,
+                                                                       const float power,
+                                                                       const bool castShadows,
+                                                                       const float shadowNearPlane,
+                                                                       const float shadowFarPlane) {
         const auto id = allocateID();
         pointLights.emplace(id, RenderPointLight([this]() {
             reuploadPointLights = true;
@@ -523,7 +524,7 @@ namespace xng {
         }
 
         for (const auto &pair: canvases) {
-            pair.second.getPipeline()->commit(graph, streamerQueue);
+            pair.second.getPipeline().commit(graph, streamerQueue);
         }
 
         chunkStreamer.commit(streamerQueue);
@@ -539,7 +540,7 @@ namespace xng {
         }
 
         for (auto &pair: canvases) {
-            pair.second.getPipeline()->prepare(graph);
+            pair.second.getPipeline().prepare(graph);
         }
     }
 
@@ -660,7 +661,7 @@ namespace xng {
 
     void RenderScene::destroyPaint(const RenderObject::ID id) {
         const auto &paint = paints.at(id);
-        paint.getCanvas().get().getPipeline()->removeDrawCall(paint.getDrawID());
+        paint.getCanvas().get().getPipeline().removeDrawCall(paint.getDrawID());
         paints.erase(id);
     }
 

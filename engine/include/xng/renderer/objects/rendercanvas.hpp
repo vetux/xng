@@ -77,11 +77,15 @@ namespace xng {
             pipeline->setCamera(Vec3f(0, 0, -1), view, localProjection);
         }
 
-        const std::shared_ptr<RenderPipeline> &getPipeline() const {
+        RenderPipeline &getPipeline() const {
             if (pipeline == nullptr) {
                 throw std::runtime_error("Uninitialized RenderCanvas");
             }
-            return pipeline;
+            return *pipeline;
+        }
+
+        const RenderObjectHandle<RenderTexture> &getTexture() const {
+            return texture;
         }
 
     private:

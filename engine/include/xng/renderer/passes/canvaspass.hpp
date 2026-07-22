@@ -34,15 +34,23 @@ namespace xng {
 
         XENGINE_EXPORT static rg::Shader compileFragmentShader();
 
-        CanvasPass(rg::Heap &heap, rg::PipelineCache &pipelineCache)
-            : CanvasPass(heap, pipelineCache, compileVertexShader(), compileFragmentShader()) {
+        explicit CanvasPass(const RenderPipelineCompiler &compiler)
+            : CanvasPass(compiler, compileVertexShader(), compileFragmentShader()) {
         }
 
-        //TODO: Implement CanvasPass
-        CanvasPass(rg::Heap &heap,
-                   rg::PipelineCache &pipelineCache,
+        CanvasPass(const RenderPipelineCompiler &compiler,
                    const rg::Shader &vertexShader,
                    const rg::Shader &fragmentShader) {
+            std::vector<RenderPipelineShader::Attachment> attachments;
+            attachments.emplace_back(RenderPipelineShader::Attachment::ATTACHMENT_NATIVE,
+                                     rg::ShaderPrimitiveType::vec4(),
+                                     rg::RGBA8);
+
+            shader = compiler.compile({vertexShader, fragmentShader},
+                                      getPipelineConfig(),
+                                      attachments,
+                                      {},
+                                      {});
         }
 
         void record(rg::GraphBuilder &builder,
@@ -53,7 +61,29 @@ namespace xng {
                                                                           | rg::Texture::CAPABILITY_SAMPLED,
                                                                           surface->getDimensions()));
 
-           // registry.set(RenderPassRegistry::CANVAS_COLOR, colorTexture);
+            registry.set(RenderPassRegistry::CANVAS_COLOR, colorTexture);
+
+            for (auto &pair: scene.getCanvases()) {
+                std::vector<RenderPipeline::Attachment> colorAttachments;
+                if (pair.second.getTexture().isAssigned()) {
+                    // TODO: Texture Canvas path
+                    continue;
+                } else {
+                    colorAttachments.emplace_back(rg::Attachment(colorTexture, Vec4f(0)));
+                }
+
+                pair.second.getPipeline().execute(builder,
+                                                  "CanvasPass",
+                                                  *shader,
+                                                  {{}, colorTexture.getDescription().size.convert<int>()},
+                                                  colorAttachments,
+                                                  {},
+                                                  {},
+                                                  {},
+                                                  {},
+                                                  {},
+                                                  {});
+            }
         }
 
     private:
@@ -68,13 +98,10 @@ namespace xng {
             ret.enableStencilTest = false;
             ret.enableDynamicStencilReference = false;
 
-            std::vector<size_t> offsets;
-            offsets.resize(2, 0);
-
             return ret;
         }
 
-        rg::PipelineCache::Handle pipeline;
+        std::shared_ptr<RenderPipelineShader> shader;
     };
 }
 #endif //XENGINE_CANVASPASS_HPP

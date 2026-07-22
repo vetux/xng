@@ -27,16 +27,20 @@ namespace xng {
     class RenderText {
     public:
         RenderText(RenderScene &scene,
-                   const RenderObjectHandle<RenderCanvas>& canvas,
+                   const RenderObjectHandle<RenderCanvas> &canvas,
                    std::shared_ptr<RenderFont> _font,
                    const std::u32string &text,
                    const TextLayoutParameters &layoutParameters,
                    const ColorRGBA &color,
                    const SamplingProperties &sampling_properties,
-                   const Vec2f& position = {})
+                   const Vec2f &position = {})
             : font(std::move(_font)),
               color(color),
               samplingProperties(sampling_properties) {
+            if (text.empty()) {
+                return;
+            }
+
             for (auto &c: text) {
                 font->loadGlyph(c);
             }
@@ -66,6 +70,8 @@ namespace xng {
                                                {},
                                                color,
                                                Vec4f(1, 1, 1, 0));
+
+                paint->flush();
 
                 chars.emplace_back(paint);
             }
