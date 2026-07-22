@@ -41,6 +41,10 @@ namespace xng::opengl {
                              const Attachment &depthStencilAttachment) override {
             OGLDebugGroup debug("RasterContextGL::beginRenderPass");
 
+            if (framebuffer.isBound()) {
+                throw std::runtime_error("Framebuffer already bound");
+            }
+
             framebuffer.bind(GL_DRAW_FRAMEBUFFER);
             bindColorAttachments(colorAttachments);
             bindDepthStencilAttachment(depthStencilAttachment);
@@ -53,6 +57,10 @@ namespace xng::opengl {
                              const std::optional<Attachment> &stencilAttachment) override {
             OGLDebugGroup debug("RasterContextGL::beginRenderPass");
 
+            if (framebuffer.isBound()) {
+                throw std::runtime_error("Framebuffer already bound");
+            }
+
             framebuffer.bind(GL_DRAW_FRAMEBUFFER);
             bindColorAttachments(colorAttachments);
             bindDepthStencilAttachments(depthAttachment, stencilAttachment);
@@ -62,13 +70,20 @@ namespace xng::opengl {
 
         void endRenderPass() override {
             OGLDebugGroup debug("RasterContextGL::endRenderPass");
+
+            if (!framebuffer.isBound()) {
+                throw std::runtime_error("Framebuffer not bound");
+            }
+
             framebuffer.unbind();
             oglCheckError();
         }
 
         void bindPipeline(const PipelineCache::Handle &handle) override {
             OGLDebugGroup debug("RasterContextGL::bindPipeline");
-
+            if (!framebuffer.isBound()) {
+                throw std::runtime_error("Must call beginRenderPass before bindPipeline");
+            }
             const auto &pipeline = pipelineCache.getRasterPipelines().at(handle);
             const auto &shaderProgram = pipelineCache.getShaderProgram(handle);
 
