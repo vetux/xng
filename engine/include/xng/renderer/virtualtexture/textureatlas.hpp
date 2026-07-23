@@ -30,6 +30,13 @@ namespace xng {
     public:
         typedef unsigned int Slot;
 
+        class UploadCallbackHandler {
+        public:
+            virtual ~UploadCallbackHandler() = default;
+
+            virtual void onUploadComplete(Slot slot) = 0;
+        };
+
         /**
          * The ChunkStreamer streaming budget defines the PCIe bandwidth limit.
          * Additionally, the max tiles in flight represent a VRAM usage limit for bounding the tile staging buffer and
@@ -40,23 +47,23 @@ namespace xng {
          * @param tileSize
          * @param tileBorder
          * @param maxAnisotropy
-         * @param maxTilesInFlight The max tiles in flight per frame (Flushed tiles can exceed this value)
+         * @param maxTileCopies The maximum number of tiles to copy per frame (Flushed tiles can exceed this value)
+         * @param maxTilesInFlight The maximum expected number of tile uploads in flight.
          */
         TextureAtlas(rg::Runtime &runtime,
                      ChunkStreamer &chunkStreamer,
                      const unsigned int tileSize,
                      const unsigned int tileBorder,
                      const float maxAnisotropy,
+                     const unsigned int maxTileCopies = 128,
                      const unsigned int maxTilesInFlight = 128)
             : runtime(runtime),
-              buffer(runtime.getResourceHeap(), chunkStreamer, rg::Buffer::CAPABILITY_TRANSFER_SRC),
               tileSize(tileSize),
               tileBorder(tileBorder),
               atlasTileSize(tileSize + 2 * tileBorder),
               atlasTileBytes((atlasTileSize * atlasTileSize) * 4),
-              maxTilesInFlight(maxTilesInFlight) {
-            buffer.setTargetSize(maxTilesInFlight * atlasTileBytes);
-
+              maxTileCopies(maxTileCopies),
+              uploadBuffer(runtime.getResourceHeap(), chunkStreamer, maxTilesInFlight, atlasTileBytes) {
             const auto limits = runtime.getTextureFormatLimits(rg::TEXTURE_2D_ARRAY,
                                                                rg::RGBA8,
                                                                rg::Texture::CAPABILITY_SAMPLED |
@@ -84,28 +91,29 @@ namespace xng {
             texture = runtime.getResourceHeap().allocateTexture(desc);
         }
 
-        Slot create(const std::shared_ptr<std::vector<uint8_t> > &texels, const int priority) {
+        Slot create(std::vector<uint8_t> texels,
+                    const int priority,
+                    UploadCallbackHandler &callback) {
             const auto slot = slotAllocator.allocate(1);
-            pendingUploads.emplace(slot, PendingUpload(slot, getOffset(slot), texels));
+            pendingUploads.emplace(slot, TileUpload(slot,
+                                                    atlasTileBytes,
+                                                    uploadBuffer,
+                                                    getOffset(slot),
+                                                    std::move(texels),
+                                                    callback));
             pendingUploadPriorities.emplace(slot, priority);
             pendingUploadQueues[priority].insert(slot);
+            tilesInFlight++;
             return slot;
         }
 
         void destroy(const Slot slot) {
-            slotAllocator.free(slot, 1);
-            auto it = pendingUploads.find(slot);
-            if (it != pendingUploads.end()) {
-                if (it->second.startedUpload) {
-                    buffer.release(it->second.bufferHandle);
-                    freeBufferSlot(it->second.bufferSlot);
-                    tilesInFlight--;
-                }
-                pendingUploadQueues[pendingUploadPriorities.at(slot)].erase(slot);
-                copiedUploadQueues[pendingUploadPriorities.at(slot)].erase(slot);
-                pendingUploadPriorities.erase(slot);
+            if (pendingUploads.find(slot) != pendingUploads.end()) {
+                tilesInFlight--;
             }
+            slotAllocator.free(slot, 1);
             pendingUploads.erase(slot);
+            pendingUploadPriorities.erase(slot);
             flushedUploads.erase(slot);
         }
 
@@ -118,10 +126,7 @@ namespace xng {
         bool isUploadComplete(const Slot handle) {
             auto it = pendingUploads.find(handle);
             if (it != pendingUploads.end()) {
-                if (it->second.startedUpload) {
-                    return buffer.isUploadComplete(it->second.bufferHandle);
-                }
-                return false;
+                return it->second.isUploadComplete();
             }
             return true;
         }
@@ -154,85 +159,63 @@ namespace xng {
                     }));
             }
 
-            std::unordered_set<Slot> frameCopies;
-            std::unordered_set<Slot> finishedUploads;
-
-            for (auto &pair: copiedUploadQueues) {
-                for (auto slot: pair.second) {
-                    auto &upload = pendingUploads.at(slot);
-                    freeBufferSlot(upload.bufferSlot);
-                    buffer.release(upload.bufferHandle);
-                    finishedUploads.insert(slot);
-                }
-            }
-
-            for (auto slot: finishedUploads) {
+            for (auto &slot: copiedUploads) {
                 pendingUploads.erase(slot);
                 flushedUploads.erase(slot);
-                copiedUploadQueues.at(pendingUploadPriorities.at(slot)).erase(slot);
+                pendingUploadQueues.at(pendingUploadPriorities.at(slot)).erase(slot);
                 pendingUploadPriorities.erase(slot);
                 tilesInFlight--;
             }
+            copiedUploads.clear();
 
+            std::unordered_set<Slot> frameCopies;
             for (auto slot: flushedUploads) {
                 auto &upload = pendingUploads.at(slot);
-                if (upload.flushed)
-                    continue;
-                if (!upload.startedUpload) {
-                    upload.bufferSlot = allocateBufferSlot();
-                    upload.bufferHandle = buffer.upload(*upload.texels, upload.bufferSlot * atlasTileBytes);
-                    upload.startedUpload = true;
-                    buffer.flush(upload.bufferHandle);
-                    tilesInFlight++;
-                } else {
-                    buffer.flush(upload.bufferHandle);
-                }
-                upload.flushed = true;
+                upload.flush();
+                frameCopies.insert(slot);
             }
 
             for (auto &pair: pendingUploadQueues) {
                 for (auto slot: pair.second) {
-                    auto &upload = pendingUploads.at(slot);
-                    if (!upload.startedUpload && tilesInFlight < maxTilesInFlight) {
-                        upload.bufferSlot = allocateBufferSlot();
-                        assert(upload.texels->size() == atlasTileBytes);
-                        upload.bufferHandle = buffer.upload(*upload.texels,
-                                                            upload.bufferSlot * atlasTileBytes);
-                        upload.startedUpload = true;
-                        tilesInFlight++;
+                    if (frameCopies.size() >= maxTileCopies) {
+                        break;
                     }
-
-                    if ((upload.startedUpload && buffer.isUploadComplete(upload.bufferHandle))
-                        || flushedUploads.find(slot) != flushedUploads.end()) {
+                    const auto &upload = pendingUploads.at(slot);
+                    if (upload.isUploadComplete()) {
                         frameCopies.insert(slot);
                     }
                 }
+                if (frameCopies.size() >= maxTileCopies) {
+                    break;
+                }
             }
 
-            buffer.commit(queue);
+            uploadBuffer.buffer.commit(queue);
 
             auto pass = rg::GraphicsPassBuilder("TextureAtlas/Copy");
 
             for (auto slot: frameCopies) {
                 const auto &upload = pendingUploads.at(slot);
-                pass.transferRead(buffer.getBuffer(),
-                                  upload.bufferSlot * atlasTileBytes,
+                pass.transferRead(uploadBuffer.buffer.getBuffer(),
+                                  upload.uploadBufferSlot * atlasTileBytes,
                                   atlasTileBytes);
                 pass.transferWrite(texture, rg::TextureBinding::Range(0, 1, upload.offset.z, 1));
 
-                copiedUploadQueues[pendingUploadPriorities.at(slot)].insert(slot);
+                upload.callback.onUploadComplete(slot);
+
+                copiedUploads.insert(slot);
                 pendingUploadQueues.at(pendingUploadPriorities.at(slot)).erase(slot);
             }
 
             queue.addFrame(pass.execute([this, frameCopies](rg::RasterContext &,
-                                                           rg::TransferContext &ctx,
-                                                           rg::ComputeContext &) {
+                                                            rg::TransferContext &ctx,
+                                                            rg::ComputeContext &) {
                 for (auto slot: frameCopies) {
                     const auto &upload = pendingUploads.at(slot);
                     ctx.copyBufferToTexture(texture,
-                                            buffer.getBuffer(),
+                                            uploadBuffer.buffer.getBuffer(),
                                             rg::Texture::SubResource(0, upload.offset.z, rg::FACE_UNDEFINED),
-                                            upload.bufferSlot * atlasTileBytes,
+                                            upload.uploadBufferSlot * atlasTileBytes,
                                             Rectu(Vec2u(upload.offset.x, upload.offset.y),
                                                   Vec2u(atlasTileSize, atlasTileSize)),
                                             rg::RGBA8);
@@ -252,25 +235,82 @@ namespace xng {
             return tileBorder;
         }
 
+        size_t getTilesInFlight() const {
+            return tilesInFlight;
+        }
+
     private:
-        struct PendingUpload {
+        // TODO: Handle upload buffer allocator fragmentation
+        struct UploadBuffer {
+            StreamBuffer buffer;
+            RangeAllocator allocator;
+
+            UploadBuffer(rg::Heap &heap,
+                         ChunkStreamer &chunkStreamer,
+                         const unsigned int maxTilesInFlight,
+                         const size_t atlasTileBytes)
+                : buffer(heap,
+                         chunkStreamer,
+                         rg::Buffer::CAPABILITY_TRANSFER_SRC,
+                         maxTilesInFlight * atlasTileBytes) {
+            }
+
+            UploadBuffer(const UploadBuffer &) = delete;
+
+            UploadBuffer &operator=(const UploadBuffer &) = delete;
+        };
+
+        struct TileUpload {
             Slot slot;
             Vec3u offset;
 
-            std::shared_ptr<std::vector<uint8_t> > texels;
+            UploadBuffer &uploadBuffer;
+            StreamBuffer::Handle uploadBufferHandle{};
+            size_t uploadBufferSlot{};
 
-            StreamBuffer::Handle bufferHandle{};
-            size_t bufferSlot{};
+            UploadCallbackHandler &callback;
 
-            bool startedUpload = false;
-            bool flushed = false;
-
-            PendingUpload(const Slot slot,
-                          Vec3u offset,
-                          std::shared_ptr<std::vector<uint8_t> > texels)
+            TileUpload(const Slot slot,
+                       const size_t atlasTileBytes,
+                       UploadBuffer &uploadBuffer,
+                       Vec3u offset,
+                       std::vector<uint8_t> texels,
+                       UploadCallbackHandler &callback)
                 : slot(slot),
                   offset(std::move(offset)),
-                  texels(std::move(texels)) {
+                  uploadBuffer(uploadBuffer),
+                  callback(callback) {
+                uploadBufferSlot = uploadBuffer.allocator.allocate(1);
+                uploadBufferHandle = uploadBuffer.buffer.upload(std::move(texels), uploadBufferSlot * atlasTileBytes);
+            }
+
+            ~TileUpload() {
+                if (uploadBufferHandle != StreamBuffer::INVALID_HANDLE) {
+                    uploadBuffer.buffer.release(uploadBufferHandle);
+                    uploadBuffer.allocator.free(uploadBufferSlot, 1);
+                }
+            }
+
+            TileUpload(const TileUpload &) = delete;
+
+            TileUpload &operator=(const TileUpload &) = delete;
+
+            TileUpload(TileUpload &&other) noexcept
+                : slot(other.slot),
+                  offset(std::move(other.offset)),
+                  uploadBuffer(other.uploadBuffer),
+                  uploadBufferHandle(other.uploadBufferHandle),
+                  uploadBufferSlot(other.uploadBufferSlot),
+                  callback(other.callback) {
+                other.uploadBufferHandle = StreamBuffer::INVALID_HANDLE;
+            }
+
+            bool isUploadComplete() const {
+                return uploadBuffer.buffer.isUploadComplete(uploadBufferHandle);
+            }
+
+            void flush() {
+                uploadBuffer.buffer.flush(uploadBufferHandle);
             }
         };
 
@@ -283,26 +323,7 @@ namespace xng {
             return ret;
         }
 
-        size_t allocateBufferSlot() {
-            if (freeBufferSlots.empty()) {
-                return currentBufferSlot++;
-            }
-            const auto ret = freeBufferSlots.back();
-            freeBufferSlots.pop_back();
-            return ret;
-        }
-
-        void freeBufferSlot(const size_t slot) {
-            if (slot >= maxTilesInFlight)
-                return;
-            freeBufferSlots.push_back(slot);
-        }
-
         rg::Runtime &runtime;
-
-        StreamBuffer buffer;
-        size_t currentBufferSlot = 0;
-        std::vector<size_t> freeBufferSlots;
 
         const unsigned int tileSize;
         const unsigned int tileBorder;
@@ -310,7 +331,10 @@ namespace xng {
 
         const unsigned int atlasTileBytes;
 
-        const unsigned int maxTilesInFlight;
+        const unsigned int maxTileCopies;
+
+        UploadBuffer uploadBuffer;
+
         unsigned int tilesInFlight = 0;
 
         Vec2u atlasTiles;
@@ -319,12 +343,13 @@ namespace xng {
         rg::HeapResource<rg::Texture> staleTexture;
         rg::HeapResource<rg::Texture> texture;
 
-        std::map<int, std::unordered_set<Slot> > pendingUploadQueues;
-        std::map<int, std::unordered_set<Slot> > copiedUploadQueues;
-
-        std::unordered_map<Slot, PendingUpload> pendingUploads;
+        std::unordered_map<Slot, TileUpload> pendingUploads;
         std::unordered_map<Slot, int> pendingUploadPriorities;
         std::unordered_set<Slot> flushedUploads;
+
+        std::unordered_set<Slot> copiedUploads;
+
+        std::unordered_map<int, std::unordered_set<Slot> > pendingUploadQueues;
 
         RangeAllocator slotAllocator;
     };

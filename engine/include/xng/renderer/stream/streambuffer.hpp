@@ -78,8 +78,22 @@ namespace xng {
             return *this;
         }
 
-        Handle upload(const std::vector<uint8_t> &data, const size_t offset) {
-            return upload(data.data(), data.size(), offset);
+        Handle upload(std::vector<uint8_t> data, const size_t offset) {
+            const auto dataSize = data.size();
+#ifndef NDEBUG
+            for (auto &upload: uploads) {
+                if (upload.second.offset >= offset
+                    && upload.second.offset + upload.second.size <= offset + dataSize) {
+                    throw std::runtime_error("Overlapping upload");
+                }
+            }
+#endif
+            bufferSize = std::max(bufferSize, offset + dataSize);
+            bufferSize = std::max(bufferSize, targetSize);
+            const auto ret = chunkStreamer.upload(std::move(data), buffer, offset);
+            uploads.emplace(ret, PendingUpload{offset, dataSize});
+            pendingUploads.insert(ret);
+            return ret;
         }
 
         /**

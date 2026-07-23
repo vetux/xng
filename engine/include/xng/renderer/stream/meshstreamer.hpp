@@ -413,7 +413,9 @@ namespace xng {
         StreamBuffer::Handle uploadAttribute(const VertexAttribute attribute,
                                              const std::vector<uint8_t> &data,
                                              const size_t vertexIndex) {
-            return vertexBuffers.at(attribute).upload(data, vertexIndex * getVertexAttributeSize(attribute));
+            return vertexBuffers.at(attribute).upload(data.data(),
+                                                      data.size(),
+                                                      vertexIndex * getVertexAttributeSize(attribute));
         }
 
         std::unordered_map<VertexAttribute, StreamBuffer> vertexBuffers;

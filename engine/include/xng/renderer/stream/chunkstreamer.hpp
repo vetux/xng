@@ -98,6 +98,12 @@ namespace xng {
                       const size_t dataSize,
                       const rg::HeapResource<rg::Buffer> &targetBuffer,
                       const size_t targetOffset) {
+            return upload(std::vector(data, data + dataSize), targetBuffer, targetOffset);
+        }
+
+        Handle upload(std::vector<uint8_t> data,
+                      const rg::HeapResource<rg::Buffer> &targetBuffer,
+                      const size_t targetOffset) {
             if (!(targetBuffer.getDescription().capabilityFlags & rg::Buffer::CAPABILITY_TRANSFER_DST)) {
                 throw std::runtime_error("Target buffer must have CAPABILITY_TRANSFER_DST capability");
             }
@@ -109,6 +115,8 @@ namespace xng {
                 ret = freeHandles.back();
                 freeHandles.pop_back();
             }
+
+            const auto dataSize = data.size();
             if (dataSize > chunkSize) {
                 const auto nChunks = (dataSize + chunkSize - 1) / chunkSize;
                 const auto remainder = dataSize % chunkSize;
@@ -150,7 +158,7 @@ namespace xng {
                 pendingChunks[ret].insert({pendingChunks[ret].size(), UploadChunk{targetOffset, 0, dataSize}});
             }
 
-            uploadData[ret] = std::vector(data, data + dataSize);
+            uploadData.emplace(ret, std::move(data));
 
             targetBuffers[ret] = targetBuffer;
 

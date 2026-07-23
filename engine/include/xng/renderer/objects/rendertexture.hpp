@@ -57,10 +57,7 @@ namespace xng {
         }
 
         bool isUploadComplete() override {
-            if (!textureStreamer) {
-                throw std::runtime_error("Uninitialized RenderTexture");
-            }
-            return textureStreamer->isUploadComplete(textureHandle);
+            return true;
         }
 
         Vec2u getSize() const {

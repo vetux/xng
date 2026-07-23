@@ -38,9 +38,9 @@
 
 namespace xng {
     /**
-     * Load tiles via TileLoader asynchronously and upload the tiles to the atlas texture on the render thread and update the residency buffer.
+     * The tile streamer manages the mapping buffers and streams tiles into the atlas texture.
      */
-    class TileStreamer {
+    class TileStreamer final : public TextureAtlas::UploadCallbackHandler {
     public:
         typedef unsigned int TextureID;
 
@@ -62,7 +62,7 @@ namespace xng {
             TILE_RESIDENT
         };
 
-        struct TextureState {
+        struct VirtualTextureState {
             Vec2u size;
             Vec2u tileCount;
 
@@ -71,7 +71,7 @@ namespace xng {
 
             std::vector<unsigned int> taps;
 
-            TextureState(Vec2u size, const Vec2u &tileCount)
+            VirtualTextureState(Vec2u size, const Vec2u &tileCount)
                 : size(std::move(size)),
                   tileCount(tileCount),
                   tileStates(tileCount.x * tileCount.y, TILE_EVICTED),
@@ -86,7 +86,7 @@ namespace xng {
                 tileStates.at(index) = state;
             }
 
-            TileState getTileState(const Vec2u &tile) const {
+            [[nodiscard]] TileState getTileState(const Vec2u &tile) const {
                 return tileStates.at(tileToIndex(tile, tileCount));
             }
 
@@ -131,7 +131,7 @@ namespace xng {
                 rg::Buffer::MEMORY_CPU_TO_GPU));
         }
 
-        ~TileStreamer() = default;
+        ~TileStreamer() override = default;
 
         TileStreamer(const TileStreamer &) = delete;
 
@@ -141,345 +141,166 @@ namespace xng {
 
         TileStreamer &operator=(TileStreamer &&) = delete;
 
-        TextureID create(const std::shared_ptr<TileLoader> &tileLoader) {
-            const auto imageSize = tileLoader->getSize();
-            const auto mipLevels = tileLoader->getMipLevels();
-
+        TextureID create(const Vec2u &imageSize, const unsigned int mipLevels) {
             if (mipLevels == 0) {
                 throw std::runtime_error("Mip levels must be greater than 0.");
             }
 
             const TextureID ret = textureIDAllocator.allocate(mipLevels);
 
-            VirtualTexture tex;
+            std::vector<VirtualTextureState> states;
+            states.reserve(mipLevels);
 
-            tex.loader = tileLoader;
+            std::vector<unsigned int> tileMapOffsets;
+            tileMapOffsets.reserve(mipLevels);
+
+            std::vector<size_t> tileMapSizes;
+            tileMapSizes.reserve(mipLevels);
 
             for (auto mip = 0; mip < mipLevels; mip++) {
                 const auto mipSize = rg::Texture::getMipLevelSize(imageSize, mip);
                 const auto mipTiles = getTiles(mipSize, tileSize);
                 const auto tileMapSize = mipTiles.x * mipTiles.y;
-                const auto offset = static_cast<unsigned int>(tileMapAllocator.allocate(tileMapSize));
-                tex.tileMapOffsets.emplace_back(offset);
-                tex.tileMapSizes.emplace_back(tileMapSize);
-
-                const auto tileMapOffsetsUpload = tileMapOffsetsBuffer.upload(
-                    reinterpret_cast<const uint8_t *>(&offset),
-                    sizeof(unsigned int),
-                    (ret + mip) * sizeof(unsigned int));
-                tex.tileMapOffsetsUploadHandles.emplace_back(tileMapOffsetsUpload);
-
-                tileMapOffsetsBuffer.flush(tileMapOffsetsUpload);
-
-                const auto tileMapBufferUpload = tileMapBuffer.upload(
-                    std::vector<uint8_t>(mipTiles.x * mipTiles.y * sizeof(unsigned int), 0),
-                    offset * sizeof(unsigned int));
-                tex.tileMapUploadHandles.emplace_back(tileMapBufferUpload);
-
-                tileMapBuffer.flush(tileMapBufferUpload);
-
-                textureStates[ret].emplace_back(mipSize, mipTiles);
+                const auto tileMapOffset = static_cast<unsigned int>(tileMapAllocator.allocate(tileMapSize));
+                tileMapOffsets.emplace_back(tileMapOffset);
+                tileMapSizes.emplace_back(tileMapSize);
+                states.emplace_back(mipSize, mipTiles);
             }
 
             const Vec2u mip0Tiles = getTiles(imageSize, tileSize);
             const auto residencyMapSize = mip0Tiles.x * mip0Tiles.y;
             const auto residencyMapOffset = static_cast<unsigned int>(residencyMapAllocator.allocate(residencyMapSize));
 
-            tex.residencyMapOffset = residencyMapOffset;
-            tex.residencyMapSize = residencyMapSize;
-
-            tex.residencyMapOffsetUploadHandle = residencyMapOffsetsBuffer.upload(
-                reinterpret_cast<const uint8_t *>(&residencyMapOffset),
-                sizeof(unsigned int),
-                ret * sizeof(unsigned int));
-
-            residencyMapOffsetsBuffer.flush(tex.residencyMapOffsetUploadHandle);
-
-            const std::vector residencyMapSeed(residencyMapSize, mipLevels - 1u);
-            tex.residencyMapUploadHandle = residencyMapBuffer.upload(
-                reinterpret_cast<const uint8_t *>(residencyMapSeed.data()),
-                sizeof(unsigned int) * residencyMapSize,
-                residencyMapOffset * sizeof(unsigned int));
-
-            residencyMapBuffer.flush(tex.residencyMapUploadHandle);
-
-            textures[ret] = std::move(tex);
+            textures.emplace(ret, std::move(VirtualTexture(ret,
+                                                           imageSize,
+                                                           mipLevels,
+                                                           states,
+                                                           tileSize,
+                                                           tileMapBuffer,
+                                                           tileMapOffsetsBuffer,
+                                                           tileMapOffsets,
+                                                           tileMapSizes,
+                                                           residencyMapBuffer,
+                                                           residencyMapOffsetsBuffer,
+                                                           residencyMapOffset,
+                                                           residencyMapSize)));
 
             return ret;
         }
 
-        void destroy(const TextureID tex) {
-            textureIDAllocator.free(tex, textures.at(tex).tileMapOffsets.size());
-
-            const auto &texture = textures.at(tex);
+        void destroy(const TextureID textureID) {
+            const auto &texture = textures.at(textureID);
 
             // Free allocators
-            for (auto i = 0; i < texture.tileMapOffsets.size(); i++) {
-                tileMapAllocator.free(texture.tileMapOffsets.at(i), texture.tileMapSizes.at(i));
+            textureIDAllocator.free(textureID, texture.states.size());
+            for (auto i = 0; i < texture.tileMapOffsetsValues.size(); i++) {
+                tileMapAllocator.free(texture.tileMapOffsetsValues.at(i), texture.tileMapSizes.at(i));
             }
-            residencyMapAllocator.free(texture.residencyMapOffset, texture.residencyMapSize);
+            residencyMapAllocator.free(texture.residencyMapOffsetValue, texture.residencyMapSize);
 
-            // Release stream buffer uploads
-            for (const auto &uploadHandle: texture.tileMapOffsetsUploadHandles) {
-                tileMapOffsetsBuffer.release(uploadHandle);
+            // Destroy allocation
+            for (auto &state: texture.states) {
+                for (auto i = 0; i < state.tileStates.size(); i++) {
+                    switch (state.tileStates.at(i)) {
+                        case TILE_PENDING: {
+                            const auto slot = state.atlasSlots.at(i);
+                            atlas.destroy(slot);
+                            pendingTiles.erase(slot);
+                            break;
+                        }
+                        case TILE_RESIDENT: {
+                            atlas.destroy(state.atlasSlots.at(i));
+                            break;
+                        }
+                        default:
+                            break;
+                    }
+                }
             }
-            for (const auto &uploadHandle: texture.tileMapUploadHandles) {
-                tileMapBuffer.release(uploadHandle);
-            }
-            residencyMapOffsetsBuffer.release(texture.residencyMapOffsetUploadHandle);
-            residencyMapBuffer.release(texture.residencyMapUploadHandle);
 
-            textures.erase(tex);
-            textureStates.erase(tex);
-            pendingUploads.erase(tex);
-            updatedMips.erase(tex);
+            textures.erase(textureID);
+            tileAllocations.erase(textureID);
         }
 
-        const std::unordered_map<TextureID, std::vector<TextureState> > &getTextureStates() const {
-            return textureStates;
-        }
-
-        void loadTile(const TextureID tex, unsigned int mip, const Vec2u &tile, const int priority) {
-            if (mip >= textures.at(tex).tileMapOffsets.size()) {
+        void uploadTile(const TextureID textureID,
+                        const unsigned int mip,
+                        const Vec2u &tile,
+                        std::vector<uint8_t> texels,
+                        const int priority) {
+            if (mip >= textures.at(textureID).tileMapOffsetsValues.size()) {
                 throw std::runtime_error("Mip level out of range.");
             }
 
-            auto &state = textureStates.at(tex).at(mip);
+            auto &state = textures.at(textureID).states.at(mip);
             if (state.getTileState(tile) != TILE_EVICTED) {
-                return;
+                throw std::runtime_error("Tile already in flight");
             }
 
-            const auto texSize = textures.at(tex).loader->getSize();
+            const auto texSize = textures.at(textureID).imageSize;
             const auto mipSize = rg::Texture::getMipLevelSize(texSize, mip);
             const auto mipTiles = getTiles(mipSize, tileSize);
 
-            textureStates.at(tex).at(mip).setTileState(tile, TILE_PENDING);
+            state.setTileState(tile, TILE_PENDING);
 
-            pendingUploads[tex].emplace_back(tex,
-                                             mip,
-                                             tile,
-                                             mipTiles,
-                                             pool,
-                                             textures.at(tex).loader,
-                                             priority);
-            streamingTiles++;
+            const auto atlasSlot = atlas.create(std::move(texels),
+                                                priority,
+                                                *this);
+
+            tileAllocations[textureID][mip].emplace(tile,
+                                                    TileAllocation(atlas,
+                                                                   atlasSlot));
+            pendingTiles[atlasSlot] = TileID{textureID, mip, tile};
         }
 
-        void evictTile(const TextureID tex, const unsigned int mip, const Vec2u &tile) {
-            pendingUploads[tex].erase(std::remove_if(pendingUploads[tex].begin(),
-                                                     pendingUploads[tex].end(),
-                                                     [this, mip](auto &pendingUpload) {
-                                                         if (pendingUpload.mip == mip) {
-                                                             if (pendingUpload.startedUpload) {
-                                                                 atlas.destroy(pendingUpload.atlasSlot);
-                                                             }
-                                                             streamingTiles--;
-                                                             return true;
-                                                         }
-                                                         return false;
-                                                     }),
-                                      pendingUploads[tex].end());
-            auto &state = textureStates.at(tex).at(mip);
-            if (state.getTileState(tile) == TILE_RESIDENT) {
-                atlas.destroy(state.getAtlasSlot(tile));
-                updatedMips[tex].insert(mip);
+        void evictTile(const TextureID textureID,
+                       const unsigned int mip,
+                       const Vec2u &tile) {
+            auto &state = textures.at(textureID).states.at(mip);
+            switch (state.getTileState(tile)) {
+                case TILE_PENDING: {
+                    const auto slot = state.getAtlasSlot(tile);
+                    atlas.destroy(slot);
+                    pendingTiles.erase(slot);
+                    break;
+                }
+                case TILE_RESIDENT: {
+                    atlas.destroy(state.getAtlasSlot(tile));
+                    updatedMips[textureID].insert(mip);
+                    break;
+                }
+                default:
+                    break;
             }
             state.setTileState(tile, TILE_EVICTED);
+            state.setAtlasSlot(tile, TextureAtlas::Slot());
+            tileAllocations[textureID][mip].erase(tile);
         }
 
-        void loadTiles(const TextureID tex, unsigned int mip, const int priority) {
-            if (mip >= textures.at(tex).tileMapOffsets.size()) {
-                throw std::runtime_error("Mip level out of range.");
-            }
-
-            auto &state = textureStates.at(tex).at(mip);
-            for (auto x = 0u; x < state.tileCount.x; x++) {
-                for (auto y = 0u; y < state.tileCount.y; y++) {
-                    const auto tile = Vec2u(x, y);
-                    if (state.getTileState(tile) != TILE_EVICTED) {
-                        continue;
-                    }
-
-                    const auto texSize = textures.at(tex).loader->getSize();
-                    const auto mipSize = rg::Texture::getMipLevelSize(texSize, mip);
-                    const auto mipTiles = getTiles(mipSize, tileSize);
-
-                    textureStates.at(tex).at(mip).setTileState(tile, TILE_PENDING);
-
-                    pendingUploads[tex].emplace_back(tex,
-                                                     mip,
-                                                     tile,
-                                                     mipTiles,
-                                                     pool,
-                                                     textures.at(tex).loader,
-                                                     priority);
-                    streamingTiles++;
-                }
+        void flushTile(const TextureID textureID,
+                       const unsigned int mip,
+                       const Vec2u &tile) const {
+            auto &state = textures.at(textureID).states.at(mip);
+            if (state.getTileState(tile) == TILE_PENDING) {
+                tileAllocations.at(textureID).at(mip).at(tile).flush();
             }
         }
 
-        void evictTiles(const TextureID tex, const unsigned int mip) {
-            std::vector<PendingUpload> nPendingUploads;
-            pendingUploads[tex].erase(std::remove_if(pendingUploads[tex].begin(),
-                                                     pendingUploads[tex].end(),
-                                                     [this, mip](auto &pendingUpload) {
-                                                         if (pendingUpload.mip == mip) {
-                                                             if (pendingUpload.startedUpload) {
-                                                                 atlas.destroy(pendingUpload.atlasSlot);
-                                                             }
-                                                             streamingTiles--;
-                                                             return true;
-                                                         }
-                                                         return false;
-                                                     }),
-                                      pendingUploads[tex].end());
-            auto &state = textureStates.at(tex).at(mip);
-            for (auto x = 0u; x < state.tileCount.x; x++) {
-                for (auto y = 0u; y < state.tileCount.y; y++) {
-                    const auto tile = Vec2u(x, y);
-                    if (state.getTileState(tile) == TILE_RESIDENT) {
-                        atlas.destroy(state.getAtlasSlot(tile));
-                        updatedMips[tex].insert(mip);
-                    }
-                    state.setTileState(tile, TILE_EVICTED);
-                }
-            }
+        const std::vector<VirtualTextureState> &getTextureState(const TextureID textureID) {
+            return textures.at(textureID).states;
         }
 
-        void flush(const TextureID tex, const unsigned int mip) {
-            for (auto &pendingUpload: pendingUploads[tex]) {
-                if (pendingUpload.mip == mip)
-                    pendingUpload.flushed = true;
-            }
-        }
-
-        bool isUploadComplete(const TextureID tex) const {
-            const auto &state = textureStates.at(tex).back();
-            for (auto x = 0u; x < state.tileCount.x; x++) {
-                for (auto y = 0u; y < state.tileCount.y; y++) {
-                    const auto tile = Vec2u(x, y);
-                    if (state.getTileState(tile) != TILE_RESIDENT) {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        }
-
-        size_t getStreamingTiles() const {
-            return streamingTiles;
-        }
-
-        std::unordered_map<TextureID, std::unordered_map<unsigned int, std::vector<Vec2u> > >
-        readback(RenderQueue &queue) {
-            // Readback taps
-            std::unordered_map<TextureID, std::unordered_map<unsigned int, std::vector<Vec2u> > > ret;
-
-            // RenderDoc appears to not handle coherent mappings correctly.
-            // This is now fixed internally in the opengl adapter via explicit flush / invalidate semantics.
-            if (readbackFence != nullptr) {
-                if (!readbackFence->wait(timeOut)) {
-                    throw std::runtime_error("TileStreamer readback timed out.");
-                }
-
-                const auto mapping = runtime.getResourceHeap().map(readbackHostBuffer);
-                const auto ptr = reinterpret_cast<unsigned int *>(mapping->data());
-                for (auto &pair: textures) {
-                    for (auto mip = 0; mip < pair.second.tileMapOffsets.size(); mip++) {
-                        auto &state = textureStates.at(pair.first).at(mip);
-                        const auto tileCount = state.tileCount;
-                        const auto offset = pair.second.tileMapOffsets.at(mip);
-                        for (auto tileIndex = 0; tileIndex < tileCount.x * tileCount.y; tileIndex++) {
-                            const auto tile = indexToTile(tileIndex, tileCount);
-                            const unsigned int taps = *(ptr
-                                                        + offset
-                                                        + tileIndex);
-                            state.taps[tileIndex] = taps;
-                            ret[pair.first][mip].emplace_back(tile);
-                        }
-                    }
-                }
-            }
-            readbackFence = queue.addPostFrame(rg::GraphicsPassBuilder("TileStreamer/Readback")
-                .transferRead(readbackBuffer)
-                .transferWrite(readbackHostBuffer)
-                .execute([this](rg::RasterContext &, rg::TransferContext &ctx, rg::ComputeContext &) {
-                    ctx.copyBuffer(readbackHostBuffer, readbackBuffer, 0, 0, readbackBuffer.getDescription().size);
-                }));
-            return ret;
+        size_t getTilesInFlight() const {
+            return atlas.getTilesInFlight();
         }
 
         void commit(RenderQueue &queue) {
-            for (auto &pair: pendingUploads) {
-                pair.second.erase(std::remove_if(pair.second.begin(),
-                                                 pair.second.end(),
-                                                 [this, pair](auto &pendingUpload) {
-                                                     if (pendingUpload.flushed) {
-                                                         if (!pendingUpload.startedUpload) {
-                                                             pendingUpload.tileTask->join();
-                                                             pendingUpload.startedUpload = true;
-                                                             pendingUpload.atlasSlot = atlas.create(
-                                                                 pendingUpload.tileData, pendingUpload.priority);
-                                                         }
-                                                         atlas.flush(pendingUpload.atlasSlot);
-                                                         auto &state = textureStates.at(pair.first).at(
-                                                             pendingUpload.mip);
-                                                         state.setTileState(pendingUpload.tile, TILE_RESIDENT);
-                                                         state.setAtlasSlot(
-                                                             pendingUpload.tile, pendingUpload.atlasSlot);
-                                                         updatedMips[pendingUpload.tex].insert(pendingUpload.mip);
-                                                         streamingTiles--;
-                                                         return true;
-                                                     }
-
-                                                     if (pendingUpload.startedUpload) {
-                                                         if (atlas.isUploadComplete(pendingUpload.atlasSlot)) {
-                                                             auto &state = textureStates.at(pair.first).at(
-                                                                 pendingUpload.mip);
-                                                             state.setTileState(pendingUpload.tile, TILE_RESIDENT);
-                                                             state.setAtlasSlot(
-                                                                 pendingUpload.tile, pendingUpload.atlasSlot);
-                                                             updatedMips[pendingUpload.tex].insert(pendingUpload.mip);
-                                                             streamingTiles--;
-                                                             return true;
-                                                         }
-                                                     } else if (pendingUpload.tileTask->isDone()) {
-                                                         pendingUpload.startedUpload = true;
-                                                         pendingUpload.atlasSlot = atlas.create(
-                                                             pendingUpload.tileData, pendingUpload.priority);
-                                                     }
-                                                     return false;
-                                                 }),
-                                  pair.second.end());
-            }
-
-            for (auto &pair: updatedMips) {
+            for (const auto &pair: updatedMips) {
                 auto &texture = textures.at(pair.first);
                 // Update TileMap
-                for (auto &mip: pair.second) {
-                    const auto tileMapOffset = texture.tileMapOffsets.at(mip);
-                    auto &state = textureStates.at(pair.first).at(mip);
-                    tileMapBuffer.release(texture.tileMapUploadHandles.at(mip));
-
-                    const auto &atlasSlots = state.atlasSlots;
-                    const auto tileMapUploadHandle = tileMapBuffer.upload(
-                        reinterpret_cast<const uint8_t *>(atlasSlots.data()),
-                        sizeof(TextureAtlas::Slot) * atlasSlots.size(),
-                        tileMapOffset * sizeof(unsigned int));
-                    tileMapBuffer.flush(tileMapUploadHandle);
-                    texture.tileMapUploadHandles.at(mip) = tileMapUploadHandle;
+                for (const auto mip: pair.second) {
+                    texture.updateTileMap(mip);
                 }
-
-                // Update Residency Map
-                const auto residencyMap = getResidencyMap(textureStates.at(pair.first), tileSize);
-                const auto residencyMapOffset = texture.residencyMapOffset;
-                residencyMapBuffer.release(texture.residencyMapUploadHandle);
-                const auto residencyMapUploadHandle = residencyMapBuffer.upload(
-                    reinterpret_cast<const uint8_t *>(residencyMap.data()),
-                    sizeof(unsigned int) * residencyMap.size(),
-                    residencyMapOffset * sizeof(unsigned int));
-                residencyMapBuffer.flush(residencyMapUploadHandle);
-                texture.residencyMapUploadHandle = residencyMapUploadHandle;
+                texture.updateResidencyMap();
             }
             updatedMips.clear();
 
@@ -535,11 +356,17 @@ namespace xng {
         }
 
     private:
+        struct TileID {
+            TextureID texture{};
+            unsigned int mip{};
+            Vec2u tile{};
+        };
+
         static constexpr unsigned int ceildiv(const unsigned int a, const unsigned int b) {
             return (a + b - 1) / b;
         }
 
-        static std::vector<unsigned int> getResidencyMap(const std::vector<TextureState> &textureStates,
+        static std::vector<unsigned int> getResidencyMap(const std::vector<VirtualTextureState> &textureStates,
                                                          const unsigned int tileSize) {
             const auto mipLevels = static_cast<unsigned int>(textureStates.size());
             const auto tiles0 = textureStates.at(0).tileCount;
@@ -587,61 +414,181 @@ namespace xng {
             return ret;
         }
 
-        struct PendingUpload {
-            TextureID tex{};
-            unsigned int mip{};
-            Vec2u tile;
-            unsigned int tileIndex{};
-            int priority{};
+        struct TileAllocation {
+            TextureAtlas &atlas;
+            TextureAtlas::Slot atlasSlot;
 
-            std::shared_ptr<Task> tileTask;
-            std::shared_ptr<std::vector<uint8_t> > tileData; // The tile data including borders
+            TileAllocation(TextureAtlas &atlas, const TextureAtlas::Slot atlasSlot)
+                : atlas(atlas), atlasSlot(atlasSlot) {
+            }
 
-            TextureAtlas::Slot atlasSlot = {};
+            TileAllocation(const TileAllocation &) = delete;
 
-            bool startedUpload = false;
-            bool flushed = false;
+            TileAllocation &operator=(const TileAllocation &) = delete;
 
-            PendingUpload() = default;
+            TileAllocation(TileAllocation &&) = default;
 
-            PendingUpload(const TextureID tex,
-                          const unsigned int mip,
-                          Vec2u _tile,
-                          const Vec2u &mipTiles,
-                          ThreadPool &pool,
-                          const std::shared_ptr<TileLoader> &loader,
-                          const int priority)
-                : tex(tex),
-                  mip(mip),
-                  tile(std::move(_tile)),
-                  tileIndex(tileToIndex(tile, mipTiles)),
-                  priority(priority) {
-                tileData = std::make_shared<std::vector<uint8_t> >();
-                auto tileDataCapture = tileData;
-                auto tileCapture = tile;
-                tileTask = pool.addTask([tileDataCapture, loader, mip, tileCapture]() {
-                    *tileDataCapture = std::move(loader->getTile(mip, tileCapture));
-                });
+            [[nodiscard]] bool isUploadComplete() const {
+                return atlas.isUploadComplete(atlasSlot);
+            }
+
+            void flush() const {
+                atlas.flush(atlasSlot);
             }
         };
 
         struct VirtualTexture {
-            std::shared_ptr<TileLoader> loader;
+            TextureID textureID{};
+            Vec2u imageSize;
+            unsigned int mipLevels;
 
-            std::vector<unsigned int> tileMapOffsets;
+            std::vector<VirtualTextureState> states;
+            const unsigned int tileSize;
+
+            StreamBuffer &tileMap;
+            std::vector<StreamBuffer::Handle> tileMapUploadHandles{};
+
+            StreamBuffer &tileMapOffsets;
+            StreamBuffer::Handle tileMapOffsetsUploadHandle{};
+
+            std::vector<unsigned int> tileMapOffsetsValues;
             std::vector<size_t> tileMapSizes;
 
-            std::vector<StreamBuffer::Handle> tileMapOffsetsUploadHandles;
-            std::vector<StreamBuffer::Handle> tileMapUploadHandles;
+            StreamBuffer &residencyMap;
+            StreamBuffer::Handle residencyMapUploadHandle{};
 
-            unsigned int residencyMapOffset{};
-            size_t residencyMapSize{};
+            StreamBuffer &residencyMapOffsets;
             StreamBuffer::Handle residencyMapOffsetUploadHandle{};
 
-            StreamBuffer::Handle residencyMapUploadHandle{};
+            unsigned int residencyMapOffsetValue{};
+            size_t residencyMapSize{};
+
+            VirtualTexture(const TextureID textureID,
+                           Vec2u imageSize,
+                           const unsigned int mipLevels,
+                           std::vector<VirtualTextureState> _states,
+                           const unsigned int tileSize,
+                           StreamBuffer &tileMap,
+                           StreamBuffer &tileMapOffsets,
+                           std::vector<unsigned int> _tileMapOffsetsValues,
+                           std::vector<size_t> _tileMapSizes,
+                           StreamBuffer &residencyMap,
+                           StreamBuffer &residencyMapOffsets,
+                           const unsigned int residencyMapOffsetValue,
+                           const size_t residencyMapSize)
+                : textureID(textureID),
+                  imageSize(std::move(imageSize)),
+                  mipLevels(mipLevels),
+                  states(std::move(_states)),
+                  tileSize(tileSize),
+                  tileMap(tileMap),
+                  tileMapUploadHandles(states.size()),
+                  tileMapOffsets(tileMapOffsets),
+                  tileMapOffsetsValues(std::move(_tileMapOffsetsValues)),
+                  tileMapSizes(std::move(_tileMapSizes)),
+                  residencyMap(residencyMap),
+                  residencyMapOffsets(residencyMapOffsets),
+                  residencyMapOffsetValue(residencyMapOffsetValue),
+                  residencyMapSize(residencyMapSize) {
+                tileMapOffsetsUploadHandle = tileMapOffsets.upload(
+                    reinterpret_cast<const uint8_t *>(tileMapOffsetsValues.data()),
+                    tileMapOffsetsValues.size() * sizeof(unsigned int),
+                    textureID * sizeof(unsigned int));
+                tileMapOffsets.flush(tileMapOffsetsUploadHandle);
+
+                residencyMapOffsetUploadHandle = residencyMapOffsets.upload(
+                    reinterpret_cast<const uint8_t *>(&residencyMapOffsetValue),
+                    sizeof(unsigned int),
+                    textureID * sizeof(unsigned int));
+                residencyMapOffsets.flush(residencyMapOffsetUploadHandle);
+            }
+
+            ~VirtualTexture() {
+                for (const auto &handle: tileMapUploadHandles) {
+                    if (handle != StreamBuffer::INVALID_HANDLE) {
+                        tileMap.release(handle);
+                    }
+                }
+                if (tileMapOffsetsUploadHandle != StreamBuffer::INVALID_HANDLE) {
+                    tileMapOffsets.release(tileMapOffsetsUploadHandle);
+                }
+                if (residencyMapUploadHandle != StreamBuffer::INVALID_HANDLE) {
+                    residencyMap.release(residencyMapUploadHandle);
+                }
+                if (residencyMapOffsetUploadHandle != StreamBuffer::INVALID_HANDLE) {
+                    residencyMapOffsets.release(residencyMapOffsetUploadHandle);
+                }
+            }
+
+            VirtualTexture(const VirtualTexture &) = delete;
+
+            VirtualTexture &operator=(const VirtualTexture &) = delete;
+
+            VirtualTexture(VirtualTexture &&other) noexcept
+                : textureID(other.textureID),
+                  imageSize(std::move(other.imageSize)),
+                  mipLevels(other.mipLevels),
+                  states(std::move(other.states)),
+                  tileSize(other.tileSize),
+                  tileMap(other.tileMap),
+                  tileMapUploadHandles(std::move(other.tileMapUploadHandles)),
+                  tileMapOffsets(other.tileMapOffsets),
+                  tileMapOffsetsUploadHandle(other.tileMapOffsetsUploadHandle),
+                  tileMapOffsetsValues(std::move(other.tileMapOffsetsValues)),
+                  tileMapSizes(std::move(other.tileMapSizes)),
+                  residencyMap(other.residencyMap),
+                  residencyMapUploadHandle(other.residencyMapUploadHandle),
+                  residencyMapOffsets(other.residencyMapOffsets),
+                  residencyMapOffsetUploadHandle(other.residencyMapOffsetUploadHandle),
+                  residencyMapOffsetValue(other.residencyMapOffsetValue),
+                  residencyMapSize(other.residencyMapSize) {
+                other.tileMapOffsetsUploadHandle = StreamBuffer::INVALID_HANDLE;
+                other.residencyMapOffsetUploadHandle = StreamBuffer::INVALID_HANDLE;
+            }
+
+            void updateTileMap(const unsigned int mip) {
+                const auto tileMapOffset = tileMapOffsetsValues.at(mip);
+                const auto &state = states.at(mip);
+
+                if (tileMapUploadHandles.at(mip) != StreamBuffer::INVALID_HANDLE) {
+                    tileMap.release(tileMapUploadHandles.at(mip));
+                }
+
+                const auto &atlasSlots = state.atlasSlots;
+                const auto tileMapUploadHandle = tileMap.upload(
+                    reinterpret_cast<const uint8_t *>(atlasSlots.data()),
+                    sizeof(TextureAtlas::Slot) * atlasSlots.size(),
+                    tileMapOffset * sizeof(unsigned int));
+                tileMap.flush(tileMapUploadHandle);
+                tileMapUploadHandles.at(mip) = tileMapUploadHandle;
+            }
+
+            void updateResidencyMap() {
+                const auto residencyMapValues = getResidencyMap(states, tileSize);
+
+                if (residencyMapUploadHandle != StreamBuffer::INVALID_HANDLE) {
+                    residencyMap.release(residencyMapUploadHandle);
+                }
+
+                residencyMapUploadHandle = residencyMap.upload(
+                    reinterpret_cast<const uint8_t *>(residencyMapValues.data()),
+                    sizeof(unsigned int) * residencyMapSize,
+                    residencyMapOffsetValue * sizeof(unsigned int));
+                residencyMap.flush(residencyMapUploadHandle);
+            }
         };
 
         static constexpr size_t timeOut = 10'000'000'000ULL;
+
+        void onUploadComplete(const TextureAtlas::Slot slot) override {
+            const auto tileID = pendingTiles.at(slot);
+            auto &state = textures.at(tileID.texture).states.at(tileID.mip);
+            assert(state.getTileState(tileID.tile) == TILE_PENDING);
+            state.setTileState(tileID.tile, TILE_RESIDENT);
+            state.setAtlasSlot(tileID.tile, slot);
+            updatedMips[tileID.texture].insert(tileID.mip);
+            pendingTiles.erase(slot);
+        }
 
         rg::Runtime &runtime;
         TextureAtlas &atlas;
@@ -652,8 +599,11 @@ namespace xng {
         RangeAllocator textureIDAllocator;
 
         std::unordered_map<TextureID, VirtualTexture> textures;
-        std::unordered_map<TextureID, std::vector<TextureState> > textureStates;
-        std::unordered_map<TextureID, std::vector<PendingUpload> > pendingUploads;
+
+        std::unordered_map<TextureID,
+            std::unordered_map<unsigned int, std::unordered_map<Vec2u, TileAllocation> > > tileAllocations;
+
+        std::unordered_map<TextureAtlas::Slot, TileID> pendingTiles;
 
         std::unordered_map<TextureID, std::unordered_set<unsigned int> > updatedMips;
 
@@ -668,10 +618,6 @@ namespace xng {
         rg::HeapResource<rg::Buffer> readbackBuffer;
         rg::HeapResource<rg::Buffer> readbackHostBuffer;
         rg::HeapResource<rg::Buffer> readbackClearBuffer;
-
-        size_t streamingTiles = 0;
-
-        std::shared_ptr<RenderQueue::SubmitFence> readbackFence;
     };
 }
 
