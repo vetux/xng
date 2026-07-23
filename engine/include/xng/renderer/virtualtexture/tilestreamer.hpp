@@ -367,11 +367,8 @@ namespace xng {
             // Readback taps
             std::unordered_map<TextureID, std::unordered_map<unsigned int, std::vector<Vec2u> > > ret;
 
-            // TODO: Fix gl mapping corruption / Sync Correctness Bug
-            // When replaying in RenderDoc v1.24+dfsg-1+deb12u1 on Linux (Debian) for some reason this glMapBufferRange call attempts to bind as a write binding instead
-            // of read binding but executes live without errors. GL_INVALID_OPERATION in glMapBufferRange(buffer does not allow write access)
-            // On Win32 the process crashes while capturing.
-
+            // RenderDoc appears to not handle coherent mappings correctly.
+            // This is now fixed internally in the opengl adapter via explicit flush / invalidate semantics.
             if (readbackFence != nullptr) {
                 if (!readbackFence->wait(timeOut)) {
                     throw std::runtime_error("TileStreamer readback timed out.");
