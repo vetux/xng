@@ -104,27 +104,36 @@ namespace xng {
             pendingUploadPriorities.emplace(slot, priority);
             pendingUploadQueues[priority].insert(slot);
             tilesInFlight++;
+            allocatedSlots.insert(slot);
             return slot;
         }
 
         void destroy(const Slot slot) {
+            assert(allocatedSlots.find(slot) != allocatedSlots.end());
             if (pendingUploads.find(slot) != pendingUploads.end()) {
                 tilesInFlight--;
             }
             slotAllocator.free(slot, 1);
             pendingUploads.erase(slot);
-            pendingUploadPriorities.erase(slot);
+            if (pendingUploadPriorities.find(slot) != pendingUploadPriorities.end()) {
+                pendingUploadQueues.at(pendingUploadPriorities.at(slot)).erase(slot);
+                pendingUploadPriorities.erase(slot);
+            }
             flushedUploads.erase(slot);
+            copiedUploads.erase(slot);
+            allocatedSlots.erase(slot);
         }
 
-        void flush(const Slot handle) {
-            if (pendingUploads.find(handle) != pendingUploads.end()) {
-                flushedUploads.insert(handle);
+        void flush(const Slot slot) {
+            assert(allocatedSlots.find(slot) != allocatedSlots.end());
+            if (pendingUploads.find(slot) != pendingUploads.end()) {
+                flushedUploads.insert(slot);
             }
         }
 
-        bool isUploadComplete(const Slot handle) {
-            auto it = pendingUploads.find(handle);
+        bool isUploadComplete(const Slot slot) {
+            assert(allocatedSlots.find(slot) != allocatedSlots.end());
+            auto it = pendingUploads.find(slot);
             if (it != pendingUploads.end()) {
                 return it->second.isUploadComplete();
             }
@@ -161,7 +170,6 @@ namespace xng {
 
             for (auto &slot: copiedUploads) {
                 pendingUploads.erase(slot);
-                flushedUploads.erase(slot);
                 pendingUploadQueues.at(pendingUploadPriorities.at(slot)).erase(slot);
                 pendingUploadPriorities.erase(slot);
                 tilesInFlight--;
@@ -174,6 +182,7 @@ namespace xng {
                 upload.flush();
                 frameCopies.insert(slot);
             }
+            flushedUploads.clear();
 
             for (auto &pair: pendingUploadQueues) {
                 for (auto slot: pair.second) {
@@ -343,6 +352,7 @@ namespace xng {
         rg::HeapResource<rg::Texture> staleTexture;
         rg::HeapResource<rg::Texture> texture;
 
+        std::unordered_set<Slot> allocatedSlots;
         std::unordered_map<Slot, TileUpload> pendingUploads;
         std::unordered_map<Slot, int> pendingUploadPriorities;
         std::unordered_set<Slot> flushedUploads;
