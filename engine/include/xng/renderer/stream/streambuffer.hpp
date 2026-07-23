@@ -31,6 +31,8 @@ namespace xng {
     public:
         typedef ChunkStreamer::Handle Handle;
 
+        static constexpr Handle INVALID_HANDLE = ChunkStreamer::INVALID_HANDLE;
+
         StreamBuffer(rg::Heap &heap,
                      ChunkStreamer &chunkStreamer,
                      const rg::Buffer::Capability capabilities,
@@ -91,6 +93,13 @@ namespace xng {
          * @return The offset of the data in the stable buffer.
          */
         Handle upload(const uint8_t *data, const size_t dataSize, const size_t offset) {
+#ifndef NDEBUG
+            for (auto &upload: uploads) {
+                if (upload.second.offset >= offset && upload.second.offset + upload.second.size <= offset + dataSize) {
+                    throw std::runtime_error("Overlapping upload");
+                }
+            }
+#endif
             bufferSize = std::max(bufferSize, offset + dataSize);
             bufferSize = std::max(bufferSize, targetSize);
             const auto ret = chunkStreamer.upload(data, dataSize, buffer, offset);
@@ -105,6 +114,9 @@ namespace xng {
          * @return True if the passed upload has finished.
          */
         bool isUploadComplete(const Handle handle) const {
+            if (handle == ChunkStreamer::INVALID_HANDLE) {
+                throw std::runtime_error("Invalid handle");
+            }
             return finishedUploads.find(handle) != finishedUploads.end()
                    || flushedUploads.find(handle) != flushedUploads.end();
         }
@@ -115,6 +127,9 @@ namespace xng {
          * @param handle The handle of the upload to flush
          */
         void flush(const Handle handle) {
+            if (handle == ChunkStreamer::INVALID_HANDLE) {
+                throw std::runtime_error("Invalid handle");
+            }
             if (finishedUploads.find(handle) == finishedUploads.end()) {
                 flushedUploads.insert(handle);
                 chunkStreamer.flush(handle);
@@ -128,6 +143,9 @@ namespace xng {
          * @param handle The handle to release
          */
         void release(const Handle handle) {
+            if (handle == ChunkStreamer::INVALID_HANDLE) {
+                throw std::runtime_error("Invalid handle");
+            }
             chunkStreamer.release(handle);
             pendingUploads.erase(handle);
             flushedUploads.erase(handle);

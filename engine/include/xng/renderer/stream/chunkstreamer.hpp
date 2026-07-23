@@ -72,6 +72,8 @@ namespace xng {
     public:
         typedef size_t Handle;
 
+        static constexpr Handle INVALID_HANDLE = 0;
+
         ChunkStreamer(const ChunkStreamer &other) = delete;
 
         ChunkStreamer &operator=(const ChunkStreamer &other) = delete;
@@ -156,6 +158,10 @@ namespace xng {
         }
 
         void release(const Handle handle) {
+            if (handle == INVALID_HANDLE) {
+                throw std::runtime_error("Invalid handle");
+            }
+
             targetBuffers.erase(handle);
             uploadData.erase(handle);
             pendingChunks.erase(handle);
@@ -177,11 +183,17 @@ namespace xng {
         }
 
         bool isUploadComplete(const Handle handle) {
+            if (handle == INVALID_HANDLE) {
+                throw std::runtime_error("Invalid handle");
+            }
             return flushedUploads.find(handle) != flushedUploads.end()
                    || pendingChunks.find(handle) == pendingChunks.end();
         }
 
         void flush(const Handle handle) {
+            if (handle == INVALID_HANDLE) {
+                throw std::runtime_error("Invalid handle");
+            }
             if (pendingChunks.find(handle) != pendingChunks.end()) {
                 flushedUploads.insert(handle);
             }
@@ -194,6 +206,9 @@ namespace xng {
          * @param targetBuffer The target buffer to set
          */
         void setTargetBuffer(const Handle handle, const rg::HeapResource<rg::Buffer> &targetBuffer) {
+            if (handle == INVALID_HANDLE) {
+                throw std::runtime_error("Invalid handle");
+            }
             targetBuffers[handle] = targetBuffer;
         }
 
@@ -378,7 +393,7 @@ namespace xng {
 
         std::vector<ChunkBuffer> freeChunkBuffers;
 
-        Handle nextHandle = 0;
+        Handle nextHandle = INVALID_HANDLE + 1;
         std::vector<Handle> freeHandles;
     };
 }

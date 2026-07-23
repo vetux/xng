@@ -85,7 +85,7 @@ namespace xng {
     }
 
     void RenderPipelineIndirect::setCamera(const Vec3f &position, const Mat4f &view, const Mat4f &projection) {
-        if (cameraResident) {
+        if (cameraBufferHandle != StreamBuffer::INVALID_HANDLE) {
             cameraBuffer.release(cameraBufferHandle);
         }
         RenderPipelineCompilerIndirect::ShaderCamera::CPU camera;
@@ -96,7 +96,6 @@ namespace xng {
                                                  sizeof(RenderPipelineCompilerIndirect::ShaderCamera::CPU),
                                                  0);
         cameraBuffer.flush(cameraBufferHandle);
-        cameraResident = true;
     }
 
     void RenderPipelineIndirect::setEnableDistanceSort(bool enable) {
@@ -416,7 +415,7 @@ namespace xng {
 
         updateDrawCallBuffer = false;
 
-        if (residentDrawCallBuffer) {
+        if (drawCallBufferHandle != StreamBuffer::INVALID_HANDLE) {
             drawCallBuffer.release(drawCallBufferHandle);
         }
 
@@ -444,7 +443,6 @@ namespace xng {
                                                      drawCallData.size() * sizeof(ShaderDrawCall::CPU),
                                                      0);
         drawCallBuffer.flush(drawCallBufferHandle);
-        residentDrawCallBuffer = true;
 
         drawCallBuffer.commit(queue);
 

@@ -169,10 +169,14 @@ namespace xng {
                     (ret + mip) * sizeof(unsigned int));
                 tex.tileMapOffsetsUploadHandles.emplace_back(tileMapOffsetsUpload);
 
+                tileMapOffsetsBuffer.flush(tileMapOffsetsUpload);
+
                 const auto tileMapBufferUpload = tileMapBuffer.upload(
                     std::vector<uint8_t>(mipTiles.x * mipTiles.y * sizeof(unsigned int), 0),
                     offset * sizeof(unsigned int));
                 tex.tileMapUploadHandles.emplace_back(tileMapBufferUpload);
+
+                tileMapBuffer.flush(tileMapBufferUpload);
 
                 textureStates[ret].emplace_back(mipSize, mipTiles);
             }
@@ -189,11 +193,15 @@ namespace xng {
                 sizeof(unsigned int),
                 ret * sizeof(unsigned int));
 
+            residencyMapOffsetsBuffer.flush(tex.residencyMapOffsetUploadHandle);
+
             const std::vector residencyMapSeed(residencyMapSize, mipLevels - 1u);
             tex.residencyMapUploadHandle = residencyMapBuffer.upload(
                 reinterpret_cast<const uint8_t *>(residencyMapSeed.data()),
                 sizeof(unsigned int) * residencyMapSize,
                 residencyMapOffset * sizeof(unsigned int));
+
+            residencyMapBuffer.flush(tex.residencyMapUploadHandle);
 
             textures[ret] = std::move(tex);
 
@@ -391,7 +399,6 @@ namespace xng {
                         }
                     }
                 }
-                return ret;
             }
             readbackFence = queue.addPostFrame(rg::GraphicsPassBuilder("TileStreamer/Readback")
                 .transferRead(readbackBuffer)

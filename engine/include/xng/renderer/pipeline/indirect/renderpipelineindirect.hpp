@@ -338,7 +338,6 @@ namespace xng {
             StreamBuffer::Handle drawCallBufferHandle{};
 
             bool updateDrawCallBuffer = false;
-            bool residentDrawCallBuffer = false;
 
             rg::HeapResource<rg::Buffer> indirectBuffer{};
             rg::HeapResource<rg::Buffer> indirectCountBuffer{};
@@ -418,7 +417,6 @@ namespace xng {
 
         StreamBuffer cameraBuffer;
         StreamBuffer::Handle cameraBufferHandle{};
-        bool cameraResident = false;
 
         GenericBufferStreamer materialStreamer;
         BufferStreamer<Mat4f> transformStreamer;
