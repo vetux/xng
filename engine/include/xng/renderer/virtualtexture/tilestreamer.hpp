@@ -69,14 +69,14 @@ namespace xng {
             std::vector<TileState> tileStates;
             std::vector<TextureAtlas::Slot> atlasSlots;
 
-            std::vector<unsigned int> taps;
+            size_t tileMapOffset{}; // For Readback
 
-            VirtualTextureState(Vec2u size, const Vec2u &tileCount)
+            VirtualTextureState(Vec2u size, const Vec2u &tileCount, const size_t tileMapOffset)
                 : size(std::move(size)),
                   tileCount(tileCount),
                   tileStates(tileCount.x * tileCount.y, TILE_EVICTED),
                   atlasSlots(tileCount.x * tileCount.y),
-                  taps(tileCount.x * tileCount.y, 0) {
+                  tileMapOffset(tileMapOffset) {
             }
 
             void setTileState(const Vec2u &tile, const TileState state) {
@@ -96,14 +96,6 @@ namespace xng {
 
             void setAtlasSlot(const Vec2u &tile, const TextureAtlas::Slot slot) {
                 this->atlasSlots.at(tileToIndex(tile, tileCount)) = slot;
-            }
-
-            [[nodiscard]] unsigned int getTaps(const Vec2u &tile) const {
-                return taps.at(tileToIndex(tile, tileCount));
-            }
-
-            void setTaps(const Vec2u &tile, const unsigned int value) {
-                taps.at(tileToIndex(tile, tileCount)) = value;
             }
         };
 
@@ -164,7 +156,7 @@ namespace xng {
                 const auto tileMapOffset = static_cast<unsigned int>(tileMapAllocator.allocate(tileMapSize));
                 tileMapOffsets.emplace_back(tileMapOffset);
                 tileMapSizes.emplace_back(tileMapSize);
-                states.emplace_back(mipSize, mipTiles);
+                states.emplace_back(mipSize, mipTiles, tileMapOffset);
             }
 
             const Vec2u mip0Tiles = getTiles(imageSize, tileSize);
@@ -240,11 +232,12 @@ namespace xng {
             const auto mipSize = rg::Texture::getMipLevelSize(texSize, mip);
             const auto mipTiles = getTiles(mipSize, tileSize);
 
-            state.setTileState(tile, TILE_PENDING);
-
             const auto atlasSlot = atlas.create(std::move(texels),
                                                 priority,
                                                 *this);
+
+            state.setTileState(tile, TILE_PENDING);
+            state.setAtlasSlot(tile, atlasSlot);
 
             tileAllocations[textureID][mip].emplace(tile,
                                                     TileAllocation(atlas,
@@ -256,6 +249,9 @@ namespace xng {
                        const unsigned int mip,
                        const Vec2u &tile) {
             auto &state = textures.at(textureID).states.at(mip);
+            if (state.getTileState(tile) == TILE_EVICTED) {
+                throw std::runtime_error("Tile already evicted");
+            }
             switch (state.getTileState(tile)) {
                 case TILE_PENDING: {
                     const auto slot = state.getAtlasSlot(tile);
@@ -353,6 +349,10 @@ namespace xng {
 
         rg::HeapResource<rg::Buffer> getReadbackBuffer() const {
             return readbackBuffer;
+        }
+
+        rg::HeapResource<rg::Buffer> getReadbackHostBuffer() const {
+            return readbackHostBuffer;
         }
 
     private:
@@ -578,14 +578,11 @@ namespace xng {
             }
         };
 
-        static constexpr size_t timeOut = 10'000'000'000ULL;
-
         void onUploadComplete(const TextureAtlas::Slot slot) override {
             const auto tileID = pendingTiles.at(slot);
             auto &state = textures.at(tileID.texture).states.at(tileID.mip);
             assert(state.getTileState(tileID.tile) == TILE_PENDING);
             state.setTileState(tileID.tile, TILE_RESIDENT);
-            state.setAtlasSlot(tileID.tile, slot);
             updatedMips[tileID.texture].insert(tileID.mip);
             pendingTiles.erase(slot);
         }

@@ -64,27 +64,7 @@ namespace xng {
         }
 
         void update(RenderQueue &queue) {
-            // TODO: Implement streamer
-            /*auto tappedTiles = tileStreamer.readback(queue);
-            for (auto &pair: tappedTiles) {
-                const auto &mips = tileStreamer.getTextureStates().at(pair.first);
-
-                unsigned int finestMipTapped = mips.size() - 1;
-                for (auto &mipPair: pair.second) {
-                    const auto &mip = mipPair.first;
-                    const auto &state = mips.at(mip);
-                    for (auto &tile: mipPair.second) {
-                        if (state.getTaps(tile) > 0) {
-                            finestMipTapped = std::min(finestMipTapped, mip);
-                            loadTileChain(pair.first, tile, mip, mips);
-                        }
-                    }
-                }
-
-                for (auto i = 0u; i < finestMipTapped; ++i) {
-                    tileStreamer.evictTiles(pair.first, i);
-                }
-            }*/
+            readback(queue);
         }
 
         void commit(RenderQueue &queue) {
@@ -152,69 +132,114 @@ namespace xng {
             }
         }
 
-        /* std::unordered_map<TextureID,
-             std::unordered_map<unsigned int, std::vector<Vec2u> > > readback(RenderQueue &queue) {
-             // Readback taps
-             std::unordered_map<TextureID, std::unordered_map<unsigned int, std::vector<Vec2u> > > ret;
+        static constexpr size_t timeOut = 10'000'000'000ULL;
 
-             // RenderDoc appears to not handle coherent mappings correctly.
-             // This is now fixed internally in the opengl adapter via explicit flush / invalidate semantics.
-             if (readbackFence != nullptr) {
-                 if (!readbackFence->wait(timeOut)) {
-                     throw std::runtime_error("TileStreamer readback timed out.");
-                 }
+        void readback(RenderQueue &queue) {
+            // Readback taps
 
-                 const auto mapping = runtime.getResourceHeap().map(readbackHostBuffer);
-                 const auto ptr = reinterpret_cast<unsigned int *>(mapping->data());
-                 for (auto &pair: textures) {
-                     for (auto mip = 0; mip < pair.second.tileMapOffsets.size(); mip++) {
-                         auto &state = textureStates.at(pair.first).at(mip);
-                         const auto tileCount = state.tileCount;
-                         const auto offset = pair.second.tileMapOffsets.at(mip);
-                         for (auto tileIndex = 0; tileIndex < tileCount.x * tileCount.y; tileIndex++) {
-                             const auto tile = indexToTile(tileIndex, tileCount);
-                             const unsigned int taps = *(ptr
-                                                         + offset
-                                                         + tileIndex);
-                             state.taps[tileIndex] = taps;
-                             ret[pair.first][mip].emplace_back(tile);
-                         }
-                     }
-                 }
-             }
-             readbackFence = queue.addPostFrame(rg::GraphicsPassBuilder("TileStreamer/Readback")
-                 .transferRead(readbackBuffer)
-                 .transferWrite(readbackHostBuffer)
-                 .execute([this](rg::RasterContext &, rg::TransferContext &ctx, rg::ComputeContext &) {
-                     ctx.copyBuffer(readbackHostBuffer, readbackBuffer, 0, 0, readbackBuffer.getDescription().size);
-                 }));
-             return ret;
-         }*/
+            // TODO: Implement efficient tile streaming
 
-        /* void loadTileChain(const TextureID texture,
-                            const Vec2u &tile,
-                            const unsigned int mip,
-                            const std::vector<TileStreamer::VirtualTextureState> &mips) {
-             const auto size0 = mips.at(0).size;
-             const auto coarsest = static_cast<unsigned int>(mips.size()) - 1;
-             const unsigned int x0 = (tile.x * atlas.getTileSize()) << mip;
-             const unsigned int y0 = (tile.y * atlas.getTileSize()) << mip;
-             const unsigned int x1 = std::min(((tile.x + 1) * atlas.getTileSize()) << mip, size0.x) - 1;
-             const unsigned int y1 = std::min(((tile.y + 1) * atlas.getTileSize()) << mip, size0.y) - 1;
+            // Now I need to implement the actual tile streaming / eviction logic.
+            // The challenges are that the vt system expects any given mip chain to be fully resident because
+            // the residency map is one tile map sized to mip 0 where each tile contains the finest allocated mip chain
+            // for that tile.
 
-             for (auto m = mip; m <= coarsest; ++m) {
-                 const auto &state = mips.at(m);
-                 const unsigned int tx0 = std::min((x0 >> m) / atlas.getTileSize(), state.tileCount.x - 1);
-                 const unsigned int tx1 = std::min((x1 >> m) / atlas.getTileSize(), state.tileCount.x - 1);
-                 const unsigned int ty0 = std::min((y0 >> m) / atlas.getTileSize(), state.tileCount.y - 1);
-                 const unsigned int ty1 = std::min((y1 >> m) / atlas.getTileSize(), state.tileCount.y - 1);
-                 for (auto ty = ty0; ty <= ty1; ++ty) {
-                     for (auto tx = tx0; tx <= tx1; ++tx) {
-                         tileStreamer.loadTile(texture, m, {tx, ty}, static_cast<int>(mips.size() - m));
-                     }
-                 }
-             }
-         }*/
+            // RenderDoc appears to not handle coherent mappings correctly.
+            // This is now fixed internally in the opengl adapter via explicit flush / invalidate semantics.
+            if (readbackFence != nullptr) {
+                if (!readbackFence->wait(timeOut)) {
+                    throw std::runtime_error("Virtual texture readback timed out.");
+                }
+
+                std::unordered_map<unsigned int, std::unordered_set<Vec2u> > pinnedTiles;
+
+                const auto mapping = runtime.getResourceHeap().map(tileStreamer.getReadbackHostBuffer());
+                const auto ptr = reinterpret_cast<unsigned int *>(mapping->data());
+                for (auto &pair: tileLoaders) {
+                    const auto &states = tileStreamer.getTextureState(pair.first);
+                    for (auto mip = 0; mip < states.size() - 1; mip++) {
+                        auto &state = states.at(mip);
+                        const auto tileCount = state.tileCount;
+                        const auto offset = state.tileMapOffset;
+                        for (auto tileIndex = 0; tileIndex < tileCount.x * tileCount.y; tileIndex++) {
+                            const auto tile = TileStreamer::indexToTile(tileIndex, tileCount);
+                            const unsigned int taps = *(ptr
+                                                        + offset
+                                                        + tileIndex);
+                            if (taps > 0) {
+                                auto p = loadTileChain(pair.first,
+                                                       tile,
+                                                       mip,
+                                                       states);
+                                for (auto &pin: p) {
+                                    pinnedTiles[pin.first].insert(pin.second.begin(), pin.second.end());
+                                }
+                            } else {
+                                if (state.getTileState(tile) == TileStreamer::TILE_EVICTED)
+                                    continue;
+                                if (pinnedTiles[mip].find(tile) == pinnedTiles[mip].end())
+                                    tileStreamer.evictTile(pair.first, mip, tile);
+                            }
+
+                            if (tileStreamer.getTilesInFlight() >= 128) {
+                                break;
+                            }
+                        }
+                        if (tileStreamer.getTilesInFlight() >= 128) {
+                            break;
+                        }
+                    }
+                    if (tileStreamer.getTilesInFlight() >= 128) {
+                        break;
+                    }
+                }
+            }
+            readbackFence = queue.addPostFrame(rg::GraphicsPassBuilder("VirtualTextureStreamer/Readback")
+                .transferRead(tileStreamer.getReadbackBuffer())
+                .transferWrite(tileStreamer.getReadbackHostBuffer())
+                .execute([this](rg::RasterContext &, rg::TransferContext &ctx, rg::ComputeContext &) {
+                    ctx.copyBuffer(tileStreamer.getReadbackHostBuffer(),
+                                   tileStreamer.getReadbackBuffer(),
+                                   0,
+                                   0,
+                                   tileStreamer.getReadbackBuffer().getDescription().size);
+                }));
+        }
+
+        std::unordered_map<unsigned int, std::unordered_set<Vec2u> > loadTileChain(const TextureID texture,
+            const Vec2u &tile,
+            const unsigned int mip,
+            const std::vector<TileStreamer::VirtualTextureState> &mips) {
+            std::unordered_map<unsigned int, std::unordered_set<Vec2u> > ret;
+
+            const auto size0 = mips.at(0).size;
+            const auto coarsest = static_cast<unsigned int>(mips.size()) - 1;
+            const unsigned int x0 = (tile.x * atlas.getTileSize()) << mip;
+            const unsigned int y0 = (tile.y * atlas.getTileSize()) << mip;
+            const unsigned int x1 = std::min(((tile.x + 1) * atlas.getTileSize()) << mip, size0.x) - 1;
+            const unsigned int y1 = std::min(((tile.y + 1) * atlas.getTileSize()) << mip, size0.y) - 1;
+
+            for (auto m = mip; m <= coarsest; ++m) {
+                const auto &state = mips.at(m);
+                const unsigned int tx0 = std::min((x0 >> m) / atlas.getTileSize(), state.tileCount.x - 1);
+                const unsigned int tx1 = std::min((x1 >> m) / atlas.getTileSize(), state.tileCount.x - 1);
+                const unsigned int ty0 = std::min((y0 >> m) / atlas.getTileSize(), state.tileCount.y - 1);
+                const unsigned int ty1 = std::min((y1 >> m) / atlas.getTileSize(), state.tileCount.y - 1);
+                for (auto ty = ty0; ty <= ty1; ++ty) {
+                    for (auto tx = tx0; tx <= tx1; ++tx) {
+                        if (state.getTileState({tx, ty}) == TileStreamer::TILE_EVICTED) {
+                            tileStreamer.uploadTile(texture,
+                                                    m,
+                                                    {tx, ty},
+                                                    tileLoaders.at(texture)->getTile(m, {tx, ty}),
+                                                    static_cast<int>(mips.size() - m));
+                        }
+                        ret[m].insert({tx, ty});
+                    }
+                }
+            }
+            return ret;
+        }
 
         rg::Runtime &runtime;
         TextureAtlas atlas;
@@ -222,7 +247,7 @@ namespace xng {
 
         float maxAnisotropy = 8.0f;
 
-        std::shared_ptr<RenderQueue::SubmitFence> readbackFence;
+        std::shared_ptr<RenderQueue::SubmitFence> readbackFence = nullptr;
 
         std::unordered_map<TextureID, std::shared_ptr<TileLoader> > tileLoaders;
     };
