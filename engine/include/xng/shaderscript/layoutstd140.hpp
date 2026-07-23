@@ -27,6 +27,16 @@
 #include "xng/shaderscript/std140.hpp"
 
 namespace xng {
+    template<typename T>
+    struct Std140Size {
+        static constexpr size_t value = sizeof(Std140<T>);
+    };
+
+    template<typename T>
+    struct Std140Size<Vector3<T> > {
+        static constexpr size_t value = 3 * sizeof(T);
+    };
+
     class LayoutStd140 {
     public:
         explicit LayoutStd140(const std::string &typeName)
@@ -38,7 +48,7 @@ namespace xng {
             constexpr size_t alignment = alignof(Std140<T>);
             totalSize = (totalSize + alignment - 1) & ~(alignment - 1);
             offsets[name] = totalSize;
-            totalSize += sizeof(Std140<T>);
+            totalSize += Std140Size<T>::value;
             structDef.elements.emplace_back(rg::ShaderPrimitive(T()).getType(), name);
         }
 

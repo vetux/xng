@@ -277,6 +277,23 @@ namespace xng {
             return a;
         }
     };
+
+    template<>
+    struct alignas(4) Std140<bool> {
+        int32_t value{};
+
+        Std140() = default;
+
+        Std140(bool v) : value(v ? 1 : 0) {
+        }
+
+        Std140 &operator=(bool v) {
+            value = v ? 1 : 0;
+            return *this;
+        }
+
+        operator bool() const { return value != 0; }
+    };
 } // namespace xng
 
 #endif // XENGINE_STD140_HPP

@@ -165,7 +165,7 @@ namespace xng {
 
             assert(offset + sizeof(Std140<T>) <= data.size());
 
-            std::memcpy(data.data() + offset, &valueAligned, sizeof(Std140<T>));
+            std::memcpy(data.data() + offset, &valueAligned, Std140Size<T>::value);
         }
 
         const std::vector<uint8_t> &getData() const { return data; }
