@@ -135,7 +135,7 @@ namespace xng {
                 auto desc = texture.getDescription();
                 desc.arrayLayers = totalOffset.z + 1;
                 texture = runtime.getResourceHeap().allocateTexture(desc);
-                queue.addFrame(rg::GraphicsPassBuilder("TextureAtlas/Copy")
+                queue.addPreFrame(rg::GraphicsPassBuilder("TextureAtlas/Resize")
                     .transferRead(staleTexture,
                                   rg::TextureBinding::Range(0, 1, 0, staleTexture.getDescription().arrayLayers))
                     .transferWrite(
