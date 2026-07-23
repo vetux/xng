@@ -42,6 +42,8 @@ namespace xng {
                    * MatrixMath::translate(transform.getPosition() * -1);
         }
 
+        RenderSpotLight() = default;
+
         explicit RenderSpotLight(std::function<void()> onChangedCallback)
             : onChangedCallback(std::move(onChangedCallback)) {
         }

@@ -44,6 +44,8 @@ namespace xng {
                    * MatrixMath::inverse(transform.getRotation().matrix());
         }
 
+        RenderDirectionalLight() = default;
+
         explicit RenderDirectionalLight(std::function<void()> onChangedCallback)
             : onChangedCallback(std::move(onChangedCallback)) {
         }
@@ -66,9 +68,9 @@ namespace xng {
 
             if (castShadows) {
                 data.shadowProjectionMatrix = getShadowProjection(Transform({}, direction, {}),
-                                                                   shadowNearPlane,
-                                                                   shadowFarPlane,
-                                                                   shadowExtent);
+                                                                  shadowNearPlane,
+                                                                  shadowFarPlane,
+                                                                  shadowExtent);
             }
 
             onChangedCallback();
