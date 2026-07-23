@@ -61,19 +61,13 @@ namespace xng::opengl {
                     glBufferStorage(target,
                                     static_cast<GLsizeiptr>(desc.size),
                                     nullptr,
-                                    GL_MAP_WRITE_BIT
-                                    | GL_MAP_PERSISTENT_BIT
-                                    | GL_MAP_COHERENT_BIT
-                                    | GL_DYNAMIC_STORAGE_BIT);
+                                    GL_MAP_WRITE_BIT | GL_DYNAMIC_STORAGE_BIT | GL_MAP_PERSISTENT_BIT);
                     break;
                 case Buffer::MEMORY_GPU_TO_CPU:
                     glBufferStorage(target,
                                     static_cast<GLsizeiptr>(desc.size),
                                     nullptr,
-                                    GL_MAP_READ_BIT
-                                    | GL_MAP_PERSISTENT_BIT
-                                    | GL_MAP_COHERENT_BIT
-                                    | GL_DYNAMIC_STORAGE_BIT);
+                                    GL_MAP_READ_BIT | GL_DYNAMIC_STORAGE_BIT | GL_MAP_PERSISTENT_BIT);
                     break;
             }
 
@@ -102,9 +96,9 @@ namespace xng::opengl {
 
             GLenum access = 0;
             if (desc.memoryType == Buffer::MEMORY_GPU_TO_CPU) {
-                access |= GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+                access |= GL_MAP_READ_BIT;
             } else if (desc.memoryType == Buffer::MEMORY_CPU_TO_GPU) {
-                access |= GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+                access |= GL_MAP_WRITE_BIT | GL_MAP_FLUSH_EXPLICIT_BIT ;
             } else {
                 throw std::runtime_error("Cannot map GPU_ONLY buffer");
             }

@@ -162,12 +162,12 @@ namespace xng::opengl {
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
         glDebugMessageCallback([](GLenum source, GLenum type, GLuint id, GLenum severity,
-                          GLsizei length, const GLchar* message, const void* userParam) {
+                                  GLsizei length, const GLchar *message, const void *userParam) {
             // Filter specifically for errors or API mismanagement
             if (type == GL_DEBUG_TYPE_ERROR || type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR) {
                 std::cerr << "[OpenGL Error] " << message << std::endl;
             }
-}, nullptr);
+        }, nullptr);
 #endif
 
         data->heap = std::make_unique<HeapGL>();
@@ -235,6 +235,7 @@ namespace xng::opengl {
     }
 
     std::unique_ptr<Fence> Runtime::execute(const rg::Graph &graph) {
+        OGLDebugGroup d("Runtime::execute");
         std::unordered_set<SurfaceGL *> surfaces;
 
         for (auto &pass: graph.passes) {

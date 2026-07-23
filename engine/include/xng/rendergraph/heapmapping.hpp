@@ -24,6 +24,15 @@
 #include <stdexcept>
 
 namespace xng::rg {
+    /**
+     * Heap mappings support persistent mappings.
+     * Heap mappings are not coherent.
+     *
+     * For persistent mappings flush / invalidate must be used explicitly.
+     *
+     * For GPU_TO_CPU buffers the buffer is invalidated when creating the mapping.
+     * For CPU_TO_GPU buffers, the destructor will flush the mapping.
+     */
     class HeapMapping {
     public:
         virtual ~HeapMapping() = default;
@@ -31,6 +40,16 @@ namespace xng::rg {
         virtual uint8_t *data() = 0;
 
         virtual size_t size() = 0;
+
+        /**
+         * Flush previous writes to make them visible on the gpu.
+         */
+        virtual void flush() = 0;
+
+        /**
+         * Invalidate the buffer to ensure that previous writes from gpu are visible in data().
+         */
+        virtual void invalidate() = 0;
 
         uint8_t *begin() {
             return data();

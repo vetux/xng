@@ -34,6 +34,7 @@ namespace xng::opengl {
         }
 
         ~HeapMappingGL() override {
+            flush();
             buffer.unmap();
         }
 
@@ -43,6 +44,20 @@ namespace xng::opengl {
 
         size_t size() override {
             return buffer.desc.size;
+        }
+
+        void flush() override {
+            if (buffer.desc.memoryType != Buffer::MEMORY_CPU_TO_GPU) {
+                return;
+            }
+
+            glFlushMappedNamedBufferRange(buffer.handle, 0, static_cast<GLsizeiptr>(buffer.desc.size));
+
+            oglCheckError();
+        }
+
+        void invalidate() override {
+            // Invalidate is apparently handled via glMemoryBarrier
         }
 
     private:
