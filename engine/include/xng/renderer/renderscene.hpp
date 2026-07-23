@@ -238,11 +238,11 @@ namespace xng {
                                                     int sortPriority = 0);
 
         RenderObjectHandle<RenderPointLight> createPointLight(const Vec3f &position,
-                                                              const ColorRGB color,
-                                                              const float power,
-                                                              const bool castShadows,
-                                                              const float shadowNearPlane,
-                                                              const float shadowFarPlane);
+                                                              ColorRGB color,
+                                                              float power,
+                                                              bool castShadows,
+                                                              float shadowNearPlane,
+                                                              float shadowFarPlane);
 
         RenderObjectHandle<RenderDirectionalLight> createDirectionalLight();
 

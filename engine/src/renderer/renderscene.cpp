@@ -65,9 +65,8 @@ namespace xng {
                                                                  const unsigned int mipLevels) {
         const auto id = allocateID();
         const auto size = image.getResolution();
-        const auto maxMip = mipLevels - 1;
         const auto textureHandle = virtualTextureStreamer.create(std::make_shared<ImageTileLoader>(image,
-            maxMip + 1,
+            mipLevels,
             virtualTextureStreamer.getTileSize(),
             virtualTextureStreamer.getTileBorder(),
             wrapping,
@@ -76,7 +75,7 @@ namespace xng {
                          RenderTexture(virtualTextureStreamer,
                                        textureHandle,
                                        size,
-                                       maxMip));
+                                       mipLevels - 1));
         types[id] = RenderObject::RENDER_TEXTURE;
         return {this, id, textures.at(id)};
     }
@@ -464,7 +463,7 @@ namespace xng {
                                  reinterpret_cast<const uint8_t *>(&pair.second.getData()) + sizeof(
                                      ShaderPointLight::CPU));
             }
-            pointLightBufferHandle = pointLightBuffer.upload(lightData, 0);
+            pointLightBufferHandle = pointLightBuffer.upload(std::move(lightData), 0);
             pointLightBuffer.flush(pointLightBufferHandle);
             reuploadPointLights = false;
             pointLightResident = true;
@@ -482,7 +481,7 @@ namespace xng {
                                  reinterpret_cast<const uint8_t *>(&pair.second.getData()) + sizeof(
                                      ShaderDirectionalLight::CPU));
             }
-            directionalLightBufferHandle = directionalLightBuffer.upload(lightData, 0);
+            directionalLightBufferHandle = directionalLightBuffer.upload(std::move(lightData), 0);
             directionalLightBuffer.flush(directionalLightBufferHandle);
             reuploadDirectionalLights = false;
             directionalLightResident = true;
@@ -500,7 +499,7 @@ namespace xng {
                                  reinterpret_cast<const uint8_t *>(&pair.second.getData()) + sizeof(
                                      ShaderSpotLight::CPU));
             }
-            spotLightBufferHandle = spotLightBuffer.upload(lightData, 0);
+            spotLightBufferHandle = spotLightBuffer.upload(std::move(lightData), 0);
             spotLightBuffer.flush(spotLightBufferHandle);
             reuploadSpotLights = false;
             spotLightResident = true;
