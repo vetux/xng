@@ -136,6 +136,7 @@ namespace xng {
 
         sideEffect(writeAttachment(GBUFFER_ROUGHNESS_METALLIC_AO, roughnessMetallicAO));
 
+        // TODO: Fix broken normal mapping (Normal map not applying)
         // Normals
         mat3 normalMatrix = mat3(transpose(inverse(fModel)));
         vec4 oNormal;
