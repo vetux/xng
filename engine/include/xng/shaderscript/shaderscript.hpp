@@ -747,7 +747,11 @@ namespace xng::ShaderScript {
      * @param value
      */
     inline void sideEffect(const ShaderObject &value) {
-        BlockScope::get().addInstruction(rg::ShaderInstructionFactory::assign(value.operand, value.operand));
+        if (value.operand.type == rg::ShaderOperand::Instruction) {
+            BlockScope::get().addInstruction(std::get<rg::ShaderInstruction>(value.operand.value));
+        } else {
+            BlockScope::get().addInstruction(rg::ShaderInstructionFactory::assign(value.operand, value.operand));
+        }
     }
 
     template<typename T>
