@@ -54,6 +54,11 @@ namespace xng::rg {
             return ret;
         }
 
+        GraphBuilder &addPass(Pass pass) {
+            passes.emplace_back(std::move(pass));
+            return *this;
+        }
+
         GraphBuilder &addPass(TransferPass pass) {
             passes.emplace_back(std::move(pass));
             return *this;

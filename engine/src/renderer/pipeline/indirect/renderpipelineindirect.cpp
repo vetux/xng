@@ -107,7 +107,7 @@ namespace xng {
         // TODO: Volume Culling (Meshlets)
     }
 
-    void RenderPipelineIndirect::commit(rg::GraphBuilder &graph, StreamerQueue &streamerQueue) {
+    void RenderPipelineIndirect::commit(RenderQueue &queue) {
         // Merge pending draw calls that finished uploading.
         std::unordered_set<DrawID> mergedDrawCalls;
         for (auto &id: pendingDrawCalls) {
@@ -129,18 +129,18 @@ namespace xng {
         }
 
         // Commit draw lists
+        cameraBuffer.commit(queue);
+        transformStreamer.commit(queue);
+        materialStreamer.commit(queue);
         for (auto &pair: drawLists) {
-            pair.second.commit(graph, streamerQueue, heap, drawCalls);
+            pair.second.commit(queue, heap, drawCalls);
         }
-        cameraBuffer.commit(streamerQueue);
-        transformStreamer.commit(streamerQueue);
-        materialStreamer.commit(streamerQueue);
     }
 
-    void RenderPipelineIndirect::prepare(rg::GraphBuilder &graph) {
+    void RenderPipelineIndirect::prepare(RenderQueue &queue) {
         // Record Prepasses
         for (auto &pair: drawLists) {
-            recordPrePass(graph, pair.second);
+            recordPrePass(queue, pair.second);
         }
     }
 
@@ -407,8 +407,7 @@ namespace xng {
         indirectCountBuffer = resourceHeap.allocateBuffer(desc);
     }
 
-    void RenderPipelineIndirect::DrawList::commit(rg::GraphBuilder &graph,
-                                                  StreamerQueue &queue,
+    void RenderPipelineIndirect::DrawList::commit(RenderQueue &queue,
                                                   rg::Heap &resourceHeap,
                                                   const std::unordered_map<DrawID, DrawCall> &callMap) {
         if (!updateDrawCallBuffer) {
@@ -496,7 +495,7 @@ namespace xng {
         }
     }
 
-    void RenderPipelineIndirect::recordPrePass(rg::GraphBuilder &graph, const DrawList &drawList) const {
+    void RenderPipelineIndirect::recordPrePass(RenderQueue &queue, const DrawList &drawList) const {
         if (drawList.drawCalls.empty()) {
             return;
         }
@@ -511,7 +510,7 @@ namespace xng {
 
         builder.storageRead(cameraBuffer.getBuffer());
 
-        graph.addPass(builder.execute([this, &drawList](rg::ComputeContext &ctx) {
+        queue.addFrame(builder.execute([this, &drawList](rg::ComputeContext &ctx) {
             ctx.bindPipeline(prePassPipeline);
 
             ctx.bindStorageBuffer("camera", cameraBuffer.getBuffer(), 0, 0);

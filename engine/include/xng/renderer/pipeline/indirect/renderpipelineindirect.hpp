@@ -89,9 +89,9 @@ namespace xng {
 
         void setEnableDrawCulling(bool enable) override;
 
-        void commit(rg::GraphBuilder &graph, StreamerQueue &streamerQueue) override;
+        void commit(RenderQueue &queue) override;
 
-        void prepare(rg::GraphBuilder &graph) override;
+        void prepare(RenderQueue &queue) override;
 
         void execute(rg::GraphBuilder &graph,
                      const std::string &passName,
@@ -361,8 +361,7 @@ namespace xng {
 
             DrawList(rg::Heap &resourceHeap, ChunkStreamer &chunkStreamer);
 
-            void commit(rg::GraphBuilder &graph,
-                        StreamerQueue &streamerQueue,
+            void commit(RenderQueue &queue,
                         rg::Heap &resourceHeap,
                         const std::unordered_map<DrawID, DrawCall> &callMap);
 
@@ -391,7 +390,7 @@ namespace xng {
 
         static rg::PipelineCache::Handle compilePrePassPipeline(rg::Runtime &runtime, rg::Shader shader);
 
-        void recordPrePass(rg::GraphBuilder &graph, const DrawList &drawList) const;
+        void recordPrePass(RenderQueue &queue, const DrawList &drawList) const;
 
         DrawID allocateID() {
             if (freeIDs.empty()) {

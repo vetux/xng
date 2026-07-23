@@ -61,11 +61,11 @@ namespace xng {
             tileStreamer.destroy(textureID);
         }
 
-        void update() {
+        void update(RenderQueue &queue) {
             // TODO: Tile streaming limiting based on available VRAM
             // TODO: Optimize virtual texture streaming
             // TODO: Find cause of incorrect flushing behaviour.
-            auto tappedTiles = tileStreamer.readback();
+            auto tappedTiles = tileStreamer.readback(queue);
             for (auto &pair: tappedTiles) {
                 const auto &mips = tileStreamer.getTextureStates().at(pair.first);
 
@@ -87,9 +87,9 @@ namespace xng {
             }
         }
 
-        void commit(rg::GraphBuilder &graph, StreamerQueue &queue) {
-            tileStreamer.commit(graph, queue);
-            atlas.commit(graph, queue);
+        void commit(RenderQueue &queue) {
+            tileStreamer.commit(queue);
+            atlas.commit(queue);
         }
 
         bool isUploadComplete(const TextureID textureID) const {

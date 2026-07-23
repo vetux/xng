@@ -126,7 +126,7 @@ namespace xng {
             return true;
         }
 
-        void commit(rg::GraphBuilder &graph, StreamerQueue &streamerQueue) {
+        void commit(RenderQueue &queue) {
             staleTexture = {};
 
             const auto totalOffset = getOffset(slotAllocator.getSize());
@@ -135,7 +135,7 @@ namespace xng {
                 auto desc = texture.getDescription();
                 desc.arrayLayers = totalOffset.z + 1;
                 texture = runtime.getResourceHeap().allocateTexture(desc);
-                graph.addPass(rg::GraphicsPassBuilder("TextureAtlas/Copy")
+                queue.addFrame(rg::GraphicsPassBuilder("TextureAtlas/Copy")
                     .transferRead(staleTexture,
                                   rg::TextureBinding::Range(0, 1, 0, staleTexture.getDescription().arrayLayers))
                     .transferWrite(
@@ -209,7 +209,7 @@ namespace xng {
                 }
             }
 
-            buffer.commit(streamerQueue);
+            buffer.commit(queue);
 
             auto pass = rg::GraphicsPassBuilder("TextureAtlas/Copy");
 
@@ -224,7 +224,7 @@ namespace xng {
                 pendingUploadQueues.at(pendingUploadPriorities.at(slot)).erase(slot);
             }
 
-            graph.addPass(pass.execute([this, frameCopies](rg::RasterContext &,
+            queue.addFrame(pass.execute([this, frameCopies](rg::RasterContext &,
                                                            rg::TransferContext &ctx,
                                                            rg::ComputeContext &) {
                 for (auto slot: frameCopies) {

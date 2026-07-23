@@ -47,30 +47,28 @@ namespace xng {
     }
 
     void Renderer::draw(const std::shared_ptr<rg::Surface> &surface, RenderScene &scene) {
-        rg::GraphBuilder graph;
-        StreamerQueue streamerQueue(runtime);
+        RenderQueue queue;
 
         // Commit Scene
-        scene.commit(graph, streamerQueue);
+        scene.commit(queue);
 
         // Record compute skinning
-        graph.addPass(recordSkinningPass(scene));
+        queue.getFrameBuilder().addPass(recordSkinningPass(scene));
 
         // Prepare Scene
-        scene.prepare(graph);
+        scene.prepare(queue);
 
         // Record passes
         RenderPassRegistry registry;
         for (const auto &pass: passes) {
-            pass->record(graph, surface, registry, scene);
+            pass->record(queue.getFrameBuilder(), surface, registry, scene);
         }
 
-        // Submit Streamer Queue
-        streamerQueue.submit();
-
         // Execute Graph
+        const auto sem = queue.submit(runtime);
+
+        // Sync every Frame (Frames in flight will do more advanced syncing here)
         static constexpr size_t timeOut = 10'000'000'000ULL;
-        auto sem = runtime.execute(graph.build());
         if (!sem->wait(timeOut)) {
             throw std::runtime_error("Renderer timed out");
         }

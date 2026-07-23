@@ -162,7 +162,7 @@ namespace xng {
             }
         }
 
-        void commit(rg::GraphBuilder &graph, StreamerQueue &queue) {
+        void commit(RenderQueue &queue) {
             // Resize / copy texture
             if (nextSlot > texture.getDescription().arrayLayers) {
                 const auto staleTexture = texture;
@@ -196,7 +196,7 @@ namespace xng {
                                 }
                                 ctx.copyTexture(texture, staleTexture, regions);
                             });
-                    graph.addPass(pass);
+                    queue.addPreFrame(pass);
                 }
             }
 
@@ -235,7 +235,7 @@ namespace xng {
                                                             upload.bufferFormat);
                                     ctx.generateMipMaps(texture);
                                 });
-                        graph.addPass(pass);
+                        queue.addPreFrame(pass);
 
                         if (buffer.isUploadComplete(pendingUpload.bufferHandle)) {
                             // ChunkStreamer already done; safe to release now.

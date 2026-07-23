@@ -83,7 +83,7 @@ namespace xng {
             }
         }
 
-        void commit(StreamerQueue &queue) {
+        void commit(RenderQueue &queue) {
             buffer.commit(queue);
         }
 

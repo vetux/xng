@@ -59,7 +59,7 @@ namespace xng {
             return streamer.flush(slot);
         }
 
-        void commit(StreamerQueue &queue) {
+        void commit(RenderQueue &queue) {
             streamer.commit(queue);
         }
 

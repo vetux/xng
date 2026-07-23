@@ -444,7 +444,7 @@ namespace xng {
         return {this, id, spotLights.at(id)};
     }
 
-    void RenderScene::commit(rg::GraphBuilder &graph, StreamerQueue &streamerQueue) {
+    void RenderScene::commit(RenderQueue &queue) {
         //TODO: Design light buffer technique.
 
         // Light iteration in shaders is expensive.
@@ -506,41 +506,41 @@ namespace xng {
             spotLightResident = true;
         }
 
-        pointLightBuffer.commit(streamerQueue);
-        directionalLightBuffer.commit(streamerQueue);
-        spotLightBuffer.commit(streamerQueue);
+        pointLightBuffer.commit(queue);
+        directionalLightBuffer.commit(queue);
+        spotLightBuffer.commit(queue);
 
-        skeletonStreamer.commit(streamerQueue);
-        meshStreamer.commit(streamerQueue);
+        skeletonStreamer.commit(queue);
+        meshStreamer.commit(queue);
 
-        virtualTextureStreamer.update();
-        virtualTextureStreamer.commit(graph, streamerQueue);
+        virtualTextureStreamer.update(queue);
+        virtualTextureStreamer.commit(queue);
 
-        pbrDeferredPipeline->commit(graph, streamerQueue);
-        pbrForwardPipeline->commit(graph, streamerQueue);
-        shadowCastersPipeline->commit(graph, streamerQueue);
+        pbrDeferredPipeline->commit(queue);
+        pbrForwardPipeline->commit(queue);
+        shadowCastersPipeline->commit(queue);
         for (const auto &pair: shaders) {
-            pair.second.getPipeline()->commit(graph, streamerQueue);
+            pair.second.getPipeline()->commit(queue);
         }
 
         for (const auto &pair: canvases) {
-            pair.second.getPipeline().commit(graph, streamerQueue);
+            pair.second.getPipeline().commit(queue);
         }
 
-        chunkStreamer.commit(streamerQueue);
+        chunkStreamer.commit(queue);
     }
 
-    void RenderScene::prepare(rg::GraphBuilder &graph) {
-        pbrDeferredPipeline->prepare(graph);
-        pbrForwardPipeline->prepare(graph);
-        shadowCastersPipeline->prepare(graph);
+    void RenderScene::prepare(RenderQueue &queue) {
+        pbrDeferredPipeline->prepare(queue);
+        pbrForwardPipeline->prepare(queue);
+        shadowCastersPipeline->prepare(queue);
 
         for (auto &pair: shaders) {
-            pair.second.getPipeline()->prepare(graph);
+            pair.second.getPipeline()->prepare(queue);
         }
 
         for (auto &pair: canvases) {
-            pair.second.getPipeline().prepare(graph);
+            pair.second.getPipeline().prepare(queue);
         }
     }
 

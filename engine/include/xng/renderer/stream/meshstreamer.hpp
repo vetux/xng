@@ -318,7 +318,7 @@ namespace xng {
             return allocations.at(handle);
         }
 
-        void commit(StreamerQueue &queue) {
+        void commit(RenderQueue &queue) {
             for (auto &pair: vertexBuffers) {
                 pair.second.commit(queue);
             }

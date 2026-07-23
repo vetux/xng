@@ -39,6 +39,7 @@
 #include "xng/renderer/objects/renderspotlight.hpp"
 
 #include "xng/renderer/pipeline/renderpipeline.hpp"
+#include "xng/renderer/renderqueue.hpp"
 
 #include "xng/renderer/renderpath.hpp"
 #include "xng/renderer/shadingmodel.hpp"
@@ -247,9 +248,9 @@ namespace xng {
 
         RenderObjectHandle<RenderSpotLight> createSpotLight();
 
-        void commit(rg::GraphBuilder &graph, StreamerQueue &streamerQueue);
+        void commit(RenderQueue &queue);
 
-        void prepare(rg::GraphBuilder &graph);
+        void prepare(RenderQueue &queue);
 
         const RenderPipeline &getPbrDeferredPipeline() const {
             return *pbrDeferredPipeline;

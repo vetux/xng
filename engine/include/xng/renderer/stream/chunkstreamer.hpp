@@ -23,7 +23,7 @@
 #include <cstdint>
 #include <utility>
 
-#include "xng/renderer/streamerqueue.hpp"
+#include "xng/renderer/renderqueue.hpp"
 #include "xng/rendergraph/heap.hpp"
 #include "xng/rendergraph/builder/graphbuilder.hpp"
 #include "xng/rendergraph/resource/buffer.hpp"
@@ -197,7 +197,7 @@ namespace xng {
             targetBuffers[handle] = targetBuffer;
         }
 
-        void commit(StreamerQueue &queue) {
+        void commit(RenderQueue &queue) {
             for (auto handle: flushedUploads) {
                 const auto it = pendingChunks.find(handle);
                 if (it != pendingChunks.end()) {
@@ -284,7 +284,7 @@ namespace xng {
                                         ctx.copyBuffer(targetBuffer, sourceBuffer, offset, 0, size);
                                     });
 
-                        queue.addPass(std::move(pass));
+                        queue.addPreFrame(std::move(pass));
 
                         if (freeChunkBuffers.size() < pinnedChunkBuffers) {
                             buffer.pendingTransfer = nullptr;
@@ -310,40 +310,41 @@ namespace xng {
         };
 
         struct ChunkBuffer {
+            rg::Heap &heap;
+
             rg::HeapResource<rg::Buffer> stagingBuffer;
             rg::HeapResource<rg::Buffer> backBuffer;
 
-            std::unique_ptr<rg::HeapMapping> mapping;
-
-            std::shared_ptr<StreamerQueue::SubmitFence> pendingTransfer{};
+            std::shared_ptr<RenderQueue::SubmitFence> pendingTransfer{};
             Handle pendingTransferHandle{};
             size_t pendingTransferOffset{};
             size_t pendingTransferSize{};
 
             ChunkBuffer(rg::Heap &heap, const size_t chunkSize)
-                : stagingBuffer(heap.allocateBuffer(rg::Buffer(chunkSize,
+                : heap(heap),
+                  stagingBuffer(heap.allocateBuffer(rg::Buffer(chunkSize,
                                                                rg::Buffer::CAPABILITY_TRANSFER_SRC,
                                                                rg::Buffer::MEMORY_CPU_TO_GPU))),
                   backBuffer(heap.allocateBuffer(rg::Buffer(chunkSize,
                                                             rg::Buffer::CAPABILITY_TRANSFER_DST,
                                                             rg::Buffer::MEMORY_GPU_ONLY))) {
-                mapping = heap.map(stagingBuffer);
             }
 
             ChunkBuffer(ChunkBuffer &&other) noexcept = default;
 
             ChunkBuffer(const ChunkBuffer &other) = delete;
 
-            void upload(StreamerQueue &queue,
+            void upload(RenderQueue &queue,
                         const Handle handle,
                         const std::vector<uint8_t> &data,
                         const size_t targetOffset,
                         const size_t chunkOffset,
                         const size_t size) {
                 assert(pendingTransfer == nullptr);
-                assert(mapping);
-
-                mapping->copyFrom(data, chunkOffset, 0, size);
+                {
+                    const auto mapping = heap.map(stagingBuffer);
+                    mapping->copyFrom(data, chunkOffset, 0, size);
+                }
 
                 auto backBufferRef = backBuffer;
                 auto stagingBufferRef = stagingBuffer;
@@ -354,7 +355,7 @@ namespace xng {
                         .execute([backBufferRef, stagingBufferRef, size](rg::TransferContext &ctx) {
                             ctx.copyBuffer(backBufferRef, stagingBufferRef, 0, 0, size);
                         });
-                pendingTransfer = queue.addPass(std::move(pass));
+                pendingTransfer = queue.addTransfer(std::move(pass));
                 pendingTransferHandle = handle;
                 pendingTransferOffset = targetOffset;
                 pendingTransferSize = size;

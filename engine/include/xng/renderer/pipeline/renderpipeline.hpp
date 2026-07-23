@@ -123,19 +123,18 @@ namespace xng {
         /**
          * Commit the internal buffers of the pipeline.
          *
-         * @param graph
-         * @param streamerQueue
+         * @param queue
          */
-        virtual void commit(rg::GraphBuilder &graph, StreamerQueue &streamerQueue) = 0;
+        virtual void commit(RenderQueue &queue) = 0;
 
         /**
          * Prepare the pipeline for execution. Must be called anytime the pipeline state changes before calling draw().
          *
          * This will record the prepass in the indirect pipeline.
          *
-         * @param graph The graph to record the pipeline preparation into.
+         * @param queue
          */
-        virtual void prepare(rg::GraphBuilder &graph) = 0;
+        virtual void prepare(RenderQueue &queue) = 0;
 
         /**
          * Execute the pipeline.

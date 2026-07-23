@@ -197,8 +197,6 @@ namespace xng {
 
             textures[ret] = std::move(tex);
 
-            newTextures.insert(ret);
-
             return ret;
         }
 
@@ -364,59 +362,50 @@ namespace xng {
             return streamingTiles;
         }
 
-        std::unordered_map<TextureID, std::unordered_map<unsigned int, std::vector<Vec2u> > > readback() {
+        std::unordered_map<TextureID, std::unordered_map<unsigned int, std::vector<Vec2u> > >
+        readback(RenderQueue &queue) {
             // Readback taps
             std::unordered_map<TextureID, std::unordered_map<unsigned int, std::vector<Vec2u> > > ret;
-
-            if (!copiedReadback) {
-                return ret;
-            }
 
             // TODO: Fix gl mapping corruption / Sync Correctness Bug
             // When replaying in RenderDoc v1.24+dfsg-1+deb12u1 on Linux (Debian) for some reason this glMapBufferRange call attempts to bind as a write binding instead
             // of read binding but executes live without errors. GL_INVALID_OPERATION in glMapBufferRange(buffer does not allow write access)
             // On Win32 the process crashes while capturing.
 
-            const auto sem = runtime.execute(rg::GraphBuilder().addPass({
-                rg::GraphicsPassBuilder("TileStreamer/Readback")
-                .transferRead(readbackBuffer)
-                .transferWrite(readbackHostBuffer)
-                .execute([this](rg::RasterContext &, rg::TransferContext &ctx, rg::ComputeContext &) {
-                    ctx.copyBuffer(readbackHostBuffer, readbackBuffer, 0, 0, readbackBuffer.getDescription().size);
-                })
-            }).build());
-
-            // TODO: Find better solution for readback technique.
-            if (!sem->wait(timeOut)) {
-                throw std::runtime_error("TileStreamer readback timed out.");
-            }
-
-            const auto mapping = runtime.getResourceHeap().map(readbackHostBuffer);
-            const auto ptr = reinterpret_cast<unsigned int *>(mapping->data());
-            for (auto &pair: textures) {
-                if (newTextures.find(pair.first) != newTextures.end()) {
-                    continue;
+            if (readbackFence != nullptr) {
+                if (!readbackFence->wait(timeOut)) {
+                    throw std::runtime_error("TileStreamer readback timed out.");
                 }
-                for (auto mip = 0; mip < pair.second.tileMapOffsets.size(); mip++) {
-                    auto &state = textureStates.at(pair.first).at(mip);
-                    const auto tileCount = state.tileCount;
-                    const auto offset = pair.second.tileMapOffsets.at(mip);
-                    for (auto tileIndex = 0; tileIndex < tileCount.x * tileCount.y; tileIndex++) {
-                        const auto tile = indexToTile(tileIndex, tileCount);
-                        const unsigned int taps = *(ptr
-                                                    + offset
-                                                    + tileIndex);
-                        if (state.taps[tileIndex] != taps) {
+
+                const auto mapping = runtime.getResourceHeap().map(readbackHostBuffer);
+                const auto ptr = reinterpret_cast<unsigned int *>(mapping->data());
+                for (auto &pair: textures) {
+                    for (auto mip = 0; mip < pair.second.tileMapOffsets.size(); mip++) {
+                        auto &state = textureStates.at(pair.first).at(mip);
+                        const auto tileCount = state.tileCount;
+                        const auto offset = pair.second.tileMapOffsets.at(mip);
+                        for (auto tileIndex = 0; tileIndex < tileCount.x * tileCount.y; tileIndex++) {
+                            const auto tile = indexToTile(tileIndex, tileCount);
+                            const unsigned int taps = *(ptr
+                                                        + offset
+                                                        + tileIndex);
                             state.taps[tileIndex] = taps;
                             ret[pair.first][mip].emplace_back(tile);
                         }
                     }
                 }
+                return ret;
             }
+            readbackFence = queue.addPostFrame(rg::GraphicsPassBuilder("TileStreamer/Readback")
+                .transferRead(readbackBuffer)
+                .transferWrite(readbackHostBuffer)
+                .execute([this](rg::RasterContext &, rg::TransferContext &ctx, rg::ComputeContext &) {
+                    ctx.copyBuffer(readbackHostBuffer, readbackBuffer, 0, 0, readbackBuffer.getDescription().size);
+                }));
             return ret;
         }
 
-        void commit(rg::GraphBuilder &graph, StreamerQueue &queue) {
+        void commit(RenderQueue &queue) {
             for (auto &pair: pendingUploads) {
                 pair.second.erase(std::remove_if(pair.second.begin(),
                                                  pair.second.end(),
@@ -513,16 +502,12 @@ namespace xng {
                 }
             }
 
-            graph.addPass(rg::GraphicsPassBuilder("TileStreamer/ReadbackClear")
+            queue.addPreFrame(rg::GraphicsPassBuilder("TileStreamer/ReadbackClear")
                 .storageWrite(readbackBuffer, {})
                 .storageRead(readbackClearBuffer, {})
                 .execute([this](rg::RasterContext &, rg::TransferContext &ctx, rg::ComputeContext &) {
                     ctx.copyBuffer(readbackBuffer, readbackClearBuffer, 0, 0, readbackBuffer.getDescription().size);
                 }));
-
-            copiedReadback = true;
-
-            newTextures.clear();
         }
 
         rg::HeapResource<rg::Buffer> getTileMapOffsetsBuffer() const {
@@ -668,8 +653,6 @@ namespace xng {
 
         std::unordered_map<TextureID, std::unordered_set<unsigned int> > updatedMips;
 
-        std::unordered_set<TextureID> newTextures;
-
         StreamBuffer tileMapOffsetsBuffer;
         StreamBuffer tileMapBuffer;
         RangeAllocator tileMapAllocator;
@@ -684,7 +667,7 @@ namespace xng {
 
         size_t streamingTiles = 0;
 
-        bool copiedReadback = false;
+        std::shared_ptr<RenderQueue::SubmitFence> readbackFence;
     };
 }
 
