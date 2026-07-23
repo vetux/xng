@@ -74,6 +74,18 @@ namespace xng {
             return renderPath;
         }
 
+        bool isUploadComplete() override {
+            if (materialHandle == nullptr)
+                throw std::runtime_error("Uninitialized RenderMaterial");
+            return materialHandle->isUploadComplete();
+        }
+
+        void flush() override {
+            if (materialHandle == nullptr)
+                throw std::runtime_error("Uninitialized RenderMaterial");
+            materialHandle->flush();
+        }
+
     private:
         std::shared_ptr<RenderPipelineMaterial> materialHandle = nullptr;
 

@@ -120,6 +120,23 @@ namespace xng {
             }
         }
 
+        bool isUploadComplete() {
+            if (transform == nullptr) {
+                throw std::runtime_error("Uninitialized RenderModel");
+            }
+            for (auto &mesh : meshes) {
+                if (!mesh->isUploadComplete()) {
+                    return false;
+                }
+            }
+            if (shadowTransform) {
+                if (!shadowTransform->isUploadComplete()) {
+                    return false;
+                }
+            }
+            return transform->isUploadComplete() && material->isUploadComplete();
+        }
+
         void flush() {
             transform->flush();
             material->flush();

@@ -77,6 +77,15 @@ namespace xng {
             return mesh;
         }
 
+        bool isUploadComplete() override {
+            if (!canvas.isAssigned())
+                throw std::runtime_error("Uninitialized RenderPaint");
+            return canvas->isUploadComplete() &&
+                   transform->isUploadComplete() &&
+                   material->isUploadComplete() &&
+                   mesh->isUploadComplete();
+        }
+
         void flush() override {
             if (!canvas.isAssigned())
                 throw std::runtime_error("Uninitialized RenderPaint");
