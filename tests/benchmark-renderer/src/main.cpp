@@ -487,7 +487,7 @@ int main(int argc, char *argv[]) {
 
             std::wstring txt = std::to_wstring(frameLimiter.getFramerate())
                                + L" FPS";
-            size_t streamingTiles = scene->getVirtualTextureStreamer().getStreamingTiles();
+            size_t streamingTiles = scene->getVirtualTextureStreamer().getTilesInFlight();
             if (streamingTiles > 0)
                 txt += L"\nStreaming "
                         + std::to_wstring(streamingTiles)
