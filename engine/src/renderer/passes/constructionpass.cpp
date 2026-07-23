@@ -138,7 +138,8 @@ namespace xng {
 
         // Normals
         mat3 normalMatrix = mat3(transpose(inverse(fModel)));
-        vec4 oNormal = vec4(normalize(normalMatrix * fNorm), 1);
+        vec4 oNormal;
+        oNormal = vec4(normalize(normalMatrix * fNorm), 1);
         vec4 oTangent = vec4(normalize(normalMatrix * fTan), 1);
 
         If(getMaterialProperty(PBRMaterial::MATERIAL_NORMAL_HAS_TEXTURE) == true)
