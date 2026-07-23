@@ -73,6 +73,7 @@ namespace xng {
                 .textureSampledRead(gRoughnessMetallicAO, {rg::Shader::FRAGMENT})
                 .textureSampledRead(gAlbedo, {rg::Shader::FRAGMENT})
                 .textureSampledRead(gObjectIdReceiveShadows, {rg::Shader::FRAGMENT})
+                .textureSampledRead(gDepth, {rg::Shader::FRAGMENT})
                 .execute(
                     [this,
                         &scene,
@@ -137,6 +138,10 @@ namespace xng {
                         ctx.bindTexture("gObjectIdReceiveShadows", {
                                             rg::TextureBinding(gObjectIdReceiveShadows,
                                                                rg::TextureBinding::Range(0, 1, 0, 1),
+                                                               rg::TextureBinding::Automatic)
+                                        });
+                        ctx.bindTexture("gDepth", {
+                                            rg::TextureBinding(gDepth, rg::TextureBinding::Range(0, 1, 0, 1),
                                                                rg::TextureBinding::Automatic)
                                         });
 

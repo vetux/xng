@@ -43,6 +43,7 @@ namespace xng {
         Texture(rg::TEXTURE_2D, rg::RGBA8, gAlbedo)
         Texture(rg::TEXTURE_2D, rg::RGBA8, gRoughnessMetallicAO)
         Texture(rg::TEXTURE_2D, rg::RGBA8, gObjectIdReceiveShadows)
+        Texture(rg::TEXTURE_2D, rg::DEPTH24_STENCIL8, gDepth)
 
         fPos = position;
         fUv = uv;
@@ -68,6 +69,7 @@ namespace xng {
         Texture(rg::TEXTURE_2D, rg::RGBA8, gAlbedo)
         Texture(rg::TEXTURE_2D, rg::RGBA8, gRoughnessMetallicAO)
         Texture(rg::TEXTURE_2D, rg::RGBA8, gObjectIdReceiveShadows)
+        Texture(rg::TEXTURE_2D, rg::DEPTH24_STENCIL8, gDepth)
 
         StorageBufferDynamic(ShaderPointLight, pointLights)
         StorageBufferDynamic(ShaderDirectionalLight, directionalLights)
@@ -75,6 +77,12 @@ namespace xng {
 
         Parameter(vec4, viewPosition)
         Parameter(Float, gamma)
+
+        Float depth = textureSample(gDepth, fUv).x();
+        If(depth >= 1.0f)
+            oColor = vec4(0);
+            Return();
+        Fi
 
         vec3 position = textureSample(gPosition, fUv).xyz();
         vec3 normal = textureSample(gNormal, fUv).xyz();
