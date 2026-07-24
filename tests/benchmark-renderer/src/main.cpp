@@ -426,8 +426,9 @@ RenderText getDeviceText(rg::Runtime::DeviceInformation &deviceInfo,
 
 RenderText getStatsText(const RendererStatistics &stats,
                         const size_t frameRate,
+                        rg::Runtime &runtime,
                         RenderScene &scene,
-                        const RenderObjectHandle<RenderCanvas>& canvas,
+                        const RenderObjectHandle<RenderCanvas> &canvas,
                         std::shared_ptr<RenderFont> fontObject) {
     std::wstring txt = std::to_wstring(frameRate)
                        + L" fps";
@@ -455,6 +456,13 @@ RenderText getStatsText(const RendererStatistics &stats,
     }
     txt += L"\n";
 
+    const auto heapUsage = static_cast<float>(runtime.getResourceHeap().getMemoryUsage()) / GB(1);
+
+    std::stringstream heapString;
+    heapString << std::fixed << std::setprecision(3) << (heapUsage);
+    const auto heapStr = heapString.str();
+    txt += L"HEAP: " + std::wstring(heapStr.begin(), heapStr.end()) + L" gb\n";
+
     size_t streamingTiles = scene.getVirtualTextureStreamer().getTilesInFlight();
     if (streamingTiles > 0)
         txt += L"\nStreaming "
@@ -477,7 +485,7 @@ RenderText getStatsText(const RendererStatistics &stats,
 
 RenderText getFrameTimeText(const RendererStatistics &stats,
                             RenderScene &scene,
-                            const RenderObjectHandle<RenderCanvas>& canvas,
+                            const RenderObjectHandle<RenderCanvas> &canvas,
                             std::shared_ptr<RenderFont> fontObject) {
     std::wstring txt;
     for (auto &pair: stats.gpuTime) {
@@ -591,6 +599,7 @@ int main(int argc, char *argv[]) {
 
     auto statsText = getStatsText(ren.getStatistics(),
                                   frameLimiter.getFramerate(),
+                                  *runtime,
                                   *scene,
                                   canvas,
                                   fontObject);
@@ -614,6 +623,7 @@ int main(int argc, char *argv[]) {
             now = std::chrono::steady_clock::now();
             statsText = getStatsText(ren.getStatistics(),
                                      frameLimiter.getFramerate(),
+                                     *runtime,
                                      *scene,
                                      canvas,
                                      fontObject);
