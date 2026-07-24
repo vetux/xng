@@ -235,7 +235,6 @@ namespace xng::opengl {
     }
 
     std::unique_ptr<Fence> Runtime::execute(const rg::Graph &graph) {
-        OGLDebugGroup d("Runtime::execute");
         std::unordered_set<SurfaceGL *> surfaces;
 
         for (auto &pass: graph.passes) {
@@ -292,6 +291,7 @@ namespace xng::opengl {
                 switch (pass.index()) {
                     case 0: {
                         auto p = std::get<TransferPass>(pass);
+                        OGLDebugGroup debug(p.name);
                         queries.emplace_back(p.name);
                         glQueryCounter(queries.back().queries[0], GL_TIMESTAMP);
                         p.callback(transferContext);
@@ -300,6 +300,7 @@ namespace xng::opengl {
                     }
                     case 1: {
                         auto p = std::get<ComputePass>(pass);
+                        OGLDebugGroup debug(p.name);
                         queries.emplace_back(p.name);
                         glQueryCounter(queries.back().queries[0], GL_TIMESTAMP);
                         p.callback(computeContext);
@@ -309,6 +310,7 @@ namespace xng::opengl {
                     }
                     case 2: {
                         auto p = std::get<GraphicsPass>(pass);
+                        OGLDebugGroup debug(p.name);
                         queries.emplace_back(p.name);
                         glQueryCounter(queries.back().queries[0], GL_TIMESTAMP);
                         p.callback(rasterContext, transferContext, computeContext);
