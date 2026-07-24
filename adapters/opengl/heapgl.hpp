@@ -59,7 +59,7 @@ namespace xng::opengl {
         void decrementReference(const ResourceId &handle) override;
 
         const ResourceScope &getResources() const {
-            return context->getResources().getHeap();
+            return resources;
         }
 
     private:
@@ -79,7 +79,7 @@ namespace xng::opengl {
 
         RefCounter<ResourceId::Handle, size_t> refCounter{};
 
-        std::unique_ptr<TransferContextGL> context{};
+        ResourceScope resources;
     };
 }
 

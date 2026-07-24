@@ -22,35 +22,32 @@
 #include "passresources.hpp"
 
 namespace xng::opengl {
-    HeapGL::HeapGL()
-        : context(std::make_unique<TransferContextGL>()) {
-    }
-
+    HeapGL::HeapGL() = default;
     HeapGL::~HeapGL() = default;
 
     HeapResource<Buffer> HeapGL::allocateBuffer(const Buffer &desc) {
         auto ret = HeapResource(allocateHandle(), desc, *this);
-        context->getResources().getHeap().buffers[ret.getHandle()] = std::make_shared<BufferGL>(desc);
+        resources.buffers[ret.getHandle()] = std::make_shared<BufferGL>(desc);
         return ret;
     }
 
     HeapResource<Texture> HeapGL::allocateTexture(const Texture &desc) {
         auto ret = HeapResource(allocateHandle(), desc, *this);
-        context->getResources().getHeap().textures[ret.getHandle()] = std::make_shared<TextureGL>(desc);
+        resources.textures[ret.getHandle()] = std::make_shared<TextureGL>(desc);
         return ret;
     }
 
     std::unique_ptr<HeapMapping> HeapGL::map(const HeapResource<Buffer> &target) {
         return std::make_unique<HeapMappingGL>(target,
-                                               *context->getResources().getHeap().buffers.at(target.getHandle()));
+                                               *resources.buffers.at(target.getHandle()));
     }
 
     size_t HeapGL::getMemoryUsage() {
         size_t total = 0;
-        for (auto &buf: context->getResources().getHeap().buffers) {
+        for (const auto &buf: resources.buffers) {
             total += buf.second->desc.size;
         }
-        for (auto &tex: context->getResources().getHeap().textures) {
+        for (const auto &tex: resources.textures) {
             for (auto mip = 0; mip < tex.second->desc.mipLevels; mip++) {
                 const auto mipSize = Texture::getMipLevelSize(tex.second->desc.size, mip);
                 total += ((mipSize.x * mipSize.y) * getColorByteSize(tex.second->desc.format))
@@ -62,7 +59,7 @@ namespace xng::opengl {
 
     void HeapGL::decrementReference(const ResourceId &handle) {
         if (refCounter.dec(handle.getHandle())) {
-            context->getResources().getHeap().buffers.erase(handle.getHandle());
+            resources.buffers.erase(handle.getHandle());
         }
     }
 }
