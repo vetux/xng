@@ -323,7 +323,7 @@ namespace xng {
                 }
             }
 
-            queue.addPreFrame(rg::GraphicsPassBuilder("TileStreamer/ReadbackClear")
+            queue.addPreFrame(rg::GraphicsPassBuilder("TileStreamer/ClearReadback")
                 .storageWrite(readbackBuffer, {})
                 .storageRead(readbackClearBuffer, {})
                 .execute([this](rg::RasterContext &, rg::TransferContext &ctx, rg::ComputeContext &) {

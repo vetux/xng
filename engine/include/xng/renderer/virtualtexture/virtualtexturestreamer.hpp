@@ -194,7 +194,7 @@ namespace xng {
                     }
                 }
             }
-            readbackFence = queue.addPostFrame(rg::GraphicsPassBuilder("VirtualTextureStreamer/Readback")
+            readbackFence = queue.addPostFrame(rg::GraphicsPassBuilder("VirtualTextureStreamer/CopyReadback")
                 .transferRead(tileStreamer.getReadbackBuffer())
                 .transferWrite(tileStreamer.getReadbackHostBuffer())
                 .execute([this](rg::RasterContext &, rg::TransferContext &ctx, rg::ComputeContext &) {
