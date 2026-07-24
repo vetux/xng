@@ -66,6 +66,13 @@ namespace xng {
      * in flight uploads.
      *
      * TODO: Implement ChunkStreamer upload priorities
+     *
+     *  Now the chunk streamer can get oversaturated when many uploads are kicked off in one frame and released in the next frame
+     *  which can cause the chunk streamer to lock up and not reach the existing stable uploads. This will be
+     *  solved with upload priority queues where new uploads on the same priority will be processed only after existing ones.
+     *  Also when the user flushes over the chunkCount the non flushed uploads are never reached which can be solved with
+     *  per priority budgets or by not counting flushed uploads to the upload bound.
+     *
      * TODO: (Maybe) Sub Chunk allocation
      */
     class ChunkStreamer {
