@@ -40,6 +40,18 @@ namespace xng::opengl {
         ~Query() {
             glDeleteQueries(2, queries);
         }
+
+        Query(const Query &) = delete;
+
+        Query &operator=(const Query &) = delete;
+
+        Query(Query &&other) noexcept {
+            passName = std::move(other.passName);
+            queries[0] = other.queries[0];
+            queries[1] = other.queries[1];
+            other.queries[0] = 0;
+            other.queries[1] = 0;
+        }
     };
 
     class FenceGL final : public rg::Fence {
