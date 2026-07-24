@@ -427,7 +427,7 @@ RenderText getDeviceText(rg::Runtime::DeviceInformation &deviceInfo,
 RenderText getStatsText(const RendererStatistics &stats,
                         const size_t frameRate,
                         RenderScene &scene,
-                        RenderObjectHandle<RenderCanvas> canvas,
+                        const RenderObjectHandle<RenderCanvas>& canvas,
                         std::shared_ptr<RenderFont> fontObject) {
     std::wstring txt = std::to_wstring(frameRate)
                        + L" fps";
@@ -467,7 +467,7 @@ RenderText getStatsText(const RendererStatistics &stats,
     return {
         scene,
         canvas,
-        fontObject,
+        std::move(fontObject),
         std::u32string(txt.begin(), txt.end()),
         {},
         textColor,
@@ -498,7 +498,7 @@ RenderText getFrameTimeText(const RendererStatistics &stats,
     return {
         scene,
         canvas,
-        fontObject,
+        std::move(fontObject),
         std::u32string(txt.begin(), txt.end()),
         params,
         textColor,
