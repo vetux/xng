@@ -25,6 +25,7 @@
 #include "xng/renderer/renderfont.hpp"
 #include "xng/renderer/rendertext.hpp"
 #include "xng/renderer/passes/canvaspass.hpp"
+#include "xng/rendergraph/runtime.hpp"
 
 using namespace xng;
 
@@ -394,6 +395,117 @@ void lightController(Transform &lightTransform, Window &window, double deltaTime
     lightTransform.setPosition(lightTransform.getPosition() + pos * movementSpeed * deltaTime);
 }
 
+static const auto textColor = ColorRGBA::lime();
+
+RenderText getDeviceText(rg::Runtime::DeviceInformation &deviceInfo,
+                         RenderScene &scene,
+                         RenderObjectHandle<RenderCanvas> canvas,
+                         std::shared_ptr<RenderFont> font) {
+    std::wstring deviceStr = std::wstring(deviceInfo.version.begin(), deviceInfo.version.end())
+                             + L" \n" + std::wstring(deviceInfo.name.begin(), deviceInfo.name.end())
+                             + L" ";
+
+    std::u32string deviceStrU32(deviceStr.begin(), deviceStr.end());
+
+    SamplingProperties props;
+    props.minFilter = FILTER_NEAREST;
+    props.magFilter = FILTER_NEAREST;
+
+    TextLayoutParameters params;
+    params.alignment = TEXT_ALIGN_RIGHT;
+    return {
+        scene,
+        canvas,
+        font,
+        deviceStrU32,
+        params,
+        textColor,
+        props
+    };
+}
+
+RenderText getStatsText(const RendererStatistics &stats,
+                        const size_t frameRate,
+                        RenderScene &scene,
+                        RenderObjectHandle<RenderCanvas> canvas,
+                        std::shared_ptr<RenderFont> fontObject) {
+    std::wstring txt = std::to_wstring(frameRate)
+                       + L" fps";
+    txt += L"\n\nCPU: ";
+    txt += std::to_wstring(
+                std::chrono::duration_cast<std::chrono::milliseconds>(stats.frameSubmit - stats.frameStart).
+                count())
+            + L" ms\nGPU: ";
+    txt += std::to_wstring(
+                std::chrono::duration_cast<std::chrono::milliseconds>(stats.frameEnd - stats.frameSubmit).
+                count())
+            + L" ms\n";
+
+    txt += L"BUS: ";
+
+    std::stringstream busString;
+    busString << std::fixed << std::setprecision(3) << static_cast<float>(stats.streamingBudgetUsed) /
+            static_cast<float>(MB(1));
+    auto str = busString.str();
+
+    txt += std::wstring(str.begin(), str.end())
+            + L" mb";
+    if (stats.streamingBudgetUsed > stats.streamingBudgetMax) {
+        txt += L" SATURATED";
+    }
+    txt += L"\n";
+
+    size_t streamingTiles = scene.getVirtualTextureStreamer().getTilesInFlight();
+    if (streamingTiles > 0)
+        txt += L"\nStreaming "
+                + std::to_wstring(streamingTiles)
+                + L" tiles";
+
+    SamplingProperties props;
+    props.minFilter = FILTER_NEAREST;
+    props.magFilter = FILTER_NEAREST;
+    return {
+        scene,
+        canvas,
+        fontObject,
+        std::u32string(txt.begin(), txt.end()),
+        {},
+        textColor,
+        props
+    };
+}
+
+RenderText getFrameTimeText(const RendererStatistics &stats,
+                            RenderScene &scene,
+                            const RenderObjectHandle<RenderCanvas>& canvas,
+                            std::shared_ptr<RenderFont> fontObject) {
+    std::wstring txt;
+    for (auto &pair: stats.gpuTime) {
+        auto ms = static_cast<float>(pair.second.count()) / 1000000.0f;
+        std::stringstream msString;
+        msString << std::fixed << std::setprecision(6) << ms;
+        auto str = msString.str();
+        txt += std::wstring(pair.first.begin(), pair.first.end())
+                + L" " + std::wstring(str.begin(), str.end()) + L" ms\n";
+    }
+
+    TextLayoutParameters params;
+    params.alignment = TEXT_ALIGN_RIGHT;
+
+    SamplingProperties props;
+    props.minFilter = FILTER_NEAREST;
+    props.magFilter = FILTER_NEAREST;
+    return {
+        scene,
+        canvas,
+        fontObject,
+        std::u32string(txt.begin(), txt.end()),
+        params,
+        textColor,
+        props
+    };
+}
+
 int main(int argc, char *argv[]) {
     std::vector<std::unique_ptr<ResourceImporter> > importers;
     importers.emplace_back(std::make_unique<FontImporter>());
@@ -470,7 +582,24 @@ int main(int argc, char *argv[]) {
 
     auto canvas = scene->createCanvas();
 
-    RenderText textObject(*scene, canvas, fontObject, {}, {}, {}, {});
+    auto deviceInfo = runtime->getDeviceInformation();
+    auto deviceText = getDeviceText(deviceInfo, *scene, canvas, fontObject);
+    auto deviceTextPos = Vec2f(window->getFramebufferSize().x - deviceText.getLayout().size.x,
+                               window->getFramebufferSize().y - deviceText.getLayout().size.y);
+
+    deviceText.setPosition(deviceTextPos);
+
+    auto statsText = getStatsText(ren.getStatistics(),
+                                  frameLimiter.getFramerate(),
+                                  *scene,
+                                  canvas,
+                                  fontObject);
+    auto timeText = getFrameTimeText(ren.getStatistics(),
+                                     *scene,
+                                     canvas,
+                                     fontObject);
+
+    timeText.setPosition(Vec2f(window->getFramebufferSize().x - timeText.getLayout().size.x, 0));
 
     while (!window->shouldClose()) {
         frameLimiter.newFrame();
@@ -483,59 +612,24 @@ int main(int argc, char *argv[]) {
 
         if (std::chrono::steady_clock::now() - now > fpsUpdateInterval) {
             now = std::chrono::steady_clock::now();
+            statsText = getStatsText(ren.getStatistics(),
+                                     frameLimiter.getFramerate(),
+                                     *scene,
+                                     canvas,
+                                     fontObject);
+            timeText = getFrameTimeText(ren.getStatistics(),
+                                        *scene,
+                                        canvas,
+                                        fontObject);
+            timeText.setPosition(Vec2f(window->getFramebufferSize().x - timeText.getLayout().size.x, 0));
+        }
 
-            const auto &stats = ren.getStatistics();
-            std::wstring txt = std::to_wstring(frameLimiter.getFramerate())
-                               + L" fps";
-            txt += L"\n\nCPU: ";
-            txt += std::to_wstring(
-                        std::chrono::duration_cast<std::chrono::milliseconds>(stats.frameSubmit - stats.frameStart).
-                        count())
-                    + L" ms\nGPU: ";
-            txt += std::to_wstring(
-                        std::chrono::duration_cast<std::chrono::milliseconds>(stats.frameEnd - stats.frameSubmit).
-                        count())
-                    + L" ms\n";
+        auto textPos = Vec2f(window->getFramebufferSize().x - deviceText.getLayout().size.x,
+                             window->getFramebufferSize().y - deviceText.getLayout().size.y);
 
-            txt += L"BUS: ";
-
-            std::stringstream busString;
-            busString << std::fixed << std::setprecision(3) << static_cast<float>(stats.streamingBudgetUsed) / static_cast<float>(MB(1));
-            auto str = busString.str();
-
-            txt += std::wstring(str.begin(), str.end())
-                    + L" mb";
-            if (stats.streamingBudgetUsed > stats.streamingBudgetMax) {
-                txt += L" SATURATED";
-            }
-            txt += L"\n";
-
-            for (auto &pair: stats.gpuTime) {
-                auto ms = static_cast<float>(pair.second.count()) / 1000000.0f;
-                std::stringstream msString;
-                msString << std::fixed << std::setprecision(6) << ms;
-                auto str = msString.str();
-                txt += L"\n "
-                        + std::wstring(pair.first.begin(), pair.first.end())
-                        + L" " + std::wstring(str.begin(), str.end()) + L" ms";
-            }
-
-            size_t streamingTiles = scene->getVirtualTextureStreamer().getTilesInFlight();
-            if (streamingTiles > 0)
-                txt += L"\n\n Streaming "
-                        + std::to_wstring(streamingTiles)
-                        + L" tiles";
-
-            SamplingProperties props;
-            props.minFilter = FILTER_NEAREST;
-            props.magFilter = FILTER_NEAREST;
-            textObject = RenderText(*scene,
-                                    canvas,
-                                    fontObject,
-                                    std::u32string(txt.begin(), txt.end()),
-                                    {},
-                                    ColorRGBA::lime(),
-                                    props);
+        if (textPos != deviceTextPos) {
+            deviceText.setPosition(textPos);
+            deviceTextPos = textPos;
         }
 
         auto fbSize = surface->getDimensions();

@@ -49,6 +49,15 @@ namespace xng {
 
         RenderPaint(const RenderPaint &) = default;
 
+        //TODO: Design proper paint interface
+        void setDstRect(const Rectf &dstRect, const Vec2f &center = {}, const float rotation = 0) {
+            const auto modelMatrix = MatrixMath::translate(Vec3f(dstRect.position.x, dstRect.position.y, 0))
+                                     * MatrixMath::rotate(Vec3f(0, 0, rotation))
+                                     * MatrixMath::translate(Vec3f(center.x, center.y, 0))
+                                     * MatrixMath::scale(Vec3f(dstRect.dimensions.x, dstRect.dimensions.y, 1));
+            transform->setTransform(modelMatrix);
+        }
+
         [[nodiscard]] RenderObjectHandle<RenderCanvas> getCanvas() const {
             return canvas;
         }

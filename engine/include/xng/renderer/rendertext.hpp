@@ -26,14 +26,25 @@
 namespace xng {
     class RenderText {
     public:
+        struct RenderChar {
+            Rectf dstRect;
+            RenderObjectHandle<RenderPaint> paint;
+
+            RenderChar() = default;
+
+            RenderChar(Rectf dstRect, RenderObjectHandle<RenderPaint> paint)
+                : dstRect(std::move(dstRect)),
+                  paint(std::move(paint)) {
+            }
+        };
+
         RenderText(RenderScene &scene,
                    const RenderObjectHandle<RenderCanvas> &canvas,
                    std::shared_ptr<RenderFont> _font,
                    const std::u32string &text,
                    const TextLayoutParameters &layoutParameters,
                    const ColorRGBA &color,
-                   const SamplingProperties &sampling_properties,
-                   const Vec2f &position = {})
+                   const SamplingProperties &sampling_properties)
             : font(std::move(_font)),
               color(color),
               samplingProperties(sampling_properties) {
@@ -61,7 +72,7 @@ namespace xng {
                                             static_cast<float>(g.metrics.bitmapSize.y) * 0.5f);
 
                 Rectf dstRect;
-                dstRect.position = position + c.position + halfSize;
+                dstRect.position = c.position + halfSize;
                 dstRect.dimensions = Vec2f(halfSize.x, -halfSize.y); // Flip Y (Y-up to Y-down)
 
                 auto paint = scene.createPaint(canvas,
@@ -73,17 +84,26 @@ namespace xng {
 
                 paint->flush();
 
-                chars.emplace_back(paint);
+                chars.emplace_back(dstRect, paint);
             }
         }
 
         ~RenderText() = default;
 
+        void setPosition(const Vec2f &position) {
+            for (auto &c: chars) {
+                auto rect = c.dstRect;
+                rect.position = position + rect.position;
+                c.paint->setDstRect(rect);
+                c.paint->flush();
+            }
+        }
+
         [[nodiscard]] const TextLayout &getLayout() const {
             return layout;
         }
 
-        [[nodiscard]] const std::vector<RenderObjectHandle<RenderPaint> > &getChars() const {
+        [[nodiscard]] const std::vector<RenderChar> &getChars() const {
             return chars;
         }
 
@@ -102,7 +122,7 @@ namespace xng {
         ColorRGBA color;
         SamplingProperties samplingProperties;
 
-        std::vector<RenderObjectHandle<RenderPaint> > chars;
+        std::vector<RenderChar> chars;
     };
 }
 
