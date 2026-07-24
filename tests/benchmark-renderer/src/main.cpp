@@ -402,8 +402,8 @@ RenderText getDeviceText(rg::Runtime::DeviceInformation &deviceInfo,
                          RenderObjectHandle<RenderCanvas> canvas,
                          std::shared_ptr<RenderFont> font) {
     std::wstring deviceStr = std::wstring(deviceInfo.version.begin(), deviceInfo.version.end())
-                             + L" \n" + std::wstring(deviceInfo.name.begin(), deviceInfo.name.end())
-                             + L" ";
+                             + L"\n" + std::wstring(deviceInfo.name.begin(), deviceInfo.name.end())
+                             + L"";
 
     std::u32string deviceStrU32(deviceStr.begin(), deviceStr.end());
 
