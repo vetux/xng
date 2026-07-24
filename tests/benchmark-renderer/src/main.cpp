@@ -472,7 +472,6 @@ int main(int argc, char *argv[]) {
 
     RenderText textObject(*scene, canvas, fontObject, {}, {}, {}, {});
 
-    RendererStatistics stats;
     while (!window->shouldClose()) {
         frameLimiter.newFrame();
         window->update();
@@ -485,7 +484,7 @@ int main(int argc, char *argv[]) {
         if (std::chrono::steady_clock::now() - now > fpsUpdateInterval) {
             now = std::chrono::steady_clock::now();
 
-            stats = ren.getStatistics();
+            const auto &stats = ren.getStatistics();
             std::wstring txt = std::to_wstring(frameLimiter.getFramerate())
                                + L" fps";
             txt += L"\n\nCPU: ";
