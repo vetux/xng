@@ -41,6 +41,8 @@ namespace xng {
           pbrForwardPipeline(createPipeline(PBRMaterial::getLayout())),
           shadowCastersPipeline(createPipeline(PBRMaterial::getLayout())),
           canvasPipeline(createPipeline(CanvasMaterial::getLayout())) {
+        unitQuadMesh->flush();
+        unitCubeMesh->flush();
     }
 
     void RenderScene::setCamera(const Camera &value) {
