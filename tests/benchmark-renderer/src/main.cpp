@@ -431,7 +431,7 @@ RenderText getStatsText(const RendererStatistics &stats,
                         std::shared_ptr<RenderFont> fontObject) {
     std::wstring txt = std::to_wstring(frameRate)
                        + L" fps";
-    txt += L"\n\nCPU: ";
+    txt += L"\nCPU: ";
     txt += std::to_wstring(
                 std::chrono::duration_cast<std::chrono::milliseconds>(stats.frameSubmit - stats.frameStart).
                 count())
