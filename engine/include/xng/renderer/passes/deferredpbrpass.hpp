@@ -63,7 +63,6 @@ namespace xng {
 
             builder.addPass(rg::GraphicsPassBuilder("DeferredPBRPass")
                 .textureAttachmentColor(colorTexture)
-                .textureAttachmentDepthStencil(gDepth)
                 .storageRead(scene.getPointLightBuffer(), {rg::Shader::FRAGMENT})
                 .storageRead(scene.getDirectionalLightBuffer(), {rg::Shader::FRAGMENT})
                 .storageRead(scene.getSpotLightBuffer(), {rg::Shader::FRAGMENT})
@@ -177,8 +176,6 @@ namespace xng {
                                                                 offsets);
 
             ret.colorAttachments = {rg::ColorFormat::RGBA8};
-            ret.depthAttachment = rg::ColorFormat::DEPTH24_STENCIL8;
-            ret.stencilAttachment = rg::ColorFormat::DEPTH24_STENCIL8;
 
             ret.shaders = {vertexShader, fragmentShader};
 
