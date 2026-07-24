@@ -83,6 +83,8 @@ namespace xng::rg {
          */
         virtual std::unique_ptr<HeapMapping> map(const HeapResource<Buffer> &target) = 0;
 
+        virtual size_t getMemoryUsage() = 0;
+
     private:
         virtual void incrementReference(const ResourceId &handle) = 0;
 

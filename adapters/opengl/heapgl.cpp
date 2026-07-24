@@ -45,6 +45,21 @@ namespace xng::opengl {
                                                *context->getResources().getHeap().buffers.at(target.getHandle()));
     }
 
+    size_t HeapGL::getMemoryUsage() {
+        size_t total = 0;
+        for (auto &buf: context->getResources().getHeap().buffers) {
+            total += buf.second->desc.size;
+        }
+        for (auto &tex: context->getResources().getHeap().textures) {
+            for (auto mip = 0; mip < tex.second->desc.mipLevels; mip++) {
+                const auto mipSize = Texture::getMipLevelSize(tex.second->desc.size, mip);
+                total += ((mipSize.x * mipSize.y) * getColorByteSize(tex.second->desc.format))
+                        * tex.second->desc.arrayLayers;
+            }
+        }
+        return total;
+    }
+
     void HeapGL::decrementReference(const ResourceId &handle) {
         if (refCounter.dec(handle.getHandle())) {
             context->getResources().getHeap().buffers.erase(handle.getHandle());

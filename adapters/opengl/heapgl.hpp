@@ -50,6 +50,8 @@ namespace xng::opengl {
 
         std::unique_ptr<HeapMapping> map(const HeapResource<Buffer> &target) override;
 
+        size_t getMemoryUsage() override;
+
         void incrementReference(const ResourceId &handle) override {
             refCounter.inc(handle.getHandle());
         }
