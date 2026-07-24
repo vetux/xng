@@ -449,7 +449,7 @@ int main(int argc, char *argv[]) {
 
     createDrawList(*scene, *runtime, models, lights);
 
-    for (auto &model : models) {
+    for (auto &model: models) {
         model->flush();
     }
 
@@ -485,11 +485,45 @@ int main(int argc, char *argv[]) {
         if (std::chrono::steady_clock::now() - now > fpsUpdateInterval) {
             now = std::chrono::steady_clock::now();
 
+            stats = ren.getStatistics();
             std::wstring txt = std::to_wstring(frameLimiter.getFramerate())
-                               + L" FPS";
+                               + L" fps";
+            txt += L"\n\nCPU: ";
+            txt += std::to_wstring(
+                        std::chrono::duration_cast<std::chrono::milliseconds>(stats.frameSubmit - stats.frameStart).
+                        count())
+                    + L" ms\nGPU: ";
+            txt += std::to_wstring(
+                        std::chrono::duration_cast<std::chrono::milliseconds>(stats.frameEnd - stats.frameSubmit).
+                        count())
+                    + L" ms\n";
+
+            txt += L"BUS: ";
+
+            std::stringstream busString;
+            busString << std::fixed << std::setprecision(3) << static_cast<float>(stats.streamingBudgetUsed) / static_cast<float>(MB(1));
+            auto str = busString.str();
+
+            txt += std::wstring(str.begin(), str.end())
+                    + L" mb";
+            if (stats.streamingBudgetUsed > stats.streamingBudgetMax) {
+                txt += L" BUDGET EXCEEDED";
+            }
+            txt += L"\n";
+
+            for (auto &pair: stats.gpuTime) {
+                auto ms = static_cast<float>(pair.second.count()) / 1000000.0f;
+                std::stringstream msString;
+                msString << std::fixed << std::setprecision(6) << ms;
+                auto str = msString.str();
+                txt += L"\n "
+                        + std::wstring(pair.first.begin(), pair.first.end())
+                        + L" " + std::wstring(str.begin(), str.end()) + L" ms";
+            }
+
             size_t streamingTiles = scene->getVirtualTextureStreamer().getTilesInFlight();
             if (streamingTiles > 0)
-                txt += L"\nStreaming "
+                txt += L"\n\n Streaming "
                         + std::to_wstring(streamingTiles)
                         + L" tiles";
 

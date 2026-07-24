@@ -53,6 +53,8 @@ namespace xng {
 
         void draw(const std::shared_ptr<rg::Surface> &surface, RenderScene &scene);
 
+        RendererStatistics getStatistics() const;
+
     private:
         static constexpr int skinningLocalSize = 64;
 
@@ -63,6 +65,10 @@ namespace xng {
         rg::PipelineCache::Handle skinningPipeline;
 
         std::vector<std::shared_ptr<RenderPass> > passes;
+
+        RendererStatistics stats;
+
+        size_t streamingBudget;
     };
 }
 

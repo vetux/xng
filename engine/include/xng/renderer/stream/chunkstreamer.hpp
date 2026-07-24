@@ -325,6 +325,10 @@ namespace xng {
             flushedUploads.clear();
         }
 
+        size_t getInFlightChunks() const {
+            return pendingChunks.size();
+        }
+
     private:
         struct UploadChunk {
             size_t targetOffset;

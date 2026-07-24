@@ -35,7 +35,9 @@ namespace xng {
                        const rg::Shader &skinningShader)
         : runtime(runtime),
           chunkStreamer(runtime.getResourceHeap(), KB(256), streamingBudget / KB(256)),
-          skinningPipeline(createPipeline(runtime.getPipelineCache(), skinningShader)) {
+          skinningPipeline(createPipeline(runtime.getPipelineCache(), skinningShader)),
+          streamingBudget(streamingBudget) {
+        runtime.setEnableTimers(true);
     }
 
     std::shared_ptr<RenderScene> Renderer::createScene(size_t tileSize, size_t tileBorder, float maxAnisotropy) {
@@ -47,6 +49,9 @@ namespace xng {
     }
 
     void Renderer::draw(const std::shared_ptr<rg::Surface> &surface, RenderScene &scene) {
+        stats = {};
+        stats.frameStart = std::chrono::high_resolution_clock::now();
+
         RenderQueue queue;
 
         // Commit Scene
@@ -72,6 +77,28 @@ namespace xng {
         if (!sem->wait(timeOut)) {
             throw std::runtime_error("Renderer timed out");
         }
+
+        stats.tilesInFlight = scene.getVirtualTextureStreamer().getTilesInFlight();
+        stats.frameSubmit = sem->getTimeline().submitTimeHost;
+
+        std::unordered_map<std::string, size_t> passSliceIndices;
+        for (auto &slice: sem->getTimeline().slices) {
+            const auto sliceDuration = slice.end - slice.start;
+            if (passSliceIndices.find(slice.passName) != passSliceIndices.end()) {
+                stats.gpuTime.at(passSliceIndices.at(slice.passName)).second += sliceDuration;
+            } else {
+                stats.gpuTime.emplace_back(slice.passName, sliceDuration);
+                passSliceIndices.emplace(slice.passName, stats.gpuTime.size() - 1);
+            }
+        }
+        stats.frameEnd = std::chrono::high_resolution_clock::now();
+
+        stats.streamingBudgetMax = streamingBudget;
+        stats.streamingBudgetUsed = chunkStreamer.getInFlightChunks() * KB(256);
+    }
+
+    RendererStatistics Renderer::getStatistics() const {
+        return stats;
     }
 
     rg::ComputePass Renderer::recordSkinningPass(const RenderScene &scene) const {

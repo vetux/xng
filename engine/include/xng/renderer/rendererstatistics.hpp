@@ -44,7 +44,15 @@ namespace xng {
         size_t textureVRamDownload = 0;
         size_t textureVRamCopy = 0;
 
-        size_t streamingTiles = 0;
+        size_t tilesInFlight = 0;
+
+        std::chrono::high_resolution_clock::time_point frameStart;
+        std::chrono::high_resolution_clock::time_point frameSubmit;
+        std::chrono::high_resolution_clock::time_point frameEnd;
+        std::vector<std::pair<std::string, std::chrono::nanoseconds>> gpuTime;
+
+        size_t streamingBudgetMax;
+        size_t streamingBudgetUsed;
     };
 }
 

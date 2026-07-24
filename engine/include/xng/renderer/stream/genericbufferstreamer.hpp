@@ -50,6 +50,12 @@ namespace xng {
         }
 
         void destroy(const Slot slot) {
+#ifndef NDEBUG
+            if (std::find(freeSlots.begin(), freeSlots.end(), slot) != freeSlots.end()) {
+                throw std::runtime_error("Slot is already freed");
+            }
+#endif
+            assert(slot < nextSlot);
             auto it = regions.find(slot);
             if (it != regions.end()) {
                 buffer.release(it->second.handle);
@@ -59,6 +65,12 @@ namespace xng {
         }
 
         void upload(const Slot slot, const uint8_t *data, const size_t size) {
+#ifndef NDEBUG
+            if (std::find(freeSlots.begin(), freeSlots.end(), slot) != freeSlots.end()) {
+                throw std::runtime_error("Slot is already freed");
+            }
+#endif
+            assert(slot < nextSlot);
             assert(size == elementSize);
 
             auto it = regions.find(slot);
@@ -73,12 +85,24 @@ namespace xng {
         }
 
         bool isUploadComplete(const Slot slot) {
+#ifndef NDEBUG
+            if (std::find(freeSlots.begin(), freeSlots.end(), slot) != freeSlots.end()) {
+                throw std::runtime_error("Slot is already freed");
+            }
+#endif
+            assert(slot < nextSlot);
             auto it = regions.find(slot);
             if (it == regions.end()) return true;
             return buffer.isUploadComplete(it->second.handle);
         }
 
         void flush(const Slot slot) {
+#ifndef NDEBUG
+            if (std::find(freeSlots.begin(), freeSlots.end(), slot) != freeSlots.end()) {
+                throw std::runtime_error("Slot is already freed");
+            }
+#endif
+            assert(slot < nextSlot);
             auto it = regions.find(slot);
             if (it == regions.end()) return;
             auto &pendingUpload = it->second;
