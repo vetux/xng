@@ -507,7 +507,7 @@ int main(int argc, char *argv[]) {
             txt += std::wstring(str.begin(), str.end())
                     + L" mb";
             if (stats.streamingBudgetUsed > stats.streamingBudgetMax) {
-                txt += L" BUDGET EXCEEDED";
+                txt += L" SATURATED";
             }
             txt += L"\n";
 
