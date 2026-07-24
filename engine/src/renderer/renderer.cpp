@@ -51,6 +51,8 @@ namespace xng {
     void Renderer::draw(const std::shared_ptr<rg::Surface> &surface, RenderScene &scene) {
         stats = {};
         stats.frameStart = std::chrono::high_resolution_clock::now();
+        stats.streamingBudgetUsed = chunkStreamer.getInFlightChunks() * KB(256);
+        stats.streamingBudgetMax = streamingBudget;
 
         RenderQueue queue;
 
@@ -92,9 +94,6 @@ namespace xng {
             }
         }
         stats.frameEnd = std::chrono::high_resolution_clock::now();
-
-        stats.streamingBudgetMax = streamingBudget;
-        stats.streamingBudgetUsed = chunkStreamer.getInFlightChunks() * KB(256);
     }
 
     RendererStatistics Renderer::getStatistics() const {

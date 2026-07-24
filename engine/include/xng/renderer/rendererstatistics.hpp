@@ -52,6 +52,11 @@ namespace xng {
         std::vector<std::pair<std::string, std::chrono::nanoseconds>> gpuTime;
 
         size_t streamingBudgetMax;
+
+        /**
+         * The used budget value is the number of bytes being queued up for upload in the chunk streamer at the start
+         * of a Renderer::draw() invocation.
+         */
         size_t streamingBudgetUsed;
     };
 }
